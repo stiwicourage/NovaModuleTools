@@ -39,7 +39,6 @@ function Write-TestProjectJson {
         Version = '0.0.1'
         copyResourcesToModuleRoot = $false
         BuildRecursiveFolders = [bool]$Options.BuildRecursiveFolders
-        FailOnDuplicateFunctionNames = [bool]$Options.FailOnDuplicateFunctionNames
         Manifest = [ordered]@{
             Author = 'Test'
             PowerShellHostVersion = '7.4'
@@ -58,11 +57,33 @@ function Write-TestProjectJson {
         }
     }
 
+    if ($Options.ContainsKey('SetSourcePath')) {
+        $project.SetSourcePath = [bool]$Options.SetSourcePath
+    }
+
+    $project.FailOnDuplicateFunctionNames = [bool]$Options.FailOnDuplicateFunctionNames
+
     $json = $project | ConvertTo-Json -Depth 10
     Set-Content -LiteralPath (Join-Path $ProjectRoot 'project.json') -Value $json -Encoding utf8
 }
 
-function Invoke-BuildAndParsePsm1Ast {
+function Get-BuiltModuleFilePath {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot
+    )
+
+    Push-Location -LiteralPath $ProjectRoot
+    try {
+        $info = Get-MTProjectInfo
+        return (Join-Path $ProjectRoot ("dist/{0}/{0}.psm1" -f $info.ProjectName))
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+function Invoke-TestProjectBuild {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot
@@ -71,25 +92,43 @@ function Invoke-BuildAndParsePsm1Ast {
     Push-Location -LiteralPath $ProjectRoot
     try {
         Invoke-MTBuild
-
-        $info = Get-MTProjectInfo
-        $psm1 = Join-Path $ProjectRoot ("dist/{0}/{0}.psm1" -f $info.ProjectName)
+        $psm1 = Get-BuiltModuleFilePath -ProjectRoot $ProjectRoot
         if (-not (Test-Path -LiteralPath $psm1)) {
             throw "Expected built psm1 not found: $psm1"
         }
 
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseFile($psm1, [ref]$tokens, [ref]$errors)
-        if ($errors -and $errors.Count -gt 0) {
-            throw "Built psm1 parse errors: $(@($errors | ForEach-Object Message) -join '; ')"
-        }
-
-        return $ast
+        return $psm1
     }
     finally {
         Pop-Location
     }
+}
+
+function Get-BuiltModuleContent {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot
+    )
+
+    $psm1 = Invoke-TestProjectBuild -ProjectRoot $ProjectRoot
+    return [IO.File]::ReadAllText($psm1)
+}
+
+function Invoke-BuildAndParsePsm1Ast {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot
+    )
+
+    $psm1 = Invoke-TestProjectBuild -ProjectRoot $ProjectRoot
+    $tokens = $null
+    $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile($psm1, [ref]$tokens, [ref]$errors)
+    if ($errors -and $errors.Count -gt 0) {
+        throw "Built psm1 parse errors: $(@($errors | ForEach-Object Message) -join '; ')"
+    }
+
+    return $ast
 }
 
 function Get-TopLevelFunctionAstFromAst {

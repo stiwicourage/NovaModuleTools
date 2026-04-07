@@ -7,11 +7,10 @@ function Build-Module {
 
     $sb = [System.Text.StringBuilder]::new()
 
-    $files = Get-ProjectScriptFile -ProjectInfo $data
-    foreach ($file in $files) {
-        $sb.AppendLine([IO.File]::ReadAllText($file.FullName)) | Out-Null
-        $sb.AppendLine() | Out-Null
+    foreach ($file in (Get-ProjectScriptFile -ProjectInfo $data)) {
+        Add-ScriptFileContentToModuleBuilder -Builder $sb -ProjectInfo $data -File $file
     }
+
     try {
         Set-Content -Path $data.ModuleFilePSM1 -Value $sb.ToString() -Encoding 'UTF8' -ErrorAction Stop # psm1 file
     } catch {

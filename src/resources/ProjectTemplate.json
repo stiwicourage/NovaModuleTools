@@ -4,6 +4,7 @@
     "Version": "",
     "copyResourcesToModuleRoot": false,
     "BuildRecursiveFolders": false,
+    "SetSourcePath": false,
     "FailOnDuplicateFunctionNames": false,
     "Manifest": {
         "Author": "",

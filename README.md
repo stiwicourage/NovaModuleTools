@@ -85,6 +85,10 @@ ModuleTools supports these optional settings at the top level of `project.json`:
   - When `true`, ModuleTools will discover `.ps1` files recursively in `src/classes` and `src/private`.
   - `src/public` is always **top-level only** (never recursive).
   - For `Invoke-MTTest`, `BuildRecursiveFolders=false` runs only top-level `tests/*.Tests.ps1` files (the usual Pester naming convention), while `BuildRecursiveFolders=true` also includes tests in subfolders.
+- `SetSourcePath` (default: `false`)
+  - When `true`, ModuleTools writes exactly one `# Source: <relative path>` line before each concatenated source file in the generated `dist/<Project>/<Project>.psm1`.
+  - Relative paths are project-relative and normalized to `/`, for example `# Source: src/private/core/security/SetTls12SecurityProtocol.ps1`.
+  - This is useful when parser errors or runtime exceptions point at line numbers in the generated `.psm1` and you need to map them back to files under `src`.
 - `FailOnDuplicateFunctionNames` (default: `false`, recommended: `true`)
   - When `true`, ModuleTools will parse the generated `dist/<Project>/<Project>.psm1` and fail the build if duplicate **top-level** function names exist.
 
@@ -93,7 +97,22 @@ Example:
 ```json
 {
   "BuildRecursiveFolders": false,
+  "SetSourcePath": false,
   "FailOnDuplicateFunctionNames": true
+}
+```
+
+When `SetSourcePath` is enabled, the generated `.psm1` contains one marker line before each source block:
+
+```powershell
+# Source: src/classes/AgentListing.ps1
+class AgentListing {
+    # ...
+}
+
+# Source: src/private/core/security/SetTls12SecurityProtocol.ps1
+function Set-Tls12SecurityProtocol {
+    # ...
 }
 ```
 
@@ -180,6 +199,8 @@ New-MTModule ~/Work
 ### Invoke-MTBuild
 
 `ModuleTools` is designed so that you don't need any additional tools like `make` or `psake` to run the build commands. There's no need to maintain complex `build.ps1` files or sample `.psd1` files. Simply follow the structure outlined above, and you can run `Invoke-MTBuild` to build the module. The output will be saved in the `dist` folder, ready for distribution.
+
+If `SetSourcePath` is enabled in `project.json`, `Invoke-MTBuild` also annotates the generated `.psm1` with `# Source: src/...` comments before each concatenated file block to make debugging easier.
 
 ```powershell
 # From the Module root 

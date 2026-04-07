@@ -72,6 +72,82 @@ Describe 'Invoke-MTBuild options' {
         $aOffset | Should -BeLessThan $bOffset
     }
 
+
+    It 'missing SetSourcePath defaults to false and emits no source markers' {
+        $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'SetSourceDefault'
+        Write-TestProjectJson -ProjectRoot $root -Options @{ ProjectName = 'SetSourceDefault'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false }
+
+        [System.IO.File]::WriteAllText((Join-Path $root 'src/public/PublicTop.ps1'), 'function Invoke-PublicTop { }')
+
+        Push-Location -LiteralPath $root
+        try {
+            (Get-MTProjectInfo).SetSourcePath | Should -BeFalse
+        }
+        finally {
+            Pop-Location
+        }
+
+        $content = Get-BuiltModuleContent -ProjectRoot $root
+        $content | Should -Not -Match '(?m)^# Source: '
+    }
+
+    It 'SetSourcePath=false preserves current concatenation output exactly' {
+        $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'SetSourceOff'
+        Write-TestProjectJson -ProjectRoot $root -Options @{ ProjectName = 'SetSourceOff'; BuildRecursiveFolders = $false; SetSourcePath = $false; FailOnDuplicateFunctionNames = $false }
+
+        [System.IO.File]::WriteAllText((Join-Path $root 'src/classes/Strict.ps1'), 'Set-StrictMode -Version Latest')
+        [System.IO.File]::WriteAllText((Join-Path $root 'src/public/PublicTop.ps1'), 'function Invoke-PublicTop { "public" }')
+        [System.IO.File]::WriteAllText((Join-Path $root 'src/private/PrivateTop.ps1'), 'function Invoke-PrivateTop { "private" }')
+
+        $newLine = [Environment]::NewLine
+        $expected = @(
+            'Set-StrictMode -Version Latest',
+            'function Invoke-PublicTop { "public" }',
+            'function Invoke-PrivateTop { "private" }'
+        ) -join ($newLine + $newLine)
+
+        $content = Get-BuiltModuleContent -ProjectRoot $root
+        $content | Should -Be ($expected + $newLine + $newLine + $newLine)
+    }
+
+    It 'SetSourcePath=true writes one normalized relative source marker before each file and keeps the module importable' {
+        $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'SetSourceOn'
+        Write-TestProjectJson -ProjectRoot $root -Options @{ ProjectName = 'SetSourceOn'; BuildRecursiveFolders = $true; SetSourcePath = $true; FailOnDuplicateFunctionNames = $false }
+
+        [System.IO.File]::WriteAllText((Join-Path $root 'src/classes/nested/Thing.ps1'), 'class NestedThing { [string]$Name }')
+        [System.IO.File]::WriteAllText((Join-Path $root 'src/public/PublicTop.ps1'), 'function Invoke-PublicTop { "public" }')
+        [System.IO.File]::WriteAllText((Join-Path $root 'src/private/a/PrivateA.ps1'), 'function Invoke-PrivateA { "private" }')
+
+        $psm1 = Invoke-TestProjectBuild -ProjectRoot $root
+        $content = [System.IO.File]::ReadAllText($psm1)
+        $newLine = [Environment]::NewLine
+
+        ([regex]::Matches($content, '(?m)^# Source: .+$')).Count | Should -Be 3
+        $content | Should -Not -Match '\\'
+
+        $classBlock = "# Source: src/classes/nested/Thing.ps1${newLine}class NestedThing { [string]`$Name }"
+        $publicBlock = "# Source: src/public/PublicTop.ps1${newLine}function Invoke-PublicTop { `"public`" }"
+        $privateBlock = "# Source: src/private/a/PrivateA.ps1${newLine}function Invoke-PrivateA { `"private`" }"
+
+        $content.Contains($classBlock) | Should -BeTrue
+        $content.Contains($publicBlock) | Should -BeTrue
+        $content.Contains($privateBlock) | Should -BeTrue
+
+        $classIndex = $content.IndexOf('# Source: src/classes/nested/Thing.ps1')
+        $publicIndex = $content.IndexOf('# Source: src/public/PublicTop.ps1')
+        $privateIndex = $content.IndexOf('# Source: src/private/a/PrivateA.ps1')
+
+        $classIndex | Should -BeGreaterThan -1
+        $publicIndex | Should -BeGreaterThan -1
+        $privateIndex | Should -BeGreaterThan -1
+        $classIndex | Should -BeLessThan $publicIndex
+        $publicIndex | Should -BeLessThan $privateIndex
+
+        Remove-Module SetSourceOn -ErrorAction SilentlyContinue
+        { Import-Module (Split-Path -Parent $psm1) -Force -ErrorAction Stop } | Should -Not -Throw
+        Get-Command Invoke-PublicTop -Module SetSourceOn | Should -Not -BeNullOrEmpty
+        Remove-Module SetSourceOn -ErrorAction SilentlyContinue
+    }
     Context 'Invoke-MTTest discovery for BuildRecursiveFolders=<BuildRecursiveFolders>' -ForEach @(
         @{ Name = 'TestsTopOnly'; BuildRecursiveFolders = $false; ExpectedNestedMarker = $false }
         @{ Name = 'TestsRecursive'; BuildRecursiveFolders = $true; ExpectedNestedMarker = $true }
