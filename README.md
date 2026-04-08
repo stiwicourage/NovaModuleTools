@@ -18,7 +18,7 @@ Whether you're creating simple or robust modules, ModuleTools streamlines the pr
 The structure of the ModuleTools module is meticulously designed according to PowerShell best practices for module development. While some design decisions may seem unconventional, they are made to ensure that ModuleTools and the process of building modules remain straightforward and easy to manage.
 
 > [!IMPORTANT]
-> Checkout this [Blog article](https://blog.belibug.com/post/ps-modulebuild) explaining core concepts of ModuleTools.
+> Check out this [blog article](https://blog.belibug.com/post/ps-modulebuild) explaining the core concepts of ModuleTools.
 
 ## ⚙️ Install
 
@@ -26,7 +26,7 @@ The structure of the ModuleTools module is meticulously designed according to Po
 Install-Module -Name ModuleTools
 ```
 
-> Note: ModuleTolls is still in early development phase and lot of changes are expected. Please read through [ChangeLog](/CHANGELOG.md) for all updates.
+> Note: ModuleTools is still in an early development phase and lots of changes are expected. Please read through the [changelog](/CHANGELOG.md) for all updates.
 
 ## 🧵 Design
 
@@ -34,7 +34,7 @@ To ensure this module works correctly, you need to maintain the folder structure
 
 ## 📂 Folder Structure
 
-All the Module files should be in inside `src` folder
+All module files should be inside the `src` folder.
 
 ```
  .
@@ -52,7 +52,7 @@ All the Module files should be in inside `src` folder
 
 ### Dist Folder
 
-Generated module is stored in dist folder, you can easily import it or publish it to PowerShell repository. 
+The generated module is stored in the `dist` folder. You can easily import it or publish it to a PowerShell repository.
 
 ```
  dist
@@ -63,7 +63,7 @@ Generated module is stored in dist folder, you can easily import it or publish i
 
 ### Docs Folder
 
-Store `Microsoft.PowerShell.PlatyPs` generated markdown files in `docs` folder. If `docs` folder exists and contain valid markdown files, Build will generate  MAML help file in the built module. 
+Store `Microsoft.PowerShell.PlatyPS` generated Markdown files in the `docs` folder. If the `docs` folder exists and contains valid Markdown files, the build will generate a MAML help file in the built module.
 
 ```
  docs
@@ -77,13 +77,53 @@ The `project.json` file contains all the important details about your module and
 
 Run `New-MTModule` to generate the scaffolding; this will also create the `project.json` file.
 
+#### Build settings (optional)
+
+ModuleTools supports these optional settings at the top level of `project.json`:
+
+- `BuildRecursiveFolders` (default: `false`)
+  - When `true`, ModuleTools will discover `.ps1` files recursively in `src/classes` and `src/private`.
+  - `src/public` is always **top-level only** (never recursive).
+  - For `Invoke-MTTest`, `BuildRecursiveFolders=false` runs only top-level `tests/*.Tests.ps1` files (the usual Pester naming convention), while `BuildRecursiveFolders=true` also includes tests in subfolders.
+- `FailOnDuplicateFunctionNames` (default: `false`, recommended: `true`)
+  - When `true`, ModuleTools will parse the generated `dist/<Project>/<Project>.psm1` and fail the build if duplicate **top-level** function names exist.
+
+Example:
+
+```json
+{
+  "BuildRecursiveFolders": false,
+  "FailOnDuplicateFunctionNames": true
+}
+```
+
 ### Src Folder
 
 - Place all your functions in the `private` and `public` folders within the `src` directory.
 - All functions in the `public` folder are exported during the module build.
 - All functions in the `private` folder are accessible internally within the module but are not exposed outside the module.
-- All `ps1` files in `classes` folder contains classes and enums, that are processed and placed in topmost of generated `psm1` files
-- Contents of the `src/resources` folder will be handled based on setting `copyResourcesToModuleRoot`
+- `src/classes` should contain classes and enums. These files are placed at the top of the generated `psm1`.
+- `src/resources` content is handled based on `copyResourcesToModuleRoot`.
+
+#### Deterministic processing order
+
+To ensure builds are deterministic across platforms, files are processed in this order:
+
+1. `src/classes`
+2. `src/public`
+3. `src/private`
+
+Within each folder group, files are processed in a deterministic order by relative path (case-insensitive).
+
+#### Recursive folder support
+
+By default, ModuleTools loads only top-level `.ps1` files in each folder.
+
+If `BuildRecursiveFolders` is set to `true`:
+
+- `src/classes` and `src/private` are processed recursively.
+- `src/public` remains top-level only.
+- `Invoke-MTTest` also includes test files in nested folders under `tests`.
 
 #### Resources Folder
 
@@ -96,6 +136,7 @@ The `resources` folder within the `src` directory is intended for including any 
 - **Documentation files**: Include any supplementary documentation that supports the usage or development of the module.
 - **Data files**: Store any data files that are used by your module, such as CSV or JSON files.
 - **Subfolder**: Include any additional folders and their content to be included with the module, such as dependant Modules, APIs, DLLs, etc... organized by a subfolder.
+
 
 
 By default, resource files from `src/resources` go into `dist/resources`. To place them directly in dist (avoiding the resources subfolder), set `copyResourcesToModuleRoot` to `true`. This provides greater control in certain deployment scenarios where resources files are preferred in module root directory.
@@ -121,7 +162,7 @@ dist
 
 ### Tests Folder
 
-If you want to run `pester` tests keep them in `tests` folder, if not you can ignore this function.
+If you want to run Pester tests, keep them in the `tests` folder. Otherwise, you can ignore this feature.
 
 ## 💻 Commands
 
@@ -150,13 +191,13 @@ Invoke-MTBuild -Verbose
 
 ### Get-MTProjectInfo
 
-This functions give you complete info about the project which can be used in pester tests or for general troubleshooting.
+This function provides complete info about the project, which can be used in Pester tests or for general troubleshooting.
 
 ### Invoke-MTTest
 
-All the pester configurations are stored in `project.json`, simply run `Invoke-MTTest` command from project root, it will run all the tests inside `tests` folder
+All Pester configuration is stored in `project.json`. Run `Invoke-MTTest` from the project root; with `BuildRecursiveFolders=false` it runs only top-level `tests/*.Tests.ps1` files, matching Pester's normal test-file convention, and with `BuildRecursiveFolders=true` it also runs tests in nested folders under `tests`.
 
-- To skip a test insdie test directory use `-skip` in describe/it/context block within Pester test.
+- To skip a test inside the test directory, use `-skip` in a `Describe`/`It`/`Context` block within the Pester test.
 - Use `Get-MTProjectInfo` command inside pester to get great amount of info about project and files
 
 ### Update-MTModuleVersion
@@ -220,7 +261,8 @@ jobs:
 ## 📝 Requirement
 
 - Only tested on PowerShell 7.4, ~most likely~ will not work on 5.1. Underlying module can still support older version, only the ModuleTools builder wont work on older version.
-- No depenedencies. This module doesn’t depend on any other module. Completely self contained
+- Only tested on PowerShell 7.4, so it most likely will not work on 5.1. The underlying module can still support older versions; only the ModuleTools builder won't work on older versions.
+- No dependencies. This module doesn’t depend on any other module. Completely self-contained.
 
 ## ✅ ToDo
 
