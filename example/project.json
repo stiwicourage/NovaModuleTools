@@ -2,6 +2,10 @@
   "ProjectName": "ModuleName",
   "Description": "Description of Module",
   "Version": "0.0.1",
+  "copyResourcesToModuleRoot": false,
+  "BuildRecursiveFolders": false,
+  "SetSourcePath": false,
+  "FailOnDuplicateFunctionNames": false,
   "Manifest": {
     "Author": "Manjunath Beli",
     "PowerShellHostVersion": "7.4",

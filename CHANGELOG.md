@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Opt-in project settings:
   - `BuildRecursiveFolders` (default `false`): recursive discovery for `src/classes`, `src/private` and `tests`.
+  - `SetSourcePath` (default `false`): include `# Source: <relative path>` before each concatenated source file in generated `dist/<Project>/<Project>.psm1`.
   - `FailOnDuplicateFunctionNames` (default `false`): fail build when duplicate top-level function names exist in generated `dist/<Project>/<Project>.psm1`.
 
 ### Changed

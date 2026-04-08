@@ -19,6 +19,10 @@
             "type": "boolean",
             "description": "Opt-in recursive discovery for src/classes and src/private. src/public stays top-level only."
         },
+        "SetSourcePath": {
+            "type": "boolean",
+            "description": "Opt-in source markers: emit '# Source: <relative path>' before each concatenated source file in the generated dist/<Project>/<Project>.psm1."
+        },
         "FailOnDuplicateFunctionNames": {
             "type": "boolean",
             "description": "Opt-in validation: fail build when duplicate top-level function names exist in the generated dist/<Project>/<Project>.psm1."
