@@ -22,11 +22,15 @@ jobs:
 
       - name: 📦 Install required modules from PSGallery
         run: |
+          Install-PSResource -Repository PSGallery -Name ModuleTools -TrustRepository
           Install-PSResource -Repository PSGallery -Name Microsoft.PowerShell.PlatyPS -TrustRepository
           Install-PSResource -Repository PSGallery -Name Pester -TrustRepository
 
-      - name: 🏗️ Build module and run tests
-        run: ./run.ps1
+      - name: 🏗️ Build Module
+        run: Invoke-MTBuild -Verbose
+
+      - name: 🧪 Run Pester Tests
+        run: Invoke-MTTest
 
       - name: 📝 Generate Report
         continue-on-error: true
