@@ -35,8 +35,22 @@ jobs:
       - name: 📝 Generate Report
         continue-on-error: true
         run: |
-          # Get list of files in the dist directory directory
-          $Report = New-MDHeader -Text "Output Files 📁" -Level 2
-          $Report += Get-ChildItem -Path ./dist -Recurse | Select-Object Name, Directory | New-MDTable 
-          echo "$Report" >> $env:GITHUB_STEP_SUMMARY
-          echo "$Report"
+          $reportLines = @('## Output Files 📁', '')
+          $files = Get-ChildItem -Path ./dist -Recurse -ErrorAction SilentlyContinue | Sort-Object FullName
+
+          if ($files) {
+            $reportLines += '| Name | Directory |'
+            $reportLines += '| --- | --- |'
+            $reportLines += $files | ForEach-Object {
+              $name = ('' + $_.Name).Replace('|', '\|')
+              $directory = ('' + $_.Directory).Replace('|', '\|')
+              "| $name | $directory |"
+            }
+          }
+          else {
+            $reportLines += 'No files found in `./dist`.'
+          }
+
+          $report = $reportLines -join [Environment]::NewLine
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $report
+          Write-Output $report
