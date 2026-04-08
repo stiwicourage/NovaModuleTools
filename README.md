@@ -228,13 +228,15 @@ A simple command to update the module version by modifying the values in `projec
 > [!TIP]
 > This repository uses Github actions to run tests and publish to PowerShell Gallery, use it as reference.
 
-This is not required for local module builds, if you are running github actions, use the following yaml workflow template to test, build and publish module which helps to automate the process of:
+This is not required for local module builds. In this repository, GitHub Actions uses `semantic-release` on `main` to determine the next version from conventional commits, update `project.json` and `CHANGELOG.md`, create the `Version_<semver>` tag, create the GitHub release, and then publish the built module to PowerShell Gallery.
+
+If you are running GitHub Actions, use the following yaml workflow template to test, build and publish a module, which helps to automate the process of:
 
 1. Checking out the repository code.
-1. Installing the `NovaModuleTools` module from the PowerShell Gallery.
+1. Installing the `ModuleTools` bootstrap module from the PowerShell Gallery.
 1. Building the module.
 1. Running Pester tests.
-1. Publishing the module to a specified repository.
+1. Running semantic-release to choose the version, update release files, tag, and publish.
 
 This allows for seamless and automated management of your PowerShell module, ensuring consistency and reliability in your build, test, and release processes.
 
@@ -246,15 +248,33 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Install NovaModuleTools module form PSGallery
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install npm dependencies
         run: |
-          Install-PSResource -Repository PSGallery -Name NovaModuleTools -TrustRepository
+          npm ci
+        shell: pwsh
+
+      - name: Install ModuleTools bootstrap module form PSGallery
+        run: |
+          Install-PSResource -Repository PSGallery -Name ModuleTools -TrustRepository
+          Install-PSResource -Repository PSGallery -Name Microsoft.PowerShell.PlatyPS -TrustRepository
+          Install-PSResource -Repository PSGallery -Name Pester -TrustRepository
         shell: pwsh
 
       - name: Build Module
@@ -265,11 +285,11 @@ jobs:
         run: Invoke-MTTest
         shell: pwsh
 
-      - name: Publish Package to Github
-        run: |
-          Publish-PSResource -Path ./dist/YourModule -Repository SomeRepository -ApiKey $Env:ApiKey
+      - name: Run semantic-release
         env:
-          ApiKey: ${{ secrets.API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
+        run: npx semantic-release
         shell: pwsh
 ```
 

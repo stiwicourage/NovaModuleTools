@@ -1,5 +1,12 @@
 BeforeDiscovery {
-    $files = Get-ChildItem -Path .\src -Filter '*.ps1' -Recurse
+    $paths = @('.\src')
+    if (Test-Path '.\scripts') {
+        $paths += '.\scripts'
+    }
+
+    $files = foreach ($path in $paths) {
+        Get-ChildItem -Path $path -Filter '*.ps1' -Recurse
+    }
 }
 BeforeAll {
     $ScriptAnalyzerSettings = @{

@@ -3,3 +3,4 @@ run.ps1
 dist/
 justfile
 testResults.xml
+node_modules/
