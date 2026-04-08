@@ -38,7 +38,6 @@ function Write-TestProjectJson {
         Description = 'Test project'
         Version = '0.0.1'
         copyResourcesToModuleRoot = $false
-        BuildRecursiveFolders = [bool]$Options.BuildRecursiveFolders
         Manifest = [ordered]@{
             Author = 'Test'
             PowerShellHostVersion = '7.4'
@@ -57,11 +56,17 @@ function Write-TestProjectJson {
         }
     }
 
+    if ($Options.ContainsKey('BuildRecursiveFolders')) {
+        $project.BuildRecursiveFolders = [bool]$Options.BuildRecursiveFolders
+    }
+
     if ($Options.ContainsKey('SetSourcePath')) {
         $project.SetSourcePath = [bool]$Options.SetSourcePath
     }
 
-    $project.FailOnDuplicateFunctionNames = [bool]$Options.FailOnDuplicateFunctionNames
+    if ($Options.ContainsKey('FailOnDuplicateFunctionNames')) {
+        $project.FailOnDuplicateFunctionNames = [bool]$Options.FailOnDuplicateFunctionNames
+    }
 
     $json = $project | ConvertTo-Json -Depth 10
     Set-Content -LiteralPath (Join-Path $ProjectRoot 'project.json') -Value $json -Encoding utf8
@@ -129,6 +134,95 @@ function Invoke-BuildAndParsePsm1Ast {
     }
 
     return $ast
+}
+
+function Get-TestProjectInfoValue {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot,
+        [Parameter(Mandatory)][string]$PropertyName
+    )
+
+    Push-Location -LiteralPath $ProjectRoot
+    try {
+        return (Get-MTProjectInfo).$PropertyName
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+function New-TestProjectWithNestedSourceFiles {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$TestDriveRoot,
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][hashtable]$Options,
+        [switch]$IncludeTopLevelFiles
+    )
+
+    $root = New-TestProjectRoot -TestDriveRoot $TestDriveRoot -Name $Name
+    Write-TestProjectJson -ProjectRoot $root -Options $Options
+
+    Set-Content -LiteralPath (Join-Path $root 'src/classes/nested/Thing.ps1') -Value 'class NestedThing { [string]$Name }' -Encoding utf8
+    Set-Content -LiteralPath (Join-Path $root 'src/private/a/PrivateA.ps1') -Value 'function Invoke-NestedPrivateA { }' -Encoding utf8
+    Set-Content -LiteralPath (Join-Path $root 'src/public/nested/PublicNested.ps1') -Value 'function Invoke-NestedPublic { }' -Encoding utf8
+
+    if ($IncludeTopLevelFiles) {
+        Set-Content -LiteralPath (Join-Path $root 'src/public/PublicTop.ps1') -Value 'function Invoke-PublicTop { }' -Encoding utf8
+        Set-Content -LiteralPath (Join-Path $root 'src/private/PrivateTop.ps1') -Value 'function Invoke-PrivateTop { }' -Encoding utf8
+    }
+
+    return $root
+}
+
+function Get-NestedSourceBuildSummary {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot
+    )
+
+    $ast = Invoke-BuildAndParsePsm1Ast -ProjectRoot $ProjectRoot
+    $functionAsts = @(Get-TopLevelFunctionAstFromAst -Ast $ast)
+
+    return [pscustomobject]@{
+        Ast = $ast
+        TypeNames = @($ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.TypeDefinitionAst] }, $true) | ForEach-Object Name)
+        FunctionAsts = $functionAsts
+        FunctionNames = @($functionAsts | ForEach-Object Name)
+    }
+}
+
+function New-TestProjectWithDuplicateFunctions {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$TestDriveRoot,
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][hashtable]$Options
+    )
+
+    $root = New-TestProjectRoot -TestDriveRoot $TestDriveRoot -Name $Name
+    Write-TestProjectJson -ProjectRoot $root -Options $Options
+    Set-Content -LiteralPath (Join-Path $root 'src/public/Dup.ps1') -Value 'function Invoke-Dup { }' -Encoding utf8
+    Set-Content -LiteralPath (Join-Path $root 'src/private/Dup.ps1') -Value 'function Invoke-Dup { }' -Encoding utf8
+    return $root
+}
+
+function Assert-InvokeMTBuildThrows {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot
+    )
+
+    {
+        Push-Location -LiteralPath $ProjectRoot
+        try {
+            Invoke-MTBuild
+        }
+        finally {
+            Pop-Location
+        }
+    } | Should -Throw
 }
 
 function Get-TopLevelFunctionAstFromAst {

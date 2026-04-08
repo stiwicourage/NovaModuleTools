@@ -1,9 +1,9 @@
-﻿---
+---
 document type: cmdlet
-external help file: ModuleTools-Help.xml
+external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
-Module Name: ModuleTools
+Module Name: NovaModuleTools
 ms.date: 03/19/2026
 PlatyPS schema version: 2024-05-01
 title: Get-MTProjectInfo
@@ -13,7 +13,7 @@ title: Get-MTProjectInfo
 
 ## SYNOPSIS
 
-Retrieves information about a project by reading data from a project.json file in ModuleTools project folder.
+Retrieves information about a project by reading data from a project.json file in a NovaModuleTools project folder.
 
 ## SYNTAX
 
@@ -74,4 +74,5 @@ HelpMessage: ''
 ## RELATED LINKS
 
 {{ Fill in the related links here }}
+
 

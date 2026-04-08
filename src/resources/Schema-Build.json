@@ -17,15 +17,15 @@
         },
         "BuildRecursiveFolders": {
             "type": "boolean",
-            "description": "Opt-in recursive discovery for src/classes and src/private. src/public stays top-level only."
+            "description": "Default enabled recursive discovery for src/classes, src/private and tests. src/public stays top-level only unless explicitly set to false for top-level-only discovery."
         },
         "SetSourcePath": {
             "type": "boolean",
-            "description": "Opt-in source markers: emit '# Source: <relative path>' before each concatenated source file in the generated dist/<Project>/<Project>.psm1."
+            "description": "Default enabled source markers: emit '# Source: <relative path>' before each concatenated source file in the generated dist/<Project>/<Project>.psm1."
         },
         "FailOnDuplicateFunctionNames": {
             "type": "boolean",
-            "description": "Opt-in validation: fail build when duplicate top-level function names exist in the generated dist/<Project>/<Project>.psm1."
+            "description": "Default enabled validation: fail build when duplicate top-level function names exist in the generated dist/<Project>/<Project>.psm1."
         },
         "Manifest": {
             "type": "object",

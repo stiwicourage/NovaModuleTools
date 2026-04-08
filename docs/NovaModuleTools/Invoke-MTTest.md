@@ -1,9 +1,9 @@
 ---
 document type: cmdlet
-external help file: ModuleTools-Help.xml
+external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
-Module Name: ModuleTools
+Module Name: NovaModuleTools
 ms.date: 03/19/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-MTTest
@@ -30,7 +30,7 @@ This cmdlet has the following aliases,
 
 ## DESCRIPTION
 
-Run Pester tests using the specified configuration and settings as defined in project.json. When `BuildRecursiveFolders` is `false`, only top-level `tests/*.Tests.ps1` files are run, following Pester's normal test-file convention. When `BuildRecursiveFolders` is `true`, test files in nested folders under `tests` are also discovered and run.
+Run Pester tests using the specified configuration and settings as defined in project.json. With the default `BuildRecursiveFolders=true`, test files in nested folders under `tests` are discovered and run. Set `BuildRecursiveFolders=false` to limit discovery to top-level `tests/*.Tests.ps1` files, following Pester's normal test-file convention.
 
 ## EXAMPLES
 
@@ -109,4 +109,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## RELATED LINKS
 
 {{ Fill in the related links here }}
+
+
 

@@ -3,9 +3,9 @@
     "Description": "",
     "Version": "",
     "copyResourcesToModuleRoot": false,
-    "BuildRecursiveFolders": false,
-    "SetSourcePath": false,
-    "FailOnDuplicateFunctionNames": false,
+    "BuildRecursiveFolders": true,
+    "SetSourcePath": true,
+    "FailOnDuplicateFunctionNames": true,
     "Manifest": {
         "Author": "",
         "PowerShellHostVersion": "",

@@ -5,16 +5,18 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Opt-in project settings:
-  - `BuildRecursiveFolders` (default `false`): recursive discovery for `src/classes`, `src/private` and `tests`.
-  - `SetSourcePath` (default `false`): include `# Source: <relative path>` before each concatenated source file in generated `dist/<Project>/<Project>.psm1`.
-  - `FailOnDuplicateFunctionNames` (default `false`): fail build when duplicate top-level function names exist in generated `dist/<Project>/<Project>.psm1`.
+- Project settings:
+  - `BuildRecursiveFolders` (default `true`): recursive discovery for `src/classes`, `src/private` and `tests`.
+  - `SetSourcePath` (default `true`): include `# Source: <relative path>` before each concatenated source file in generated `dist/<Project>/<Project>.psm1`.
+  - `FailOnDuplicateFunctionNames` (default `true`): fail build when duplicate top-level function names exist in generated `dist/<Project>/<Project>.psm1`.
+  - Missing values for these settings are now treated as `true`.
+  - The rebranded `NovaModuleTools` module now uses its own module `GUID`.
 
 ### Changed
 - Build determinism: files are processed in a deterministic order by relative path (case-insensitive), and load order is always `classes → public → private`.
 
 ### Documentation
-- README: document opt-in flags, deterministic load order, and recommended duplicate-function validation.
+- README: document enterprise defaults, deterministic load order, and duplicate-function validation.
 
 ## [1.3.0] - 2025-09-23
 

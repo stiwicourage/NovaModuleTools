@@ -3,77 +3,76 @@ BeforeAll {
 
     $here = Split-Path -Parent $PSCommandPath
     $repoRoot = Split-Path -Parent $here
+    $moduleName = (Get-Content -LiteralPath (Join-Path $repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
 
-    $distModuleDir = Join-Path $repoRoot 'dist/ModuleTools'
+    $distModuleDir = Join-Path $repoRoot "dist/$moduleName"
     if (-not (Test-Path -LiteralPath $distModuleDir)) {
-        throw "Expected built ModuleTools module at: $distModuleDir. Run Invoke-MTBuild in the repo root first."
+        throw "Expected built $moduleName module at: $distModuleDir. Run Invoke-MTBuild in the repo root first."
     }
 
-    Remove-Module ModuleTools -ErrorAction SilentlyContinue
+    Remove-Module $moduleName -ErrorAction SilentlyContinue
     Import-Module $distModuleDir -Force
 }
 
 Describe 'Invoke-MTBuild options' {
+    It 'project template and example project use enterprise defaults' {
+        $template = Get-Content -LiteralPath (Join-Path $repoRoot 'src/resources/ProjectTemplate.json') -Raw | ConvertFrom-Json
+        $example = Get-Content -LiteralPath (Join-Path $repoRoot 'example/project.json') -Raw | ConvertFrom-Json
+
+        foreach ($project in @($template, $example)) {
+            $project.BuildRecursiveFolders | Should -BeTrue
+            $project.SetSourcePath | Should -BeTrue
+            $project.FailOnDuplicateFunctionNames | Should -BeTrue
+        }
+    }
+
     It 'BuildRecursiveFolders=false excludes nested classes/private and nested public' {
-        $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'NoRecurse'
-        Write-TestProjectJson -ProjectRoot $root -Options @{ ProjectName = 'NoRecurse'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false }
+        $root = New-TestProjectWithNestedSourceFiles -TestDriveRoot $TestDrive -Name 'NoRecurse' -Options @{ ProjectName = 'NoRecurse'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false }
+        $summary = Get-NestedSourceBuildSummary -ProjectRoot $root
 
-        Set-Content -LiteralPath (Join-Path $root 'src/classes/nested/Thing.ps1') -Value 'class NestedThing { [string]$Name }' -Encoding utf8
-        Set-Content -LiteralPath (Join-Path $root 'src/private/a/PrivateA.ps1') -Value 'function Invoke-NestedPrivateA { }' -Encoding utf8
-        Set-Content -LiteralPath (Join-Path $root 'src/public/nested/PublicNested.ps1') -Value 'function Invoke-NestedPublic { }' -Encoding utf8
-
-        $ast = Invoke-BuildAndParsePsm1Ast -ProjectRoot $root
-
-        $typeNames = @($ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.TypeDefinitionAst] }, $true) | ForEach-Object Name)
-        $typeNames | Should -Not -Contain 'NestedThing'
-
-        $fnNames = @(Get-TopLevelFunctionAstFromAst -Ast $ast | ForEach-Object Name)
-        $fnNames | Should -Not -Contain 'Invoke-NestedPrivateA'
-        $fnNames | Should -Not -Contain 'Invoke-NestedPublic'
+        $summary.TypeNames | Should -Not -Contain 'NestedThing'
+        $summary.FunctionNames | Should -Not -Contain 'Invoke-NestedPrivateA'
+        $summary.FunctionNames | Should -Not -Contain 'Invoke-NestedPublic'
     }
 
     It 'BuildRecursiveFolders=true includes nested classes/private but never nested public' {
-        $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'Recurse'
-        Write-TestProjectJson -ProjectRoot $root -Options @{ ProjectName = 'Recurse'; BuildRecursiveFolders = $true; FailOnDuplicateFunctionNames = $false }
+        $root = New-TestProjectWithNestedSourceFiles -TestDriveRoot $TestDrive -Name 'Recurse' -Options @{ ProjectName = 'Recurse'; BuildRecursiveFolders = $true; FailOnDuplicateFunctionNames = $false } -IncludeTopLevelFiles
+        $summary = Get-NestedSourceBuildSummary -ProjectRoot $root
 
-        Set-Content -LiteralPath (Join-Path $root 'src/classes/nested/Thing.ps1') -Value 'class NestedThing { [string]$Name }' -Encoding utf8
-        Set-Content -LiteralPath (Join-Path $root 'src/private/a/PrivateA.ps1') -Value 'function Invoke-NestedPrivateA { }' -Encoding utf8
-        Set-Content -LiteralPath (Join-Path $root 'src/public/nested/PublicNested.ps1') -Value 'function Invoke-NestedPublic { }' -Encoding utf8
+        $summary.TypeNames | Should -Contain 'NestedThing'
+        $summary.FunctionNames | Should -Contain 'Invoke-NestedPrivateA'
+        $summary.FunctionNames | Should -Contain 'Invoke-PublicTop'
+        $summary.FunctionNames | Should -Contain 'Invoke-PrivateTop'
+        $summary.FunctionNames | Should -Not -Contain 'Invoke-NestedPublic'
 
-        Set-Content -LiteralPath (Join-Path $root 'src/public/PublicTop.ps1') -Value 'function Invoke-PublicTop { }' -Encoding utf8
-        Set-Content -LiteralPath (Join-Path $root 'src/private/PrivateTop.ps1') -Value 'function Invoke-PrivateTop { }' -Encoding utf8
-
-        $ast = Invoke-BuildAndParsePsm1Ast -ProjectRoot $root
-
-        $typeNames = @($ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.TypeDefinitionAst] }, $true) | ForEach-Object Name)
-        $typeNames | Should -Contain 'NestedThing'
-
-        $fn = @(Get-TopLevelFunctionAstFromAst -Ast $ast)
-        $fnNames = @($fn | ForEach-Object Name)
-
-        $fnNames | Should -Contain 'Invoke-NestedPrivateA'
-        $fnNames | Should -Contain 'Invoke-PublicTop'
-        $fnNames | Should -Contain 'Invoke-PrivateTop'
-        $fnNames | Should -Not -Contain 'Invoke-NestedPublic'
-
-        $classOffset = ($ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.TypeDefinitionAst] -and $n.Name -eq 'NestedThing' }, $true) | Select-Object -First 1).Extent.StartOffset
-        $publicOffset = ($fn | Where-Object Name -eq 'Invoke-PublicTop' | Select-Object -First 1).Extent.StartOffset
-        $privateOffset = ($fn | Where-Object Name -eq 'Invoke-PrivateTop' | Select-Object -First 1).Extent.StartOffset
+        $classOffset = ($summary.Ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.TypeDefinitionAst] -and $n.Name -eq 'NestedThing' }, $true) | Select-Object -First 1).Extent.StartOffset
+        $publicOffset = ($summary.FunctionAsts | Where-Object Name -eq 'Invoke-PublicTop' | Select-Object -First 1).Extent.StartOffset
+        $privateOffset = ($summary.FunctionAsts | Where-Object Name -eq 'Invoke-PrivateTop' | Select-Object -First 1).Extent.StartOffset
 
         $classOffset | Should -BeLessThan $publicOffset
         $publicOffset | Should -BeLessThan $privateOffset
 
         # Deterministic sort within private: a/* comes before b/*
         Set-Content -LiteralPath (Join-Path $root 'src/private/b/PrivateB.ps1') -Value 'function Invoke-NestedPrivateB { }' -Encoding utf8
-        $ast2 = Invoke-BuildAndParsePsm1Ast -ProjectRoot $root
-        $fn2 = @(Get-TopLevelFunctionAstFromAst -Ast $ast2)
-        $aOffset = ($fn2 | Where-Object Name -eq 'Invoke-NestedPrivateA' | Select-Object -First 1).Extent.StartOffset
-        $bOffset = ($fn2 | Where-Object Name -eq 'Invoke-NestedPrivateB' | Select-Object -First 1).Extent.StartOffset
+        $summary2 = Get-NestedSourceBuildSummary -ProjectRoot $root
+        $aOffset = ($summary2.FunctionAsts | Where-Object Name -eq 'Invoke-NestedPrivateA' | Select-Object -First 1).Extent.StartOffset
+        $bOffset = ($summary2.FunctionAsts | Where-Object Name -eq 'Invoke-NestedPrivateB' | Select-Object -First 1).Extent.StartOffset
         $aOffset | Should -BeLessThan $bOffset
     }
 
+    It 'missing BuildRecursiveFolders defaults to true for classes/private but never nested public' {
+        $root = New-TestProjectWithNestedSourceFiles -TestDriveRoot $TestDrive -Name 'RecurseDefault' -Options @{ ProjectName = 'RecurseDefault'; SetSourcePath = $false; FailOnDuplicateFunctionNames = $false }
 
-    It 'missing SetSourcePath defaults to false and emits no source markers' {
+        (Get-TestProjectInfoValue -ProjectRoot $root -PropertyName 'BuildRecursiveFolders') | Should -BeTrue
+
+        $summary = Get-NestedSourceBuildSummary -ProjectRoot $root
+        $summary.TypeNames | Should -Contain 'NestedThing'
+        $summary.FunctionNames | Should -Contain 'Invoke-NestedPrivateA'
+        $summary.FunctionNames | Should -Not -Contain 'Invoke-NestedPublic'
+    }
+
+
+    It 'missing SetSourcePath defaults to true and emits source markers' {
         $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'SetSourceDefault'
         Write-TestProjectJson -ProjectRoot $root -Options @{ ProjectName = 'SetSourceDefault'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false }
 
@@ -81,14 +80,14 @@ Describe 'Invoke-MTBuild options' {
 
         Push-Location -LiteralPath $root
         try {
-            (Get-MTProjectInfo).SetSourcePath | Should -BeFalse
+            (Get-MTProjectInfo).SetSourcePath | Should -BeTrue
         }
         finally {
             Pop-Location
         }
 
         $content = Get-BuiltModuleContent -ProjectRoot $root
-        $content | Should -Not -Match '(?m)^# Source: '
+        $content | Should -Match '(?m)^# Source: src/public/PublicTop.ps1$'
     }
 
     It 'SetSourcePath=false preserves current concatenation output exactly' {
@@ -162,22 +161,16 @@ Describe 'Invoke-MTBuild options' {
         }
     }
 
+    It 'missing FailOnDuplicateFunctionNames defaults to true and fails on duplicate top-level function names' {
+        $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupDefault' -Options @{ ProjectName = 'DupDefault'; BuildRecursiveFolders = $false; SetSourcePath = $false }
+
+        (Get-TestProjectInfoValue -ProjectRoot $root -PropertyName 'FailOnDuplicateFunctionNames') | Should -BeTrue
+        Assert-InvokeMTBuildThrows -ProjectRoot $root
+    }
+
     It 'FailOnDuplicateFunctionNames=true fails when built psm1 contains duplicate top-level function names' {
-        $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'DupFail'
-        Write-TestProjectJson -ProjectRoot $root -Options @{ ProjectName = 'DupFail'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $true }
-
-        Set-Content -LiteralPath (Join-Path $root 'src/public/Dup.ps1') -Value 'function Invoke-Dup { }' -Encoding utf8
-        Set-Content -LiteralPath (Join-Path $root 'src/private/Dup.ps1') -Value 'function Invoke-Dup { }' -Encoding utf8
-
-        {
-            Push-Location -LiteralPath $root
-            try {
-                Invoke-MTBuild
-            }
-            finally {
-                Pop-Location
-            }
-        } | Should -Throw
+        $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupFail' -Options @{ ProjectName = 'DupFail'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $true }
+        Assert-InvokeMTBuildThrows -ProjectRoot $root
     }
 
     It 'FailOnDuplicateFunctionNames=false allows duplicates (last wins) for backward compatibility' {

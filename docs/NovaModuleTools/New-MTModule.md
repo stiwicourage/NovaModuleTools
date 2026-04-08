@@ -1,9 +1,9 @@
 ---
 document type: cmdlet
-external help file: ModuleTools-Help.xml
+external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
-Module Name: ModuleTools
+Module Name: NovaModuleTools
 ms.date: 03/19/2026
 PlatyPS schema version: 2024-05-01
 title: New-MTModule
@@ -13,7 +13,7 @@ title: New-MTModule
 
 ## SYNOPSIS
 
-Create module scaffolding along with project.json file to easily build and manage modules in ModuleTools opinionated format
+Create module scaffolding along with project.json file to easily build and manage modules in the NovaModuleTools opinionated format.
 
 ## SYNTAX
 
@@ -30,7 +30,7 @@ This cmdlet has the following aliases,
 
 ## DESCRIPTION
 
-This command creates folder structure and project.json file easily. Use this to quikcly setup a ModuleTools compatible module. Provide all the paramters to command or enter details in the interactive prompts with sane defaults. 
+This command creates folder structure and project.json file easily. Use this to quickly set up a NovaModuleTools-compatible module. Provide all parameters to the command or enter details in the interactive prompts with sane defaults. Generated projects now start with enterprise-oriented defaults for recursive discovery, source-path markers, and duplicate-function validation.
 
 ## EXAMPLES
 
@@ -119,11 +119,13 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## NOTES
 
-The structure of the ModuleTools module is meticulously designed according to PowerShell best practices for module development.
-While some design decisions may seem unconventional, they are made to ensure that ModuleTools and the process of building modules remain straightforward and easy to manage.
+The structure of the NovaModuleTools module is meticulously designed according to PowerShell best practices for module development.
+While some design decisions may seem unconventional, they are made to ensure that NovaModuleTools and the process of building modules remain straightforward and easy to manage.
 
 
 ## RELATED LINKS
 
 {{ Fill in the related links here }}
+
+
 

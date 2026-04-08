@@ -3,24 +3,24 @@ document type: module
 Help Version: 1.0.0.0
 HelpInfoUri: ''
 Locale: en-US
-Module Guid: d1595b4a-a79f-4440-94f0-3196f4d29c41
-Module Name: ModuleTools
+Module Guid: 6b9202c8-0353-473b-b73c-afab632125a6
+Module Name: NovaModuleTools
 ms.date: 03/19/2026
 PlatyPS schema version: 2024-05-01
-title: ModuleTools Module
+title: NovaModuleTools Module
 ---
 
-# ModuleTools Module
+# NovaModuleTools Module
 
 ## Description
 
-ModuleTools is a versatile, standalone PowerShell module builder. Create anything from simple to robust modules with ease. Built for CICD and Automation.
+NovaModuleTools is a versatile, standalone PowerShell module builder. Create anything from simple to robust modules with ease. Built for CICD and Automation.
 
-## ModuleTools Cmdlets
+## NovaModuleTools Cmdlets
 
 ### [Get-MTProjectInfo](Get-MTProjectInfo.md)
 
-Retrieves information about a project by reading data from a project.json file in ModuleTools project folder.
+Retrieves information about a project by reading data from a project.json file in a NovaModuleTools project folder.
 
 ### [Invoke-MTBuild](Invoke-MTBuild.md)
 
@@ -32,7 +32,7 @@ Runs Pester tests using settings from project.json
 
 ### [New-MTModule](New-MTModule.md)
 
-Create module scaffolding along with project.json file to easily build and manage modules in ModuleTools opinionated format
+Create module scaffolding along with project.json file to easily build and manage modules in the NovaModuleTools opinionated format.
 
 ### [Publish-MTLocal](Publish-MTLocal.md)
 
@@ -41,4 +41,6 @@ Copy built module to local PSModulePath.
 ### [Update-MTModuleVersion](Update-MTModuleVersion.md)
 
 Updates the version number of a module in project.json file. Uses [semver] object type.
+
+
 

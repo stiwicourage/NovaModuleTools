@@ -1,32 +1,25 @@
-<div align="center" width="100%">
-    <h1>ModuleTools</h1>
-    <p>Fast, Versatile, standalone PowerShell module builder. Built for CICD and Automation.</p><p>
-    <a target="_blank" href="https://github.com/belibug"><img src="https://img.shields.io/badge/maintainer-BELI-orange" /></a>
-    <a target="_blank" href="https://GitHub.com/belibug/ModuleTools/graphs/contributors/"><img src="https://img.shields.io/github/contributors/belibug/ModuleTools.svg" /></a><br>
-    <a target="_blank" href="https://GitHub.com/belibug/ModuleTools/commits/"><img src="https://img.shields.io/github/last-commit/belibug/ModuleTools.svg" /></a>
-    <a target="_blank" href="https://GitHub.com/belibug/ModuleTools/issues/"><img src="https://img.shields.io/github/issues/belibug/ModuleTools.svg" /></a>
-    <a target="_blank" href="https://github.com/belibug/ModuleTools/issues?q=is%3Aissue+is%3Aclosed"><img src="https://img.shields.io/github/issues-closed/belibug/ModuleTools.svg" /></a><br>
-</div>
+# NovaModuleTools
+NovaModuleTools is an enterprise-focused evolution of ModuleTools, designed for large-scale PowerShell projects (10k+ lines of code) with a strong emphasis on structure, maintainability, and automated CI/CD pipelines.
 
 ## 💬 Description
 
-Whether you're creating simple or robust modules, ModuleTools streamlines the process, making it perfect for CI/CD and automation environments. With comprehensive features included, you can start building PowerShell modules in less than 30 seconds. Let ModuleTools handle the build logic, so you can focus on developing the core functionality of your module.
+Whether you're creating simple or robust modules, NovaModuleTools streamlines the process, making it perfect for CI/CD and automation environments. With comprehensive features included, you can start building PowerShell modules in less than 30 seconds. Let NovaModuleTools handle the build logic, so you can focus on developing the core functionality of your module.
 
-[![ModuleTools@PowerShell Gallery][BadgeIOCount]][PSGalleryLink]
+[![NovaModuleTools@PowerShell Gallery][BadgeIOCount]][PSGalleryLink]
 ![WorkFlow Status][WorkFlowStatus]
 
-The structure of the ModuleTools module is meticulously designed according to PowerShell best practices for module development. While some design decisions may seem unconventional, they are made to ensure that ModuleTools and the process of building modules remain straightforward and easy to manage.
+The structure of the NovaModuleTools module is meticulously designed according to PowerShell best practices for module development. While some design decisions may seem unconventional, they are made to ensure that NovaModuleTools and the process of building modules remain straightforward and easy to manage.
 
 > [!IMPORTANT]
-> Check out this [blog article](https://blog.belibug.com/post/ps-modulebuild) explaining the core concepts of ModuleTools.
+> Check out this [original blog article](https://blog.belibug.com/post/ps-modulebuild) from Manjunath Beli explaining the core concepts that NovaModuleTools builds on.
 
 ## ⚙️ Install
 
 ```PowerShell
-Install-Module -Name ModuleTools
+Install-Module -Name NovaModuleTools
 ```
 
-> Note: ModuleTools is still in an early development phase and lots of changes are expected. Please read through the [changelog](/CHANGELOG.md) for all updates.
+> Note: NovaModuleTools is still in an early development phase and lots of changes are expected. Please read through the [changelog](/CHANGELOG.md) for all updates.
 
 ## 🧵 Design
 
@@ -37,17 +30,17 @@ To ensure this module works correctly, you need to maintain the folder structure
 All module files should be inside the `src` folder.
 
 ```
- .
-├──  project.json
-├──  private
-│  └──  New-PrivateFunction.ps1
-├──  public
-│  └──  New-PublicFunction.ps1
-├──  resources
-│  └──  some-config.json
-└──  classes
-   └──  Person.classes.ps1
-   └──  Person.enums.ps1
+.
+├── project.json
+├── private
+│  └── New-PrivateFunction.ps1
+├── public
+│  └── New-PublicFunction.ps1
+├── resources
+│  └── some-config.json
+└── classes
+   └── Person.classes.ps1
+   └── Person.enums.ps1
 ```
 
 ### Dist Folder
@@ -55,10 +48,10 @@ All module files should be inside the `src` folder.
 The generated module is stored in the `dist` folder. You can easily import it or publish it to a PowerShell repository.
 
 ```
- dist
-└──  TestModule
-   ├──  TestModule.psd1
-   └──  TestModule.psm1
+dist
+└── TestModule
+   ├── TestModule.psd1
+   └── TestModule.psm1
 ```
 
 ### Docs Folder
@@ -66,9 +59,9 @@ The generated module is stored in the `dist` folder. You can easily import it or
 Store `Microsoft.PowerShell.PlatyPS` generated Markdown files in the `docs` folder. If the `docs` folder exists and contains valid Markdown files, the build will generate a MAML help file in the built module.
 
 ```
- docs
-├──  ModuleTools.md
-└──  Invoke-MTBuild.md
+docs
+├── NovaModuleTools.md
+└── Invoke-MTBuild.md
 ```
 
 ### Project JSON File
@@ -79,25 +72,26 @@ Run `New-MTModule` to generate the scaffolding; this will also create the `proje
 
 #### Build settings (optional)
 
-ModuleTools supports these optional settings at the top level of `project.json`:
+NovaModuleTools supports these optional settings at the top level of `project.json`.
+If a setting is omitted, NovaModuleTools now treats it as `true` by default:
 
-- `BuildRecursiveFolders` (default: `false`)
-  - When `true`, ModuleTools will discover `.ps1` files recursively in `src/classes` and `src/private`.
+- `BuildRecursiveFolders` (default: `true`)
+  - When `true`, NovaModuleTools will discover `.ps1` files recursively in `src/classes` and `src/private`.
   - `src/public` is always **top-level only** (never recursive).
   - For `Invoke-MTTest`, `BuildRecursiveFolders=false` runs only top-level `tests/*.Tests.ps1` files (the usual Pester naming convention), while `BuildRecursiveFolders=true` also includes tests in subfolders.
-- `SetSourcePath` (default: `false`)
-  - When `true`, ModuleTools writes exactly one `# Source: <relative path>` line before each concatenated source file in the generated `dist/<Project>/<Project>.psm1`.
+- `SetSourcePath` (default: `true`)
+  - When `true`, NovaModuleTools writes exactly one `# Source: <relative path>` line before each concatenated source file in the generated `dist/<Project>/<Project>.psm1`.
   - Relative paths are project-relative and normalized to `/`, for example `# Source: src/private/core/security/SetTls12SecurityProtocol.ps1`.
   - This is useful when parser errors or runtime exceptions point at line numbers in the generated `.psm1` and you need to map them back to files under `src`.
-- `FailOnDuplicateFunctionNames` (default: `false`, recommended: `true`)
-  - When `true`, ModuleTools will parse the generated `dist/<Project>/<Project>.psm1` and fail the build if duplicate **top-level** function names exist.
+- `FailOnDuplicateFunctionNames` (default: `true`)
+  - When `true`, NovaModuleTools will parse the generated `dist/<Project>/<Project>.psm1` and fail the build if duplicate **top-level** function names exist.
 
 Example:
 
 ```json
 {
-  "BuildRecursiveFolders": false,
-  "SetSourcePath": false,
+  "BuildRecursiveFolders": true,
+  "SetSourcePath": true,
   "FailOnDuplicateFunctionNames": true
 }
 ```
@@ -136,13 +130,13 @@ Within each folder group, files are processed in a deterministic order by relati
 
 #### Recursive folder support
 
-By default, ModuleTools loads only top-level `.ps1` files in each folder.
+By default, NovaModuleTools loads `src/classes` and `src/private` recursively, while `src/public` remains top-level only.
 
-If `BuildRecursiveFolders` is set to `true`:
+If `BuildRecursiveFolders` is set to `false`:
 
-- `src/classes` and `src/private` are processed recursively.
+- `src/classes`, `src/private`, and `tests` switch to top-level-only discovery.
 - `src/public` remains top-level only.
-- `Invoke-MTTest` also includes test files in nested folders under `tests`.
+- This preserves the legacy top-level-only behavior for test discovery and source loading.
 
 #### Resources Folder
 
@@ -198,7 +192,7 @@ New-MTModule ~/Work
 
 ### Invoke-MTBuild
 
-`ModuleTools` is designed so that you don't need any additional tools like `make` or `psake` to run the build commands. There's no need to maintain complex `build.ps1` files or sample `.psd1` files. Simply follow the structure outlined above, and you can run `Invoke-MTBuild` to build the module. The output will be saved in the `dist` folder, ready for distribution.
+`NovaModuleTools` is designed so that you don't need any additional tools like `make` or `psake` to run the build commands. There's no need to maintain complex `build.ps1` files or sample `.psd1` files. Simply follow the structure outlined above, and you can run `Invoke-MTBuild` to build the module. The output will be saved in the `dist` folder, ready for distribution.
 
 If `SetSourcePath` is enabled in `project.json`, `Invoke-MTBuild` also annotates the generated `.psm1` with `# Source: src/...` comments before each concatenated file block to make debugging easier.
 
@@ -216,7 +210,7 @@ This function provides complete info about the project, which can be used in Pes
 
 ### Invoke-MTTest
 
-All Pester configuration is stored in `project.json`. Run `Invoke-MTTest` from the project root; with `BuildRecursiveFolders=false` it runs only top-level `tests/*.Tests.ps1` files, matching Pester's normal test-file convention, and with `BuildRecursiveFolders=true` it also runs tests in nested folders under `tests`.
+All Pester configuration is stored in `project.json`. Run `Invoke-MTTest` from the project root. With the default `BuildRecursiveFolders=true`, it discovers test files in nested folders under `tests`; set `BuildRecursiveFolders=false` to run only top-level `tests/*.Tests.ps1` files, matching Pester's normal test-file convention.
 
 - To skip a test inside the test directory, use `-skip` in a `Describe`/`It`/`Context` block within the Pester test.
 - Use `Get-MTProjectInfo` command inside pester to get great amount of info about project and files
@@ -237,7 +231,7 @@ A simple command to update the module version by modifying the values in `projec
 This is not required for local module builds, if you are running github actions, use the following yaml workflow template to test, build and publish module which helps to automate the process of:
 
 1. Checking out the repository code.
-1. Installing the `ModuleTools` module from the PowerShell Gallery.
+1. Installing the `NovaModuleTools` module from the PowerShell Gallery.
 1. Building the module.
 1. Running Pester tests.
 1. Publishing the module to a specified repository.
@@ -258,9 +252,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install ModuleTools module form PSGallery
+      - name: Install NovaModuleTools module form PSGallery
         run: |
-          Install-PSResource -Repository PSGallery -Name ModuleTools -TrustRepository
+          Install-PSResource -Repository PSGallery -Name NovaModuleTools -TrustRepository
         shell: pwsh
 
       - name: Build Module
@@ -281,8 +275,7 @@ jobs:
 
 ## 📝 Requirement
 
-- Only tested on PowerShell 7.4, ~most likely~ will not work on 5.1. Underlying module can still support older version, only the ModuleTools builder wont work on older version.
-- Only tested on PowerShell 7.4, so it most likely will not work on 5.1. The underlying module can still support older versions; only the ModuleTools builder won't work on older versions.
+- Only tested on PowerShell 7.4, so it most likely will not work on 5.1. The underlying module can still support older versions; only the NovaModuleTools builder won't work on older versions.
 - No dependencies. This module doesn’t depend on any other module. Completely self-contained.
 
 ## ✅ ToDo
@@ -297,6 +290,6 @@ Contributions are welcome! Please fork the repository and submit a pull request 
 
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-[BadgeIOCount]: https://img.shields.io/powershellgallery/dt/ModuleTools?label=ModuleTools%40PowerShell%20Gallery
-[PSGalleryLink]: https://www.powershellgallery.com/packages/ModuleTools/
-[WorkFlowStatus]: https://img.shields.io/github/actions/workflow/status/belibug/ModuleTools/Tests.yml
+[BadgeIOCount]: https://img.shields.io/powershellgallery/dt/NovaModuleTools?label=NovaModuleTools%40PowerShell%20Gallery
+[PSGalleryLink]: https://www.powershellgallery.com/packages/NovaModuleTools/
+[WorkFlowStatus]: https://img.shields.io/github/actions/workflow/status/stiwicourage/NovaModuleTools/Tests.yml

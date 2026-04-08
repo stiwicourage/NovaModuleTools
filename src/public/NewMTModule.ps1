@@ -17,7 +17,7 @@ function New-MTModule {
             Caption = 'Module Description'
             Message = 'What does your module do? Describe in simple words'
             Prompt  = 'Description'
-            Default = 'ModuleTools Module'
+            Default = 'NovaModuleTools Module'
         }
         Version               = @{
             Caption = 'Semantic Version'
@@ -98,7 +98,7 @@ function New-MTModule {
     }
 
     ## Create ProjectJSON
-    $JsonData = Get-Content "$PSScriptRoot\resources\ProjectTemplate.json" -Raw | ConvertFrom-Json -AsHashtable
+    $JsonData = Get-Content (Get-ResourceFilePath -FileName 'ProjectTemplate.json') -Raw | ConvertFrom-Json -AsHashtable
 
     $JsonData.ProjectName = $Answer.ProjectName
     $JsonData.Description = $Answer.Description

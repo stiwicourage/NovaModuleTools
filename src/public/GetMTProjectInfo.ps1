@@ -22,7 +22,7 @@ function Get-MTProjectInfo {
 
     foreach ($boolKey in @('BuildRecursiveFolders', 'FailOnDuplicateFunctionNames', 'SetSourcePath')) {
         if (-not $Out.ContainsKey($boolKey)) {
-            $Out[$boolKey] = $false
+            $Out[$boolKey] = $true
             continue
         }
 
