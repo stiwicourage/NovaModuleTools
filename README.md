@@ -236,7 +236,7 @@ This is not required for local module builds. In this repository, GitHub Actions
 If you are running GitHub Actions, use the following yaml workflow template to test, build and publish a module, which helps to automate the process of:
 
 1. Checking out the repository code.
-1. Installing the `ModuleTools` bootstrap module from the PowerShell Gallery.
+1. Installing the `NovaModuleTools` bootstrap module from the PowerShell Gallery.
 1. Building the module.
 1. Running Pester tests.
 1. Running semantic-release to choose the version, update release files, tag, and publish.
@@ -273,9 +273,9 @@ jobs:
           npm ci
         shell: pwsh
 
-      - name: Install ModuleTools bootstrap module form PSGallery
+      - name: Install NovaModuleTools bootstrap module form PSGallery
         run: |
-          Install-PSResource -Repository PSGallery -Name ModuleTools -TrustRepository
+          Install-PSResource -Repository PSGallery -Name NovaModuleTools -TrustRepository
           Install-PSResource -Repository PSGallery -Name Microsoft.PowerShell.PlatyPS -TrustRepository
           Install-PSResource -Repository PSGallery -Name Pester -TrustRepository
         shell: pwsh
