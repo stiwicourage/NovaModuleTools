@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Documentation
+
+## [1.8.0] - 2026-04-08
+
+### Added
 - Project settings:
   - `BuildRecursiveFolders` (default `true`): recursive discovery for `src/classes`, `src/private` and `tests`.
   - `SetSourcePath` (default `true`): include `# Source: <relative path>` before each concatenated source file in generated `dist/<Project>/<Project>.psm1`.
@@ -99,3 +107,4 @@ All notable changes to this project will be documented in this file.
 ### Added
 - First release to `psgallery`
 - All basic functionality of Module is ready
+
