@@ -1,4 +1,7 @@
 # NovaModuleTools
+
+[![CodeScene Hotspot Code Health](https://codescene.io/projects/78904/status-badges/hotspot-code-health)](https://codescene.io/projects/78904) [![CodeScene Average Code Health](https://codescene.io/projects/78904/status-badges/average-code-health)](https://codescene.io/projects/78904) [![CodeScene System Mastery](https://codescene.io/projects/78904/status-badges/system-mastery)](https://codescene.io/projects/78904)
+
 NovaModuleTools is an enterprise-focused evolution of ModuleTools, designed for large-scale PowerShell projects (10k+ lines of code) with a strong emphasis on structure, maintainability, and automated CI/CD pipelines.
 
 ## 💬 Description
