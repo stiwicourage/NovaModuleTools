@@ -15,7 +15,7 @@ Write-Host "Preparing semantic release for version $Version"
 Write-ProjectJsonVersion -Path $ProjectFile -Version $Version
 Write-ChangelogFileForRelease -Path $ChangelogFile -Version $Version -Date (Get-ReleaseDateString)
 
-Import-Module ModuleTools -Force
+Import-Module NovaModuleTools -Force
 Invoke-MTBuild -Verbose
 
 
