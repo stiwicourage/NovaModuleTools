@@ -14,6 +14,16 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ### Documentation
 
+## [1.9.1] - 2026-04-10
+
+### Added
+
+### Changed
+
+### Fixed
+
+### Documentation
+
 ## [1.9.0] - 2026-04-10
 
 ### Added
