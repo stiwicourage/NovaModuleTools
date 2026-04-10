@@ -1,5 +1,5 @@
 BeforeAll {
-    . (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1')
+    Import-Module (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1') -Force -Global
 
     $here = Split-Path -Parent $PSCommandPath
     $repoRoot = Split-Path -Parent $here
@@ -15,6 +15,10 @@ BeforeAll {
 }
 
 Describe 'Invoke-MTBuild options' {
+    BeforeEach {
+        . (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1')
+    }
+
     It 'project template and example project use enterprise defaults' {
         $template = Get-Content -LiteralPath (Join-Path $repoRoot 'src/resources/ProjectTemplate.json') -Raw | ConvertFrom-Json
         $example = Get-Content -LiteralPath (Join-Path $repoRoot 'example/project.json') -Raw | ConvertFrom-Json
