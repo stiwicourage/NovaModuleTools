@@ -2,13 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+The format follows the principles from Keep a Changelog and the project aims to follow Semantic Versioning.
+
 ## [Unreleased]
 
 ### Added
 
+- Nova command model and CLI entrypoint:
+    - New root command: `nova`
+    - New public commands: `Get-NovaProjectInfo`, `Invoke-NovaBuild`, `Invoke-NovaCli`, `Invoke-NovaRelease`,
+      `New-NovaModule`, `Publish-NovaModule`, `Test-NovaBuild`, `Update-NovaModuleVersion`
+- Release orchestration helpers for command routing, version label detection from commits, and publish flow support.
+- New test coverage in `tests/NovaCommandModel.Tests.ps1` for Nova command routing and release flow behavior.
+- New GitHub workflow: Dependency Review (`.github/workflows/dependency-review.yml`).
+- New GitHub workflow: PowerShell code quality (`.github/workflows/powershell.yml`).
+
 ### Changed
 
+- Updated test workflow triggers in `.github/workflows/Tests.yml` to improve branch/PR coverage.
+- Updated README module naming references to `NovaModuleTools`.
+- Source alignment updates to match installed `NovaModuleTools` v`1.8.0` behavior for compatibility.
+
+### Fixed
+
+- Resource lookup compatibility in `Get-ResourceFilePath` for source/dist execution contexts.
+
 ### Documentation
+
+- Added documentation and release notes context for the Nova command model and workflow/security updates.
 
 ## [1.8.0] - 2026-04-08
 
