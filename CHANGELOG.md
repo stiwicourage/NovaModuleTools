@@ -8,6 +8,16 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Documentation
+
+## [1.9.0] - 2026-04-10
+
+### Added
+
 - Nova command model and CLI entrypoint:
     - New root command: `nova`
     - New public commands: `Get-NovaProjectInfo`, `Invoke-NovaBuild`, `Invoke-NovaCli`, `Invoke-NovaRelease`,
