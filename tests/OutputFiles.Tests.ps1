@@ -1,5 +1,5 @@
 BeforeAll {
-    $data = Get-MTProjectInfo
+    $data = Get-NovaProjectInfo
     $files = Get-ChildItem $data.OutputModuleDir
 }
 

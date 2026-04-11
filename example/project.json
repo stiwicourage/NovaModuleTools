@@ -1,17 +1,21 @@
 {
-  "ProjectName": "ModuleName",
-  "Description": "Description of Module",
-  "Version": "0.0.1",
+  "ProjectName": "NovaExampleModule",
+  "Description": "A working example project that demonstrates how to build, test, and package a small module with NovaModuleTools.",
+  "Version": "0.1.0",
   "copyResourcesToModuleRoot": false,
   "BuildRecursiveFolders": true,
   "SetSourcePath": true,
   "FailOnDuplicateFunctionNames": true,
   "Manifest": {
-    "Author": "Your Name",
+    "Author": "NovaModuleTools",
     "PowerShellHostVersion": "7.4",
-    "GUID": "Use New-Guid to generate guid",
-    "Tags": [],
-    "ProjectUri": ""
+    "GUID": "b3b4ca64-a274-4768-872d-2b3c8bc12a39",
+    "Tags": [
+      "Example",
+      "NovaModuleTools",
+      "PowerShell"
+    ],
+    "ProjectUri": "https://github.com/stiwicourage/NovaModuleTools"
   },
   "Pester": {
     "TestResult": {

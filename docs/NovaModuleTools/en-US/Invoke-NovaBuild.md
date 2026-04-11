@@ -1,0 +1,65 @@
+---
+document type: cmdlet
+external help file: NovaModuleTools-Help.xml
+HelpUri: ''
+Locale: en-US
+Module Name: NovaModuleTools
+ms.date: 03/19/2026
+PlatyPS schema version: 2024-05-01
+title: Invoke-NovaBuild
+---
+
+# Invoke-NovaBuild
+
+## SYNOPSIS
+
+Build a NovaModuleTools project to generate a ready-to-import PowerShell module.
+
+## SYNTAX
+
+### __AllParameterSets
+
+```
+Invoke-NovaBuild [<CommonParameters>]
+```
+
+## ALIASES
+
+This cmdlet has the following aliases,
+  {{Insert list of aliases}}
+
+## DESCRIPTION
+
+Builds the module from the current NovaModuleTools project. The `dist` folder is cleaned and the module is rebuilt from
+scratch,
+including the required resource files.
+
+## EXAMPLES
+
+### EXAMPLE 1: Builds module from the project files.
+
+Invoke-NovaBuild
+
+### EXAMPLE 2: Builds module and outputs verbose details during entire workflow.
+
+Invoke-NovaBuild -Verbose
+
+## PARAMETERS
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
+
+{{ Fill in the related links here }}
+

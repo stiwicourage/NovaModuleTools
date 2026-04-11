@@ -7,14 +7,14 @@ BeforeAll {
 
     $distModuleDir = Join-Path $repoRoot "dist/$moduleName"
     if (-not (Test-Path -LiteralPath $distModuleDir)) {
-        throw "Expected built $moduleName module at: $distModuleDir. Run Invoke-MTBuild in the repo root first."
+        throw "Expected built $moduleName module at: $distModuleDir. Run Invoke-NovaBuild in the repo root first."
     }
 
     Remove-Module $moduleName -ErrorAction SilentlyContinue
     Import-Module $distModuleDir -Force
 }
 
-Describe 'Invoke-MTBuild options' {
+Describe 'Invoke-NovaBuild options' {
     BeforeEach {
         . (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1')
     }
@@ -28,6 +28,16 @@ Describe 'Invoke-MTBuild options' {
             $project.SetSourcePath | Should -BeTrue
             $project.FailOnDuplicateFunctionNames | Should -BeTrue
         }
+    }
+
+    It 'example project builds and tests successfully as a working reference project' {
+        $exampleRoot = Join-Path $repoRoot 'example'
+        $result = Invoke-TestProjectTests -ProjectRoot $exampleRoot -ModulePath $distModuleDir
+        $exampleProject = Get-Content -LiteralPath (Join-Path $exampleRoot 'project.json') -Raw | ConvertFrom-Json
+        $builtModulePath = Join-Path $exampleRoot ("dist/{0}/{0}.psm1" -f $exampleProject.ProjectName)
+
+        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
+        (Test-Path -LiteralPath $builtModulePath) | Should -BeTrue
     }
 
     It 'BuildRecursiveFolders=false excludes nested classes/private and nested public' {
@@ -84,7 +94,7 @@ Describe 'Invoke-MTBuild options' {
 
         Push-Location -LiteralPath $root
         try {
-            (Get-MTProjectInfo).SetSourcePath | Should -BeTrue
+            (Get-NovaProjectInfo).SetSourcePath | Should -BeTrue
         }
         finally {
             Pop-Location
@@ -151,7 +161,7 @@ Describe 'Invoke-MTBuild options' {
         Get-Command Invoke-PublicTop -Module SetSourceOn | Should -Not -BeNullOrEmpty
         Remove-Module SetSourceOn -ErrorAction SilentlyContinue
     }
-    Context 'Invoke-MTTest discovery for BuildRecursiveFolders=<BuildRecursiveFolders>' -ForEach @(
+    Context 'Test-NovaBuild discovery for BuildRecursiveFolders=<BuildRecursiveFolders>' -ForEach @(
         @{ Name = 'TestsTopOnly'; BuildRecursiveFolders = $false; ExpectedNestedMarker = $false }
         @{ Name = 'TestsRecursive'; BuildRecursiveFolders = $true; ExpectedNestedMarker = $true }
     ) {
@@ -169,12 +179,33 @@ Describe 'Invoke-MTBuild options' {
         $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupDefault' -Options @{ ProjectName = 'DupDefault'; BuildRecursiveFolders = $false; SetSourcePath = $false }
 
         (Get-TestProjectInfoValue -ProjectRoot $root -PropertyName 'FailOnDuplicateFunctionNames') | Should -BeTrue
-        Assert-InvokeMTBuildThrows -ProjectRoot $root
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root
+    }
+
+    It 'fails build when Manifest contains unsupported New-ModuleManifest parameters' {
+        $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'BadManifestParameter'
+        Write-TestProjectJson -ProjectRoot $root -Options @{ProjectName = 'BadManifestParameter'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false}
+        Set-Content -LiteralPath (Join-Path $root 'src/public/PublicTop.ps1') -Value 'function Invoke-PublicTop { }' -Encoding utf8
+
+        $projectJsonPath = Join-Path $root 'project.json'
+        $project = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json -AsHashtable
+        $project.Manifest['BogusKey'] = 'nope'
+        $project | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $projectJsonPath -Encoding utf8
+
+        {
+            Push-Location -LiteralPath $root
+            try {
+                Invoke-NovaBuild
+            }
+            finally {
+                Pop-Location
+            }
+        } | Should -Throw 'Unknown parameter(s) in Manifest: BogusKey'
     }
 
     It 'FailOnDuplicateFunctionNames=true fails when built psm1 contains duplicate top-level function names' {
         $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupFail' -Options @{ ProjectName = 'DupFail'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $true }
-        Assert-InvokeMTBuildThrows -ProjectRoot $root
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root
     }
 
     It 'FailOnDuplicateFunctionNames=false allows duplicates (last wins) for backward compatibility' {

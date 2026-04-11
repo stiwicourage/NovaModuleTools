@@ -80,7 +80,7 @@ function Get-BuiltModuleFilePath {
 
     Push-Location -LiteralPath $ProjectRoot
     try {
-        $info = Get-MTProjectInfo
+        $info = Get-NovaProjectInfo
         return (Join-Path $ProjectRoot ("dist/{0}/{0}.psm1" -f $info.ProjectName))
     }
     finally {
@@ -96,7 +96,7 @@ function Invoke-TestProjectBuild {
 
     Push-Location -LiteralPath $ProjectRoot
     try {
-        Invoke-MTBuild
+        Invoke-NovaBuild
         $psm1 = Get-BuiltModuleFilePath -ProjectRoot $ProjectRoot
         if (-not (Test-Path -LiteralPath $psm1)) {
             throw "Expected built psm1 not found: $psm1"
@@ -145,7 +145,7 @@ function Get-TestProjectInfoValue {
 
     Push-Location -LiteralPath $ProjectRoot
     try {
-        return (Get-MTProjectInfo).$PropertyName
+        return (Get-NovaProjectInfo).$PropertyName
     }
     finally {
         Pop-Location
@@ -208,7 +208,7 @@ function New-TestProjectWithDuplicateFunctions {
     return $root
 }
 
-function Assert-InvokeMTBuildThrows {
+function Assert-InvokeNovaBuildThrows {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot
@@ -217,7 +217,7 @@ function Assert-InvokeMTBuildThrows {
     {
         Push-Location -LiteralPath $ProjectRoot
         try {
-            Invoke-MTBuild
+            Invoke-NovaBuild
         }
         finally {
             Pop-Location
@@ -281,13 +281,13 @@ function Invoke-TestProjectTests {
         [Parameter(Mandatory)][string]$ModulePath
     )
 
-    $scriptPath = Join-Path $ProjectRoot 'Run-InvokeMTTest.ps1'
+    $scriptPath = Join-Path $ProjectRoot 'Run-TestNovaBuild.ps1'
     $script = @"
 `$ErrorActionPreference = 'Stop'
 Import-Module '$ModulePath' -Force
 Set-Location -LiteralPath '$ProjectRoot'
-Invoke-MTBuild
-Invoke-MTTest
+Invoke-NovaBuild
+Test-NovaBuild
 "@
 
     Set-Content -LiteralPath $scriptPath -Value $script -Encoding utf8

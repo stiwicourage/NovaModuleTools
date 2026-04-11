@@ -1,35 +1,26 @@
-# NovaModuleTools
+# NovaModuleTools | [![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/78904) ![WorkFlow Status][WorkFlowStatus]
 
-[![CodeScene Hotspot Code Health](https://codescene.io/projects/78904/status-badges/hotspot-code-health)](https://codescene.io/projects/78904) [![CodeScene Average Code Health](https://codescene.io/projects/78904/status-badges/average-code-health)](https://codescene.io/projects/78904) [![CodeScene System Mastery](https://codescene.io/projects/78904/status-badges/system-mastery)](https://codescene.io/projects/78904)
+NovaModuleTools is an enterprise-focused evolution of ModuleTools, designed for large-scale PowerShell projects with a
+strong emphasis on structure, maintainability, and automated CI/CD pipelines.
 
-NovaModuleTools is an enterprise-focused evolution of ModuleTools, designed for large-scale PowerShell projects (10k+ lines of code) with a strong emphasis on structure, maintainability, and automated CI/CD pipelines.
-
-## 💬 Description
-
+## Description
 Whether you're creating simple or robust modules, NovaModuleTools streamlines the process, making it perfect for CI/CD and automation environments. With comprehensive features included, you can start building PowerShell modules in less than 30 seconds. Let NovaModuleTools handle the build logic, so you can focus on developing the core functionality of your module.
-
-[![NovaModuleTools@PowerShell Gallery][BadgeIOCount]][PSGalleryLink]
-![WorkFlow Status][WorkFlowStatus]
 
 The structure of the NovaModuleTools module is meticulously designed according to PowerShell best practices for module development. While some design decisions may seem unconventional, they are made to ensure that NovaModuleTools and the process of building modules remain straightforward and easy to manage.
 
-> [!IMPORTANT]
-> Check out this [original blog article](https://blog.belibug.com/post/ps-modulebuild) from Manjunath Beli explaining the core concepts that NovaModuleTools builds on.
+## Install
 
-## ⚙️ Install
-
+[![NovaModuleTools@PowerShell Gallery][BadgeIOCount]][PSGalleryLink]
 ```PowerShell
 Install-Module -Name NovaModuleTools
 ```
 
-> Note: NovaModuleTools is still in an early development phase and lots of changes are expected. Please read through the [changelog](/CHANGELOG.md) for all updates.
+## Design
+To ensure this module works correctly, you need to maintain the folder structure and the `project.json` file path. The
+best way to get started is by running `New-NovaModule` (`nova init`), which guides you through a series of questions
+and creates the necessary scaffolding.
 
-## 🧵 Design
-
-To ensure this module works correctly, you need to maintain the folder structure and the `project.json` file path. The best way to get started is by running the `New-MTModule` command, which guides you through a series of questions and creates the necessary scaffolding.
-
-## 📂 Folder Structure
-
+## Folder Structure
 All module files should be inside the `src` folder.
 
 ```
@@ -47,7 +38,6 @@ All module files should be inside the `src` folder.
 ```
 
 ### Dist Folder
-
 The generated module is stored in the `dist` folder. You can easily import it or publish it to a PowerShell repository.
 
 ```
@@ -58,30 +48,36 @@ dist
 ```
 
 ### Docs Folder
-
 Store `Microsoft.PowerShell.PlatyPS` generated Markdown files in the `docs` folder. If the `docs` folder exists and contains valid Markdown files, the build will generate a MAML help file in the built module.
+
+The generated help is meant to work with normal PowerShell help commands after the module is built and imported.
+That means your Markdown help should be written so built help can be activated with `Get-Help` for the matching command
+names.
 
 ```
 docs
 ├── NovaModuleTools.md
-└── Invoke-MTBuild.md
+└── Invoke-NovaBuild.md
 ```
 
 ### Project JSON File
 
-The `project.json` file contains all the important details about your module and is used during the module build. It should comply with a specific schema. You can refer to the sample `project-sample.json` file in the `example` directory for guidance.
+The `project.json` file contains all the important details about your module and is used during the module build. It
+should comply with a specific schema. You can refer to the working example project in `example/`, especially
+`example/project.json` and `example/README.md`, for guidance.
 
-Run `New-MTModule` to generate the scaffolding; this will also create the `project.json` file.
+Run `New-NovaModule` (`nova init`) to generate the scaffolding; this will also create the `project.json` file.
 
 #### Build settings (optional)
-
 NovaModuleTools supports these optional settings at the top level of `project.json`.
 If a setting is omitted, NovaModuleTools now treats it as `true` by default:
 
 - `BuildRecursiveFolders` (default: `true`)
   - When `true`, NovaModuleTools will discover `.ps1` files recursively in `src/classes` and `src/private`.
   - `src/public` is always **top-level only** (never recursive).
-  - For `Invoke-MTTest`, `BuildRecursiveFolders=false` runs only top-level `tests/*.Tests.ps1` files (the usual Pester naming convention), while `BuildRecursiveFolders=true` also includes tests in subfolders.
+  - For `Test-NovaBuild` (`nova test`), `BuildRecursiveFolders=false` runs only top-level `tests/*.Tests.ps1` files (the
+    usual Pester
+    naming convention), while `BuildRecursiveFolders=true` also includes tests in subfolders.
 - `SetSourcePath` (default: `true`)
   - When `true`, NovaModuleTools writes exactly one `# Source: <relative path>` line before each concatenated source file in the generated `dist/<Project>/<Project>.psm1`.
   - Relative paths are project-relative and normalized to `/`, for example `# Source: src/private/core/security/SetTls12SecurityProtocol.ps1`.
@@ -90,7 +86,6 @@ If a setting is omitted, NovaModuleTools now treats it as `true` by default:
   - When `true`, NovaModuleTools will parse the generated `dist/<Project>/<Project>.psm1` and fail the build if duplicate **top-level** function names exist.
 
 Example:
-
 ```json
 {
   "BuildRecursiveFolders": true,
@@ -99,8 +94,21 @@ Example:
 }
 ```
 
-When `SetSourcePath` is enabled, the generated `.psm1` contains one marker line before each source block:
+#### Manifest validation
 
+If you include a `Manifest` section in `project.json`, NovaModuleTools now validates the keys before writing the built
+module manifest.
+
+- Use the exact parameter names supported by `New-ModuleManifest`.
+- Unsupported keys now fail the build early with a clear error message instead of being silently ignored.
+
+For example, a manifest key such as `BogusKey` now causes the build to stop with an error similar to:
+
+```text
+Unknown parameter(s) in Manifest: BogusKey
+```
+
+When `SetSourcePath` is enabled, the generated `.psm1` contains one marker line before each source block:
 ```powershell
 # Source: src/classes/AgentListing.ps1
 class AgentListing {
@@ -114,7 +122,6 @@ function Set-Tls12SecurityProtocol {
 ```
 
 ### Src Folder
-
 - Place all your functions in the `private` and `public` folders within the `src` directory.
 - All functions in the `public` folder are exported during the module build.
 - All functions in the `private` folder are accessible internally within the module but are not exposed outside the module.
@@ -122,9 +129,7 @@ function Set-Tls12SecurityProtocol {
 - `src/resources` content is handled based on `copyResourcesToModuleRoot`.
 
 #### Deterministic processing order
-
 To ensure builds are deterministic across platforms, files are processed in this order:
-
 1. `src/classes`
 2. `src/public`
 3. `src/private`
@@ -132,19 +137,15 @@ To ensure builds are deterministic across platforms, files are processed in this
 Within each folder group, files are processed in a deterministic order by relative path (case-insensitive).
 
 #### Recursive folder support
-
 By default, NovaModuleTools loads `src/classes` and `src/private` recursively, while `src/public` remains top-level only.
 
 If `BuildRecursiveFolders` is set to `false`:
-
 - `src/classes`, `src/private`, and `tests` switch to top-level-only discovery.
 - `src/public` remains top-level only.
 - This preserves the legacy top-level-only behavior for test discovery and source loading.
 
 #### Resources Folder
-
 The `resources` folder within the `src` directory is intended for including any additional resources required by your module. This can include files such as:
-
 - **Configuration files**: Store any JSON, XML, or other configuration files needed by your module.
 - **Script files**: Place any scripts that are used by your functions or modules, but are not directly part of the public or private functions.
 - **formatdata files**: Store `Example.Format.ps1xml` file for custom format data types to be imported to manifest
@@ -153,14 +154,11 @@ The `resources` folder within the `src` directory is intended for including any 
 - **Data files**: Store any data files that are used by your module, such as CSV or JSON files.
 - **Subfolder**: Include any additional folders and their content to be included with the module, such as dependant Modules, APIs, DLLs, etc... organized by a subfolder.
 
-
-
 By default, resource files from `src/resources` go into `dist/resources`. To place them directly in dist (avoiding the resources subfolder), set `copyResourcesToModuleRoot` to `true`. This provides greater control in certain deployment scenarios where resources files are preferred in module root directory.
 
 Leave `src\resources` empty if there is no need to include any additional content in the `dist` folder.
 
 An example of the module build where resources were included and `copyResourcesToModuleRoot` is set to true.
-
 ```powershell
 dist
 └── TestModule
@@ -177,64 +175,196 @@ dist
 ```
 
 ### Tests Folder
-
 If you want to run Pester tests, keep them in the `tests` folder. Otherwise, you can ignore this feature.
 
-## 💻 Commands
+## Working example project
 
-### New-MTModule
+This repository includes a real example project in `example/`.
 
-This interactive command helps you create the module structure. Easily create the skeleton of your module and get started with module building in no time.
+Use it when you want something you can build, test, import, and inspect right away instead of reading a minimal schema
+example in isolation.
+
+The example demonstrates:
+
+- a real `project.json`
+- a public command under `src/public`
+- a private helper under `src/private`
+- a bundled resource file under `src/resources`
+- Pester tests that import the built module from `dist/`
+
+Start here:
+
+- `example/README.md`
+- `example/project.json`
+
+Typical local flow from the repository root:
 
 ```powershell
-## Create a module skeleton in Work Directory
-New-MTModule ~/Work
+Import-Module ./dist/NovaModuleTools -Force
+Set-Location ./example
+Invoke-NovaBuild
+Test-NovaBuild
+Import-Module ./dist/NovaExampleModule -Force
+Get-ExampleGreeting
 ```
 
-![image-20240625210008896](./assets/image-20240625210008896.png)
+Expected output:
 
-### Invoke-MTBuild
+```text
+Hello, Nova user!
+```
 
-`NovaModuleTools` is designed so that you don't need any additional tools like `make` or `psake` to run the build commands. There's no need to maintain complex `build.ps1` files or sample `.psd1` files. Simply follow the structure outlined above, and you can run `Invoke-MTBuild` to build the module. The output will be saved in the `dist` folder, ready for distribution.
+## Local quality workflow
 
-If `SetSourcePath` is enabled in `project.json`, `Invoke-MTBuild` also annotates the generated `.psm1` with `# Source: src/...` comments before each concatenated file block to make debugging easier.
+For local repository work, a practical quality loop is:
+
+```powershell
+Invoke-NovaBuild
+./scripts/build/Invoke-ScriptAnalyzerCI.ps1 -OutputDirectory ./artifacts
+Test-NovaBuild
+```
+
+This keeps ScriptAnalyzer as a separate code-quality step while `Test-NovaBuild` remains focused on Pester tests.
+When ScriptAnalyzer runs this way, its findings are written to `artifacts/scriptanalyzer.txt` and are not counted as
+Pester test cases.
+
+## Commands
+
+### New-NovaModule (`nova init`)
+
+This interactive command helps you create the module structure. Easily create the skeleton of your module and get started with module building in no time.
+```powershell
+## Create a module skeleton in Work Directory
+New-NovaModule ~/Work
+
+## Same flow through the CLI shortcut
+nova init ~/Work
+```
+
+### A typical interactive session looks like this:
+
+```text
+PS ~/Work> nova init
+
+Module Name
+Enter Module name of your choice, should be single word with no special characters
+Name: NovaModuleTools
+
+Module Description
+What does your module do? Describe in simple words
+Description: Self-contained installer that configures Azure DevOps build agents on Windows.
+
+Semantic Version
+Starting Version of the module (Default: 0.0.1)
+Version: 1.7.2
+
+Module Author
+Enter Author or company name
+Name: Stiwi Gabriel Courage
+
+Supported PowerShell Version
+What is minimum supported version of PowerShell for this module (Default: 7.4)
+Version: 7.4
+
+Git Version Control
+Do you want to enable version controlling using Git
+[Y] Enable Git  [N] Skip Git initialization: Y
+
+Pester Testing
+Do you want to enable basic Pester Testing
+[Y] Enable pester to perform testing  [N] Skip pester testing: Y
+
+Module NovaModuleTools scaffolding complete
+```
+
+### Invoke-NovaBuild (`nova build`)
+`NovaModuleTools` is designed so that you don't need any additional tools like `make` or `psake` to run the build
+commands. There's no need to maintain complex `build.ps1` files or sample `.psd1` files. Simply follow the structure
+outlined above, and you can run `Invoke-NovaBuild` (`nova build`) to build the module. The output will be saved in the
+`dist` folder, ready for distribution.
+
+If `SetSourcePath` is enabled in `project.json`, `Invoke-NovaBuild` (`nova build`) also annotates the generated `.psm1`
+with `# Source: src/...` comments before each concatenated file block to make debugging easier.
 
 ```powershell
 # From the Module root 
-Invoke-MTBuild
+Invoke-NovaBuild
 
 ## Verbose for more details
-Invoke-MTBuild -Verbose
+Invoke-NovaBuild -Verbose
+
+## CLI shortcut
+nova build
 ```
 
-### Get-MTProjectInfo
+### Get-NovaProjectInfo (`nova info` / `nova --version`)
 
-This function provides complete info about the project, which can be used in Pester tests or for general troubleshooting.
+This function provides complete info about the project, which can be used in Pester tests or for general
+troubleshooting. Use `nova info` for the full project object or `nova --version` for just the version.
 
-### Invoke-MTTest
+### Test-NovaBuild (`nova test`)
 
-All Pester configuration is stored in `project.json`. Run `Invoke-MTTest` from the project root. With the default `BuildRecursiveFolders=true`, it discovers test files in nested folders under `tests`; set `BuildRecursiveFolders=false` to run only top-level `tests/*.Tests.ps1` files, matching Pester's normal test-file convention.
-
+All Pester configuration is stored in `project.json`. Run `Test-NovaBuild` (`nova test`) from the project root. With the
+default
+`BuildRecursiveFolders=true`, it discovers test files in nested folders under `tests`; set `BuildRecursiveFolders=false`
+to run only top-level `tests/*.Tests.ps1` files, matching Pester's normal test-file convention.
 - To skip a test inside the test directory, use `-skip` in a `Describe`/`It`/`Context` block within the Pester test.
-- Use `Get-MTProjectInfo` command inside pester to get great amount of info about project and files
+- Use `Get-NovaProjectInfo` (`nova info`) inside Pester to get detailed information about the project and files.
 
-### Update-MTModuleVersion
+### Publish-NovaModule (`nova publish`)
 
-A simple command to update the module version by modifying the values in `project.json`. You can also manually edit the file in your favorite editor. This command makes it easy to update the semantic version.
+Use `Publish-NovaModule` (`nova publish`) to build, test, and publish in one step.
+```powershell
+# Publish to your local PowerShell modules path
+Publish-NovaModule -Local
 
-- Running `Update-MTModuleVersion` without any parameters will update the patch version (e.g., 1.2.3 -> 1.2.4)
-- Running `Update-MTModuleVersion -Label Major` updates the major version and resets Minor, Patch to 0 (e.g., 1.2.1 -> 2.0.0)
-- Running `Update-MTModuleVersion -Label Minor` updates the minor version and resets Patch to 0 (e.g., 1.2.3 -> 1.3.0)
+# Publish to a repository
+Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
+
+# CLI shortcut for local publish
+nova publish --local
+
+# CLI shortcut for repository publish
+nova publish --repository PSGallery --apikey $env:PSGALLERY_API
+```
+
+For local mode, `Publish-NovaModule -Local` (`nova publish --local`) copies the built module directly to your local
+module path.
+
+> [!TIP]
+> During local development, make sure your shell uses the module you just built (not an older installed copy).
+>
+> ```powershell
+> Remove-Module NovaModuleTools -ErrorAction SilentlyContinue
+> Import-Module ./dist/NovaModuleTools -Force
+> Publish-NovaModule -Local
+>
+> # or
+> nova publish --local
+> ```
+
+When running from the repository root, build-time schema/resource lookup also falls back to project resources under
+`src/resources`.
+
+### Update-NovaModuleVersion (`nova bump`)
+
+A siple command to update the module version by modifying the values in `project.json`. You can also manually edit the
+file in your favorite editor. This command makes it easy to update the semantic version, and the CLI shortcut is
+`nova bump`.
+
+- Running `Update-NovaModuleVersion` (`nova bump`) without any parameters will update the patch version (e.g., 1.2.3 ->
+  1.2.4)
+- Running `Update-NovaModuleVersion -Label Major` updates the major version and resets Minor, Patch to 0 (e.g., 1.2.1 ->
+  2.0.0)
+- Running `Update-NovaModuleVersion -Label Minor` updates the minor version and resets Patch to 0 (e.g., 1.2.3 -> 1.3.0)
 
 ## Advanced - Use it in Github Actions
-
 > [!TIP]
 > This repository uses Github actions to run tests and publish to PowerShell Gallery, use it as reference.
 
 This is not required for local module builds. In this repository, GitHub Actions uses `semantic-release` on `main` to determine the next version from conventional commits, update `project.json` and `CHANGELOG.md`, create the `Version_<semver>` tag, create the GitHub release, and then publish the built module to PowerShell Gallery.
 
 If you are running GitHub Actions, use the following yaml workflow template to test, build and publish a module, which helps to automate the process of:
-
 1. Checking out the repository code.
 1. Installing the `NovaModuleTools` bootstrap module from the PowerShell Gallery.
 1. Building the module.
@@ -242,7 +372,6 @@ If you are running GitHub Actions, use the following yaml workflow template to t
 1. Running semantic-release to choose the version, update release files, tag, and publish.
 
 This allows for seamless and automated management of your PowerShell module, ensuring consistency and reliability in your build, test, and release processes.
-
 ```yaml
 name: Build, Test and Publish
 
@@ -281,11 +410,11 @@ jobs:
         shell: pwsh
 
       - name: Build Module
-        run: Invoke-MTBuild -Verbose
+        run: Invoke-NovaBuild -Verbose
         shell: pwsh
 
       - name: Run Pester Tests
-        run: Invoke-MTTest
+        run: Test-NovaBuild
         shell: pwsh
 
       - name: Run semantic-release
@@ -296,21 +425,70 @@ jobs:
         shell: pwsh
 ```
 
-## 📝 Requirement
-
+## Requirement
 - Only tested on PowerShell 7.4, so it most likely will not work on 5.1. The underlying module can still support older versions; only the NovaModuleTools builder won't work on older versions.
 - No dependencies. This module doesn’t depend on any other module. Completely self-contained.
 
-## ✅ ToDo
+## Contributing
 
-- [ ] Add more tests
+[![CodeScene Hotspot Code Health](https://codescene.io/projects/78904/status-badges/hotspot-code-health)](https://codescene.io/projects/78904)
+[![CodeScene Average Code Health](https://codescene.io/projects/78904/status-badges/average-code-health)](https://codescene.io/projects/78904)
 
-## 🤝 Contributing
+Contributions are welcome, but this repository is intentionally opinionated about maintainability.
 
-Contributions are welcome! Please fork the repository and submit a pull request with your changes. Ensure that your code adheres to the existing style and includes appropriate tests.
+If you want to contribute, please work in the same style as the project:
 
-## 📃 License
+- Prefer the Nova command model and user-facing `nova` workflow over legacy MT naming or mixed command styles.
+- Keep changes small, reviewable, and easy to understand.
+- Aim for maintainable code:
+    - short functions
+    - simple branching
+    - no copy/paste duplication
+    - clear names
+    - no dead code left behind
+- Follow the Boy Scout Rule: leave the codebase a little cleaner than you found it.
 
+Before opening a pull request, please run the local quality flow from the repository root:
+
+```powershell
+$ErrorActionPreference = 'Stop'
+Set-Location $PSScriptRoot
+
+$projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
+$distModuleDir = Join-Path $PSScriptRoot "dist/$projectName"
+
+Invoke-NovaBuild
+& (Join-Path $PSScriptRoot 'scripts/build/Invoke-ScriptAnalyzerCI.ps1') -OutputDirectory (Join-Path $PSScriptRoot 'artifacts')
+Remove-Module $projectName -ErrorAction SilentlyContinue
+Import-Module $distModuleDir -Force
+
+Test-NovaBuild
+```
+
+Please also make sure your contribution includes the right kind of follow-up work:
+
+- add or update tests when behavior changes
+- update help files in `docs/` when a command changes
+- update `README.md` when usage, workflow, examples, or contributor expectations change
+- update `CHANGELOG.md` when the change is relevant to users, maintainers, or future contributors
+- keep `example/` useful if your change affects the real-world project layout or workflow
+
+When updating documentation, write it for humans first. A reader should quickly understand:
+
+- what changed
+- why it changed
+- how to use it
+- whether existing behavior is affected
+
+For changelog entries, follow the existing project format:
+
+- Keep a Changelog structure
+- Semantic Versioning intent
+- reader-friendly wording under sections such as `Added`, `Changed`, `Fixed`, `Removed`, and `Documentation`
+
+In short: build it, analyze it, test it, document it, and leave it in better shape than you found it.
+
+## License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 [BadgeIOCount]: https://img.shields.io/powershellgallery/dt/NovaModuleTools?label=NovaModuleTools%40PowerShell%20Gallery

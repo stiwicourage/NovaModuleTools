@@ -39,10 +39,10 @@ jobs:
           Install-PSResource -Repository PSGallery -Name Pester -TrustRepository
 
       - name: 🏗️ Build Module
-        run: Invoke-MTBuild -Verbose
+        run: Invoke-NovaBuild -Verbose
 
       - name: 🧪 Run Pester Tests
-        run: Invoke-MTTest
+        run: Test-NovaBuild
 
       - name: 📝 Generate Report
         continue-on-error: true

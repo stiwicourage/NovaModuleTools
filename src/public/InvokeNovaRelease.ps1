@@ -7,6 +7,24 @@ function Invoke-NovaRelease {
 
     Push-Location -LiteralPath $Path
     try {
+        $projectInfo = Get-NovaProjectInfo
+        $publishParams = @{ProjectInfo = $projectInfo}
+
+        if ( $PublishOption.ContainsKey('Repository')) {
+            $publishAction = (Get-Command -Name Publish-NovaBuiltModuleToRepository -CommandType Function).ScriptBlock
+            $publishParams.Repository = $PublishOption.Repository
+            $publishParams.ApiKey = $PublishOption.ApiKey
+        }
+        else {
+            $publishAction = (Get-Command -Name Publish-NovaBuiltModuleToDirectory -CommandType Function).ScriptBlock
+            $resolvedModuleDirectoryPath = $PublishOption.ModuleDirectoryPath
+            if ( [string]::IsNullOrWhiteSpace($resolvedModuleDirectoryPath)) {
+                $resolvedModuleDirectoryPath = Get-LocalModulePath
+            }
+
+            $publishParams.ModuleDirectoryPath = $resolvedModuleDirectoryPath
+        }
+
         if ($PublishOption.Local) {
             Write-Verbose 'Using local release mode.'
         }
@@ -16,12 +34,7 @@ function Invoke-NovaRelease {
         $versionResult = Update-NovaModuleVersion
         Invoke-NovaBuild
 
-        if ( $PublishOption.ContainsKey('Repository')) {
-            Publish-NovaBuiltModule -Repository $PublishOption.Repository -ApiKey $PublishOption.ApiKey
-        }
-        else {
-            Publish-NovaBuiltModule -ModuleDirectoryPath $PublishOption.ModuleDirectoryPath
-        }
+        & $publishAction @publishParams
 
         return $versionResult
     }

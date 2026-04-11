@@ -1,0 +1,80 @@
+---
+document type: cmdlet
+external help file: NovaModuleTools-Help.xml
+HelpUri: ''
+Locale: en-US
+Module Name: NovaModuleTools
+ms.date: 03/19/2026
+PlatyPS schema version: 2024-05-01
+title: Get-NovaProjectInfo
+---
+
+# Get-NovaProjectInfo
+
+## SYNOPSIS
+
+Retrieves information about a project by reading data from a project.json file in a NovaModuleTools project folder.
+
+## SYNTAX
+
+### __AllParameterSets
+
+```
+Get-NovaProjectInfo [[-Path] <string>] [<CommonParameters>]
+```
+
+## ALIASES
+
+## DESCRIPTION
+
+The Get-NovaProjectInfo function retrieves information about a project by reading data from a project.json file located
+in the current directory.
+Ensure you navigate to a module directory which has project.json in root directory.
+Most variables are already defined in output of this command which can be used in pester tests and other configs.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+Get-NovaProjectInfo
+Retrieves project information from the project.json file in the current directory. Useful for debuggin and writing pester tests.
+
+## PARAMETERS
+
+### -Path
+
+Provide path to root folder of the ModuleTool based project
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+## INPUTS
+
+## OUTPUTS
+
+### hastable with all project data.
+
+{{ Fill in the Description }}
+
+## NOTES
+
+## RELATED LINKS
+
+{{ Fill in the related links here }}
+
+
+

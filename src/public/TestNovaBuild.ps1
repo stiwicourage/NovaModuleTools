@@ -1,9 +1,42 @@
 function Test-NovaBuild {
     [CmdletBinding()]
-    param(
+    param (
         [string[]]$TagFilter,
-        [string[]]$ExcludeTagFilter
+        [string[]]$ExcludeTagFilter,
+        [ValidateSet('None', 'Normal', 'Detailed', 'Diagnostic')]
+        [string]$OutputVerbosity,
+        [ValidateSet('Auto', 'Plaintext', 'Ansi')]
+        [string]$OutputRenderMode
     )
+    Test-ProjectSchema Pester | Out-Null
+    $Script:data = Get-NovaProjectInfo
+    $pesterConfig = New-PesterConfiguration -Hashtable $data.Pester
 
-    Invoke-MTTest -TagFilter $TagFilter -ExcludeTagFilter $ExcludeTagFilter
+    $testPath = if ($data.BuildRecursiveFolders) {
+        $data.TestsDir
+    }
+    else {
+        [System.IO.Path]::Join($data.TestsDir, '*.Tests.ps1')
+    }
+
+    $pesterConfig.Run.Path = $testPath
+    $pesterConfig.Run.PassThru = $true
+    $pesterConfig.Run.Exit = $true
+    $pesterConfig.Run.Throw = $true
+    $pesterConfig.Filter.Tag = $TagFilter
+    $pesterConfig.Filter.ExcludeTag = $ExcludeTagFilter
+    if ( $PSBoundParameters.ContainsKey('OutputVerbosity')) {
+        $pesterConfig.Output.Verbosity = $OutputVerbosity
+    }
+
+    if ( $PSBoundParameters.ContainsKey('OutputRenderMode')) {
+        $pesterConfig.Output.RenderMode = $OutputRenderMode
+    }
+
+    $pesterConfig.TestResult.OutputPath = './dist/TestResults.xml'
+    $TestResult = Invoke-Pester -Configuration $pesterConfig
+    if ($TestResult.Result -ne 'Passed') {
+        Write-Error 'Tests failed' -ErrorAction Stop
+        return $LASTEXITCODE
+    }
 }

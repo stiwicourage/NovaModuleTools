@@ -8,11 +8,84 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ### Added
 
+- New Nova release and publish building blocks to support:
+    - publishing to a local module directory
+    - publishing to a repository
+    - resolving the local module path more reliably
+    - cleaner semantic-version handling for release labels
+- New internal scaffolding helpers to make `New-NovaModule` easier to maintain.
+- New internal duplicate-function indexing helpers to improve build validation.
+- New help pages for `Invoke-NovaCli` and `Invoke-NovaRelease`.
+- Expanded regression test coverage for:
+    - local and repository publish behavior
+    - build-time resource lookup from `src/resources`
+    - packaged/built module publish behavior
+    - `Update-NovaModuleVersion -WhatIf`
+- Added a working `example/` project that can be built, tested, imported, and used as a practical reference for new
+  NovaModuleTools users.
+- Added a standalone `scripts/build/Invoke-ScriptAnalyzerCI.ps1` helper so ScriptAnalyzer can run as a dedicated quality
+  step outside Pester while still producing a CI-friendly report.
+- Added dynamic help activation coverage so command help pages discovered in `docs/` are exercised through built
+  `Get-Help` output.
+
 ### Changed
+
+- BREAKING CHANGE: The codebase is now fully centered on the Nova command model instead of a mixed MT/Nova
+  implementation.
+- Internal source files were reorganized into clearer areas such as build, CLI, release, shared, scaffold, and duplicate
+  validation.
+- `Publish-NovaModule` and `Invoke-NovaRelease` now use a cleaner publish flow that resolves targets before build/test
+  steps run.
+- `New-NovaModule` was refactored into smaller pieces, improving maintainability and bringing its Code Health back to
+  `10.0`.
+- README and command documentation were refreshed to consistently use the Nova command names and describe the
+  CLI/release workflow more clearly.
+- Release and test automation files were updated to better support the new Nova workflow.
+- The repository example, local helper workflow, and command documentation were updated to better reflect how
+  NovaModuleTools
+  is intended to be used in day-to-day development.
+
+### Removed
+
+- Removed the legacy `MT` command implementation in favor of the Nova equivalents, including:
+    - `Get-MTProjectInfo`
+    - `Invoke-MTBuild`
+    - `Invoke-MTTests`
+    - `New-MTModule`
+    - `Publish-MTLocal`
+    - `Update-MTModuleVersion` / `UpdateModVersion`
+- Removed the remaining MT-oriented internal layout and replaced it with the reorganized Nova-focused structure.
+- Replaced legacy MT command documentation with Nova command documentation.
 
 ### Fixed
 
+- Fixed local publishing so `Publish-NovaModule -Local` no longer falls back to the legacy publish path.
+- Fixed build-time resource lookup so schema and template files are found in project `src/resources` when building from
+  the repository root.
+- Fixed local publish/release flows so the local module path is resolved before build/test steps can reload helper
+  functions.
+- Fixed `ShouldProcess` support in `Update-NovaModuleVersion`, `Set-NovaModuleVersion`, and `New-NovaModule`.
+- Fixed ScriptAnalyzer issues caused by empty `catch` blocks and noncompliant helper naming.
+- Fixed local test/build support imports and command-model regressions uncovered during the Nova standardization work.
+- Fixed generated help activation so module and command help can be loaded with `Get-Help` after build/import.
+- Fixed manifest handling so unsupported `Manifest` keys now fail fast with a clear validation error instead of being
+  silently tolerated.
+
 ### Documentation
+
+- Updated `README.md` with:
+    - a dedicated `Publish-NovaModule` section
+    - local and repository publish examples
+    - guidance for importing the built dist module during local development
+    - notes about build-time resource lookup from `src/resources`
+- Added README guidance for the working `example/` project, stricter manifest validation, built help expectations, and
+  the
+  separate ScriptAnalyzer CI workflow.
+- Replaced the outdated `New-NovaModule` screenshot in `README.md` with a concrete `project.json` example that shows the
+  expected NovaModuleTools output more clearly.
+- Refreshed the `README.md` contribution guidance so contributors are clearly asked to follow the Nova workflow, run the
+  local quality loop, update documentation, and keep the codebase maintainable.
+- Renamed and refreshed command documentation to match the Nova command model.
 
 ## [1.9.0] - 2026-04-10
 
@@ -65,7 +138,7 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ### Added
 - Added support for classes directory inside src
-- New-MTModule generates classes directory during fresh project
+- New-NovaModule generates classes directory during fresh project
 - `classes` directory should include `.ps1` files which contain enums and classes
 
 ### Fixed
@@ -74,7 +147,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 ## [1.1.3] - 2025-09-14
 
 ### Added
-- Now supports preview tag in Update-MTModuleVersion
+
+- Now supports preview tag in Update-NovaModuleVersion
 - Now supports semver naming in both project.json and modulemanifest
 - Module build supports `preview` or `prerelease` tag
 - Preview version looks like `1.2.3-preview` 
@@ -116,7 +190,7 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ### Added
 
-- `Invoke-MTTest` now supports including and excluding tags
+- `Test-NovaBuild` now supports including and excluding tags
 
 ### Fixed
 
