@@ -81,6 +81,10 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Added README guidance for the working `example/` project, stricter manifest validation, built help expectations, and
   the
   separate ScriptAnalyzer CI workflow.
+- Replaced the outdated `New-NovaModule` screenshot in `README.md` with a concrete `project.json` example that shows the
+  expected NovaModuleTools output more clearly.
+- Refreshed the `README.md` contribution guidance so contributors are clearly asked to follow the Nova workflow, run the
+  local quality loop, update documentation, and keep the codebase maintainable.
 - Renamed and refreshed command documentation to match the Nova command model.
 
 ## [1.9.0] - 2026-04-10
