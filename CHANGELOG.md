@@ -21,6 +21,12 @@ The format follows the principles from Keep a Changelog and the project aims to 
     - build-time resource lookup from `src/resources`
     - packaged/built module publish behavior
     - `Update-NovaModuleVersion -WhatIf`
+- Added a working `example/` project that can be built, tested, imported, and used as a practical reference for new
+  NovaModuleTools users.
+- Added a standalone `scripts/build/Invoke-ScriptAnalyzerCI.ps1` helper so ScriptAnalyzer can run as a dedicated quality
+  step outside Pester while still producing a CI-friendly report.
+- Added dynamic help activation coverage so command help pages discovered in `docs/` are exercised through built
+  `Get-Help` output.
 
 ### Changed
 
@@ -35,6 +41,9 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - README and command documentation were refreshed to consistently use the Nova command names and describe the
   CLI/release workflow more clearly.
 - Release and test automation files were updated to better support the new Nova workflow.
+- The repository example, local helper workflow, and command documentation were updated to better reflect how
+  NovaModuleTools
+  is intended to be used in day-to-day development.
 
 ### Removed
 
@@ -58,6 +67,9 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Fixed `ShouldProcess` support in `Update-NovaModuleVersion`, `Set-NovaModuleVersion`, and `New-NovaModule`.
 - Fixed ScriptAnalyzer issues caused by empty `catch` blocks and noncompliant helper naming.
 - Fixed local test/build support imports and command-model regressions uncovered during the Nova standardization work.
+- Fixed generated help activation so module and command help can be loaded with `Get-Help` after build/import.
+- Fixed manifest handling so unsupported `Manifest` keys now fail fast with a clear validation error instead of being
+  silently tolerated.
 
 ### Documentation
 
@@ -66,6 +78,9 @@ The format follows the principles from Keep a Changelog and the project aims to 
     - local and repository publish examples
     - guidance for importing the built dist module during local development
     - notes about build-time resource lookup from `src/resources`
+- Added README guidance for the working `example/` project, stricter manifest validation, built help expectations, and
+  the
+  separate ScriptAnalyzer CI workflow.
 - Renamed and refreshed command documentation to match the Nova command model.
 
 ## [1.9.0] - 2026-04-10

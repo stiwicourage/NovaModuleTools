@@ -50,6 +50,10 @@ dist
 ### Docs Folder
 Store `Microsoft.PowerShell.PlatyPS` generated Markdown files in the `docs` folder. If the `docs` folder exists and contains valid Markdown files, the build will generate a MAML help file in the built module.
 
+The generated help is meant to work with normal PowerShell help commands after the module is built and imported.
+That means your Markdown help should be written so built help can be activated with `Get-Help` for the matching command
+names.
+
 ```
 docs
 ├── NovaModuleTools.md
@@ -88,6 +92,20 @@ Example:
   "SetSourcePath": true,
   "FailOnDuplicateFunctionNames": true
 }
+```
+
+#### Manifest validation
+
+If you include a `Manifest` section in `project.json`, NovaModuleTools now validates the keys before writing the built
+module manifest.
+
+- Use the exact parameter names supported by `New-ModuleManifest`.
+- Unsupported keys now fail the build early with a clear error message instead of being silently ignored.
+
+For example, a manifest key such as `BogusKey` now causes the build to stop with an error similar to:
+
+```text
+Unknown parameter(s) in Manifest: BogusKey
 ```
 
 When `SetSourcePath` is enabled, the generated `.psm1` contains one marker line before each source block:
@@ -158,6 +176,57 @@ dist
 
 ### Tests Folder
 If you want to run Pester tests, keep them in the `tests` folder. Otherwise, you can ignore this feature.
+
+## Working example project
+
+This repository includes a real example project in `example/`.
+
+Use it when you want something you can build, test, import, and inspect right away instead of reading a minimal schema
+example in isolation.
+
+The example demonstrates:
+
+- a real `project.json`
+- a public command under `src/public`
+- a private helper under `src/private`
+- a bundled resource file under `src/resources`
+- Pester tests that import the built module from `dist/`
+
+Start here:
+
+- `example/README.md`
+- `example/project.json`
+
+Typical local flow from the repository root:
+
+```powershell
+Import-Module ./dist/NovaModuleTools -Force
+Set-Location ./example
+Invoke-NovaBuild
+Test-NovaBuild
+Import-Module ./dist/NovaExampleModule -Force
+Get-ExampleGreeting
+```
+
+Expected output:
+
+```text
+Hello, Nova user!
+```
+
+## Local quality workflow
+
+For local repository work, a practical quality loop is:
+
+```powershell
+Invoke-NovaBuild
+./scripts/build/Invoke-ScriptAnalyzerCI.ps1 -OutputDirectory ./artifacts
+Test-NovaBuild
+```
+
+This keeps ScriptAnalyzer as a separate code-quality step while `Test-NovaBuild` remains focused on Pester tests.
+When ScriptAnalyzer runs this way, its findings are written to `artifacts/scriptanalyzer.txt` and are not counted as
+Pester test cases.
 
 ## Commands
 
