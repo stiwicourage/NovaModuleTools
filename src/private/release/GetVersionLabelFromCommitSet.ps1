@@ -18,4 +18,3 @@ function Get-VersionLabelFromCommitSet {
 
     return 'Patch'
 }
-
