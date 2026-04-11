@@ -3,23 +3,22 @@ function Invoke-NovaCli {
     [Alias('nova')]
     param(
         [Parameter(Position = 0)]
-        [ValidateSet('info', 'version', 'build', 'test', 'init', 'publish', 'bump', 'release')]
-        [string]$Command,
+        [ValidateSet('info', '--version', '--help', 'build', 'test', 'init', 'publish', 'bump', 'release')]
+        [string]$Command = '--help',
 
         [Parameter(Position = 1, ValueFromRemainingArguments)]
         [string[]]$Arguments
     )
 
-    if ( [string]::IsNullOrWhiteSpace($Command)) {
-        throw 'Missing command. Use one of: info, version, build, test, init, publish, bump, release'
-    }
-
     switch ($Command) {
         'info' {
             return Get-NovaProjectInfo
         }
-        'version' {
+        '--version' {
             return Get-NovaProjectInfo -Version
+        }
+        '--help' {
+            return Get-NovaCliHelp
         }
         'build' {
             return Invoke-NovaBuild

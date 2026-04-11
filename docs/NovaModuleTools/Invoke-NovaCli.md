@@ -25,8 +25,8 @@ Invoke-NovaCli [[-Command] <string>] [[-Arguments] <string[]>] [<CommonParameter
 
 ## DESCRIPTION
 
-`Invoke-NovaCli` dispatches high-level commands (`info`, `version`, `build`, `test`, `init`, `publish`, `bump`,
-`release`) to the matching Nova cmdlet.
+`Invoke-NovaCli` dispatches high-level commands (`info`, `--version`, `--help`, `build`, `test`, `init`, `publish`,
+`bump`, `release`) to the matching Nova cmdlet.
 
 This cmdlet is also exposed through the alias `nova`.
 
@@ -35,7 +35,7 @@ This cmdlet is also exposed through the alias `nova`.
 ### EXAMPLE 1
 
 ```powershell
-Invoke-NovaCli -Command version
+Invoke-NovaCli -Command --version
 ```
 
 Returns the version from `project.json`.
@@ -56,11 +56,20 @@ Invoke-NovaCli -Command publish -Arguments @('--repository', 'PSGallery', '--api
 
 Parses CLI arguments and publishes using `Publish-NovaModule`.
 
+### EXAMPLE 4
+
+```powershell
+Invoke-NovaCli -Command --help
+```
+
+Displays the built-in Nova CLI help text.
+
 ## PARAMETERS
 
 ### -Command
 
-The command to execute. Supported values: `info`, `version`, `build`, `test`, `init`, `publish`, `bump`, `release`.
+The command to execute. Supported values: `info`, `--version`, `--help`, `build`, `test`, `init`, `publish`, `bump`,
+`release`.
 
 ```yaml
 Type: System.String
@@ -75,7 +84,7 @@ ParameterSets:
     ValueFromPipelineByPropertyName: false
     ValueFromRemainingArguments: false
 DontShow: false
-AcceptedValues: [ info, version, build, test, init, publish, bump, release ]
+AcceptedValues: [ info, --version, --help, build, test, init, publish, bump, release ]
 HelpMessage: ''
 ```
 

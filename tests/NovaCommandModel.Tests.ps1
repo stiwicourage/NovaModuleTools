@@ -205,12 +205,22 @@ Describe 'Nova command model' {
         }
     }
 
-    It 'Invoke-NovaCli version maps to Get-NovaProjectInfo -Version' {
+    It 'Invoke-NovaCli --version maps to Get-NovaProjectInfo -Version' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {'1.2.3'} -ParameterFilter {$Version}
 
-            Invoke-NovaCli version | Should -Be '1.2.3'
+            Invoke-NovaCli --version | Should -Be '1.2.3'
             Assert-MockCalled Get-NovaProjectInfo -Times 1 -ParameterFilter {$Version}
+        }
+    }
+
+    It 'Invoke-NovaCli --help returns CLI help text' {
+        InModuleScope $script:moduleName {
+            $result = Invoke-NovaCli --help
+
+            $result | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
+            $result | Should -Match 'init\s+Create a new Nova module scaffold'
+            $result | Should -Match 'publish\s+Build, test, and publish the module locally or to a repository'
         }
     }
 

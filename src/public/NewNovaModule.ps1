@@ -3,9 +3,7 @@ function New-NovaModule {
     param (
         [string]$Path = (Get-Location).Path
     )
-
     $ErrorActionPreference = 'Stop'
-    Push-Location
 
     if (-not (Test-Path $Path)) {
         Write-Error 'Not a valid path'
