@@ -24,8 +24,7 @@ function Build-Help {
 
     # Rename the directory to match locale
     $HelpDirOld = Join-Path $data.OutputModuleDir $Data.ProjectName
-    #TODO: hardcoded locale to en-US, change it based on Doc type
-    $languageLocale = 'en-US'
+    $languageLocale = Get-NovaHelpLocale -HelpMarkdownFiles $helpMarkdownFiles
     $HelpDirNew = Join-Path $data.OutputModuleDir $languageLocale
     Write-Verbose "Renamed folder to locale: $languageLocale"
 

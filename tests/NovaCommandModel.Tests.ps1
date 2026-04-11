@@ -1,6 +1,10 @@
 BeforeAll {
+    Remove-Module NovaCommandModel.TestSupport -ErrorAction SilentlyContinue
+    Import-Module (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.psm1') -Force
+
     $here = Split-Path -Parent $PSCommandPath
     $repoRoot = Split-Path -Parent $here
+    $script:projectInfo = Get-NovaProjectInfo -Path $repoRoot
     $script:moduleName = (Get-Content -LiteralPath (Join-Path $repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
 
     $distModuleDir = Join-Path $repoRoot "dist/$script:moduleName"
@@ -10,6 +14,11 @@ BeforeAll {
 
     Remove-Module $script:moduleName -ErrorAction SilentlyContinue
     Import-Module $distModuleDir -Force
+
+    $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:projectInfo.DocsDir -Filter '*.md' -Recurse
+    $script:helpLocale = Get-TestHelpLocaleFromMarkdownFiles -Files $helpMarkdownFiles
+    $script:helpXmlPath = Join-Path $distModuleDir "$script:helpLocale/$script:moduleName-Help.xml"
+    $script:helpActivationTestCases = Get-CommandHelpActivationTestCases -DocsDir $script:projectInfo.DocsDir
 }
 
 Describe 'Nova command model' {
@@ -18,6 +27,24 @@ Describe 'Nova command model' {
             Mock Get-Content {'{"ProjectName":"X","Version":"9.9.9"}'}
 
             (Get-NovaProjectInfo).Version | Should -Be '9.9.9'
+        }
+    }
+
+    It 'build output includes the generated external help file' {
+        Test-Path -LiteralPath $script:helpXmlPath | Should -BeTrue
+    }
+
+    It 'discovers command help files dynamically from docs' {
+        $script:helpActivationTestCases | Should -Not -BeNullOrEmpty
+    }
+
+    It 'Get-Help loads synopsis for every command help file discovered in docs' {
+        foreach ($testCase in $script:helpActivationTestCases) {
+            $help = Get-Help $testCase.HelpTarget -ErrorAction Stop
+
+            $help | Should -Not -BeNullOrEmpty -Because "Get-Help should activate $( $testCase.FileName )"
+            $help.Name | Should -Be $testCase.HelpTarget -Because "$( $testCase.FileName ) should resolve to $( $testCase.HelpTarget )"
+            (ConvertTo-TestNormalizedText -Text $help.Synopsis) | Should -Be $testCase.ExpectedSynopsis -Because "$( $testCase.FileName ) synopsis should come from the generated help"
         }
     }
 
@@ -33,6 +60,30 @@ Describe 'Nova command model' {
             Invoke-NovaBuild
 
             Assert-MockCalled Build-Module -Times 1
+        }
+    }
+
+    It 'Get-NovaHelpLocale reads locale from markdown front matter' {
+        InModuleScope $script:moduleName {
+            $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
+            $null = New-Item -ItemType Directory -Path $tempRoot
+            $docPath = Join-Path $tempRoot 'Invoke-NovaBuild.md'
+
+            @'
+---
+Locale: da-DK
+title: Invoke-NovaBuild
+---
+'@ | Set-Content -LiteralPath $docPath
+
+            try {
+                $result = Get-NovaHelpLocale -HelpMarkdownFiles (Get-Item -LiteralPath $docPath)
+
+                $result | Should -Be 'da-DK'
+            }
+            finally {
+                Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+            }
         }
     }
 

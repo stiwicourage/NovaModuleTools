@@ -13,7 +13,7 @@ title: Invoke-NovaBuild
 
 ## SYNOPSIS
 
-Build a ModuleTool project to generate ready to import PowerShell Module.
+Build a NovaModuleTools project to generate a ready-to-import PowerShell module.
 
 ## SYNTAX
 
@@ -30,8 +30,9 @@ This cmdlet has the following aliases,
 
 ## DESCRIPTION
 
-This function is used to build a module, dist folder is cleaned up and whole module is build from scracth.
-copies all necessary resource files.
+Builds the module from the current NovaModuleTools project. The `dist` folder is cleaned and the module is rebuilt from
+scratch,
+including the required resource files.
 
 ## EXAMPLES
 

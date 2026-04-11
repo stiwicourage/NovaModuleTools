@@ -18,35 +18,35 @@ NovaModuleTools is a versatile, standalone PowerShell module builder. Create any
 
 ## NovaModuleTools Cmdlets
 
-### [Get-NovaProjectInfo](Get-NovaProjectInfo.md)
+### `Get-NovaProjectInfo`
 
 Retrieves information about a project by reading data from a project.json file in a NovaModuleTools project folder.
 
-### [Invoke-NovaBuild](Invoke-NovaBuild.md)
+### `Invoke-NovaBuild`
 
-Build a ModuleTool project to generate ready to import PowerShell Module.
+Build a NovaModuleTools project to generate a ready-to-import PowerShell module.
 
-### [Invoke-NovaCli](Invoke-NovaCli.md)
+### `Invoke-NovaCli`
 
 Runs Nova CLI-style commands through a single command entrypoint.
 
-### [Invoke-NovaRelease](Invoke-NovaRelease.md)
+### `Invoke-NovaRelease`
 
 Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
 
-### [Test-NovaBuild](Test-NovaBuild.md)
+### `Test-NovaBuild`
 
 Runs Pester tests using settings from project.json
 
-### [New-NovaModule](New-NovaModule.md)
+### `New-NovaModule`
 
 Create module scaffolding along with project.json file to easily build and manage modules in the NovaModuleTools opinionated format.
 
-### [Publish-NovaModule](Publish-NovaModule.md)
+### `Publish-NovaModule`
 
 Copy built module to local PSModulePath.
 
-### [Update-NovaModuleVersion](Update-NovaModuleVersion.md)
+### `Update-NovaModuleVersion`
 
 Updates the version number of a module in project.json file. Uses [semver] object type.
 

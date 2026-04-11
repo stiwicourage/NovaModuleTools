@@ -120,8 +120,8 @@ If build or tests fail, version bump and publish are not completed.
 
 ## RELATED LINKS
 
-- [Invoke-NovaBuild](Invoke-NovaBuild.md)
-- [Test-NovaBuild](Test-NovaBuild.md)
-- [Update-NovaModuleVersion](Update-NovaModuleVersion.md)
-- [Publish-NovaModule](Publish-NovaModule.md)
+- `Invoke-NovaBuild`
+- `Test-NovaBuild`
+- `Update-NovaModuleVersion`
+- `Publish-NovaModule`
 
