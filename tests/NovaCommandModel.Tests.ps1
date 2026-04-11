@@ -227,6 +227,65 @@ title: Invoke-NovaBuild
         }
     }
 
+    It 'Get-LocalModulePath returns the first matching local module path for the current platform' {
+        InModuleScope $script:moduleName {
+            $originalModulePath = $env:PSModulePath
+            $script:expectedModulePath = if ($IsWindows) {
+                'C:\Users\Stiwi\Documents\PowerShell\Modules'
+            }
+            else {
+                '/Users/stiwi.courage/.local/share/powershell/Modules'
+            }
+
+            $env:PSModulePath = if ($IsWindows) {
+                'C:\Program Files\PowerShell\Modules;C:\Users\Stiwi\Documents\PowerShell\Modules;C:\Temp\Modules'
+            }
+            else {
+                '/usr/local/share/powershell/Modules:/Users/stiwi.courage/.local/share/powershell/Modules:/tmp/modules'
+            }
+
+            Mock Test-Path {
+                param($Path)
+                return $Path -eq $script:expectedModulePath
+            }
+
+            try {
+                Get-LocalModulePath | Should -Be $script:expectedModulePath
+            }
+            finally {
+                $env:PSModulePath = $originalModulePath
+            }
+        }
+    }
+
+    It 'Get-LocalModulePath throws a platform-specific error when no matching path exists' {
+        InModuleScope $script:moduleName {
+            $originalModulePath = $env:PSModulePath
+            $env:PSModulePath = if ($IsWindows) {
+                'C:\Program Files\PowerShell\Modules;C:\Temp\Modules'
+            }
+            else {
+                '/usr/local/share/powershell/Modules:/tmp/modules'
+            }
+
+            Mock Test-Path {$false}
+
+            $expectedError = if ($IsWindows) {
+                'No windows module path matching*'
+            }
+            else {
+                'No macOS/Linux module path matching*'
+            }
+
+            try {
+                {Get-LocalModulePath} | Should -Throw $expectedError
+            }
+            finally {
+                $env:PSModulePath = $originalModulePath
+            }
+        }
+    }
+
     It 'built module keeps Publish-NovaModule local path resolution before build and test' {
         $packagedModulePath = (Get-Module $script:moduleName).Path
 

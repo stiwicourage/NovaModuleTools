@@ -70,6 +70,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Fixed generated help activation so module and command help can be loaded with `Get-Help` after build/import.
 - Fixed manifest handling so unsupported `Manifest` keys now fail fast with a clear validation error instead of being
   silently tolerated.
+- Fixed local module path resolution maintainability by refactoring `Get-LocalModulePath` to Code Health `10.0` and
+  adding regression coverage for both the matching and error paths.
 
 ### Documentation
 
