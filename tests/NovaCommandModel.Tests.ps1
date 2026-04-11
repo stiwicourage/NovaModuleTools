@@ -107,6 +107,27 @@ title: Invoke-NovaBuild
         }
     }
 
+    It 'Test-NovaBuild can override Pester console output settings' {
+        InModuleScope $script:moduleName {
+            $cfg = [pscustomobject]@{
+                Run = [pscustomobject]@{Path = $null; PassThru = $false; Exit = $false; Throw = $false}
+                Filter = [pscustomobject]@{Tag = @(); ExcludeTag = @()}
+                Output = [pscustomobject]@{Verbosity = 'Detailed'; RenderMode = 'Auto'}
+                TestResult = [pscustomobject]@{OutputPath = $null}
+            }
+
+            Mock Test-ProjectSchema {}
+            Mock Get-NovaProjectInfo {[pscustomobject]@{Pester = @{}; BuildRecursiveFolders = $true; TestsDir = 'tests'}}
+            Mock New-PesterConfiguration {$cfg}
+            Mock Invoke-Pester {[pscustomobject]@{Result = 'Passed'}}
+
+            Test-NovaBuild -OutputVerbosity Normal -OutputRenderMode Plaintext
+
+            $cfg.Output.Verbosity | Should -Be 'Normal'
+            $cfg.Output.RenderMode | Should -Be 'Plaintext'
+        }
+    }
+
     It 'Invoke-NovaRelease runs build test bump build publish in order' {
         InModuleScope $script:moduleName {
             $script:steps = @()

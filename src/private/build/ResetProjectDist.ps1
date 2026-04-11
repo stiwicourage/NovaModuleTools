@@ -7,7 +7,7 @@ function Reset-ProjectDist {
     try {
         Write-Verbose 'Running dist folder reset'
         if (Test-Path $data.OutputDir) {
-            Remove-Item -Path $data.OutputDir -Recurse -Force
+            Remove-Item -Path $data.OutputDir -Recurse -Force -ProgressAction SilentlyContinue
         }
         # Setup Folders
         New-Item -Path $data.OutputDir -ItemType Directory -Force | Out-Null # Dist folder

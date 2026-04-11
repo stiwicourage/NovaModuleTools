@@ -2,7 +2,11 @@ function Test-NovaBuild {
     [CmdletBinding()]
     param (
         [string[]]$TagFilter,
-        [string[]]$ExcludeTagFilter
+        [string[]]$ExcludeTagFilter,
+        [ValidateSet('None', 'Normal', 'Detailed', 'Diagnostic')]
+        [string]$OutputVerbosity,
+        [ValidateSet('Auto', 'Plaintext', 'Ansi')]
+        [string]$OutputRenderMode
     )
     Test-ProjectSchema Pester | Out-Null
     $Script:data = Get-NovaProjectInfo
@@ -21,6 +25,14 @@ function Test-NovaBuild {
     $pesterConfig.Run.Throw = $true
     $pesterConfig.Filter.Tag = $TagFilter
     $pesterConfig.Filter.ExcludeTag = $ExcludeTagFilter
+    if ( $PSBoundParameters.ContainsKey('OutputVerbosity')) {
+        $pesterConfig.Output.Verbosity = $OutputVerbosity
+    }
+
+    if ( $PSBoundParameters.ContainsKey('OutputRenderMode')) {
+        $pesterConfig.Output.RenderMode = $OutputRenderMode
+    }
+
     $pesterConfig.TestResult.OutputPath = './dist/TestResults.xml'
     $TestResult = Invoke-Pester -Configuration $pesterConfig
     if ($TestResult.Result -ne 'Passed') {
