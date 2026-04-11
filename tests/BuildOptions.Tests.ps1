@@ -161,6 +161,23 @@ Describe 'Invoke-NovaBuild options' {
         Get-Command Invoke-PublicTop -Module SetSourceOn | Should -Not -BeNullOrEmpty
         Remove-Module SetSourceOn -ErrorAction SilentlyContinue
     }
+
+    It 'copyResourcesToModuleRoot=true copies resource content directly into the built module root' {
+        $project = New-TestProjectWithResources -TestDriveRoot $TestDrive -Name 'ResourceToRoot' -CopyResourcesToModuleRoot $true
+
+        (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'config.json')) | Should -BeTrue
+        (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'nested/child.txt')) | Should -BeTrue
+        (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'resources')) | Should -BeFalse
+    }
+
+    It 'copyResourcesToModuleRoot=false keeps resources inside a resources folder in the built module' {
+        $project = New-TestProjectWithResources -TestDriveRoot $TestDrive -Name 'ResourceToFolder' -CopyResourcesToModuleRoot $false
+
+        (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'resources/config.json')) | Should -BeTrue
+        (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'resources/nested/child.txt')) | Should -BeTrue
+        (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'config.json')) | Should -BeFalse
+    }
+
     Context 'Test-NovaBuild discovery for BuildRecursiveFolders=<BuildRecursiveFolders>' -ForEach @(
         @{ Name = 'TestsTopOnly'; BuildRecursiveFolders = $false; ExpectedNestedMarker = $false }
         @{ Name = 'TestsRecursive'; BuildRecursiveFolders = $true; ExpectedNestedMarker = $true }

@@ -72,6 +72,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
   silently tolerated.
 - Fixed local module path resolution maintainability by refactoring `Get-LocalModulePath` to Code Health `10.0` and
   adding regression coverage for both the matching and error paths.
+- Fixed resource-copy maintainability by refactoring `Copy-ProjectResource` to Code Health `10.0` and adding regression
+  coverage for both `copyResourcesToModuleRoot` modes.
 
 ### Documentation
 

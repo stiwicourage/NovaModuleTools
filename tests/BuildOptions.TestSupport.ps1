@@ -68,6 +68,10 @@ function Write-TestProjectJson {
         $project.FailOnDuplicateFunctionNames = [bool]$Options.FailOnDuplicateFunctionNames
     }
 
+    if ( $Options.ContainsKey('copyResourcesToModuleRoot')) {
+        $project.copyResourcesToModuleRoot = [bool]$Options.copyResourcesToModuleRoot
+    }
+
     $json = $project | ConvertTo-Json -Depth 10
     Set-Content -LiteralPath (Join-Path $ProjectRoot 'project.json') -Value $json -Encoding utf8
 }
@@ -301,6 +305,34 @@ Test-NovaBuild
     }
     finally {
         Remove-Item -LiteralPath $scriptPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function New-TestProjectWithResources {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$TestDriveRoot,
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][bool]$CopyResourcesToModuleRoot
+    )
+
+    $root = New-TestProjectRoot -TestDriveRoot $TestDriveRoot -Name $Name
+    Write-TestProjectJson -ProjectRoot $root -Options @{
+        ProjectName = $Name
+        BuildRecursiveFolders = $false
+        FailOnDuplicateFunctionNames = $false
+        copyResourcesToModuleRoot = $CopyResourcesToModuleRoot
+    }
+
+    New-Item -ItemType Directory -Path (Join-Path $root 'src/resources/nested') -Force | Out-Null
+    Set-Content -LiteralPath (Join-Path $root 'src/public/PublicTop.ps1') -Value 'function Invoke-PublicTop { }' -Encoding utf8
+    Set-Content -LiteralPath (Join-Path $root 'src/resources/config.json') -Value '{"key":"value"}' -Encoding utf8
+    Set-Content -LiteralPath (Join-Path $root 'src/resources/nested/child.txt') -Value 'child' -Encoding utf8
+
+    $psm1 = Invoke-TestProjectBuild -ProjectRoot $root
+    return [pscustomobject]@{
+        Root = $root
+        ModuleDir = Split-Path -Parent $psm1
     }
 }
 
