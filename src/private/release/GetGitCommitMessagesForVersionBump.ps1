@@ -26,4 +26,3 @@ function Get-GitCommitMessageForVersionBump {
     $commits = $text -split '(?m)^--END-COMMIT--\r?$'
     return @($commits | ForEach-Object {$_.Trim()} | Where-Object {-not [string]::IsNullOrWhiteSpace($_)})
 }
-

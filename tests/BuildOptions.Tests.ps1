@@ -7,14 +7,14 @@ BeforeAll {
 
     $distModuleDir = Join-Path $repoRoot "dist/$moduleName"
     if (-not (Test-Path -LiteralPath $distModuleDir)) {
-        throw "Expected built $moduleName module at: $distModuleDir. Run Invoke-MTBuild in the repo root first."
+        throw "Expected built $moduleName module at: $distModuleDir. Run Invoke-NovaBuild in the repo root first."
     }
 
     Remove-Module $moduleName -ErrorAction SilentlyContinue
     Import-Module $distModuleDir -Force
 }
 
-Describe 'Invoke-MTBuild options' {
+Describe 'Invoke-NovaBuild options' {
     BeforeEach {
         . (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1')
     }
@@ -84,7 +84,7 @@ Describe 'Invoke-MTBuild options' {
 
         Push-Location -LiteralPath $root
         try {
-            (Get-MTProjectInfo).SetSourcePath | Should -BeTrue
+            (Get-NovaProjectInfo).SetSourcePath | Should -BeTrue
         }
         finally {
             Pop-Location
@@ -151,7 +151,7 @@ Describe 'Invoke-MTBuild options' {
         Get-Command Invoke-PublicTop -Module SetSourceOn | Should -Not -BeNullOrEmpty
         Remove-Module SetSourceOn -ErrorAction SilentlyContinue
     }
-    Context 'Invoke-MTTest discovery for BuildRecursiveFolders=<BuildRecursiveFolders>' -ForEach @(
+    Context 'Test-NovaBuild discovery for BuildRecursiveFolders=<BuildRecursiveFolders>' -ForEach @(
         @{ Name = 'TestsTopOnly'; BuildRecursiveFolders = $false; ExpectedNestedMarker = $false }
         @{ Name = 'TestsRecursive'; BuildRecursiveFolders = $true; ExpectedNestedMarker = $true }
     ) {
@@ -169,12 +169,12 @@ Describe 'Invoke-MTBuild options' {
         $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupDefault' -Options @{ ProjectName = 'DupDefault'; BuildRecursiveFolders = $false; SetSourcePath = $false }
 
         (Get-TestProjectInfoValue -ProjectRoot $root -PropertyName 'FailOnDuplicateFunctionNames') | Should -BeTrue
-        Assert-InvokeMTBuildThrows -ProjectRoot $root
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root
     }
 
     It 'FailOnDuplicateFunctionNames=true fails when built psm1 contains duplicate top-level function names' {
         $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupFail' -Options @{ ProjectName = 'DupFail'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $true }
-        Assert-InvokeMTBuildThrows -ProjectRoot $root
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root
     }
 
     It 'FailOnDuplicateFunctionNames=false allows duplicates (last wins) for backward compatibility' {

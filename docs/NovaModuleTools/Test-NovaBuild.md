@@ -6,10 +6,10 @@ Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 03/19/2026
 PlatyPS schema version: 2024-05-01
-title: Invoke-MTTest
+title: Test-NovaBuild
 ---
 
-# Invoke-MTTest
+# Test-NovaBuild
 
 ## SYNOPSIS
 
@@ -20,7 +20,7 @@ Runs Pester tests using settings from project.json
 ### __AllParameterSets
 
 ```
-Invoke-MTTest [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>] [<CommonParameters>]
+Test-NovaBuild [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -36,17 +36,17 @@ Run Pester tests using the specified configuration and settings as defined in pr
 
 ### EXAMPLE 1
 
-Invoke-MTTest
+Test-NovaBuild
 Runs the Pester tests for the project.
 
 ### EXAMPLE 2
 
-Invoke-MTTest -TagFilter "unit","integrate"
+Test-NovaBuild -TagFilter "unit","integrate"
 Runs the Pester tests for the project, that has tag unit or integrate
 
 ### EXAMPLE 3
 
-Invoke-MTTest -ExcludeTagFilter "unit"
+Test-NovaBuild -ExcludeTagFilter "unit"
 Runs the Pester tests for the project, excludes any test with tag unit
 
 ## PARAMETERS
@@ -109,6 +109,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## RELATED LINKS
 
 {{ Fill in the related links here }}
+
 
 
 

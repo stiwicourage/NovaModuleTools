@@ -6,10 +6,10 @@ Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 03/19/2026
 PlatyPS schema version: 2024-05-01
-title: Invoke-MTBuild
+title: Invoke-NovaBuild
 ---
 
-# Invoke-MTBuild
+# Invoke-NovaBuild
 
 ## SYNOPSIS
 
@@ -20,7 +20,7 @@ Build a ModuleTool project to generate ready to import PowerShell Module.
 ### __AllParameterSets
 
 ```
-Invoke-MTBuild [<CommonParameters>]
+Invoke-NovaBuild [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -37,11 +37,11 @@ copies all necessary resource files.
 
 ### EXAMPLE 1: Builds module from the project files.
 
-Invoke-MTBuild
+Invoke-NovaBuild
 
 ### EXAMPLE 2: Builds module and outputs verbose details during entire workflow.
 
-Invoke-MTBuild -Verbose
+Invoke-NovaBuild -Verbose
 
 ## PARAMETERS
 
@@ -61,3 +61,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## RELATED LINKS
 
 {{ Fill in the related links here }}
+

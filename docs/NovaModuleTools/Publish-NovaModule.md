@@ -6,10 +6,10 @@ Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 03/19/2026
 PlatyPS schema version: 2024-05-01
-title: Publish-MTLocal
+title: Publish-NovaModule
 ---
 
-# Publish-MTLocal
+# Publish-NovaModule
 
 ## SYNOPSIS
 
@@ -20,7 +20,7 @@ Copy built module to local PSModulePath.
 ### __AllParameterSets
 
 ```
-Publish-MTLocal [[-ModuleDirectoryPath] <string>] [<CommonParameters>]
+Publish-NovaModule [[-ModuleDirectoryPath] <string>] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -36,12 +36,12 @@ Useful quick testing and private modules which don't get hosted in PSGallery or 
 
 ### Example 1
 
-Publish-MTLocal
+Publish-NovaModule
 Publishes to local $PSModulePath
 
 ### Example 2
 
-Publish-MTLocal -ModuleDirectoryPath \\Some\Path
+Publish-NovaModule -ModuleDirectoryPath \\Some\Path
 Publishes/Copies to path provided
 
 ## PARAMETERS
@@ -89,5 +89,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## RELATED LINKS
 
 {{ Fill in the related links here }}
+
 
 

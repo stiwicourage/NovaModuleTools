@@ -16,7 +16,7 @@ Write-ProjectJsonVersion -Path $ProjectFile -Version $Version
 Write-ChangelogFileForRelease -Path $ChangelogFile -Version $Version -Date (Get-ReleaseDateString)
 
 Import-Module NovaModuleTools -Force
-Invoke-MTBuild -Verbose
+Invoke-NovaBuild -Verbose
 
 
 

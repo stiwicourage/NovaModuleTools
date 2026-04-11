@@ -1,6 +1,17 @@
 function Invoke-NovaBuild {
     [CmdletBinding()]
-    param()
+    param (
+    )
+    $ErrorActionPreference = 'Stop'
+    Reset-ProjectDist
+    Build-Module
 
-    Invoke-MTBuild
+    $data = Get-NovaProjectInfo
+    if ($data.FailOnDuplicateFunctionNames) {
+        Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo $data
+    }
+
+    Build-Manifest
+    Build-Help
+    Copy-ProjectResource
 }

@@ -6,10 +6,10 @@ Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 03/19/2026
 PlatyPS schema version: 2024-05-01
-title: New-MTModule
+title: New-NovaModule
 ---
 
-# New-MTModule
+# New-NovaModule
 
 ## SYNOPSIS
 
@@ -20,7 +20,7 @@ Create module scaffolding along with project.json file to easily build and manag
 ### __AllParameterSets
 
 ```
-New-MTModule [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+New-NovaModule [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -36,7 +36,7 @@ This command creates folder structure and project.json file easily. Use this to 
 
 ### EXAMPLE 1
 
-New-MTModule -Path c:\work
+New-NovaModule -Path c:\work
 Creates module inside c:\work folder
 
 ## PARAMETERS
@@ -126,6 +126,7 @@ While some design decisions may seem unconventional, they are made to ensure tha
 ## RELATED LINKS
 
 {{ Fill in the related links here }}
+
 
 
 

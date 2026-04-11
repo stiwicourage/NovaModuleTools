@@ -26,7 +26,9 @@ Install-Module -Name NovaModuleTools
 
 ## 🧵 Design
 
-To ensure this module works correctly, you need to maintain the folder structure and the `project.json` file path. The best way to get started is by running the `New-MTModule` command, which guides you through a series of questions and creates the necessary scaffolding.
+To ensure this module works correctly, you need to maintain the folder structure and the `project.json` file path. The
+best way to get started is by running the `New-NovaModule` command, which guides you through a series of questions and
+creates the necessary scaffolding.
 
 ## 📂 Folder Structure
 
@@ -64,14 +66,14 @@ Store `Microsoft.PowerShell.PlatyPS` generated Markdown files in the `docs` fold
 ```
 docs
 ├── NovaModuleTools.md
-└── Invoke-MTBuild.md
+└── Invoke-NovaBuild.md
 ```
 
 ### Project JSON File
 
 The `project.json` file contains all the important details about your module and is used during the module build. It should comply with a specific schema. You can refer to the sample `project-sample.json` file in the `example` directory for guidance.
 
-Run `New-MTModule` to generate the scaffolding; this will also create the `project.json` file.
+Run `New-NovaModule` to generate the scaffolding; this will also create the `project.json` file.
 
 #### Build settings (optional)
 
@@ -81,7 +83,8 @@ If a setting is omitted, NovaModuleTools now treats it as `true` by default:
 - `BuildRecursiveFolders` (default: `true`)
   - When `true`, NovaModuleTools will discover `.ps1` files recursively in `src/classes` and `src/private`.
   - `src/public` is always **top-level only** (never recursive).
-  - For `Invoke-MTTest`, `BuildRecursiveFolders=false` runs only top-level `tests/*.Tests.ps1` files (the usual Pester naming convention), while `BuildRecursiveFolders=true` also includes tests in subfolders.
+  - For `Test-NovaBuild`, `BuildRecursiveFolders=false` runs only top-level `tests/*.Tests.ps1` files (the usual Pester
+    naming convention), while `BuildRecursiveFolders=true` also includes tests in subfolders.
 - `SetSourcePath` (default: `true`)
   - When `true`, NovaModuleTools writes exactly one `# Source: <relative path>` line before each concatenated source file in the generated `dist/<Project>/<Project>.psm1`.
   - Relative paths are project-relative and normalized to `/`, for example `# Source: src/private/core/security/SetTls12SecurityProtocol.ps1`.
@@ -182,49 +185,82 @@ If you want to run Pester tests, keep them in the `tests` folder. Otherwise, you
 
 ## 💻 Commands
 
-### New-MTModule
+### New-NovaModule
 
 This interactive command helps you create the module structure. Easily create the skeleton of your module and get started with module building in no time.
 
 ```powershell
 ## Create a module skeleton in Work Directory
-New-MTModule ~/Work
+New-NovaModule ~/Work
 ```
 
 ![image-20240625210008896](./assets/image-20240625210008896.png)
 
-### Invoke-MTBuild
+### Invoke-NovaBuild
 
-`NovaModuleTools` is designed so that you don't need any additional tools like `make` or `psake` to run the build commands. There's no need to maintain complex `build.ps1` files or sample `.psd1` files. Simply follow the structure outlined above, and you can run `Invoke-MTBuild` to build the module. The output will be saved in the `dist` folder, ready for distribution.
+`NovaModuleTools` is designed so that you don't need any additional tools like `make` or `psake` to run the build
+commands. There's no need to maintain complex `build.ps1` files or sample `.psd1` files. Simply follow the structure
+outlined above, and you can run `Invoke-NovaBuild` to build the module. The output will be saved in the `dist` folder,
+ready for distribution.
 
-If `SetSourcePath` is enabled in `project.json`, `Invoke-MTBuild` also annotates the generated `.psm1` with `# Source: src/...` comments before each concatenated file block to make debugging easier.
+If `SetSourcePath` is enabled in `project.json`, `Invoke-NovaBuild` also annotates the generated `.psm1` with
+`# Source: src/...` comments before each concatenated file block to make debugging easier.
 
 ```powershell
 # From the Module root 
-Invoke-MTBuild
+Invoke-NovaBuild
 
 ## Verbose for more details
-Invoke-MTBuild -Verbose
+Invoke-NovaBuild -Verbose
 ```
 
-### Get-MTProjectInfo
+### Get-NovaProjectInfo
 
 This function provides complete info about the project, which can be used in Pester tests or for general troubleshooting.
 
-### Invoke-MTTest
+### Test-NovaBuild
 
-All Pester configuration is stored in `project.json`. Run `Invoke-MTTest` from the project root. With the default `BuildRecursiveFolders=true`, it discovers test files in nested folders under `tests`; set `BuildRecursiveFolders=false` to run only top-level `tests/*.Tests.ps1` files, matching Pester's normal test-file convention.
+All Pester configuration is stored in `project.json`. Run `Test-NovaBuild` from the project root. With the default
+`BuildRecursiveFolders=true`, it discovers test files in nested folders under `tests`; set `BuildRecursiveFolders=false`
+to run only top-level `tests/*.Tests.ps1` files, matching Pester's normal test-file convention.
 
 - To skip a test inside the test directory, use `-skip` in a `Describe`/`It`/`Context` block within the Pester test.
-- Use `Get-MTProjectInfo` command inside pester to get great amount of info about project and files
+- Use `Get-NovaProjectInfo` command inside pester to get great amount of info about project and files
 
-### Update-MTModuleVersion
+### Publish-NovaModule
+
+Use `Publish-NovaModule` to build, test, and publish in one step.
+
+```powershell
+# Publish to your local PowerShell modules path
+Publish-NovaModule -Local
+
+# Publish to a repository
+Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
+```
+
+For local mode, `Publish-NovaModule -Local` copies the built module directly to your local module path.
+
+> [!TIP]
+> During local development, make sure your shell uses the module you just built (not an older installed copy).
+>
+> ```powershell
+> Remove-Module NovaModuleTools -ErrorAction SilentlyContinue
+> Import-Module ./dist/NovaModuleTools -Force
+> Publish-NovaModule -Local
+> ```
+
+When running from the repository root, build-time schema/resource lookup also falls back to project resources under
+`src/resources`.
+
+### Update-NovaModuleVersion
 
 A simple command to update the module version by modifying the values in `project.json`. You can also manually edit the file in your favorite editor. This command makes it easy to update the semantic version.
 
-- Running `Update-MTModuleVersion` without any parameters will update the patch version (e.g., 1.2.3 -> 1.2.4)
-- Running `Update-MTModuleVersion -Label Major` updates the major version and resets Minor, Patch to 0 (e.g., 1.2.1 -> 2.0.0)
-- Running `Update-MTModuleVersion -Label Minor` updates the minor version and resets Patch to 0 (e.g., 1.2.3 -> 1.3.0)
+- Running `Update-NovaModuleVersion` without any parameters will update the patch version (e.g., 1.2.3 -> 1.2.4)
+- Running `Update-NovaModuleVersion -Label Major` updates the major version and resets Minor, Patch to 0 (e.g., 1.2.1 ->
+  2.0.0)
+- Running `Update-NovaModuleVersion -Label Minor` updates the minor version and resets Patch to 0 (e.g., 1.2.3 -> 1.3.0)
 
 ## Advanced - Use it in Github Actions
 
@@ -281,11 +317,11 @@ jobs:
         shell: pwsh
 
       - name: Build Module
-        run: Invoke-MTBuild -Verbose
+        run: Invoke-NovaBuild -Verbose
         shell: pwsh
 
       - name: Run Pester Tests
-        run: Invoke-MTTest
+        run: Test-NovaBuild
         shell: pwsh
 
       - name: Run semantic-release

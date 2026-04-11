@@ -1,7 +1,7 @@
 function Build-Module {
-    $data = Get-MTProjectInfo
-    $MTBuildVersion = (Get-Command Invoke-MTBuild).Version
-    Write-Verbose "Running ModuleTols Version: $MTBuildVersion"
+    $data = Get-NovaProjectInfo
+    $novaBuildVersion = (Get-Command Invoke-NovaBuild).Version
+    Write-Verbose "Running NovaModuleTools Version: $novaBuildVersion"
     Write-Verbose 'Buidling module psm1 file'
     Test-ProjectSchema -Schema Build | Out-Null
 

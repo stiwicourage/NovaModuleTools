@@ -6,10 +6,10 @@ Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 03/19/2026
 PlatyPS schema version: 2024-05-01
-title: Get-MTProjectInfo
+title: Get-NovaProjectInfo
 ---
 
-# Get-MTProjectInfo
+# Get-NovaProjectInfo
 
 ## SYNOPSIS
 
@@ -20,14 +20,15 @@ Retrieves information about a project by reading data from a project.json file i
 ### __AllParameterSets
 
 ```
-Get-MTProjectInfo [[-Path] <string>] [<CommonParameters>]
+Get-NovaProjectInfo [[-Path] <string>] [<CommonParameters>]
 ```
 
 ## ALIASES
 
 ## DESCRIPTION
 
-The Get-MTProjectInfo function retrieves information about a project by reading data from a project.json file located in the current directory.
+The Get-NovaProjectInfo function retrieves information about a project by reading data from a project.json file located
+in the current directory.
 Ensure you navigate to a module directory which has project.json in root directory.
 Most variables are already defined in output of this command which can be used in pester tests and other configs.
 
@@ -35,7 +36,7 @@ Most variables are already defined in output of this command which can be used i
 
 ### EXAMPLE 1
 
-Get-MTProjectInfo
+Get-NovaProjectInfo
 Retrieves project information from the project.json file in the current directory. Useful for debuggin and writing pester tests.
 
 ## PARAMETERS
@@ -74,5 +75,6 @@ HelpMessage: ''
 ## RELATED LINKS
 
 {{ Fill in the related links here }}
+
 
 

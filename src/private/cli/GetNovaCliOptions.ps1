@@ -48,4 +48,3 @@ function ConvertFrom-NovaCliArgument {
 
     return $options
 }
-

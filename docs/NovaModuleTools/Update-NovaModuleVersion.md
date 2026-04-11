@@ -6,10 +6,10 @@ Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 03/19/2026
 PlatyPS schema version: 2024-05-01
-title: Update-MTModuleVersion
+title: Update-NovaModuleVersion
 ---
 
-# Update-MTModuleVersion
+# Update-NovaModuleVersion
 
 ## SYNOPSIS
 
@@ -20,7 +20,7 @@ Updates the version number of a module in project.json file. Uses [semver] objec
 ### __AllParameterSets
 
 ```
-Update-MTModuleVersion [[-Label] <string>] [-PreviewRelease] [-StableRelease] [-WhatIf] [-Confirm]
+Update-NovaModuleVersion [[-Label] <string>] [-PreviewRelease] [-StableRelease] [-WhatIf] [-Confirm]
  [<CommonParameters>]
 ```
 
@@ -40,17 +40,17 @@ Can also attach preview/stable release to Release property
 
 ### EXAMPLE 1
 
-Update-MTModuleVersion -Label Major
+Update-NovaModuleVersion -Label Major
 Updates the Major version part of the module. Version 2.1.3 will become 3.0.0.
 
 ### EXAMPLE 2
 
-Update-MTModuleVersion
+Update-NovaModuleVersion
 Updates the Patch version part of the module. Version 2.1.3 will become 2.1.4
 
 ### EXAMPLE 3
 
-Update-MTModuleVersion -PreviewRelease
+Update-NovaModuleVersion -PreviewRelease
 Updates the Patch version part of the module. Version 2.1.6 will become 2.1.7-preview
 
 ## PARAMETERS
@@ -182,5 +182,6 @@ Ensure you are in project directory when you run this command.
 ## RELATED LINKS
 
 {{ Fill in the related links here }}
+
 
 

@@ -4,8 +4,8 @@ function Build-Help {
     )
     Write-Verbose 'Running Help update'
 
-    $data = Get-MTProjectInfo
-    $helpMarkdownFiles = Get-ChildItem -Path $data.DocsDir -Filter '*.md' -Recurse 
+    $data = Get-NovaProjectInfo
+    $helpMarkdownFiles = Get-ChildItem -Path $data.DocsDir -Filter '*.md' -Recurse
 
     if (-not $helpMarkdownFiles) {
         Write-Verbose 'No help markdown files in docs directory, skipping building help' 

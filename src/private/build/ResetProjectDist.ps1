@@ -3,7 +3,7 @@ function Reset-ProjectDist {
     param (
     )
     $ErrorActionPreference = 'Stop'
-    $data = Get-MTProjectInfo
+    $data = Get-NovaProjectInfo
     try {
         Write-Verbose 'Running dist folder reset'
         if (Test-Path $data.OutputDir) {
