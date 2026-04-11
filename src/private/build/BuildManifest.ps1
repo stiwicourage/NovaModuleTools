@@ -1,8 +1,9 @@
 function Build-Manifest {
+    [CmdletBinding()]
+    param()
+
     Write-Verbose 'Building psd1 data file Manifest'
     $data = Get-NovaProjectInfo
-
-    ## TODO - DO schema check
 
     $PubFunctionFiles = Get-ChildItem -Path $data.PublicDir -Filter *.ps1
     $functionToExport = @()
@@ -33,6 +34,7 @@ function Build-Manifest {
     }
 
     $ManfiestAllowedParams = (Get-Command New-ModuleManifest).Parameters.Keys
+    Assert-ManifestSchema -Manifest $data.Manifest -AllowedParameter $ManfiestAllowedParams
     $sv = [semver]$data.Version
     $ParmsManifest = @{
         Path              = $data.ManifestFilePSD1
@@ -56,8 +58,6 @@ function Build-Manifest {
             if ($data.Manifest.$_) {
                 $ParmsManifest.add($_, $data.Manifest.$_ )
             }
-        } else {
-            Write-Warning "Unknown parameter $_ in Manifest"
         }
     }
 

@@ -172,6 +172,27 @@ Describe 'Invoke-NovaBuild options' {
         Assert-InvokeNovaBuildThrows -ProjectRoot $root
     }
 
+    It 'fails build when Manifest contains unsupported New-ModuleManifest parameters' {
+        $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'BadManifestParameter'
+        Write-TestProjectJson -ProjectRoot $root -Options @{ProjectName = 'BadManifestParameter'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false}
+        Set-Content -LiteralPath (Join-Path $root 'src/public/PublicTop.ps1') -Value 'function Invoke-PublicTop { }' -Encoding utf8
+
+        $projectJsonPath = Join-Path $root 'project.json'
+        $project = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json -AsHashtable
+        $project.Manifest['BogusKey'] = 'nope'
+        $project | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $projectJsonPath -Encoding utf8
+
+        {
+            Push-Location -LiteralPath $root
+            try {
+                Invoke-NovaBuild
+            }
+            finally {
+                Pop-Location
+            }
+        } | Should -Throw 'Unknown parameter(s) in Manifest: BogusKey'
+    }
+
     It 'FailOnDuplicateFunctionNames=true fails when built psm1 contains duplicate top-level function names' {
         $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupFail' -Options @{ ProjectName = 'DupFail'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $true }
         Assert-InvokeNovaBuildThrows -ProjectRoot $root
