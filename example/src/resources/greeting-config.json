@@ -1,0 +1,5 @@
+{
+  "GreetingPrefix": "Hello",
+  "DefaultAudience": "Nova user",
+  "Scenario": "NovaModuleTools example project"
+}

@@ -57,7 +57,10 @@ docs
 ```
 
 ### Project JSON File
-The `project.json` file contains all the important details about your module and is used during the module build. It should comply with a specific schema. You can refer to the sample `project-sample.json` file in the `example` directory for guidance.
+
+The `project.json` file contains all the important details about your module and is used during the module build. It
+should comply with a specific schema. You can refer to the working example project in `example/`, especially
+`example/project.json` and `example/README.md`, for guidance.
 
 Run `New-NovaModule` (`nova init`) to generate the scaffolding; this will also create the `project.json` file.
 

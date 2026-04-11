@@ -30,6 +30,16 @@ Describe 'Invoke-NovaBuild options' {
         }
     }
 
+    It 'example project builds and tests successfully as a working reference project' {
+        $exampleRoot = Join-Path $repoRoot 'example'
+        $result = Invoke-TestProjectTests -ProjectRoot $exampleRoot -ModulePath $distModuleDir
+        $exampleProject = Get-Content -LiteralPath (Join-Path $exampleRoot 'project.json') -Raw | ConvertFrom-Json
+        $builtModulePath = Join-Path $exampleRoot ("dist/{0}/{0}.psm1" -f $exampleProject.ProjectName)
+
+        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
+        (Test-Path -LiteralPath $builtModulePath) | Should -BeTrue
+    }
+
     It 'BuildRecursiveFolders=false excludes nested classes/private and nested public' {
         $root = New-TestProjectWithNestedSourceFiles -TestDriveRoot $TestDrive -Name 'NoRecurse' -Options @{ ProjectName = 'NoRecurse'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false }
         $summary = Get-NestedSourceBuildSummary -ProjectRoot $root
