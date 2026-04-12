@@ -1,5 +1,57 @@
+$script:buildOptionsTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1')).Path
+$script:buildOptionsTestSupportFunctionNameList = @(
+    'New-TestProjectRoot'
+    'Write-TestProjectJson'
+    'Get-BuiltModuleFilePath'
+    'Invoke-TestProjectBuild'
+    'Get-BuiltModuleContent'
+    'Invoke-BuildAndParsePsm1Ast'
+    'Get-TestProjectInfoValue'
+    'New-TestProjectWithNestedSourceFiles'
+    'Get-NestedSourceBuildSummary'
+    'New-TestProjectWithDuplicateFunctions'
+    'Assert-InvokeNovaBuildThrows'
+    'Get-TopLevelFunctionAstFromAst'
+    'Write-TestMarkerPesterFile'
+    'Invoke-TestProjectTests'
+    'New-TestProjectWithResources'
+    'New-TestProjectWithMarkerTests'
+)
+
+. $script:buildOptionsTestSupportPath
+
+foreach ($functionName in $script:buildOptionsTestSupportFunctionNameList) {
+    $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+    Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+}
+
 BeforeAll {
-    Import-Module (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1') -Force -Global
+    $buildOptionsTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1')).Path
+    $buildOptionsTestSupportFunctionNameList = @(
+        'New-TestProjectRoot'
+        'Write-TestProjectJson'
+        'Get-BuiltModuleFilePath'
+        'Invoke-TestProjectBuild'
+        'Get-BuiltModuleContent'
+        'Invoke-BuildAndParsePsm1Ast'
+        'Get-TestProjectInfoValue'
+        'New-TestProjectWithNestedSourceFiles'
+        'Get-NestedSourceBuildSummary'
+        'New-TestProjectWithDuplicateFunctions'
+        'Assert-InvokeNovaBuildThrows'
+        'Get-TopLevelFunctionAstFromAst'
+        'Write-TestMarkerPesterFile'
+        'Invoke-TestProjectTests'
+        'New-TestProjectWithResources'
+        'New-TestProjectWithMarkerTests'
+    )
+
+    . $buildOptionsTestSupportPath
+
+    foreach ($functionName in $buildOptionsTestSupportFunctionNameList) {
+        $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+        Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+    }
 
     $here = Split-Path -Parent $PSCommandPath
     $repoRoot = Split-Path -Parent $here
@@ -15,9 +67,6 @@ BeforeAll {
 }
 
 Describe 'Invoke-NovaBuild options' {
-    BeforeEach {
-        . (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1')
-    }
 
     It 'project template and example project use enterprise defaults' {
         $template = Get-Content -LiteralPath (Join-Path $repoRoot 'src/resources/ProjectTemplate.json') -Raw | ConvertFrom-Json

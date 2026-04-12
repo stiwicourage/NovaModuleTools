@@ -1,6 +1,6 @@
 BeforeAll {
-    Remove-Module NovaCommandModel.TestSupport -ErrorAction SilentlyContinue
-    Import-Module (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.psm1') -Force
+
+    $testSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.ps1')).Path
 
     $here = Split-Path -Parent $PSCommandPath
     $repoRoot = Split-Path -Parent $here
@@ -15,10 +15,19 @@ BeforeAll {
     Remove-Module $script:moduleName -ErrorAction SilentlyContinue
     Import-Module $distModuleDir -Force
 
-    $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:projectInfo.DocsDir -Filter '*.md' -Recurse
-    $script:helpLocale = Get-TestHelpLocaleFromMarkdownFiles -Files $helpMarkdownFiles
+    $helpMetadata = & {
+        . $testSupportPath
+
+        $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:projectInfo.DocsDir -Filter '*.md' -Recurse
+        [pscustomobject]@{
+            HelpLocale = Get-TestHelpLocaleFromMarkdownFiles -Files $helpMarkdownFiles
+            HelpActivationTestCases = Get-CommandHelpActivationTestCases -DocsDir $script:projectInfo.DocsDir
+        }
+    }
+
+    $script:helpLocale = $helpMetadata.HelpLocale
     $script:helpXmlPath = Join-Path $distModuleDir "$script:helpLocale/$script:moduleName-Help.xml"
-    $script:helpActivationTestCases = Get-CommandHelpActivationTestCases -DocsDir $script:projectInfo.DocsDir
+    $script:helpActivationTestCases = $helpMetadata.HelpActivationTestCases
 }
 
 Describe 'Nova command model' {
@@ -44,7 +53,14 @@ Describe 'Nova command model' {
 
             $help | Should -Not -BeNullOrEmpty -Because "Get-Help should activate $( $testCase.FileName )"
             $help.Name | Should -Be $testCase.HelpTarget -Because "$( $testCase.FileName ) should resolve to $( $testCase.HelpTarget )"
-            (ConvertTo-TestNormalizedText -Text $help.Synopsis) | Should -Be $testCase.ExpectedSynopsis -Because "$( $testCase.FileName ) synopsis should come from the generated help"
+            $(
+            if ( [string]::IsNullOrWhiteSpace($help.Synopsis)) {
+                $null
+            }
+            else {
+                ($help.Synopsis -replace '\s+', ' ').Trim()
+            }
+            ) | Should -Be $testCase.ExpectedSynopsis -Because "$( $testCase.FileName ) synopsis should come from the generated help"
         }
     }
 
