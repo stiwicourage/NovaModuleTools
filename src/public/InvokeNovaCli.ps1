@@ -3,7 +3,6 @@ function Invoke-NovaCli {
     [Alias('nova')]
     param(
         [Parameter(Position = 0)]
-        [ValidateSet('info', '--version', '--help', 'build', 'test', 'init', 'publish', 'bump', 'release')]
         [string]$Command = '--help',
 
         [Parameter(Position = 1, ValueFromRemainingArguments)]
@@ -14,11 +13,8 @@ function Invoke-NovaCli {
         'info' {
             return Get-NovaProjectInfo
         }
-        '--version' {
+        'version' {
             return Get-NovaProjectInfo -Version
-        }
-        '--help' {
-            return Get-NovaCliHelp
         }
         'build' {
             return Invoke-NovaBuild
@@ -43,6 +39,15 @@ function Invoke-NovaCli {
         'release' {
             $options = ConvertFrom-NovaCliArgument -Arguments $Arguments
             return Invoke-NovaRelease -PublishOption $options
+        }
+        '--version' {
+            return Get-NovaCliInstalledVersion
+        }
+        '--help' {
+            return Get-NovaCliHelp
+        }
+        default {
+            throw "Unknown command: <$Command> | Use 'nova --help' to see available commands."
         }
     }
 }

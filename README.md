@@ -356,10 +356,12 @@ Invoke-NovaBuild -Verbose
 nova build
 ```
 
-### Get-NovaProjectInfo (`nova info` / `nova --version`)
+### Get-NovaProjectInfo (`nova info` / `nova version`)
 
 This function provides complete info about the project, which can be used in Pester tests or for general
-troubleshooting. Use `nova info` for the full project object or `nova --version` for just the version.
+troubleshooting. Use `nova info` for the full project object or `nova version` for just the project version.
+
+Use `nova --version` when you want to see the installed `NovaModuleTools` module version on the current machine.
 
 ### Test-NovaBuild (`nova test`)
 

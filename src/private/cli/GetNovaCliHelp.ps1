@@ -9,6 +9,7 @@ start a new module project
 
 work with the current project
    info       Show project information
+   version    Show the current project version from project.json
    build      Build the module into the dist folder
    test       Run Pester tests for the project
    bump       Update the module version in project.json
@@ -19,11 +20,12 @@ publish and release
 
 global options
    --help     Show this help message
-   --version  Show the project version from project.json
+   --version  Show the installed NovaModuleTools module version
 
 Examples:
    nova init ~/Work
    nova info
+   nova version
    nova build
    nova test
    nova publish --local
