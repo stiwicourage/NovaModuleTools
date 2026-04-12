@@ -1,6 +1,6 @@
 BeforeAll {
-    . (Join-Path $PSScriptRoot '..' 'build' 'ci' 'CodeSceneCoverageMap.ps1')
-    . (Join-Path $PSScriptRoot '..' 'build' 'ci' 'CodeSceneCoverageXml.ps1')
+    . (Join-Path $PSScriptRoot '..' 'scripts' 'build' 'ci' 'CodeSceneCoverageMap.ps1')
+    . (Join-Path $PSScriptRoot '..' 'scripts' 'build' 'ci' 'CodeSceneCoverageXml.ps1')
 }
 
 Describe 'CodeScene Cobertura remapping helpers' {

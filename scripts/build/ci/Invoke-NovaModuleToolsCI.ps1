@@ -53,7 +53,8 @@ function Copy-NovaModuleToolsTestResultIfPresent {
     }
 }
 
-Set-Location (Split-Path -Parent $PSScriptRoot | Split-Path -Parent)
+$repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..' '..' '..')).Path
+Set-Location $repoRoot
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 
 Import-Module NovaModuleTools -ErrorAction Stop
@@ -90,3 +91,4 @@ Convert-CoberturaCoverageToSourcePath -CoveragePath (Join-Path $OutputDirectory 
 if ($novaModuleToolsTestFailed -or $result.FailedCount -gt 0) {
     exit 1
 }
+

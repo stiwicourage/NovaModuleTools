@@ -33,10 +33,7 @@ jobs:
         run: npm ci
 
       - name: 📦 Install required modules from PSGallery
-        run: |
-          Install-PSResource -Repository PSGallery -Name NovaModuleTools -TrustRepository
-          Install-PSResource -Repository PSGallery -Name Microsoft.PowerShell.PlatyPS -TrustRepository
-          Install-PSResource -Repository PSGallery -Name Pester -TrustRepository
+        run: ./scripts/build/ci/Install-CiPowerShellModules.ps1
 
       - name: 🏗️ Build Module
         run: Invoke-NovaBuild -Verbose

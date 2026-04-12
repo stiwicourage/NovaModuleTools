@@ -27,7 +27,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
   step outside Pester while still producing a CI-friendly report.
 - Added dynamic help activation coverage so command help pages discovered in `docs/` are exercised through built
   `Get-Help` output.
-- Added reusable CI helper scripts under `build/ci/` to install PowerShell dependencies, generate JUnit/Cobertura test
+- Added reusable CI helper scripts under `scripts/build/ci/` to install PowerShell dependencies, generate
+  JUnit/Cobertura test
   reports, remap coverage to source paths, and upload coverage to CodeScene.
 - Added regression coverage for the Cobertura source-path remapping used by the CodeScene upload flow.
 
@@ -35,6 +36,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 - BREAKING CHANGE: The codebase is now fully centered on the Nova command model instead of a mixed MT/Nova
   implementation.
+- Internal CI helper scripts now live under `scripts/build/ci/` so internal project automation stays grouped under one
+  script area outside the built module output.
 - Internal source files were reorganized into clearer areas such as build, CLI, release, shared, scaffold, and duplicate
   validation.
 - Semantic release support helpers now live in `scripts/release/support/` as one function per file while keeping the

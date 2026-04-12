@@ -78,3 +78,4 @@ if ($TriggerAnalysis) {
     Invoke-CodeSceneAnalysisTrigger -CodeSceneUrl $codeSceneUrl -ProjectId $projectId -AccessToken $accessToken
 }
 
+

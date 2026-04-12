@@ -229,11 +229,11 @@ When ScriptAnalyzer runs this way, its findings are written to `artifacts/script
 Pester test cases. `Test-NovaBuild` also writes the Pester XML report to `artifacts/TestResults.xml` so test output and
 quality artifacts stay in the same place.
 
-For CI parity, this repository now also includes reusable helper scripts under `build/ci/`:
+For CI parity, this repository now also includes reusable helper scripts under `scripts/build/ci/`:
 
-- `build/ci/Install-CiPowerShellModules.ps1`
-- `build/ci/Invoke-NovaModuleToolsCI.ps1`
-- `build/ci/Invoke-CodeSceneAnalysis.ps1`
+- `scripts/build/ci/Install-CiPowerShellModules.ps1`
+- `scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
+- `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1`
 
 The CI helper flow builds the module, runs ScriptAnalyzer, runs the normal `Test-NovaBuild` workflow, generates
 additional CI-friendly reports, and remaps Cobertura coverage from `dist/<Project>/<Project>.psm1` back to `src/...`
@@ -454,7 +454,7 @@ jobs:
 
 1. `test-and-coverage`
     - installs the required PowerShell modules
-    - runs `build/ci/Invoke-NovaModuleToolsCI.ps1`
+   - runs `scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
     - uploads `artifacts/` and `dist/` as workflow artifacts
 2. `codescene-analysis`
     - downloads the artifacts from the successful test job
