@@ -9,7 +9,7 @@ Whether you're creating simple or robust modules, NovaModuleTools streamlines th
 The structure of the NovaModuleTools module is meticulously designed according to PowerShell best practices for module development. While some design decisions may seem unconventional, they are made to ensure that NovaModuleTools and the process of building modules remain straightforward and easy to manage.
 
 If you want a more user-focused overview of what NovaModuleTools does and how to get started without diving into all
-repository details, see the public landing page in `docs/public/index.html`.
+repository details, see the public landing page in `docs/index.html`.
 
 ## Install | [![NovaModuleTools@PowerShell Gallery][BadgeIOCount]][PSGalleryLink]
 ```PowerShell
