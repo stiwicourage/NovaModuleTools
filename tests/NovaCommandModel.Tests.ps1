@@ -379,7 +379,7 @@ title: Invoke-NovaBuild
     It 'Install-NovaCli copies the launcher and the installed command returns CLI help' {
         $targetDirectory = Join-Path $TestDrive 'bin'
         $installedPath = Join-Path $targetDirectory 'nova'
-        $projectVersion = $script:projectInfo.Version
+        $installedModuleVersion = (Get-Module $script:moduleName).Version.ToString()
         $originalModulePath = $env:PSModulePath
         $modulePathSeparator = [string][System.IO.Path]::PathSeparator
         $distParent = Split-Path -Parent $distModuleDir
@@ -402,19 +402,29 @@ title: Invoke-NovaBuild
             $helpExitCode | Should -Be 0
             $versionExitCode | Should -Be 0
             $helpText | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
-            $versionText | Should -Match ([regex]::Escape($projectVersion))
+            $helpText | Should -Match 'version\s+Show the current project version from project.json'
+            $versionText | Should -Match ([regex]::Escape($installedModuleVersion))
         }
         finally {
             $env:PSModulePath = $originalModulePath
         }
     }
 
-    It 'Invoke-NovaCli --version maps to Get-NovaProjectInfo -Version' {
+    It 'Invoke-NovaCli version maps to Get-NovaProjectInfo -Version' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {'1.2.3'} -ParameterFilter {$Version}
 
-            Invoke-NovaCli --version | Should -Be '1.2.3'
+            Invoke-NovaCli version | Should -Be '1.2.3'
             Assert-MockCalled Get-NovaProjectInfo -Times 1 -ParameterFilter {$Version}
+        }
+    }
+
+    It 'Invoke-NovaCli --version returns the installed NovaModuleTools version' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaCliInstalledVersion {'9.9.9'}
+
+            Invoke-NovaCli --version | Should -Be '9.9.9'
+            Assert-MockCalled Get-NovaCliInstalledVersion -Times 1
         }
     }
 
@@ -424,6 +434,8 @@ title: Invoke-NovaBuild
 
             $result | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
             $result | Should -Match 'init\s+Create a new Nova module scaffold'
+            $result | Should -Match 'version\s+Show the current project version from project.json'
+            $result | Should -Match '--version\s+Show the installed NovaModuleTools module version'
             $result | Should -Match 'publish\s+Build, test, and publish the module locally or to a repository'
         }
     }
@@ -447,6 +459,12 @@ title: Invoke-NovaBuild
     It 'Invoke-NovaCli throws on unsupported argument' {
         InModuleScope $script:moduleName {
             {Invoke-NovaCli publish --bogus} | Should -Throw 'Unknown argument*'
+        }
+    }
+
+    It 'Invoke-NovaCli throws on an unknown top-level command' {
+        InModuleScope $script:moduleName {
+            {Invoke-NovaCli banana} | Should -Throw 'Unknown command: <banana*'
         }
     }
 }

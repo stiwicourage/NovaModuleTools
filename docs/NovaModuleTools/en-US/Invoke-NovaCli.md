@@ -28,7 +28,8 @@ Invoke-NovaCli [[-Command] <string>] [[-Arguments] <string[]>] [<CommonParameter
 `Invoke-NovaCli` is the cmdlet behind the `nova` alias. In day-to-day usage, the intended experience is to run the
 `nova` command rather than call `Invoke-NovaCli` directly.
 
-It dispatches high-level commands such as `nova info`, `nova --version`, `nova --help`, `nova build`, `nova test`,
+It dispatches high-level commands such as `nova info`, `nova version`, `nova --version`, `nova --help`, `nova build`,
+`nova test`,
 `nova init`, `nova publish`, `nova bump`, and `nova release` to the matching Nova cmdlet.
 
 Use `Invoke-NovaCli` when you need a scriptable PowerShell command entrypoint. Use `nova` when you want the more
@@ -45,9 +46,17 @@ from zsh/bash on macOS or Linux, install the launcher once with `Install-NovaCli
 nova --version
 ```
 
-Returns the version from `project.json`.
+Returns the installed `NovaModuleTools` module version.
 
 ### EXAMPLE 2
+
+```powershell
+nova version
+```
+
+Returns the current project version from `project.json`.
+
+### EXAMPLE 3
 
 ```powershell
 nova build
@@ -55,7 +64,7 @@ nova build
 
 Builds the module using `Invoke-NovaBuild`.
 
-### EXAMPLE 3
+### EXAMPLE 4
 
 ```powershell
 nova publish --repository PSGallery --apikey ***
@@ -63,7 +72,7 @@ nova publish --repository PSGallery --apikey ***
 
 Parses CLI arguments and publishes using `Publish-NovaModule`.
 
-### EXAMPLE 4
+### EXAMPLE 5
 
 ```powershell
 nova --help
@@ -71,7 +80,7 @@ nova --help
 
 Displays the built-in Nova CLI help text.
 
-### EXAMPLE 5
+### EXAMPLE 6
 
 ```powershell
 Invoke-NovaCli -Command build
@@ -83,7 +92,8 @@ Shows the equivalent scripted PowerShell form behind `nova build`.
 
 ### -Command
 
-The command to execute. Supported values: `info`, `--version`, `--help`, `build`, `test`, `init`, `publish`, `bump`,
+The command to execute. Supported values: `info`, `version`, `--version`, `--help`, `build`, `test`, `init`, `publish`,
+`bump`,
 `release`.
 
 ```yaml
@@ -99,7 +109,7 @@ ParameterSets:
     ValueFromPipelineByPropertyName: false
     ValueFromRemainingArguments: false
 DontShow: false
-AcceptedValues: [ info, --version, --help, build, test, init, publish, bump, release ]
+AcceptedValues: [ info, version, --version, --help, build, test, init, publish, bump, release ]
 HelpMessage: ''
 ```
 

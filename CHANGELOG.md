@@ -36,6 +36,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ### Changed
 
+- `nova --version` now reports the installed `NovaModuleTools` module version, while `nova version` reports the
+  current project version from `project.json`.
 - BREAKING CHANGE: The codebase is now fully centered on the Nova command model instead of a mixed MT/Nova
   implementation.
 - Internal CI helper scripts now live under `scripts/build/ci/` so internal project automation stays grouped under one
