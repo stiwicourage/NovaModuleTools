@@ -1,5 +1,5 @@
 $script:buildOptionsTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1')).Path
-$script:buildOptionsTestSupportFunctionNameList = @(
+$global:buildOptionsTestSupportFunctionNameList = @(
     'New-TestProjectRoot'
     'Write-TestProjectJson'
     'Get-BuiltModuleFilePath'
@@ -20,31 +20,14 @@ $script:buildOptionsTestSupportFunctionNameList = @(
 
 . $script:buildOptionsTestSupportPath
 
-foreach ($functionName in $script:buildOptionsTestSupportFunctionNameList) {
+foreach ($functionName in $global:buildOptionsTestSupportFunctionNameList) {
     $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
     Set-Item -Path "function:global:$functionName" -Value $scriptBlock
 }
 
 BeforeAll {
     $buildOptionsTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1')).Path
-    $buildOptionsTestSupportFunctionNameList = @(
-        'New-TestProjectRoot'
-        'Write-TestProjectJson'
-        'Get-BuiltModuleFilePath'
-        'Invoke-TestProjectBuild'
-        'Get-BuiltModuleContent'
-        'Invoke-BuildAndParsePsm1Ast'
-        'Get-TestProjectInfoValue'
-        'New-TestProjectWithNestedSourceFiles'
-        'Get-NestedSourceBuildSummary'
-        'New-TestProjectWithDuplicateFunctions'
-        'Assert-InvokeNovaBuildThrows'
-        'Get-TopLevelFunctionAstFromAst'
-        'Write-TestMarkerPesterFile'
-        'Invoke-TestProjectTests'
-        'New-TestProjectWithResources'
-        'New-TestProjectWithMarkerTests'
-    )
+    $buildOptionsTestSupportFunctionNameList = $global:buildOptionsTestSupportFunctionNameList
 
     . $buildOptionsTestSupportPath
 
