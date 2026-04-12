@@ -367,6 +367,9 @@ file in your favorite editor. This command makes it easy to update the semantic 
 
 This is not required for local module builds. In this repository, GitHub Actions uses `semantic-release` on `main` to determine the next version from conventional commits, update `project.json` and `CHANGELOG.md`, create the `Version_<semver>` tag, create the GitHub release, and then publish the built module to PowerShell Gallery.
 
+As part of that prepare step, NovaModuleTools also refreshes the comparison links at the bottom of `CHANGELOG.md` so the
+`[Unreleased]` section and each released version point to the matching GitHub diff view.
+
 If you are running GitHub Actions, use the following yaml workflow template to test, build and publish a module, which helps to automate the process of:
 1. Checking out the repository code.
 1. Installing the `NovaModuleTools` bootstrap module from the PowerShell Gallery.

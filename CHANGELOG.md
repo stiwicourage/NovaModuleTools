@@ -34,6 +34,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
   implementation.
 - Internal source files were reorganized into clearer areas such as build, CLI, release, shared, scaffold, and duplicate
   validation.
+- Semantic release support helpers now live in `scripts/release/support/` as one function per file while keeping the
+  existing `Prepare-SemanticRelease.ps1` entrypoint and dot-sourced compatibility loader.
 - `Publish-NovaModule` and `Invoke-NovaRelease` now use a cleaner publish flow that resolves targets before build/test
   steps run.
 - `New-NovaModule` was refactored into smaller pieces, improving maintainability and bringing its Code Health back to
@@ -41,6 +43,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - README and command documentation were refreshed to consistently use the Nova command names and describe the
   CLI/release workflow more clearly.
 - Release and test automation files were updated to better support the new Nova workflow.
+- The semantic-release preparation step now rebuilds the changelog footer so release entries keep up-to-date GitHub
+  comparison links.
 - The repository example, local helper workflow, and command documentation were updated to better reflect how
   NovaModuleTools
   is intended to be used in day-to-day development.
@@ -93,6 +97,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
   local quality loop, update documentation, and keep the codebase maintainable.
 - Renamed and refreshed command documentation to match the Nova command model.
 - Documented that `Test-NovaBuild` now places its Pester XML output in `artifacts/TestResults.xml`.
+- Added GitHub comparison links to `CHANGELOG.md` so each release entry and the `Unreleased` section can be traced back
+  to repository diffs.
 
 ## [1.9.0] - 2026-04-10
 
@@ -219,4 +225,30 @@ The format follows the principles from Keep a Changelog and the project aims to 
 ### Added
 - First release to `psgallery`
 - All basic functionality of Module is ready
+
+[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.9.0...HEAD
+
+[1.9.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.8.0...Version_1.9.0
+
+[1.8.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.7.0...Version_1.8.0
+
+[1.3.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.2.5-preview...Version_1.3.0
+
+[1.2.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.1.4-preview...Version_1.2.0
+
+[1.1.3]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.1.0...Version_1.1.3
+
+[1.1.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.0.0...Version_1.1.0
+
+[1.0.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.9...Version_1.0.0
+
+[0.0.9]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.8...Version_0.0.9
+
+[0.0.7]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.6...Version_0.0.7
+
+[0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
+
+[0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
+
+[0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
 
