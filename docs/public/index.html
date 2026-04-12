@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>NovaModuleTools — Build consistent, well-structured PowerShell modules</title>
+    <meta content="NovaModuleTools helps developers create consistent, correctly structured PowerShell modules with less guesswork and a smoother path from scaffold to build, test, and publish."
+          name="description">
+    <link href="./assets/site.css" rel="stylesheet">
+</head>
+<body>
+<header class="hero">
+    <div class="hero__content">
+        <p class="eyebrow">NovaModuleTools for end users</p>
+        <h1>Build consistent, correctly structured PowerShell modules without reinventing the workflow</h1>
+        <p class="lead">
+            NovaModuleTools gives you a practical starting point for PowerShell module development: scaffold a project,
+            follow a clear folder structure, build a distributable module, and run tests with a repeatable workflow.
+        </p>
+        <div class="hero__actions">
+            <a class="button button--primary"
+               href="https://github.com/stiwicourage/NovaModuleTools/blob/main/README.md">Read the quick start</a>
+            <a class="button button--secondary"
+               href="https://github.com/stiwicourage/NovaModuleTools/tree/main/example">Open the working example</a>
+        </div>
+        <ul class="hero__signals">
+            <li>Clear project structure</li>
+            <li>Fast scaffold-to-build workflow</li>
+            <li>Beginner-friendly path into PowerShell modules</li>
+        </ul>
+    </div>
+    <div aria-label="Nova workflow summary" class="hero__panel">
+        <div class="panel-card">
+            <span class="panel-step">1</span>
+            <strong>Scaffold</strong>
+            <p>Start with <code>nova init</code> or <code>New-NovaModule</code>.</p>
+        </div>
+        <div class="panel-card">
+            <span class="panel-step">2</span>
+            <strong>Build</strong>
+            <p>Turn your source files into a real module with <code>nova build</code>.</p>
+        </div>
+        <div class="panel-card">
+            <span class="panel-step">3</span>
+            <strong>Test</strong>
+            <p>Run <code>nova test</code> and validate the built result, not just loose scripts.</p>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="section section--muted">
+        <div class="section__inner narrow">
+            <h2>Who this page is for</h2>
+            <p>
+                This page is for developers who want to use NovaModuleTools to create PowerShell modules, especially if
+                they do <strong>not</strong> already feel confident about PowerShell module structure, build flow, or
+                best practices.
+            </p>
+            <p>
+                It is intentionally focused on the user experience — what NovaModuleTools helps you do, why it matters,
+                and how to get started quickly.
+            </p>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section__inner">
+            <div class="section-heading">
+                <h2>Why developers use NovaModuleTools</h2>
+                <p>
+                    Most PowerShell module problems do not start with the business logic. They start with inconsistent
+                    structure, unclear conventions, ad-hoc packaging, and test flows that are hard to repeat.
+                </p>
+            </div>
+            <div class="card-grid">
+                <article class="info-card">
+                    <h3>Reduce guesswork</h3>
+                    <p>Use a known layout for public functions, private helpers, classes, resources, tests, and
+                        output.</p>
+                </article>
+                <article class="info-card">
+                    <h3>Build with confidence</h3>
+                    <p>Generate a real module in <code>dist/</code> so you can validate the same shape you plan to
+                        publish.</p>
+                </article>
+                <article class="info-card">
+                    <h3>Stay consistent over time</h3>
+                    <p>Keep module development predictable across one project or many projects in the same
+                        organization.</p>
+                </article>
+                <article class="info-card">
+                    <h3>Learn by doing</h3>
+                    <p>Start from a scaffold or inspect the included example project when you want a working
+                        reference.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section--accent">
+        <div class="section__inner split">
+            <div>
+                <h2>What you get out of the box</h2>
+                <ul class="check-list">
+                    <li>A scaffolded project with a practical PowerShell module layout</li>
+                    <li>A build flow that combines your source into a module under <code>dist/</code></li>
+                    <li>Test support built around validating the built module result</li>
+                    <li>Support for resources, classes, manifest settings, and help generation</li>
+                    <li>A CLI workflow through <code>nova</code> or the PowerShell cmdlets directly</li>
+                </ul>
+            </div>
+            <aside class="callout">
+                <h3>Good fit if you want to…</h3>
+                <p>
+                    create modules faster, enforce a consistent structure, and give yourself or your team a cleaner path
+                    from idea to build, test, and release.
+                </p>
+            </aside>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section__inner">
+            <div class="section-heading">
+                <h2>Start here in 3 steps</h2>
+                <p>You do not need to know everything about PowerShell modules before you start.</p>
+            </div>
+            <div class="steps">
+                <article class="step-card">
+                    <span class="step-number">01</span>
+                    <h3>Install NovaModuleTools</h3>
+                    <pre><code>Install-Module -Name NovaModuleTools
+Import-Module NovaModuleTools</code></pre>
+                    <p>If you want a shell command on macOS/Linux, install the launcher with
+                        <code>Install-NovaCli</code>.</p>
+                </article>
+                <article class="step-card">
+                    <span class="step-number">02</span>
+                    <h3>Create a module scaffold</h3>
+                    <pre><code>nova init</code></pre>
+                    <p>Answer the prompts and let NovaModuleTools create the project structure for you.</p>
+                </article>
+                <article class="step-card">
+                    <span class="step-number">03</span>
+                    <h3>Build and test your module</h3>
+                    <pre><code>nova build
+nova test</code></pre>
+                    <p>This gives you a repeatable workflow from source files to a built module in <code>dist/</code>.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section--muted">
+        <div class="section__inner split">
+            <div>
+                <h2>What the project structure helps you do</h2>
+                <p>
+                    NovaModuleTools keeps the structure explicit so it is easier to understand what belongs where.
+                </p>
+                <ul class="plain-list">
+                    <li><strong><code>src/public</code></strong> — functions exported from the module</li>
+                    <li><strong><code>src/private</code></strong> — internal helpers used by your public commands</li>
+                    <li><strong><code>src/classes</code></strong> — classes and enums</li>
+                    <li><strong><code>src/resources</code></strong> — bundled files such as JSON config</li>
+                    <li><strong><code>tests</code></strong> — Pester tests</li>
+                    <li><strong><code>dist</code></strong> — the built module output</li>
+                </ul>
+            </div>
+            <div aria-label="Example folder structure" class="code-window">
+<pre><code>project.json
+src/
+  public/
+  private/
+  classes/
+  resources/
+tests/
+dist/</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section__inner">
+            <div class="section-heading">
+                <h2>Use the example when you want to see a complete working setup</h2>
+                <p>
+                    If you learn best by inspecting something real, the repository includes an example module project
+                    that
+                    can be built, tested, imported, and run.
+                </p>
+            </div>
+            <div class="cta-banner">
+                <div>
+                    <h3>Recommended next step for new users</h3>
+                    <p>Open the example project, run the commands, and compare the source files with the built
+                        output.</p>
+                </div>
+                <a class="button button--primary"
+                   href="https://github.com/stiwicourage/NovaModuleTools/blob/main/example/README.md">View example
+                    guide</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section--faq">
+        <div class="section__inner narrow">
+            <h2>Frequently asked questions</h2>
+            <div class="faq-list">
+                <details>
+                    <summary>Do I need to know advanced PowerShell module concepts before using NovaModuleTools?
+                    </summary>
+                    <p>No. The tool is useful specifically because it gives you structure and a workflow you can follow
+                        while learning.</p>
+                </details>
+                <details>
+                    <summary>Can I use the CLI instead of PowerShell cmdlet names?</summary>
+                    <p>Yes. Inside PowerShell you can use the <code>nova</code> alias, and on macOS/Linux you can
+                        install a standalone launcher with <code>Install-NovaCli</code>.</p>
+                </details>
+                <details>
+                    <summary>What does <code>nova build</code> actually give me?</summary>
+                    <p>It creates a built module under <code>dist/&lt;ProjectName&gt;</code> so you can import, test,
+                        and publish the result as a proper module.</p>
+                </details>
+                <details>
+                    <summary>Should I start from the scaffold or the example?</summary>
+                    <p>Use the scaffold if you want to begin your own module immediately. Use the example if you want a
+                        working reference project you can inspect and run first.</p>
+                </details>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="footer__inner">
+        <h2>Ready to start your first well-structured module?</h2>
+        <p>Use the quick start, inspect the example, and let NovaModuleTools handle the repetitive scaffolding and build
+            workflow.</p>
+        <div class="hero__actions">
+            <a class="button button--primary"
+               href="https://github.com/stiwicourage/NovaModuleTools/blob/main/README.md">Open README</a>
+            <a class="button button--secondary"
+               href="https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Install-NovaCli.md">Read
+                CLI install guide</a>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
+
