@@ -27,7 +27,7 @@ $projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json'
 $distModuleDir = Join-Path $PSScriptRoot "dist/$projectName"
 
 Invoke-NovaBuild
-& (Join-Path $PSScriptRoot 'scripts/build/Invoke-ScriptAnalyzerCI.ps1') -OutputDirectory (Join-Path $PSScriptRoot 'artifacts')
+& (Join-Path $PSScriptRoot 'scripts/build/Invoke-ScriptAnalyzerCI.ps1')
 Remove-Module $projectName -ErrorAction SilentlyContinue
 Import-Module $distModuleDir -Force
 
