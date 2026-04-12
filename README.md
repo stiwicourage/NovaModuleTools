@@ -458,8 +458,10 @@ jobs:
     - uploads `artifacts/` and `dist/` as workflow artifacts
 2. `codescene-analysis`
     - downloads the artifacts from the successful test job
-    - uploads `artifacts/pester-coverage.cobertura.xml` to CodeScene as `line-coverage`
-    - triggers a CodeScene analysis on `push` to `develop`/`main` and on manual runs
+   - can upload `artifacts/pester-coverage.cobertura.xml` to CodeScene as `line-coverage` when `-CoveragePath` is
+     supplied
+   - can also trigger a CodeScene analysis on `push` to `develop`/`main` and on manual runs without uploading coverage
+     by omitting `-CoveragePath`
 
 The analysis step expects these secrets or environment variables:
 

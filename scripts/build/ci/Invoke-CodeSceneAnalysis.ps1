@@ -1,5 +1,5 @@
 param(
-    [string]$CoveragePath = './artifacts/pester-coverage.cobertura.xml',
+    [string]$CoveragePath,
     [switch]$TriggerAnalysis
 )
 
@@ -60,21 +60,32 @@ function Invoke-CodeSceneAnalysisTrigger {
     }
 }
 
-$resolvedCoveragePath = (Resolve-Path -LiteralPath $CoveragePath -ErrorAction Stop).Path
+$shouldUploadCoverage = -not [string]::IsNullOrWhiteSpace($CoveragePath)
+$shouldRunAnalysis = $TriggerAnalysis.IsPresent
+
+if (-not ($shouldUploadCoverage -or $shouldRunAnalysis)) {
+    Write-Host 'No CodeScene action requested. Provide -CoveragePath to upload coverage and/or -TriggerAnalysis to trigger analysis.'
+    return
+}
+
 $codeSceneUrl = Get-RequiredCodeSceneValue -Name 'CS_URL'
 $projectId = Get-RequiredCodeSceneValue -Name 'CS_PROJECT_ID'
 $accessToken = Get-RequiredCodeSceneValue -Name 'CS_ACCESS_TOKEN'
 
-if (-not (Get-Command -Name 'cs-coverage' -ErrorAction SilentlyContinue)) {
-    throw "The 'cs-coverage' CLI was not found on PATH. Install the CodeScene coverage upload tool before running this script."
+if ($shouldUploadCoverage) {
+    $resolvedCoveragePath = (Resolve-Path -LiteralPath $CoveragePath -ErrorAction Stop).Path
+
+    if (-not (Get-Command -Name 'cs-coverage' -ErrorAction SilentlyContinue)) {
+        throw "The 'cs-coverage' CLI was not found on PATH. Install the CodeScene coverage upload tool before running this script."
+    }
+
+    & cs-coverage upload --format 'cobertura' --metric 'line-coverage' $resolvedCoveragePath
+    if ($LASTEXITCODE -ne 0) {
+        throw "CodeScene coverage upload failed with exit code $LASTEXITCODE."
+    }
 }
 
-& cs-coverage upload --format 'cobertura' --metric 'line-coverage' $resolvedCoveragePath
-if ($LASTEXITCODE -ne 0) {
-    throw "CodeScene coverage upload failed with exit code $LASTEXITCODE."
-}
-
-if ($TriggerAnalysis) {
+if ($shouldRunAnalysis) {
     Invoke-CodeSceneAnalysisTrigger -CodeSceneUrl $codeSceneUrl -ProjectId $projectId -AccessToken $accessToken
 }
 

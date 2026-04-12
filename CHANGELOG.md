@@ -72,6 +72,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ### Fixed
 
+- Fixed `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1` so `-TriggerAnalysis` can run without `-CoveragePath`, allowing
+  trigger-only CodeScene workflow steps.
 - Fixed local publishing so `Publish-NovaModule -Local` no longer falls back to the legacy publish path.
 - Fixed build-time resource lookup so schema and template files are found in project `src/resources` when building from
   the repository root.

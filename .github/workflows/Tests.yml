@@ -108,10 +108,9 @@ jobs:
           bash install-cs-coverage-tool.sh -y
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-#      - name: Upload coverage to CodeScene and trigger analysis
-#        env:
-#          CS_URL: ${{ vars.CS_URL }}
-#          CS_PROJECT_ID: ${{ vars.CS_PROJECT_ID }}
-#          CS_ACCESS_TOKEN: ${{ secrets.CS_ACCESS_TOKEN }}
-#        run: ./scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -CoveragePath ./artifacts/pester-coverage.cobertura.xml -TriggerAnalysis
-
+      - name: Upload coverage to CodeScene and trigger analysis
+        env:
+          CS_URL: ${{ vars.CS_URL }}
+          CS_PROJECT_ID: ${{ vars.CS_PROJECT_ID }}
+          CS_ACCESS_TOKEN: ${{ secrets.CS_ACCESS_TOKEN }}
+        run: ./scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -TriggerAnalysis
