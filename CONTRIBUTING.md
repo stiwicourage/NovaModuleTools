@@ -3,12 +3,16 @@
 [![CodeScene Hotspot Code Health](https://codescene.io/projects/78904/status-badges/hotspot-code-health)](https://codescene.io/projects/78904)
 [![CodeScene Average Code Health](https://codescene.io/projects/78904/status-badges/average-code-health)](https://codescene.io/projects/78904)
 
-Contributions are welcome, but this repository is intentionally opinionated about maintainability.
+**This repository is intentionally opinionated about maintainability, however, we welcome contributions that align with
+our goals. We want to keep the codebase clean, maintainable, and easy to understand for both users and contributors.**
 
 If you want to contribute, please work in the same style as the project:
 
 - Prefer the Nova command model and user-facing `nova` workflow over legacy MT naming or mixed command styles.
-- Keep changes small, reviewable, and easy to understand.
+- Keep commits small, reviewable, and easy to understand.
+    - The size of a pull request is not as important as the clarity of its intent and the ease of reviewing it.
+    - A large pull request that is well-organized in smaller commits with clear messages can be easier to review than a
+      small pull request that is not well-explained or has unclear intent.
 - Aim for maintainable code:
     - short functions
     - simple branching
@@ -17,9 +21,10 @@ If you want to contribute, please work in the same style as the project:
     - no dead code left behind
 - Follow the Boy Scout Rule: leave the codebase a little cleaner than you found it.
 
-Before opening a pull request, please run the local quality flow from the repository root:
+**Before opening a pull request, please run the local quality flow from the repository root:**
 
-```powershell
+```powershell title="run.ps1"
+#run.ps1
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 

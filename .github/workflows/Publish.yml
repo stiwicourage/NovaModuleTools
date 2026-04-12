@@ -18,33 +18,30 @@ jobs:
   Publish:
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 Checkout
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 🟢 Setup Node
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: 📦 Install npm dependencies
+      - name: Install npm dependencies
         run: npm ci
 
-      - name: 📦 Install required modules from PSGallery
-        run: |
-          Install-PSResource -Repository PSGallery -Name NovaModuleTools -TrustRepository
-          Install-PSResource -Repository PSGallery -Name Microsoft.PowerShell.PlatyPS -TrustRepository
-          Install-PSResource -Repository PSGallery -Name Pester -TrustRepository
+      - name: Install required modules from PSGallery
+        run: ./scripts/build/ci/Install-CiPowerShellModules.ps1
 
-      - name: 🏗️ Build Module
+      - name: Build Module
         run: Invoke-NovaBuild -Verbose
 
-      - name: 🧪 Run Pester Tests
+      - name: Run Pester Tests
         run: Test-NovaBuild
 
-      - name: 📝 Generate Report
+      - name: Generate Report
         continue-on-error: true
         run: |
           $reportLines = @('## Output Files 📁', '')
@@ -67,7 +64,7 @@ jobs:
           Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $report
           Write-Output $report
 
-      - name: 🚀 Run semantic-release
+      - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
