@@ -30,7 +30,10 @@ This cmdlet has the following aliases,
 
 ## DESCRIPTION
 
-Run Pester tests using the specified configuration and settings as defined in project.json. With the default `BuildRecursiveFolders=true`, test files in nested folders under `tests` are discovered and run. Set `BuildRecursiveFolders=false` to limit discovery to top-level `tests/*.Tests.ps1` files, following Pester's normal test-file convention.
+Run Pester tests using the specified configuration and settings as defined in project.json. With the default
+`BuildRecursiveFolders=true`, test files in nested folders under `tests` are discovered and run. Set
+`BuildRecursiveFolders=false` to limit discovery to top-level `tests/*.Tests.ps1` files, following Pester's normal
+test-file convention. The generated Pester XML report is written to `artifacts/TestResults.xml`.
 
 ## EXAMPLES
 

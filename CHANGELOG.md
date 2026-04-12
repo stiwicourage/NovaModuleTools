@@ -74,6 +74,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
   adding regression coverage for both the matching and error paths.
 - Fixed resource-copy maintainability by refactoring `Copy-ProjectResource` to Code Health `10.0` and adding regression
   coverage for both `copyResourcesToModuleRoot` modes.
+- Fixed `Test-NovaBuild` so the generated Pester XML report is now written to `artifacts/TestResults.xml` instead of the
+  `dist` folder.
 
 ### Documentation
 
@@ -90,6 +92,7 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Refreshed the `README.md` contribution guidance so contributors are clearly asked to follow the Nova workflow, run the
   local quality loop, update documentation, and keep the codebase maintainable.
 - Renamed and refreshed command documentation to match the Nova command model.
+- Documented that `Test-NovaBuild` now places its Pester XML output in `artifacts/TestResults.xml`.
 
 ## [1.9.0] - 2026-04-10
 
