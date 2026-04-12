@@ -31,6 +31,9 @@ Examples:
    nova bump
    nova release --repository PSGallery --apikey <key>
 
+After installing the module on macOS/Linux, run Install-NovaCli once if you want
+the standalone 'nova' command available from zsh/bash.
+
 Use 'nova <command>' to run a command, or call the underlying PowerShell cmdlet directly
 when you want a scriptable function interface.
 '@

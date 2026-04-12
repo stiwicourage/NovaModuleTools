@@ -25,6 +25,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
   NovaModuleTools users.
 - Added a standalone `scripts/build/Invoke-ScriptAnalyzerCI.ps1` helper so ScriptAnalyzer can run as a dedicated quality
   step outside Pester while still producing a CI-friendly report.
+- Added `Install-NovaCli` so macOS/Linux users can install the bundled `nova` launcher from the module into a shell
+  command directory.
 - Added dynamic help activation coverage so command help pages discovered in `docs/` are exercised through built
   `Get-Help` output.
 - Added reusable CI helper scripts under `scripts/build/ci/` to install PowerShell dependencies, generate
@@ -49,6 +51,7 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - README and command documentation were refreshed to consistently use the Nova command names and describe the
   CLI/release workflow more clearly.
 - Release and test automation files were updated to better support the new Nova workflow.
+- The bundled `nova` launcher now ships as a packaged module resource instead of a repo-root helper file.
 - The GitHub test workflow now publishes CI artifacts and runs CodeScene coverage upload/analysis in a dedicated
   follow-up
   job after tests and coverage complete successfully.
@@ -104,6 +107,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
   separate ScriptAnalyzer CI workflow.
 - Documented the new GitHub Actions coverage and CodeScene integration, including artifact paths and required CodeScene
   secrets.
+- Documented how to install the standalone `nova` launcher with `Install-NovaCli` and when to use the PowerShell alias
+  instead.
 - Replaced the outdated `New-NovaModule` screenshot in `README.md` with a concrete `project.json` example that shows the
   expected NovaModuleTools output more clearly.
 - Refreshed the `README.md` contribution guidance so contributors are clearly asked to follow the Nova workflow, run the

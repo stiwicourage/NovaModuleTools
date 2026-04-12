@@ -43,6 +43,10 @@ Describe 'Nova command model' {
         Test-Path -LiteralPath $script:helpXmlPath | Should -BeTrue
     }
 
+    It 'build output includes the bundled nova launcher resource' {
+        Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/nova') | Should -BeTrue
+    }
+
     It 'discovers command help files dynamically from docs' {
         $script:helpActivationTestCases | Should -Not -BeNullOrEmpty
     }
@@ -369,6 +373,39 @@ title: Invoke-NovaBuild
             $result.NewVersion | Should -Be '1.0.0'
             $result.Label | Should -Be 'Minor'
             Assert-MockCalled Set-NovaModuleVersion -Times 0
+        }
+    }
+
+    It 'Install-NovaCli copies the launcher and the installed command returns CLI help' {
+        $targetDirectory = Join-Path $TestDrive 'bin'
+        $installedPath = Join-Path $targetDirectory 'nova'
+        $projectVersion = $script:projectInfo.Version
+        $originalModulePath = $env:PSModulePath
+        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
+        $distParent = Split-Path -Parent $distModuleDir
+
+        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
+
+        try {
+            $result = Install-NovaCli -DestinationDirectory $targetDirectory -Force
+            $helpOutput = & $installedPath --help 2>&1
+            $helpText = @($helpOutput) -join [Environment]::NewLine
+            $helpExitCode = $LASTEXITCODE
+            $versionOutput = & $installedPath --version 2>&1
+            $versionText = @($versionOutput) -join [Environment]::NewLine
+            $versionExitCode = $LASTEXITCODE
+
+            $result.CommandName | Should -Be 'nova'
+            $result.InstalledPath | Should -Be $installedPath
+            $result.DestinationDirectory | Should -Be $targetDirectory
+            (Test-Path -LiteralPath $installedPath) | Should -BeTrue
+            $helpExitCode | Should -Be 0
+            $versionExitCode | Should -Be 0
+            $helpText | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
+            $versionText | Should -Match ([regex]::Escape($projectVersion))
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
         }
     }
 

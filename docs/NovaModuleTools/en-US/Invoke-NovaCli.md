@@ -34,6 +34,9 @@ It dispatches high-level commands such as `nova info`, `nova --version`, `nova -
 Use `Invoke-NovaCli` when you need a scriptable PowerShell command entrypoint. Use `nova` when you want the more
 user-friendly CLI-style experience.
 
+Inside an imported PowerShell session, `nova` is available through the cmdlet alias. To make `nova` available directly
+from zsh/bash on macOS or Linux, install the launcher once with `Install-NovaCli`.
+
 ## EXAMPLES
 
 ### EXAMPLE 1
@@ -141,6 +144,7 @@ implementations.
 ## RELATED LINKS
 
 - `Invoke-NovaBuild`
+- `Install-NovaCli`
 - `Test-NovaBuild`
 - `Invoke-NovaRelease`
 

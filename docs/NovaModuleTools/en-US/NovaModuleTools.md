@@ -22,6 +22,10 @@ NovaModuleTools is a versatile, standalone PowerShell module builder. Create any
 
 Retrieves information about a project by reading data from a project.json file in a NovaModuleTools project folder.
 
+### `Install-NovaCli`
+
+Install the bundled `nova` launcher into a user command directory on macOS or Linux.
+
 ### `Invoke-NovaBuild`
 
 Build a NovaModuleTools project to generate a ready-to-import PowerShell module.
