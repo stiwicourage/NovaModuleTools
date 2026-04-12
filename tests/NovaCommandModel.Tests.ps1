@@ -89,6 +89,7 @@ title: Invoke-NovaBuild
 
     It 'Test-NovaBuild applies tag filters to Pester config' {
         InModuleScope $script:moduleName {
+            $projectRoot = '/tmp/nova-project'
             $cfg = [pscustomobject]@{
                 Run = [pscustomobject]@{Path = $null; PassThru = $false; Exit = $false; Throw = $false}
                 Filter = [pscustomobject]@{Tag = @(); ExcludeTag = @()}
@@ -96,19 +97,29 @@ title: Invoke-NovaBuild
             }
 
             Mock Test-ProjectSchema {}
-            Mock Get-NovaProjectInfo {[pscustomobject]@{Pester = @{}; BuildRecursiveFolders = $true; TestsDir = 'tests'}}
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    Pester = @{}
+                    BuildRecursiveFolders = $true
+                    TestsDir = 'tests'
+                    ProjectRoot = $projectRoot
+                }
+            }
             Mock New-PesterConfiguration {$cfg}
+            Mock Test-Path {$true}
             Mock Invoke-Pester {[pscustomobject]@{Result = 'Passed'}}
 
             Test-NovaBuild -TagFilter @('fast') -ExcludeTagFilter @('slow')
 
             $cfg.Filter.Tag | Should -Be @('fast')
             $cfg.Filter.ExcludeTag | Should -Be @('slow')
+            $cfg.TestResult.OutputPath | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts', 'TestResults.xml'))
         }
     }
 
     It 'Test-NovaBuild can override Pester console output settings' {
         InModuleScope $script:moduleName {
+            $projectRoot = '/tmp/nova-project'
             $cfg = [pscustomobject]@{
                 Run = [pscustomobject]@{Path = $null; PassThru = $false; Exit = $false; Throw = $false}
                 Filter = [pscustomobject]@{Tag = @(); ExcludeTag = @()}
@@ -117,14 +128,23 @@ title: Invoke-NovaBuild
             }
 
             Mock Test-ProjectSchema {}
-            Mock Get-NovaProjectInfo {[pscustomobject]@{Pester = @{}; BuildRecursiveFolders = $true; TestsDir = 'tests'}}
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    Pester = @{}
+                    BuildRecursiveFolders = $true
+                    TestsDir = 'tests'
+                    ProjectRoot = $projectRoot
+                }
+            }
             Mock New-PesterConfiguration {$cfg}
+            Mock Test-Path {$true}
             Mock Invoke-Pester {[pscustomobject]@{Result = 'Passed'}}
 
             Test-NovaBuild -OutputVerbosity Normal -OutputRenderMode Plaintext
 
             $cfg.Output.Verbosity | Should -Be 'Normal'
             $cfg.Output.RenderMode | Should -Be 'Plaintext'
+            $cfg.TestResult.OutputPath | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts', 'TestResults.xml'))
         }
     }
 

@@ -33,7 +33,14 @@ function Test-NovaBuild {
         $pesterConfig.Output.RenderMode = $OutputRenderMode
     }
 
-    $pesterConfig.TestResult.OutputPath = './dist/TestResults.xml'
+    $testResultPath = [System.IO.Path]::Join($data.ProjectRoot, 'artifacts', 'TestResults.xml')
+    $testResultDirectory = Split-Path -Parent $testResultPath
+
+    if (-not (Test-Path -LiteralPath $testResultDirectory)) {
+        $null = New-Item -ItemType Directory -Path $testResultDirectory -Force
+    }
+
+    $pesterConfig.TestResult.OutputPath = $testResultPath
     $TestResult = Invoke-Pester -Configuration $pesterConfig
     if ($TestResult.Result -ne 'Passed') {
         Write-Error 'Tests failed' -ErrorAction Stop

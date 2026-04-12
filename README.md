@@ -226,7 +226,8 @@ Test-NovaBuild
 
 This keeps ScriptAnalyzer as a separate code-quality step while `Test-NovaBuild` remains focused on Pester tests.
 When ScriptAnalyzer runs this way, its findings are written to `artifacts/scriptanalyzer.txt` and are not counted as
-Pester test cases.
+Pester test cases. `Test-NovaBuild` also writes the Pester XML report to `artifacts/TestResults.xml` so test output and
+quality artifacts stay in the same place.
 
 ## Commands
 
@@ -308,6 +309,8 @@ All Pester configuration is stored in `project.json`. Run `Test-NovaBuild` (`nov
 default
 `BuildRecursiveFolders=true`, it discovers test files in nested folders under `tests`; set `BuildRecursiveFolders=false`
 to run only top-level `tests/*.Tests.ps1` files, matching Pester's normal test-file convention.
+
+- The generated Pester XML report is written to `artifacts/TestResults.xml`.
 - To skip a test inside the test directory, use `-skip` in a `Describe`/`It`/`Context` block within the Pester test.
 - Use `Get-NovaProjectInfo` (`nova info`) inside Pester to get detailed information about the project and files.
 
@@ -363,6 +366,9 @@ file in your favorite editor. This command makes it easy to update the semantic 
 > This repository uses Github actions to run tests and publish to PowerShell Gallery, use it as reference.
 
 This is not required for local module builds. In this repository, GitHub Actions uses `semantic-release` on `main` to determine the next version from conventional commits, update `project.json` and `CHANGELOG.md`, create the `Version_<semver>` tag, create the GitHub release, and then publish the built module to PowerShell Gallery.
+
+As part of that prepare step, NovaModuleTools also refreshes the comparison links at the bottom of `CHANGELOG.md` so the
+`[Unreleased]` section and each released version point to the matching GitHub diff view.
 
 If you are running GitHub Actions, use the following yaml workflow template to test, build and publish a module, which helps to automate the process of:
 1. Checking out the repository code.

@@ -14,10 +14,10 @@ Describe 'NovaExampleModule example project' {
     }
 
     It 'can return greeting metadata for inspection' {
-        $result = Get-ExampleGreeting -Name 'Copilot' -AsObject
+        $result = Get-ExampleGreeting -Name 'CodeScene' -AsObject
 
-        $result.Message | Should -Be 'Hello, Copilot!'
-        $result.Audience | Should -Be 'Copilot'
+        $result.Message | Should -Be 'Hello, CodeScene!'
+        $result.Audience | Should -Be 'CodeScene'
         (Test-Path -LiteralPath $result.ConfigurationPath) | Should -BeTrue
     }
 }
