@@ -13,6 +13,20 @@ The structure of the NovaModuleTools module is meticulously designed according t
 [![NovaModuleTools@PowerShell Gallery][BadgeIOCount]][PSGalleryLink]
 ```PowerShell
 Install-Module -Name NovaModuleTools
+Import-Module NovaModuleTools
+
+# Optional on macOS/Linux: install the standalone nova launcher
+Install-NovaCli
+```
+
+`nova` is always available as a PowerShell alias after the module is imported.
+
+If you want to run `nova` directly from `zsh`/`bash`, `Install-NovaCli` copies the bundled launcher to
+`~/.local/bin/nova` by default. Add that directory to your shell `PATH` if it is not already present:
+
+```zsh
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
 ## Design
@@ -219,8 +233,18 @@ Hello, Nova user!
 For local repository work, a practical quality loop is:
 
 ```powershell
+#run.ps1
+$ErrorActionPreference = 'Stop'
+Set-Location $PSScriptRoot
+
+$projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
+$distModuleDir = Join-Path $PSScriptRoot "dist/$projectName"
+
 Invoke-NovaBuild
-./scripts/build/Invoke-ScriptAnalyzerCI.ps1 -OutputDirectory ./artifacts
+& (Join-Path $PSScriptRoot 'scripts/build/Invoke-ScriptAnalyzerCI.ps1')
+Remove-Module $projectName -ErrorAction SilentlyContinue
+Import-Module $distModuleDir -Force
+
 Test-NovaBuild
 ```
 
@@ -247,6 +271,25 @@ Expected CI artifacts:
 - `artifacts/scriptanalyzer.txt` — ScriptAnalyzer findings (or a no-findings report)
 
 ## Commands
+
+All `nova ...` examples below work in either of these modes:
+
+- inside `pwsh` after `Import-Module NovaModuleTools`
+- directly from `zsh`/`bash` on macOS/Linux after running `Install-NovaCli`
+
+### Install-NovaCli
+
+Use `Install-NovaCli` when you want the bundled `nova` launcher available directly from your normal shell.
+
+```powershell
+# Install to the default macOS/Linux location
+Install-NovaCli
+
+# Install to a custom directory
+Install-NovaCli -DestinationDirectory ~/bin -Force
+```
+
+On Windows, keep using the `nova` alias inside `pwsh` after importing the module.
 
 ### New-NovaModule (`nova init`)
 
@@ -356,11 +399,8 @@ module path.
 >
 > ```powershell
 > Remove-Module NovaModuleTools -ErrorAction SilentlyContinue
-> Import-Module ./dist/NovaModuleTools -Force
 > Publish-NovaModule -Local
->
-> # or
-> nova publish --local
+> Import-Module ./dist/NovaModuleTools -Force
 > ```
 
 When running from the repository root, build-time schema/resource lookup also falls back to project resources under

@@ -1,0 +1,19 @@
+#!/usr/bin/env -S pwsh -File
+
+$Command = if ($args.Count -gt 0) {
+    $args[0]
+}
+else {
+    '--help'
+}
+
+$Arguments = if ($args.Count -gt 1) {
+    @($args[1..($args.Count - 1)])
+}
+else {
+    @()
+}
+
+Import-Module NovaModuleTools -Force
+
+Invoke-NovaCli -Command $Command @Arguments
