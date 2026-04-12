@@ -8,7 +8,7 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ### Added
 
-- Added a user-focused public landing page under `docs/public/` for developers who want a simpler introduction to
+- Added a user-focused public landing page under `docs/` for developers who want a simpler introduction to
   NovaModuleTools and its module workflow.
 - New Nova release and publish building blocks to support:
     - publishing to a local module directory
