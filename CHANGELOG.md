@@ -27,6 +27,9 @@ The format follows the principles from Keep a Changelog and the project aims to 
   step outside Pester while still producing a CI-friendly report.
 - Added dynamic help activation coverage so command help pages discovered in `docs/` are exercised through built
   `Get-Help` output.
+- Added reusable CI helper scripts under `build/ci/` to install PowerShell dependencies, generate JUnit/Cobertura test
+  reports, remap coverage to source paths, and upload coverage to CodeScene.
+- Added regression coverage for the Cobertura source-path remapping used by the CodeScene upload flow.
 
 ### Changed
 
@@ -43,6 +46,9 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - README and command documentation were refreshed to consistently use the Nova command names and describe the
   CLI/release workflow more clearly.
 - Release and test automation files were updated to better support the new Nova workflow.
+- The GitHub test workflow now publishes CI artifacts and runs CodeScene coverage upload/analysis in a dedicated
+  follow-up
+  job after tests and coverage complete successfully.
 - The semantic-release preparation step now rebuilds the changelog footer so release entries keep up-to-date GitHub
   comparison links.
 - The repository example, local helper workflow, and command documentation were updated to better reflect how
@@ -91,6 +97,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Added README guidance for the working `example/` project, stricter manifest validation, built help expectations, and
   the
   separate ScriptAnalyzer CI workflow.
+- Documented the new GitHub Actions coverage and CodeScene integration, including artifact paths and required CodeScene
+  secrets.
 - Replaced the outdated `New-NovaModule` screenshot in `README.md` with a concrete `project.json` example that shows the
   expected NovaModuleTools output more clearly.
 - Refreshed the `README.md` contribution guidance so contributors are clearly asked to follow the Nova workflow, run the

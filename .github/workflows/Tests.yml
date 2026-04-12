@@ -13,28 +13,53 @@ defaults:
     shell: pwsh
 
 jobs:
-  Tests:
+  test-and-coverage:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      - name: 📦 Install required modules from PSGallery
-        run: |
-          Install-PSResource -Repository PSGallery -Name NovaModuleTools -TrustRepository
-          Install-PSResource -Repository PSGallery -Name Microsoft.PowerShell.PlatyPS -TrustRepository
-          Install-PSResource -Repository PSGallery -Name Pester -TrustRepository
+      - name: 📦 Install required CI PowerShell modules
+        run: ./build/ci/Install-CiPowerShellModules.ps1
 
-      - name: 🏗️ Build Module
-        run: Invoke-NovaBuild -Verbose
+      - name: 🧪 Run NovaModuleTools CI test and coverage workflow
+        run: ./build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts
 
-      - name: 🧪 Run Pester Tests
-        run: Test-NovaBuild
+      - name: 📦 Upload CI artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nova-ci-artifacts
+          if-no-files-found: warn
+          path: |
+            artifacts/
+            dist/
 
       - name: 📝 Generate Report
-        continue-on-error: true
+        if: always()
         run: |
-          $reportLines = @('## Output Files 📁', '')
+          $reportLines = @(
+            '## CI Output Files 📁',
+            '',
+            '### artifacts/',
+            ''
+          )
+
+          $artifactFiles = Get-ChildItem -Path ./artifacts -Recurse -File -ErrorAction SilentlyContinue | Sort-Object FullName
+          if ($artifactFiles) {
+            $reportLines += '| Name | Directory |'
+            $reportLines += '| --- | --- |'
+            $reportLines += $artifactFiles | ForEach-Object {
+              $name = ('' + $_.Name).Replace('|', '\|')
+              $directory = ('' + $_.Directory).Replace('|', '\|')
+              "| $name | $directory |"
+            }
+          }
+          else {
+            $reportLines += 'No files found in `./artifacts`.'
+          }
+
+          $reportLines += @('', '### dist/', '')
           $files = Get-ChildItem -Path ./dist -Recurse -ErrorAction SilentlyContinue | Sort-Object FullName
 
           if ($files) {
@@ -53,3 +78,36 @@ jobs:
           $report = $reportLines -join [Environment]::NewLine
           Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $report
           Write-Output $report
+
+  codescene-analysis:
+    runs-on: ubuntu-latest
+    needs:
+      - test-and-coverage
+    if: ${{ needs.test-and-coverage.result == 'success' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_name == 'develop')) }}
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📥 Download CI artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: nova-ci-artifacts
+          path: .
+
+      - name: 🛠️ Install CodeScene coverage CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o install-cs-coverage-tool.sh https://downloads.codescene.io/enterprise/cli/install-cs-coverage-tool.sh
+          bash install-cs-coverage-tool.sh -y
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: 📊 Upload coverage to CodeScene and trigger analysis
+        env:
+          CS_URL: ${{ vars.CS_URL }}
+          CS_PROJECT_ID: ${{ vars.CS_PROJECT_ID }}
+          CS_ACCESS_TOKEN: ${{ secrets.CS_ACCESS_TOKEN }}
+        run: ./build/ci/Invoke-CodeSceneAnalysis.ps1 -CoveragePath ./artifacts/pester-coverage.cobertura.xml -TriggerAnalysis
+

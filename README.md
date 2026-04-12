@@ -229,6 +229,23 @@ When ScriptAnalyzer runs this way, its findings are written to `artifacts/script
 Pester test cases. `Test-NovaBuild` also writes the Pester XML report to `artifacts/TestResults.xml` so test output and
 quality artifacts stay in the same place.
 
+For CI parity, this repository now also includes reusable helper scripts under `build/ci/`:
+
+- `build/ci/Install-CiPowerShellModules.ps1`
+- `build/ci/Invoke-NovaModuleToolsCI.ps1`
+- `build/ci/Invoke-CodeSceneAnalysis.ps1`
+
+The CI helper flow builds the module, runs ScriptAnalyzer, runs the normal `Test-NovaBuild` workflow, generates
+additional CI-friendly reports, and remaps Cobertura coverage from `dist/<Project>/<Project>.psm1` back to `src/...`
+paths using the generated `# Source:` markers.
+
+Expected CI artifacts:
+
+- `artifacts/novamoduletools-nunit.xml` — NUnit XML from `Test-NovaBuild`
+- `artifacts/pester-junit.xml` — JUnit XML for CI systems that expect JUnit-compatible test reports
+- `artifacts/pester-coverage.cobertura.xml` — Cobertura XML with source-relative paths suitable for CodeScene upload
+- `artifacts/scriptanalyzer.txt` — ScriptAnalyzer findings (or a no-findings report)
+
 ## Commands
 
 ### New-NovaModule (`nova init`)
@@ -430,6 +447,29 @@ jobs:
         run: npx semantic-release
         shell: pwsh
 ```
+
+### Code coverage and CodeScene upload in GitHub Actions
+
+`Tests.yml` now separates testing from CodeScene analysis:
+
+1. `test-and-coverage`
+    - installs the required PowerShell modules
+    - runs `build/ci/Invoke-NovaModuleToolsCI.ps1`
+    - uploads `artifacts/` and `dist/` as workflow artifacts
+2. `codescene-analysis`
+    - downloads the artifacts from the successful test job
+    - uploads `artifacts/pester-coverage.cobertura.xml` to CodeScene as `line-coverage`
+    - triggers a CodeScene analysis on `push` to `develop`/`main` and on manual runs
+
+The analysis step expects these secrets or environment variables:
+
+- `CS_URL`
+- `CS_PROJECT_ID`
+- `CS_ACCESS_TOKEN`
+
+If one of these values is missing, the workflow fails early with a clear error message. If CodeScene rejects the
+analysis trigger because the daily analysis rate limit has been reached, the workflow warns and continues instead of
+failing the pipeline unnecessarily.
 
 ## Requirement
 - Only tested on PowerShell 7.4, so it most likely will not work on 5.1. The underlying module can still support older versions; only the NovaModuleTools builder won't work on older versions.
