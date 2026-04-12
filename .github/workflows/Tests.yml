@@ -16,16 +16,16 @@ jobs:
   test-and-coverage:
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 Checkout
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 📦 Install required CI PowerShell modules
+      - name: Install required CI PowerShell modules
         run: ./scripts/build/ci/Install-CiPowerShellModules.ps1
 
-      - name: 🧪 Run NovaModuleTools CI test and coverage workflow
+      - name: Run NovaModuleTools CI test and coverage workflow
         run: ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts
 
-      - name: 📦 Upload CI artifacts
+      - name: Upload CI artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -35,7 +35,7 @@ jobs:
             artifacts/
             dist/
 
-      - name: 📝 Generate Report
+      - name: Generate Report
         if: always()
         run: |
           $reportLines = @(
@@ -85,18 +85,18 @@ jobs:
       - test-and-coverage
     if: ${{ needs.test-and-coverage.result == 'success' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_name == 'develop')) }}
     steps:
-      - name: 📥 Checkout
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 📥 Download CI artifacts
+      - name: Download CI artifacts
         uses: actions/download-artifact@v4
         with:
           name: nova-ci-artifacts
           path: .
 
-      - name: 🛠️ Install CodeScene coverage CLI
+      - name: Install CodeScene coverage CLI
         shell: bash
         run: |
           set -euo pipefail
@@ -104,7 +104,7 @@ jobs:
           bash install-cs-coverage-tool.sh -y
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-#      - name: 📊 Upload coverage to CodeScene and trigger analysis
+#      - name: Upload coverage to CodeScene and trigger analysis
 #        env:
 #          CS_URL: ${{ vars.CS_URL }}
 #          CS_PROJECT_ID: ${{ vars.CS_PROJECT_ID }}
