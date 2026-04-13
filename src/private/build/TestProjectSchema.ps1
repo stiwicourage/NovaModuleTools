@@ -18,7 +18,6 @@ function Test-ProjectSchema {
         'Pester' {
             Test-Json -Path 'project.json' -Schema (Get-Content $SchemaPath.Pester -Raw)
         }
-        Default { $false }
     }
     return $result
 }

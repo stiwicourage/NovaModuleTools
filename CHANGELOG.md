@@ -25,6 +25,7 @@ The format follows the principles from Keep a Changelog and the project aims to 
     - `Update-NovaModuleVersion -WhatIf`
   - `Read-AwesomeHost` standard, mandatory, default, and choice prompt flows
       - `Get-GitCommitMessageForVersionBump` tagged, untagged, and git-failure flows
+    - remaining low-coverage manifest, project-json, help-locale, dist-reset, publish, and CLI install branches
 - Added a working `example/` project that can be built, tested, imported, and used as a practical reference for new
   NovaModuleTools users.
 - Added a standalone `scripts/build/Invoke-ScriptAnalyzerCI.ps1` helper so ScriptAnalyzer can run as a dedicated quality
@@ -70,6 +71,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - README and command documentation were refreshed to consistently use the Nova command names and describe the
   CLI/release workflow more clearly.
 - Release and test automation files were updated to better support the new Nova workflow.
+- `Test-ProjectSchema` no longer carries an unreachable default branch now that `Schema` is constrained by
+  `ValidateSet('Build', 'Pester')`.
 - The bundled `nova` launcher now ships as a packaged module resource instead of a repo-root helper file.
 - The GitHub test workflow now publishes CI artifacts and runs CodeScene coverage upload/analysis in a dedicated
   follow-up
