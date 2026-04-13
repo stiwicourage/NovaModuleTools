@@ -586,6 +586,18 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
         }
     }
 
+    It 'Get-ProjectJsonValueTypeName returns null for null input' {
+        InModuleScope $script:moduleName {
+            Get-ProjectJsonValueTypeName -Value $null | Should -Be 'null'
+        }
+    }
+
+    It 'Get-ProjectJsonValueTypeName returns the CLR type name for non-null values' {
+        InModuleScope $script:moduleName {
+            Get-ProjectJsonValueTypeName -Value 42 | Should -Be 'System.Int32'
+        }
+    }
+
     It 'Get-TopLevelFunctionAst returns only top-level functions and Get-TopLevelFunctionAstFromFile ignores parse errors' {
         InModuleScope $script:moduleName {
             $tokens = $null
