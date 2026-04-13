@@ -68,6 +68,10 @@ function Write-TestProjectJson {
         $project.FailOnDuplicateFunctionNames = [bool]$Options.FailOnDuplicateFunctionNames
     }
 
+    if ( $Options.ContainsKey('Preamble')) {
+        $project.Preamble = $Options.Preamble
+    }
+
     if ( $Options.ContainsKey('copyResourcesToModuleRoot')) {
         $project.copyResourcesToModuleRoot = [bool]$Options.copyResourcesToModuleRoot
     }
@@ -215,10 +219,11 @@ function New-TestProjectWithDuplicateFunctions {
 function Assert-InvokeNovaBuildThrows {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][string]$ProjectRoot
+        [Parameter(Mandatory)][string]$ProjectRoot,
+        [string]$ExpectedMessage
     )
 
-    {
+    $scriptBlock = {
         Push-Location -LiteralPath $ProjectRoot
         try {
             Invoke-NovaBuild
@@ -226,7 +231,36 @@ function Assert-InvokeNovaBuildThrows {
         finally {
             Pop-Location
         }
-    } | Should -Throw
+    }
+
+    if ( [string]::IsNullOrWhiteSpace($ExpectedMessage)) {
+        $scriptBlock | Should -Throw
+        return
+    }
+
+    $scriptBlock | Should -Throw $ExpectedMessage
+}
+
+function Get-InvokeNovaBuildErrorMessage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot
+    )
+
+    Push-Location -LiteralPath $ProjectRoot
+    try {
+        try {
+            Invoke-NovaBuild
+        }
+        catch {
+            return $_.Exception.Message
+        }
+    }
+    finally {
+        Pop-Location
+    }
+
+    throw 'Expected Invoke-NovaBuild to throw, but it succeeded.'
 }
 
 function Get-TopLevelFunctionAstFromAst {
@@ -380,5 +414,36 @@ function New-TestProjectWithMarkerTests {
         TopMarker = $topMarker
         NestedMarker = $nestedMarker
     }
+}
+
+function New-TestProjectWithPreamble {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$TestDriveRoot,
+        [Parameter(Mandatory)][string]$Name,
+        [hashtable]$Options = @{}
+    )
+
+    $projectOptions = @{
+        ProjectName = $Name
+        BuildRecursiveFolders = [bool]$Options.IncludeClassAndPrivate
+        SetSourcePath = [bool]$Options.SetSourcePath
+        FailOnDuplicateFunctionNames = $false
+    }
+    if ( $Options.ContainsKey('Preamble')) {
+        $projectOptions.Preamble = $Options.Preamble
+    }
+
+    $root = New-TestProjectRoot -TestDriveRoot $TestDriveRoot -Name $Name
+    Write-TestProjectJson -ProjectRoot $root -Options $projectOptions
+
+    Set-Content -LiteralPath (Join-Path $root 'src/public/PublicTop.ps1') -Value 'function Invoke-PublicTop { "public" }' -Encoding utf8
+    if (-not $projectOptions.BuildRecursiveFolders) {
+        return $root
+    }
+
+    Set-Content -LiteralPath (Join-Path $root 'src/classes/nested/Thing.ps1') -Value 'class NestedThing { [string]$Name }' -Encoding utf8
+    Set-Content -LiteralPath (Join-Path $root 'src/private/a/PrivateA.ps1') -Value 'function Invoke-PrivateA { "private" }' -Encoding utf8
+    return $root
 }
 

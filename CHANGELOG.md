@@ -35,6 +35,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
   JUnit/Cobertura test
   reports, remap coverage to source paths, and upload coverage to CodeScene.
 - Added regression coverage for the Cobertura source-path remapping used by the CodeScene upload flow.
+- Added optional `Preamble` support in `project.json` so builds can inject module-level setup lines at the very top of
+  the generated `.psm1` before any `# Source:` markers or other generated content.
 
 ### Changed
 
@@ -113,6 +115,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
   secrets.
 - Documented how to install the standalone `nova` launcher with `Install-NovaCli` and when to use the PowerShell alias
   instead.
+- Documented the new `Preamble` build setting in `README.md` and updated the example project to show a practical
+  module-level preamble configuration.
 - Replaced the outdated `New-NovaModule` screenshot in `README.md` with a concrete `project.json` example that shows the
   expected NovaModuleTools output more clearly.
 - Refreshed the `README.md` contribution guidance so contributors are clearly asked to follow the Nova workflow, run the

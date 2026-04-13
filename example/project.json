@@ -6,6 +6,10 @@
   "BuildRecursiveFolders": true,
   "SetSourcePath": true,
   "FailOnDuplicateFunctionNames": true,
+  "Preamble": [
+    "Set-StrictMode -Version Latest",
+    "$ErrorActionPreference = 'Stop'"
+  ],
   "Manifest": {
     "Author": "NovaModuleTools",
     "PowerShellHostVersion": "7.4",

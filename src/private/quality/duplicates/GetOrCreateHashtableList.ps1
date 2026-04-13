@@ -9,5 +9,5 @@ function Get-OrCreateHashtableList {
         $Index[$Key] = New-Object 'System.Collections.Generic.List[object]'
     }
 
-    return $Index[$Key]
+    return ,$Index[$Key]
 }

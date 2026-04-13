@@ -6,6 +6,7 @@
     "BuildRecursiveFolders": true,
     "SetSourcePath": true,
     "FailOnDuplicateFunctionNames": true,
+  "Preamble": [],
     "Manifest": {
         "Author": "",
         "PowerShellHostVersion": "",

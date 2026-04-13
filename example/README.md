@@ -12,6 +12,7 @@ It is meant to help a new user understand the smallest useful setup that can:
 ## What is in this example?
 
 - `project.json` – the NovaModuleTools project definition
+    - includes a `Preamble` example that is written at the top of the built `.psm1`
 - `src/public/Get-ExampleGreeting.ps1` – a public function exported from the built module
 - `src/private/Get-ExampleConfiguration.ps1` – a private helper used by the public function
 - `src/resources/greeting-config.json` – a resource file bundled into the built module
@@ -73,6 +74,7 @@ Hello, Nova user!
 This example is intentionally small, but it demonstrates the most important NovaModuleTools concepts:
 
 - the real project folder layout under `src/`
+- how module-level preamble lines from `project.json` are emitted before the generated source markers and module code
 - how public and private functions are combined into one module
 - how resource files are copied and used at runtime
 - how tests should import the built module from `dist/`
