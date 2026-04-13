@@ -321,7 +321,6 @@ function Invoke-TestProjectTests {
 
     $scriptPath = Join-Path $ProjectRoot 'Run-TestNovaBuild.ps1'
     $script = @"
-`$ErrorActionPreference = 'Stop'
 Import-Module '$ModulePath' -Force
 Set-Location -LiteralPath '$ProjectRoot'
 Invoke-NovaBuild

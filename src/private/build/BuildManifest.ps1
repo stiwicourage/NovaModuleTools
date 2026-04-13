@@ -62,8 +62,8 @@ function Build-Manifest {
     }
 
     try {
-        New-ModuleManifest @ParmsManifest -ErrorAction Stop
+        New-ModuleManifest @ParmsManifest
     } catch {
-        'Failed to create Manifest: {0}' -f $_.Exception.Message | Write-Error -ErrorAction Stop
+        throw ('Failed to create Manifest: {0}' -f $_.Exception.Message)
     }
 }

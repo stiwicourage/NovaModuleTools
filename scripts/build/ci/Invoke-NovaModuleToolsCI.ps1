@@ -3,7 +3,6 @@ param(
     [string[]]$ExcludeTag = @()
 )
 
-$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 . (Join-Path $PSScriptRoot 'CodeSceneCoverageMap.ps1')

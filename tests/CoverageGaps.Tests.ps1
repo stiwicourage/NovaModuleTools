@@ -124,9 +124,7 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
                     }
                 }
             }
-            Mock Write-Error {throw $Message}
-
-            {Read-NovaModuleAnswerSet -Questions $questions} | Should -Throw 'Module Name invalid*'
+            {Read-NovaModuleAnswerSet -Questions $questions} | Should -Throw 'Module name is invalid*'
         }
     }
 
@@ -161,14 +159,16 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
                 Tests = Join-Path $TestDrive 'ExistingProject/tests'
             }
             $null = New-Item -ItemType Directory -Path $paths.Project -Force
-            Mock Write-Error {}
             Mock Write-Message {}
             Mock New-Item {}
             Mock New-InitiateGitRepo {}
 
-            Initialize-NovaModuleScaffold -Answer @{EnablePester = 'No'; EnableGit = 'No'} -Paths $paths
+            {
+                Initialize-NovaModuleScaffold -Answer @{EnablePester = 'No'; EnableGit = 'No'} -Paths $paths
+            } | Should -Throw 'Project already exists, aborting'
 
-            Assert-MockCalled Write-Error -Times 1 -ParameterFilter {$Message -like 'Project already exists*'}
+            Assert-MockCalled New-Item -Times 0
+            Assert-MockCalled New-InitiateGitRepo -Times 0
         }
     }
 
@@ -232,15 +232,23 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
                     ProjectJsonFile = '/tmp/NovaDryRun/project.json'
                 }
             }
-            Mock Write-Error {}
             Mock Initialize-NovaModuleScaffold {}
             Mock Write-NovaModuleProjectJson {}
 
-            New-NovaModule -Path '/tmp/does-not-exist' -WhatIf
+            {New-NovaModule -Path '/tmp/does-not-exist' -WhatIf} | Should -Throw 'Not a valid path'
 
-            Assert-MockCalled Write-Error -Times 1 -ParameterFilter {$Message -eq 'Not a valid path'}
             Assert-MockCalled Initialize-NovaModuleScaffold -Times 0
             Assert-MockCalled Write-NovaModuleProjectJson -Times 0
+        }
+    }
+
+    It 'Read-NovaModuleAnswerSet rejects invalid module names with a terminating error' {
+        InModuleScope $script:moduleName {
+            Mock Read-AwesomeHost {'invalid name!'}
+
+            {
+                Read-NovaModuleAnswerSet -Questions @{ProjectName = @{Prompt = 'Name?'}}
+            } | Should -Throw 'Module name is invalid*'
         }
     }
 

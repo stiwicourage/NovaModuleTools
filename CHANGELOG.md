@@ -40,6 +40,9 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ### Changed
 
+- Internal build, scaffold, and CI entrypoints no longer rely on blanket `$ErrorActionPreference = 'Stop'` settings;
+  they now use
+  explicit terminating errors where needed, and the repository examples were updated to match.
 - `nova --version` now reports the installed `NovaModuleTools` module version, while `nova version` reports the
   current project version from `project.json`.
 - BREAKING CHANGE: The codebase is now fully centered on the Nova command model instead of a mixed MT/Nova
@@ -113,6 +116,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ### Documentation
 
+- Updated `README.md` and `CONTRIBUTING.md` to remove stale `$ErrorActionPreference = 'Stop'` examples from the default
+  preamble and local quality workflow.
 - Updated `README.md` with:
     - a dedicated `Publish-NovaModule` section
     - local and repository publish examples

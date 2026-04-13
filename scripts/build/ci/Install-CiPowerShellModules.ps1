@@ -6,7 +6,6 @@ param(
 )
 )
 
-$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 function Install-CiModule {

@@ -10,7 +10,7 @@ function Read-NovaModuleAnswerSet {
     }
 
     if ($answer.ProjectName -notmatch '^[A-Za-z][A-Za-z0-9_.]*$') {
-        Write-Error 'Module Name invalid. Module should be one word and contain only Letters,Numbers and '
+        throw 'Module name is invalid. Use a single word that starts with a letter and contains only letters, numbers, underscores, or periods.'
     }
 
     return $answer

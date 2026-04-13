@@ -3,10 +3,9 @@ function New-NovaModule {
     param (
         [string]$Path = (Get-Location).Path
     )
-    $ErrorActionPreference = 'Stop'
 
     if (-not (Test-Path $Path)) {
-        Write-Error 'Not a valid path'
+        throw 'Not a valid path'
     }
 
     $questionSet = Get-NovaModuleQuestionSet

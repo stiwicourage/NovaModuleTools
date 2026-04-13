@@ -12,8 +12,12 @@ function Test-ProjectSchema {
         Pester = Get-ResourceFilePath -FileName 'Schema-Pester.json'
     }
     $result = switch ($Schema) {
-        'Build' { Test-Json -Path 'project.json' -Schema (Get-Content $SchemaPath.Build -Raw) -ErrorAction Stop }
-        'Pester' { Test-Json -Path 'project.json' -Schema (Get-Content $SchemaPath.Pester -Raw) -ErrorAction Stop }
+        'Build' {
+            Test-Json -Path 'project.json' -Schema (Get-Content $SchemaPath.Build -Raw)
+        }
+        'Pester' {
+            Test-Json -Path 'project.json' -Schema (Get-Content $SchemaPath.Pester -Raw)
+        }
         Default { $false }
     }
     return $result

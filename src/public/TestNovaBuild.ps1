@@ -43,7 +43,7 @@ function Test-NovaBuild {
     $pesterConfig.TestResult.OutputPath = $testResultPath
     $TestResult = Invoke-Pester -Configuration $pesterConfig
     if ($TestResult.Result -ne 'Passed') {
-        Write-Error 'Tests failed' -ErrorAction Stop
+        throw 'Tests failed'
         return $LASTEXITCODE
     }
 }

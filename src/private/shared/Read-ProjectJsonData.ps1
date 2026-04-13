@@ -10,7 +10,7 @@ function Read-ProjectJsonData {
     }
 
     try {
-        $jsonData = $projectJsonContent | ConvertFrom-Json -AsHashtable -ErrorAction Stop
+        $jsonData = $projectJsonContent | ConvertFrom-Json -AsHashtable
     }
     catch {
         throw "project.json is not valid JSON: $ProjectJsonPath. $( $_.Exception.Message )"

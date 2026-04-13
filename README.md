@@ -112,8 +112,7 @@ Example:
   "BuildRecursiveFolders": true,
   "SetSourcePath": true,
   "Preamble": [
-    "Set-StrictMode -Version Latest",
-    "$ErrorActionPreference = 'Stop'"
+    "Set-StrictMode -Version Latest"
   ],
   "FailOnDuplicateFunctionNames": true
 }
@@ -152,8 +151,7 @@ function content:
 ```json
 {
   "Preamble": [
-    "Set-StrictMode -Version Latest",
-    "$ErrorActionPreference = 'Stop'"
+    "Set-StrictMode -Version Latest"
   ],
   "SetSourcePath": true
 }
@@ -163,7 +161,6 @@ This produces a generated module that starts like this:
 
 ```powershell
 Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
 
 # Source: src/classes/AgentListing.ps1
 class AgentListing {
@@ -270,7 +267,6 @@ For local repository work, a practical quality loop is:
 
 ```powershell
 #run.ps1
-$ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 
 $projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
@@ -283,6 +279,12 @@ Import-Module $distModuleDir -Force
 
 Test-NovaBuild
 ```
+
+You generally do not need to add `$ErrorActionPreference = 'Stop'` to a module preamble or helper script.
+NovaModuleTools now
+uses explicit terminating errors in its own build/test paths, so examples in this repository keep the preamble focused
+on
+module setup such as `Set-StrictMode -Version Latest`.
 
 This keeps ScriptAnalyzer as a separate code-quality step while `Test-NovaBuild` remains focused on Pester tests.
 When ScriptAnalyzer runs this way, its findings are written to `artifacts/scriptanalyzer.txt` and are not counted as
