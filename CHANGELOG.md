@@ -67,6 +67,13 @@ The format follows the principles from Keep a Changelog and the project aims to 
   NovaModuleTools
   is intended to be used in day-to-day development.
 
+### Fixed
+
+- Fixed the standalone macOS/Linux `nova` launcher so `nova build -Verbose` now forwards the verbose flag into the
+  actual build command instead of being consumed at the launcher boundary.
+- Fixed `Get-NovaProjectInfo` to report empty `project.json` files with a clear configuration error instead of failing
+  later with a null-argument binding exception.
+
 ### Removed
 
 - Removed the legacy `MT` command implementation in favor of the Nova equivalents, including:

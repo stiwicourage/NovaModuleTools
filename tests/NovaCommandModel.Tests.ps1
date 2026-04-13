@@ -39,6 +39,16 @@ Describe 'Nova command model' {
         }
     }
 
+    It 'Get-NovaProjectInfo throws a clear error when project.json is empty' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'empty-project-json'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value '' -Encoding utf8
+
+            {Get-NovaProjectInfo -Path $projectRoot} | Should -Throw 'project.json is empty:*'
+        }
+    }
+
     It 'build output includes the generated external help file' {
         Test-Path -LiteralPath $script:helpXmlPath | Should -BeTrue
     }
@@ -404,6 +414,75 @@ title: Invoke-NovaBuild
             $helpText | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
             $helpText | Should -Match 'version\s+Show the current project version from project.json'
             $versionText | Should -Match ([regex]::Escape($installedModuleVersion))
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+    }
+
+    It 'Install-NovaCli forwards -Verbose from the standalone launcher to build output' {
+        $targetDirectory = Join-Path $TestDrive 'verbose-bin'
+        $installedPath = Join-Path $targetDirectory 'nova'
+        $projectRoot = Join-Path $TestDrive 'CliVerboseBuildProject'
+        $originalModulePath = $env:PSModulePath
+        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
+        $distParent = Split-Path -Parent $distModuleDir
+
+        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
+
+        New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+        foreach ($dir in @('src/public', 'src/private', 'src/classes', 'src/resources', 'tests', 'docs')) {
+            New-Item -ItemType Directory -Path (Join-Path $projectRoot $dir) -Force | Out-Null
+        }
+
+        @'
+{
+  "ProjectName": "CliVerboseBuildProject",
+  "Description": "CLI verbose forwarding test project",
+  "Version": "0.0.1",
+  "copyResourcesToModuleRoot": false,
+  "Manifest": {
+    "Author": "Test",
+    "PowerShellHostVersion": "7.4",
+    "GUID": "22222222-2222-2222-2222-222222222222",
+    "Tags": [],
+    "ProjectUri": ""
+  },
+  "Pester": {
+    "TestResult": {
+      "Enabled": true,
+      "OutputFormat": "NUnitXml"
+    },
+    "Output": {
+      "Verbosity": "Detailed"
+    }
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Encoding utf8
+
+        @'
+function Invoke-TestCliVerbose {
+    'ok'
+}
+'@ | Set-Content -LiteralPath (Join-Path $projectRoot 'src/public/Invoke-TestCliVerbose.ps1') -Encoding utf8
+
+        try {
+            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
+
+            Push-Location $projectRoot
+            try {
+                $buildOutput = & $installedPath build -Verbose 2>&1
+                $buildText = @($buildOutput) -join [Environment]::NewLine
+                $buildExitCode = $LASTEXITCODE
+            }
+            finally {
+                Pop-Location
+            }
+
+            $buildExitCode | Should -Be 0
+            $buildText | Should -Match 'VERBOSE: Running NovaModuleTools Version:'
+            $buildText | Should -Match 'VERBOSE: Buidling module psm1 file'
+            (Test-Path -LiteralPath (Join-Path $projectRoot 'dist/CliVerboseBuildProject/CliVerboseBuildProject.psm1')) | Should -BeTrue
         }
         finally {
             $env:PSModulePath = $originalModulePath

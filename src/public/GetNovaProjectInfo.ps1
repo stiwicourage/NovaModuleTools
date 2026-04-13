@@ -12,7 +12,7 @@ function Get-NovaProjectInfo {
         throw "Not a project folder. project.json not found: $projectJson"
     }
 
-    $jsonData = Get-Content -LiteralPath $projectJson -Raw | ConvertFrom-Json -AsHashtable
+    $jsonData = Read-ProjectJsonData -ProjectJsonPath $projectJson
 
     $Out = @{}
     $Out['ProjectJSON'] = $ProjectJson

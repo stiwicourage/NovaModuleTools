@@ -14,6 +14,32 @@ else {
     @()
 }
 
+$forwardVerbose = $false
+$remainingArguments = New-Object 'System.Collections.Generic.List[string]'
+
+foreach ($argument in $Arguments) {
+    switch -Regex ($argument) {
+        '^(--verbose|-Verbose)$' {
+            $forwardVerbose = $true
+            continue
+        }
+        default {
+            $remainingArguments.Add($argument)
+        }
+    }
+}
+
+$Arguments = @($remainingArguments)
+
 Import-Module NovaModuleTools -Force
 
-Invoke-NovaCli -Command $Command @Arguments
+$invokeParameters = @{
+    Command = $Command
+    Arguments = @($Arguments)
+}
+
+if ($forwardVerbose) {
+    $invokeParameters.Verbose = $true
+}
+
+Invoke-NovaCli @invokeParameters
