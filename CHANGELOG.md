@@ -38,8 +38,10 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Added optional `Preamble` support in `project.json` so builds can inject module-level setup lines at the very top of
   the generated `.psm1` before any `# Source:` markers or other generated content.
 
+
 ### Changed
 
+- Standardized the project setting name on `CopyResourcesToModuleRoot` across templates, tests, code, and documentation.
 - Internal build, scaffold, and CI entrypoints no longer rely on blanket `$ErrorActionPreference = 'Stop'` settings;
   they now use
   explicit terminating errors where needed, and the repository examples were updated to match.
@@ -110,7 +112,7 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Fixed local module path resolution maintainability by refactoring `Get-LocalModulePath` to Code Health `10.0` and
   adding regression coverage for both the matching and error paths.
 - Fixed resource-copy maintainability by refactoring `Copy-ProjectResource` to Code Health `10.0` and adding regression
-  coverage for both `copyResourcesToModuleRoot` modes.
+  coverage for both `CopyResourcesToModuleRoot` modes.
 - Fixed `Test-NovaBuild` so the generated Pester XML report is now written to `artifacts/TestResults.xml` instead of the
   `dist` folder.
 
@@ -218,7 +220,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ### Added
 
-- New optional project setting `copyResourcesToModuleRoot`. Setting to true places resource files in the root directory of module. Default is `false` to provide backward compatibility. Thanks to @[BrooksV](https://github.com/BrooksV)
+- New optional project setting `CopyResourcesToModuleRoot`. Setting to true places resource files in the root directory
+  of module. Default is `false` to provide backward compatibility. Thanks to @[BrooksV](https://github.com/BrooksV)
 
 ### Fixed
 

@@ -49,6 +49,30 @@ Describe 'Nova command model' {
         }
     }
 
+    It 'Get-NovaProjectInfo exposes CopyResourcesToModuleRoot with a false default when omitted' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'default-copy-resources-option'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            $projectJson = ([ordered]@{
+                ProjectName = 'DefaultCopyResourcesProject'
+                Description = 'Defaulted option test'
+                Version = '0.0.1'
+                Manifest = [ordered]@{
+                    Author = 'Test'
+                    PowerShellHostVersion = '7.4'
+                    GUID = '11111111-1111-1111-1111-111111111111'
+                }
+            } | ConvertTo-Json -Depth 5)
+
+            Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
+
+            $projectInfo = Get-NovaProjectInfo -Path $projectRoot
+
+            $projectInfo.PSObject.Properties.Name | Should -Contain 'CopyResourcesToModuleRoot'
+            $projectInfo.CopyResourcesToModuleRoot | Should -BeFalse
+        }
+    }
+
     It 'build output includes the generated external help file' {
         Test-Path -LiteralPath $script:helpXmlPath | Should -BeTrue
     }
@@ -440,7 +464,7 @@ title: Invoke-NovaBuild
   "ProjectName": "CliVerboseBuildProject",
   "Description": "CLI verbose forwarding test project",
   "Version": "0.0.1",
-  "copyResourcesToModuleRoot": false,
+  "CopyResourcesToModuleRoot": false,
   "Manifest": {
     "Author": "Test",
     "PowerShellHostVersion": "7.4",

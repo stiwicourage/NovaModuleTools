@@ -190,6 +190,7 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             $project.ProjectName | Should -Be 'NovaJson'
             $project.Description | Should -Be 'Generated project'
             $project.Version | Should -Be '2.3.4'
+            $project.CopyResourcesToModuleRoot | Should -BeFalse
             $project.Manifest.Author | Should -Be 'Test Author'
             $project.Manifest.PowerShellHostVersion | Should -Be '7.4'
             $project.Manifest.GUID | Should -Be '11111111-1111-1111-1111-111111111111'
@@ -457,7 +458,7 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             $projectInfo = [pscustomobject]@{
                 PublicDir = '/tmp/public'
                 ResourcesDir = '/tmp/resources'
-                copyResourcesToModuleRoot = $false
+                CopyResourcesToModuleRoot = $false
                 Manifest = [ordered]@{Author = 'Tester'; CompanyName = 'Nova'}
                 Version = '1.2.3-preview'
                 Description = 'Example'
@@ -494,7 +495,7 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
                 [pscustomobject]@{
                     PublicDir = '/tmp/public'
                     ResourcesDir = '/tmp/resources'
-                    copyResourcesToModuleRoot = $false
+                    CopyResourcesToModuleRoot = $false
                     Manifest = [ordered]@{Author = 'Tester'; CompanyName = 'Nova'}
                     Version = '1.2.3-preview'
                     Description = 'Example'

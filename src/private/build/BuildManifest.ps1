@@ -16,7 +16,7 @@ function Build-Manifest {
     ## Import Format.ps1xml (if any)
     $FormatsToProcess = @()
     Get-ChildItem -Path $data.ResourcesDir -File -Filter '*Format.ps1xml' -ErrorAction SilentlyContinue | ForEach-Object {
-        if ($data.copyResourcesToModuleRoot) { 
+        if ($data.CopyResourcesToModuleRoot) {
             $FormatsToProcess += $_.Name
         } else {
             $FormatsToProcess += Join-Path -Path 'resources' -ChildPath $_.Name
@@ -26,7 +26,7 @@ function Build-Manifest {
     ## Import Types.ps1xml1 (if any)
     $TypesToProcess = @()
     Get-ChildItem -Path $data.ResourcesDir -File -Filter '*Types.ps1xml' -ErrorAction SilentlyContinue | ForEach-Object {
-        if ($data.copyResourcesToModuleRoot) { 
+        if ($data.CopyResourcesToModuleRoot) {
             $TypesToProcess += $_.Name
         } else {
             $TypesToProcess += Join-Path -Path 'resources' -ChildPath $_.Name

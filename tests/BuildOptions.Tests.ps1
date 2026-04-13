@@ -56,6 +56,7 @@ Describe 'Invoke-NovaBuild options' {
         $example = Get-Content -LiteralPath (Join-Path $repoRoot 'example/project.json') -Raw | ConvertFrom-Json
 
         foreach ($project in @($template, $example)) {
+            $project.PSObject.Properties.Name | Should -Contain 'CopyResourcesToModuleRoot'
             $project.BuildRecursiveFolders | Should -BeTrue
             $project.SetSourcePath | Should -BeTrue
             $project.FailOnDuplicateFunctionNames | Should -BeTrue
@@ -194,7 +195,7 @@ Describe 'Invoke-NovaBuild options' {
         Remove-Module SetSourceOn -ErrorAction SilentlyContinue
     }
 
-    It 'copyResourcesToModuleRoot=true copies resource content directly into the built module root' {
+    It 'CopyResourcesToModuleRoot=true copies resource content directly into the built module root' {
         $project = New-TestProjectWithResources -TestDriveRoot $TestDrive -Name 'ResourceToRoot' -CopyResourcesToModuleRoot $true
 
         (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'config.json')) | Should -BeTrue
@@ -202,7 +203,7 @@ Describe 'Invoke-NovaBuild options' {
         (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'resources')) | Should -BeFalse
     }
 
-    It 'copyResourcesToModuleRoot=false keeps resources inside a resources folder in the built module' {
+    It 'CopyResourcesToModuleRoot=false keeps resources inside a resources folder in the built module' {
         $project = New-TestProjectWithResources -TestDriveRoot $TestDrive -Name 'ResourceToFolder' -CopyResourcesToModuleRoot $false
 
         (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'resources/config.json')) | Should -BeTrue

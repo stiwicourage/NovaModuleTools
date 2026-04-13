@@ -2,7 +2,7 @@
     "ProjectName": "",
     "Description": "",
     "Version": "",
-    "copyResourcesToModuleRoot": false,
+  "CopyResourcesToModuleRoot": false,
     "BuildRecursiveFolders": true,
     "SetSourcePath": true,
     "FailOnDuplicateFunctionNames": true,

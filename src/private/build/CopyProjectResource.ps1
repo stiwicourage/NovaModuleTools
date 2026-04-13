@@ -10,7 +10,7 @@ function Copy-ProjectResource {
         return
     }
 
-    if ($data.copyResourcesToModuleRoot) {
+    if ($data.CopyResourcesToModuleRoot) {
         Copy-ProjectResourceContentToModuleRoot -ItemList $resourceItemList -OutputModuleDir $data.OutputModuleDir
         return
     }
