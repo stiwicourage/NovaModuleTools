@@ -424,10 +424,13 @@ function New-TestProjectWithPreamble {
         [hashtable]$Options = @{}
     )
 
+    $includeClassAndPrivate = $Options.ContainsKey('IncludeClassAndPrivate') -and [bool]$Options.IncludeClassAndPrivate
+    $setSourcePath = $Options.ContainsKey('SetSourcePath') -and [bool]$Options.SetSourcePath
+
     $projectOptions = @{
         ProjectName = $Name
-        BuildRecursiveFolders = [bool]$Options.IncludeClassAndPrivate
-        SetSourcePath = [bool]$Options.SetSourcePath
+        BuildRecursiveFolders = $includeClassAndPrivate
+        SetSourcePath = $setSourcePath
         FailOnDuplicateFunctionNames = $false
     }
     if ( $Options.ContainsKey('Preamble')) {
