@@ -74,6 +74,19 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
         }
     }
 
+    It 'Get-AwesomeHostUi returns the current host UI instance type' {
+        $expectedType = $Host.UI.GetType().FullName
+
+        InModuleScope $script:moduleName -Parameters @{ExpectedType = $expectedType} {
+            param($ExpectedType)
+
+            $result = Get-AwesomeHostUi
+
+            $result | Should -Not -BeNullOrEmpty
+            $result.GetType().FullName | Should -Be $ExpectedType
+        }
+    }
+
     It 'Read-AwesomeHost handles standard prompt case <Name>' -ForEach @(
         @{
             Name = 'entered text'
