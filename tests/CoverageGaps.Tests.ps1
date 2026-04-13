@@ -354,6 +354,16 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
         }
     }
 
+    It 'Get-NovaCliInstalledVersion returns the currently loaded module version' {
+        $expectedVersion = (Get-Module $script:moduleName -ErrorAction Stop).Version.ToString()
+
+        InModuleScope $script:moduleName -Parameters @{ExpectedVersion = $expectedVersion} {
+            param($ExpectedVersion)
+
+            Get-NovaCliInstalledVersion | Should -Be $ExpectedVersion
+        }
+    }
+
     It 'Test-NovaCliDirectoryOnPath returns true when the directory is present' {
         InModuleScope $script:moduleName {
             $originalPath = $env:PATH
