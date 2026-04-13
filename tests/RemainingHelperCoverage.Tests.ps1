@@ -57,6 +57,12 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         }
     }
 
+    It 'Get-OrderedScriptFileForDirectory returns an empty list when the directory is missing' {
+        InModuleScope $script:moduleName {
+            @(Get-OrderedScriptFileForDirectory -Directory (Join-Path $TestDrive 'missing-dir') -ProjectRoot $TestDrive -Recurse $false) | Should -Be @()
+        }
+    }
+
     It 'Get-FunctionNameFromFile returns every function name in the file' {
         $filePath = Join-Path $TestDrive 'Functions.ps1'
         @'

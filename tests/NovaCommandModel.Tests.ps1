@@ -35,7 +35,16 @@ Describe 'Nova command model' {
         InModuleScope $script:moduleName {
             Mock Get-Content {'{"ProjectName":"X","Version":"9.9.9"}'}
 
-            (Get-NovaProjectInfo).Version | Should -Be '9.9.9'
+            Get-NovaProjectInfo -Version | Should -Be '9.9.9'
+        }
+    }
+
+    It 'Get-NovaProjectInfo throws when project.json is missing' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'missing-project-json'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+
+            {Get-NovaProjectInfo -Path $projectRoot} | Should -Throw 'Not a project folder. project.json not found:*'
         }
     }
 

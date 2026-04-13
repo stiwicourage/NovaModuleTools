@@ -335,8 +335,11 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
         }
     }
 
-    It 'Get-NovaCliLauncherPath reports missing file-backed commands and missing launcher files' {
+    It 'Get-NovaCliLauncherPath reports missing commands, missing file-backed commands, and missing launcher files' {
         InModuleScope $script:moduleName {
+            Mock Get-Command {$null}
+            {Get-NovaCliLauncherPath} | Should -Throw 'Install-NovaCli command not found.'
+
             Mock Get-Command {
                 [pscustomobject]@{
                     ScriptBlock = [pscustomobject]@{File = $null}
@@ -483,12 +486,27 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
         }
     }
 
-    It 'Build-Manifest includes resource paths and prerelease manifest metadata' {
-        InModuleScope $script:moduleName {
+    It 'Build-Manifest includes expected resource paths and prerelease manifest metadata when resources go to <ResourceLocation>' -ForEach @(
+        @{
+            ResourceLocation = 'resources/'
+            CopyResourcesToModuleRoot = $false
+            ExpectedFormatPath = 'resources/Nova.Format.ps1xml'
+            ExpectedTypePath = 'resources/Nova.Types.ps1xml'
+        }
+        @{
+            ResourceLocation = 'module root'
+            CopyResourcesToModuleRoot = $true
+            ExpectedFormatPath = 'Nova.Format.ps1xml'
+            ExpectedTypePath = 'Nova.Types.ps1xml'
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{ManifestCase = $_} {
+            param($ManifestCase)
+
             $projectInfo = [pscustomobject]@{
                 PublicDir = '/tmp/public'
                 ResourcesDir = '/tmp/resources'
-                CopyResourcesToModuleRoot = $false
+                CopyResourcesToModuleRoot = $ManifestCase.CopyResourcesToModuleRoot
                 Manifest = [ordered]@{Author = 'Tester'; CompanyName = 'Nova'}
                 Version = '1.2.3-preview'
                 Description = 'Example'
@@ -510,8 +528,8 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
                 $Path -eq '/tmp/NovaModuleTools.psd1' -and
                         $FunctionsToExport -eq @('Get-Thing') -and
                         $AliasesToExport -eq @('gt') -and
-                        $FormatsToProcess -eq @('resources/Nova.Format.ps1xml') -and
-                        $TypesToProcess -eq @('resources/Nova.Types.ps1xml') -and
+                        $FormatsToProcess -eq @($ManifestCase.ExpectedFormatPath) -and
+                        $TypesToProcess -eq @($ManifestCase.ExpectedTypePath) -and
                         $Prerelease -eq 'preview' -and
                         $Author -eq 'Tester' -and
                         $CompanyName -eq 'Nova'
