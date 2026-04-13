@@ -24,6 +24,7 @@ The format follows the principles from Keep a Changelog and the project aims to 
     - packaged/built module publish behavior
     - `Update-NovaModuleVersion -WhatIf`
   - `Read-AwesomeHost` standard, mandatory, default, and choice prompt flows
+      - `Get-GitCommitMessageForVersionBump` tagged, untagged, and git-failure flows
 - Added a working `example/` project that can be built, tested, imported, and used as a practical reference for new
   NovaModuleTools users.
 - Added a standalone `scripts/build/Invoke-ScriptAnalyzerCI.ps1` helper so ScriptAnalyzer can run as a dedicated quality
