@@ -572,6 +572,20 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
         }
     }
 
+    It 'Format-ProjectJsonValue returns null for null input' {
+        InModuleScope $script:moduleName {
+            Format-ProjectJsonValue -Value $null | Should -Be 'null'
+        }
+    }
+
+    It 'Format-ProjectJsonValue falls back to string conversion when ConvertTo-Json fails' {
+        InModuleScope $script:moduleName {
+            Mock ConvertTo-Json {throw 'json failed'}
+
+            Format-ProjectJsonValue -Value 42 | Should -Be '42'
+        }
+    }
+
     It 'Get-TopLevelFunctionAst returns only top-level functions and Get-TopLevelFunctionAstFromFile ignores parse errors' {
         InModuleScope $script:moduleName {
             $tokens = $null
