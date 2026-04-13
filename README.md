@@ -407,9 +407,11 @@ nova build
 ### Get-NovaProjectInfo (`nova info` / `nova version`)
 
 This function provides complete info about the project, which can be used in Pester tests or for general
-troubleshooting. Use `nova info` for the full project object or `nova version` for just the project version.
+troubleshooting. Use `nova info` for the full project object or `nova version` for a concise
+`<ProjectName> <ProjectVersion>` string.
 
-Use `nova --version` when you want to see the installed `NovaModuleTools` module version on the current machine.
+Use `nova --version` when you want to see the installed `NovaModuleTools` module name and version on the current
+machine as `NovaModuleTools <ModuleVersion>`.
 
 ### Test-NovaBuild (`nova test`)
 

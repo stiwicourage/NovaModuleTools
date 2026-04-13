@@ -70,6 +70,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
   `10.0`.
 - README and command documentation were refreshed to consistently use the Nova command names and describe the
   CLI/release workflow more clearly.
+- `nova version` and `nova --version` now include the component name alongside the version so CLI output clearly
+  distinguishes project versions from the installed NovaModuleTools version.
 - Release and test automation files were updated to better support the new Nova workflow.
 - `Test-ProjectSchema` no longer carries an unreachable default branch now that `Schema` is constrained by
   `ValidateSet('Build', 'Pester')`.
