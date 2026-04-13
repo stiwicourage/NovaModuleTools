@@ -22,7 +22,6 @@ Describe 'Invoke-CodeSceneAnalysis' {
     It 'supports trigger-only runs when CoveragePath is omitted' {
         $requestLogPath = Join-Path $TestDrive 'codescene-request.txt'
         $runnerContent = @"
-`$ErrorActionPreference = 'Stop'
 function Invoke-WebRequest {
     param(
         [string]`$Uri,
@@ -57,7 +56,6 @@ function Invoke-WebRequest {
         Set-Content -LiteralPath $coveragePath -Value '<coverage />' -Encoding utf8
 
         $runnerContent = @"
-`$ErrorActionPreference = 'Stop'
 function cs-coverage {
     param([Parameter(ValueFromRemainingArguments = `$true)][string[]]`$ArgumentList)
 

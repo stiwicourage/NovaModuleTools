@@ -2,7 +2,6 @@ function Invoke-NovaBuild {
     [CmdletBinding()]
     param (
     )
-    $ErrorActionPreference = 'Stop'
     Reset-ProjectDist
     Build-Module
 

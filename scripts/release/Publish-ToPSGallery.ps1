@@ -4,7 +4,6 @@ param(
 )
 
 Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
 
 if ([string]::IsNullOrWhiteSpace($ApiKey)) {
     throw 'PSGALLERY_API environment variable is required.'

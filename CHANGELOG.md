@@ -38,8 +38,17 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Added optional `Preamble` support in `project.json` so builds can inject module-level setup lines at the very top of
   the generated `.psm1` before any `# Source:` markers or other generated content.
 
+
 ### Changed
 
+- Standardized the project setting name on `CopyResourcesToModuleRoot` across templates, tests, code, and documentation.
+- Made `CopyResourcesToModuleRoot` optional in `project.json`; when omitted, NovaModuleTools now defaults it to `false`.
+- Kept `CopyResourcesToModuleRoot` visible in `example/project.json` so new users can still discover the setting from
+  the
+  working reference project even though generated projects may omit it.
+- Internal build, scaffold, and CI entrypoints no longer rely on blanket `$ErrorActionPreference = 'Stop'` settings;
+  they now use
+  explicit terminating errors where needed, and the repository examples were updated to match.
 - `nova --version` now reports the installed `NovaModuleTools` module version, while `nova version` reports the
   current project version from `project.json`.
 - BREAKING CHANGE: The codebase is now fully centered on the Nova command model instead of a mixed MT/Nova
@@ -66,6 +75,16 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - The repository example, local helper workflow, and command documentation were updated to better reflect how
   NovaModuleTools
   is intended to be used in day-to-day development.
+
+### Fixed
+
+- Fixed the standalone macOS/Linux `nova` launcher so `nova build -Verbose` now forwards the verbose flag into the
+  actual build command instead of being consumed at the launcher boundary.
+- Fixed `Get-NovaProjectInfo` to report empty `project.json` files with a clear configuration error instead of failing
+  later with a null-argument binding exception.
+- Fixed internal build, release, and CLI code paths so enabling a module preamble such as
+  `Set-StrictMode -Version Latest`
+  and `$ErrorActionPreference = 'Stop'` no longer breaks the repository test suite or the example project build.
 
 ### Removed
 
@@ -97,12 +116,14 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Fixed local module path resolution maintainability by refactoring `Get-LocalModulePath` to Code Health `10.0` and
   adding regression coverage for both the matching and error paths.
 - Fixed resource-copy maintainability by refactoring `Copy-ProjectResource` to Code Health `10.0` and adding regression
-  coverage for both `copyResourcesToModuleRoot` modes.
+  coverage for both `CopyResourcesToModuleRoot` modes.
 - Fixed `Test-NovaBuild` so the generated Pester XML report is now written to `artifacts/TestResults.xml` instead of the
   `dist` folder.
 
 ### Documentation
 
+- Updated `README.md` and `CONTRIBUTING.md` to remove stale `$ErrorActionPreference = 'Stop'` examples from the default
+  preamble and local quality workflow.
 - Updated `README.md` with:
     - a dedicated `Publish-NovaModule` section
     - local and repository publish examples
@@ -203,7 +224,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ### Added
 
-- New optional project setting `copyResourcesToModuleRoot`. Setting to true places resource files in the root directory of module. Default is `false` to provide backward compatibility. Thanks to @[BrooksV](https://github.com/BrooksV)
+- New optional project setting `CopyResourcesToModuleRoot`. Setting to true places resource files in the root directory
+  of module. Default is `false` to provide backward compatibility. Thanks to @[BrooksV](https://github.com/BrooksV)
 
 ### Fixed
 
@@ -223,6 +245,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ## Fixed
 
+- Fixed the example project README so it no longer suggests that `example/` includes a `run.ps1` helper script; it now
+  points users to building `NovaModuleTools` from the repository root or using the Gallery workflow.
 - Corrected typo in ProjectUri from `ProjecUri` to correct spelling.
 
 ## [0.0.6] - 2024-07-08

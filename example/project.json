@@ -2,7 +2,7 @@
   "ProjectName": "NovaExampleModule",
   "Description": "A working example project that demonstrates how to build, test, and package a small module with NovaModuleTools.",
   "Version": "0.1.0",
-  "copyResourcesToModuleRoot": false,
+  "CopyResourcesToModuleRoot": false,
   "BuildRecursiveFolders": true,
   "SetSourcePath": true,
   "FailOnDuplicateFunctionNames": true,

@@ -5,18 +5,18 @@ function Build-Manifest {
     Write-Verbose 'Building psd1 data file Manifest'
     $data = Get-NovaProjectInfo
 
-    $PubFunctionFiles = Get-ChildItem -Path $data.PublicDir -Filter *.ps1
+    $PubFunctionFiles = @(Get-ChildItem -Path $data.PublicDir -Filter *.ps1)
     $functionToExport = @()
     $aliasToExport = @()
-    $PubFunctionFiles.FullName | ForEach-Object {
-        $functionToExport += Get-FunctionNameFromFile -filePath $_
-        $aliasToExport += Get-AliasInFunctionFromFile -filePath $_
+    foreach ($pubFunctionFile in $PubFunctionFiles) {
+        $functionToExport += Get-FunctionNameFromFile -filePath $pubFunctionFile.FullName
+        $aliasToExport += Get-AliasInFunctionFromFile -filePath $pubFunctionFile.FullName
     }
 
     ## Import Format.ps1xml (if any)
     $FormatsToProcess = @()
     Get-ChildItem -Path $data.ResourcesDir -File -Filter '*Format.ps1xml' -ErrorAction SilentlyContinue | ForEach-Object {
-        if ($data.copyResourcesToModuleRoot) { 
+        if ($data.CopyResourcesToModuleRoot) {
             $FormatsToProcess += $_.Name
         } else {
             $FormatsToProcess += Join-Path -Path 'resources' -ChildPath $_.Name
@@ -26,7 +26,7 @@ function Build-Manifest {
     ## Import Types.ps1xml1 (if any)
     $TypesToProcess = @()
     Get-ChildItem -Path $data.ResourcesDir -File -Filter '*Types.ps1xml' -ErrorAction SilentlyContinue | ForEach-Object {
-        if ($data.copyResourcesToModuleRoot) { 
+        if ($data.CopyResourcesToModuleRoot) {
             $TypesToProcess += $_.Name
         } else {
             $TypesToProcess += Join-Path -Path 'resources' -ChildPath $_.Name
@@ -62,8 +62,8 @@ function Build-Manifest {
     }
 
     try {
-        New-ModuleManifest @ParmsManifest -ErrorAction Stop
+        New-ModuleManifest @ParmsManifest
     } catch {
-        'Failed to create Manifest: {0}' -f $_.Exception.Message | Write-Error -ErrorAction Stop
+        throw ('Failed to create Manifest: {0}' -f $_.Exception.Message)
     }
 }

@@ -25,7 +25,6 @@ If you want to contribute, please work in the same style as the project:
 
 ```powershell title="run.ps1"
 #run.ps1
-$ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 
 $projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName

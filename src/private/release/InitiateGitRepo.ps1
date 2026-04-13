@@ -11,21 +11,26 @@ function New-InitiateGitRepo {
         return
     }
     Push-Location -StackName 'GitInit'
-    # Navigate to the specified directory
-    Set-Location $DirectoryPath
+    try {
+        # Navigate to the specified directory
+        Set-Location $DirectoryPath
 
-    # Check if a Git repository already exists
-    if (Test-Path -Path '.git') {
-        Write-Warning 'A Git repository already exists in this directory.'
-        return
-    }
-    if ($PSCmdlet.ShouldProcess($DirectoryPath, ("Initiating git on $DirectoryPath"))) {
-        try {
-            git init | Out-Null
-        } catch {
-            Write-Error 'Failed to initialize Git repo'
+        # Check if a Git repository already exists
+        if (Test-Path -Path '.git') {
+            Write-Warning 'A Git repository already exists in this directory.'
+            return
         }
+
+        if ( $PSCmdlet.ShouldProcess($DirectoryPath, ("Initiating git on $DirectoryPath"))) {
+            try {
+                git init | Out-Null
+            } catch {
+                throw "Failed to initialize Git repo: $( $_.Exception.Message )"
+            }
+        }
+        Write-Verbose 'Git repository initialized successfully'
     }
-    Write-Verbose 'Git repository initialized successfully'
-    Pop-Location -StackName 'GitInit'
+    finally {
+        Pop-Location -StackName 'GitInit'
+    }
 }

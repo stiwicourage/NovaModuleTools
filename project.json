@@ -1,11 +1,11 @@
 {
   "ProjectName": "NovaModuleTools",
   "Description": "NovaModuleTools is an enterprise-focused evolution of ModuleTools, designed for large-scale PowerShell projects with a strong emphasis on structure, maintainability, and automated CI/CD pipelines.",
-  "Version": "1.9.7",
-  "copyResourcesToModuleRoot": false,
-  "BuildRecursiveFolders": true,
-  "SetSourcePath": true,
-  "FailOnDuplicateFunctionNames": true,
+  "Version": "1.9.10",
+  "Preamble": [
+    "Set-StrictMode -Version Latest",
+    "$ErrorActionPreference = 'Stop'"
+  ],
   "Manifest": {
     "Author": "Stiwi Gabriel Courage",
     "PowerShellHostVersion": "7.4",

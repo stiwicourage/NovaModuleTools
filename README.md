@@ -112,8 +112,7 @@ Example:
   "BuildRecursiveFolders": true,
   "SetSourcePath": true,
   "Preamble": [
-    "Set-StrictMode -Version Latest",
-    "$ErrorActionPreference = 'Stop'"
+    "Set-StrictMode -Version Latest"
   ],
   "FailOnDuplicateFunctionNames": true
 }
@@ -152,8 +151,7 @@ function content:
 ```json
 {
   "Preamble": [
-    "Set-StrictMode -Version Latest",
-    "$ErrorActionPreference = 'Stop'"
+    "Set-StrictMode -Version Latest"
   ],
   "SetSourcePath": true
 }
@@ -163,7 +161,6 @@ This produces a generated module that starts like this:
 
 ```powershell
 Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
 
 # Source: src/classes/AgentListing.ps1
 class AgentListing {
@@ -176,7 +173,7 @@ class AgentListing {
 - All functions in the `public` folder are exported during the module build.
 - All functions in the `private` folder are accessible internally within the module but are not exposed outside the module.
 - `src/classes` should contain classes and enums. These files are placed at the top of the generated `psm1`.
-- `src/resources` content is handled based on `copyResourcesToModuleRoot`.
+- `src/resources` content is handled based on the optional `CopyResourcesToModuleRoot` setting.
 
 #### Deterministic processing order
 To ensure builds are deterministic across platforms, files are processed in this order:
@@ -204,11 +201,14 @@ The `resources` folder within the `src` directory is intended for including any 
 - **Data files**: Store any data files that are used by your module, such as CSV or JSON files.
 - **Subfolder**: Include any additional folders and their content to be included with the module, such as dependant Modules, APIs, DLLs, etc... organized by a subfolder.
 
-By default, resource files from `src/resources` go into `dist/resources`. To place them directly in dist (avoiding the resources subfolder), set `copyResourcesToModuleRoot` to `true`. This provides greater control in certain deployment scenarios where resources files are preferred in module root directory.
+By default, resource files from `src/resources` go into `dist/resources`. You do not need to add
+`CopyResourcesToModuleRoot` to `project.json` unless you want to override that default. To place resources directly in
+dist (avoiding the resources subfolder), set `CopyResourcesToModuleRoot` to `true`. This provides greater control in
+certain deployment scenarios where resources files are preferred in module root directory.
 
 Leave `src\resources` empty if there is no need to include any additional content in the `dist` folder.
 
-An example of the module build where resources were included and `copyResourcesToModuleRoot` is set to true.
+An example of the module build where resources were included and `CopyResourcesToModuleRoot` is set to true.
 ```powershell
 dist
 └── TestModule
@@ -270,7 +270,6 @@ For local repository work, a practical quality loop is:
 
 ```powershell
 #run.ps1
-$ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 
 $projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
@@ -283,6 +282,12 @@ Import-Module $distModuleDir -Force
 
 Test-NovaBuild
 ```
+
+You generally do not need to add `$ErrorActionPreference = 'Stop'` to a module preamble or helper script.
+NovaModuleTools now
+uses explicit terminating errors in its own build/test paths, so examples in this repository keep the preamble focused
+on
+module setup such as `Set-StrictMode -Version Latest`.
 
 This keeps ScriptAnalyzer as a separate code-quality step while `Test-NovaBuild` remains focused on Pester tests.
 When ScriptAnalyzer runs this way, its findings are written to `artifacts/scriptanalyzer.txt` and are not counted as

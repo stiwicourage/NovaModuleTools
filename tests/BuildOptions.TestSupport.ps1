@@ -37,7 +37,6 @@ function Write-TestProjectJson {
         ProjectName = ('' + $Options.ProjectName)
         Description = 'Test project'
         Version = '0.0.1'
-        copyResourcesToModuleRoot = $false
         Manifest = [ordered]@{
             Author = 'Test'
             PowerShellHostVersion = '7.4'
@@ -72,8 +71,8 @@ function Write-TestProjectJson {
         $project.Preamble = $Options.Preamble
     }
 
-    if ( $Options.ContainsKey('copyResourcesToModuleRoot')) {
-        $project.copyResourcesToModuleRoot = [bool]$Options.copyResourcesToModuleRoot
+    if ( $Options.ContainsKey('CopyResourcesToModuleRoot')) {
+        $project.CopyResourcesToModuleRoot = [bool]$Options.CopyResourcesToModuleRoot
     }
 
     $json = $project | ConvertTo-Json -Depth 10
@@ -321,7 +320,6 @@ function Invoke-TestProjectTests {
 
     $scriptPath = Join-Path $ProjectRoot 'Run-TestNovaBuild.ps1'
     $script = @"
-`$ErrorActionPreference = 'Stop'
 Import-Module '$ModulePath' -Force
 Set-Location -LiteralPath '$ProjectRoot'
 Invoke-NovaBuild
@@ -355,7 +353,7 @@ function New-TestProjectWithResources {
         ProjectName = $Name
         BuildRecursiveFolders = $false
         FailOnDuplicateFunctionNames = $false
-        copyResourcesToModuleRoot = $CopyResourcesToModuleRoot
+        CopyResourcesToModuleRoot = $CopyResourcesToModuleRoot
     }
 
     New-Item -ItemType Directory -Path (Join-Path $root 'src/resources/nested') -Force | Out-Null

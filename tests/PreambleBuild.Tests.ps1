@@ -72,7 +72,7 @@ Describe 'Invoke-NovaBuild Preamble setting' {
             Preamble = @(
                 '# Module initialization'
                 'Set-StrictMode -Version Latest'
-                "`$ErrorActionPreference = 'Stop'"
+                "`$script:ModuleInitialized = `$true"
             )
         }
         $content = Get-BuiltModuleContent -ProjectRoot $root
@@ -80,7 +80,7 @@ Describe 'Invoke-NovaBuild Preamble setting' {
         $expectedStart = @(
             '# Module initialization'
             'Set-StrictMode -Version Latest'
-            "`$ErrorActionPreference = 'Stop'"
+            "`$script:ModuleInitialized = `$true"
             ''
             'function Invoke-PublicTop { "public" }'
         ) -join $newLine
@@ -94,7 +94,7 @@ Describe 'Invoke-NovaBuild Preamble setting' {
             IncludeClassAndPrivate = $true
             Preamble = @(
                 'Set-StrictMode -Version Latest'
-                "`$ErrorActionPreference = 'Stop'"
+                "`$script:ModuleInitialized = `$true"
             )
         }
 
@@ -103,7 +103,7 @@ Describe 'Invoke-NovaBuild Preamble setting' {
         $firstMarker = '# Source: src/classes/nested/Thing.ps1'
         $expectedStart = @(
             'Set-StrictMode -Version Latest'
-            "`$ErrorActionPreference = 'Stop'"
+            "`$script:ModuleInitialized = `$true"
             ''
             $firstMarker
         ) -join $newLine

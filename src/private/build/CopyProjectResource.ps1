@@ -5,12 +5,12 @@ function Copy-ProjectResource {
         return
     }
 
-    $resourceItemList = Get-ProjectResourceItemList -ResourceFolder $resourceFolder
+    $resourceItemList = @(Get-ProjectResourceItemList -ResourceFolder $resourceFolder)
     if ($resourceItemList.Count -eq 0) {
         return
     }
 
-    if ($data.copyResourcesToModuleRoot) {
+    if ($data.CopyResourcesToModuleRoot) {
         Copy-ProjectResourceContentToModuleRoot -ItemList $resourceItemList -OutputModuleDir $data.OutputModuleDir
         return
     }

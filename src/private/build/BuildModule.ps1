@@ -13,8 +13,8 @@ function Build-Module {
         Add-ScriptFileContentToModuleBuilder -Builder $sb -ProjectInfo $data -File $file
     }
     try {
-        Set-Content -Path $data.ModuleFilePSM1 -Value $sb.ToString() -Encoding 'UTF8' -ErrorAction Stop # psm1 file
+        Set-Content -Path $data.ModuleFilePSM1 -Value $sb.ToString() -Encoding 'UTF8' # psm1 file
     } catch {
-        Write-Error 'Failed to create psm1 file' -ErrorAction Stop
+        throw ('Failed to create psm1 file: {0}' -f $_.Exception.Message)
     }
 }

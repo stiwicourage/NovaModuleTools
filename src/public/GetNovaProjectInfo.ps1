@@ -12,7 +12,7 @@ function Get-NovaProjectInfo {
         throw "Not a project folder. project.json not found: $projectJson"
     }
 
-    $jsonData = Get-Content -LiteralPath $projectJson -Raw | ConvertFrom-Json -AsHashtable
+    $jsonData = Read-ProjectJsonData -ProjectJsonPath $projectJson
 
     $Out = @{}
     $Out['ProjectJSON'] = $ProjectJson
@@ -21,9 +21,16 @@ function Get-NovaProjectInfo {
         $Out[$key] = $jsonData[$key]
     }
 
-    foreach ($boolKey in @('BuildRecursiveFolders', 'FailOnDuplicateFunctionNames', 'SetSourcePath')) {
+    $booleanDefaults = [ordered]@{
+        BuildRecursiveFolders = $true
+        FailOnDuplicateFunctionNames = $true
+        SetSourcePath = $true
+        CopyResourcesToModuleRoot = $false
+    }
+
+    foreach ($boolKey in $booleanDefaults.Keys) {
         if (-not $Out.ContainsKey($boolKey)) {
-            $Out[$boolKey] = $true
+            $Out[$boolKey] = $booleanDefaults[$boolKey]
             continue
         }
 

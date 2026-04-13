@@ -1,5 +1,4 @@
 Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
 
 $script:supportRoot = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) 'support'
 $script:supportFileList = @(

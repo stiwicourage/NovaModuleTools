@@ -124,9 +124,7 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
                     }
                 }
             }
-            Mock Write-Error {throw $Message}
-
-            {Read-NovaModuleAnswerSet -Questions $questions} | Should -Throw 'Module Name invalid*'
+            {Read-NovaModuleAnswerSet -Questions $questions} | Should -Throw 'Module name is invalid*'
         }
     }
 
@@ -161,14 +159,16 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
                 Tests = Join-Path $TestDrive 'ExistingProject/tests'
             }
             $null = New-Item -ItemType Directory -Path $paths.Project -Force
-            Mock Write-Error {}
             Mock Write-Message {}
             Mock New-Item {}
             Mock New-InitiateGitRepo {}
 
-            Initialize-NovaModuleScaffold -Answer @{EnablePester = 'No'; EnableGit = 'No'} -Paths $paths
+            {
+                Initialize-NovaModuleScaffold -Answer @{EnablePester = 'No'; EnableGit = 'No'} -Paths $paths
+            } | Should -Throw 'Project already exists, aborting'
 
-            Assert-MockCalled Write-Error -Times 1 -ParameterFilter {$Message -like 'Project already exists*'}
+            Assert-MockCalled New-Item -Times 0
+            Assert-MockCalled New-InitiateGitRepo -Times 0
         }
     }
 
@@ -177,25 +177,20 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             $projectJsonPath = Join-Path $TestDrive 'project.json'
             Mock New-Guid {[guid]'11111111-1111-1111-1111-111111111111'}
 
-            Push-Location -LiteralPath $script:repoRoot
-            try {
-                Write-NovaModuleProjectJson -Answer @{
-                    ProjectName = 'NovaJson'
-                    Description = 'Generated project'
-                    Version = '2.3.4'
-                    Author = 'Test Author'
-                    PowerShellHostVersion = '7.4'
-                    EnablePester = 'No'
-                } -ProjectJsonFile $projectJsonPath
-            }
-            finally {
-                Pop-Location
-            }
+            Write-NovaModuleProjectJson -Answer @{
+                ProjectName = 'NovaJson'
+                Description = 'Generated project'
+                Version = '2.3.4'
+                Author = 'Test Author'
+                PowerShellHostVersion = '7.4'
+                EnablePester = 'No'
+            } -ProjectJsonFile $projectJsonPath
 
             $project = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json -AsHashtable
             $project.ProjectName | Should -Be 'NovaJson'
             $project.Description | Should -Be 'Generated project'
             $project.Version | Should -Be '2.3.4'
+            $project.ContainsKey('CopyResourcesToModuleRoot') | Should -BeFalse
             $project.Manifest.Author | Should -Be 'Test Author'
             $project.Manifest.PowerShellHostVersion | Should -Be '7.4'
             $project.Manifest.GUID | Should -Be '11111111-1111-1111-1111-111111111111'
@@ -238,15 +233,23 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
                     ProjectJsonFile = '/tmp/NovaDryRun/project.json'
                 }
             }
-            Mock Write-Error {}
             Mock Initialize-NovaModuleScaffold {}
             Mock Write-NovaModuleProjectJson {}
 
-            New-NovaModule -Path '/tmp/does-not-exist' -WhatIf
+            {New-NovaModule -Path '/tmp/does-not-exist' -WhatIf} | Should -Throw 'Not a valid path'
 
-            Assert-MockCalled Write-Error -Times 1 -ParameterFilter {$Message -eq 'Not a valid path'}
             Assert-MockCalled Initialize-NovaModuleScaffold -Times 0
             Assert-MockCalled Write-NovaModuleProjectJson -Times 0
+        }
+    }
+
+    It 'Read-NovaModuleAnswerSet rejects invalid module names with a terminating error' {
+        InModuleScope $script:moduleName {
+            Mock Read-AwesomeHost {'invalid name!'}
+
+            {
+                Read-NovaModuleAnswerSet -Questions @{ProjectName = @{Prompt = 'Name?'}}
+            } | Should -Throw 'Module name is invalid*'
         }
     }
 
@@ -455,7 +458,7 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             $projectInfo = [pscustomobject]@{
                 PublicDir = '/tmp/public'
                 ResourcesDir = '/tmp/resources'
-                copyResourcesToModuleRoot = $false
+                CopyResourcesToModuleRoot = $false
                 Manifest = [ordered]@{Author = 'Tester'; CompanyName = 'Nova'}
                 Version = '1.2.3-preview'
                 Description = 'Example'
@@ -492,7 +495,7 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
                 [pscustomobject]@{
                     PublicDir = '/tmp/public'
                     ResourcesDir = '/tmp/resources'
-                    copyResourcesToModuleRoot = $false
+                    CopyResourcesToModuleRoot = $false
                     Manifest = [ordered]@{Author = 'Tester'; CompanyName = 'Nova'}
                     Version = '1.2.3-preview'
                     Description = 'Example'

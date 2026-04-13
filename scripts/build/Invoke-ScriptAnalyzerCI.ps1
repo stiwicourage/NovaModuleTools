@@ -3,7 +3,6 @@ param(
     [switch]$IncludeTests
 )
 
-$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 Set-Location (Split-Path -Parent $PSScriptRoot | Split-Path -Parent)

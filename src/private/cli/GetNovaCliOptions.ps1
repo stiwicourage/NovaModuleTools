@@ -4,6 +4,7 @@ function ConvertFrom-NovaCliArgument {
         [string[]]$Arguments
     )
 
+    $Arguments = ConvertTo-NovaCliArgumentArray -BoundParameters $PSBoundParameters -Arguments $Arguments
     $options = @{}
     $index = 0
 
