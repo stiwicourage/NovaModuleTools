@@ -5,7 +5,7 @@ function Copy-ProjectResource {
         return
     }
 
-    $resourceItemList = Get-ProjectResourceItemList -ResourceFolder $resourceFolder
+    $resourceItemList = @(Get-ProjectResourceItemList -ResourceFolder $resourceFolder)
     if ($resourceItemList.Count -eq 0) {
         return
     }

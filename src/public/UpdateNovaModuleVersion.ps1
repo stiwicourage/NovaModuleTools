@@ -6,7 +6,7 @@ function Update-NovaModuleVersion {
 
     $projectRoot = (Resolve-Path -LiteralPath $Path).Path
     $before = Get-NovaProjectInfo -Path $projectRoot
-    $commitMessages = Get-GitCommitMessageForVersionBump -ProjectRoot $projectRoot
+    $commitMessages = @(Get-GitCommitMessageForVersionBump -ProjectRoot $projectRoot)
     $label = Get-VersionLabelFromCommitSet -Messages $commitMessages
 
     Push-Location -LiteralPath $projectRoot

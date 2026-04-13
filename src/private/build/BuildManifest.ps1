@@ -5,12 +5,12 @@ function Build-Manifest {
     Write-Verbose 'Building psd1 data file Manifest'
     $data = Get-NovaProjectInfo
 
-    $PubFunctionFiles = Get-ChildItem -Path $data.PublicDir -Filter *.ps1
+    $PubFunctionFiles = @(Get-ChildItem -Path $data.PublicDir -Filter *.ps1)
     $functionToExport = @()
     $aliasToExport = @()
-    $PubFunctionFiles.FullName | ForEach-Object {
-        $functionToExport += Get-FunctionNameFromFile -filePath $_
-        $aliasToExport += Get-AliasInFunctionFromFile -filePath $_
+    foreach ($pubFunctionFile in $PubFunctionFiles) {
+        $functionToExport += Get-FunctionNameFromFile -filePath $pubFunctionFile.FullName
+        $aliasToExport += Get-AliasInFunctionFromFile -filePath $pubFunctionFile.FullName
     }
 
     ## Import Format.ps1xml (if any)

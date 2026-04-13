@@ -14,6 +14,8 @@ function Invoke-NovaCli {
         $commonParameters.Verbose = $true
     }
 
+    $Arguments = ConvertTo-NovaCliArgumentArray -BoundParameters $PSBoundParameters -Arguments $Arguments
+
     switch ($Command) {
         'info' {
             return Get-NovaProjectInfo @commonParameters

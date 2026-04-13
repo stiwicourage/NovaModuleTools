@@ -177,20 +177,14 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             $projectJsonPath = Join-Path $TestDrive 'project.json'
             Mock New-Guid {[guid]'11111111-1111-1111-1111-111111111111'}
 
-            Push-Location -LiteralPath $script:repoRoot
-            try {
-                Write-NovaModuleProjectJson -Answer @{
-                    ProjectName = 'NovaJson'
-                    Description = 'Generated project'
-                    Version = '2.3.4'
-                    Author = 'Test Author'
-                    PowerShellHostVersion = '7.4'
-                    EnablePester = 'No'
-                } -ProjectJsonFile $projectJsonPath
-            }
-            finally {
-                Pop-Location
-            }
+            Write-NovaModuleProjectJson -Answer @{
+                ProjectName = 'NovaJson'
+                Description = 'Generated project'
+                Version = '2.3.4'
+                Author = 'Test Author'
+                PowerShellHostVersion = '7.4'
+                EnablePester = 'No'
+            } -ProjectJsonFile $projectJsonPath
 
             $project = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json -AsHashtable
             $project.ProjectName | Should -Be 'NovaJson'

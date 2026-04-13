@@ -73,6 +73,9 @@ The format follows the principles from Keep a Changelog and the project aims to 
   actual build command instead of being consumed at the launcher boundary.
 - Fixed `Get-NovaProjectInfo` to report empty `project.json` files with a clear configuration error instead of failing
   later with a null-argument binding exception.
+- Fixed internal build, release, and CLI code paths so enabling a module preamble such as
+  `Set-StrictMode -Version Latest`
+  and `$ErrorActionPreference = 'Stop'` no longer breaks the repository test suite or the example project build.
 
 ### Removed
 
