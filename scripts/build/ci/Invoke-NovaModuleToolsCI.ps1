@@ -7,6 +7,7 @@ Set-StrictMode -Version Latest
 
 . (Join-Path $PSScriptRoot 'CodeSceneCoverageMap.ps1')
 . (Join-Path $PSScriptRoot 'CodeSceneCoverageXml.ps1')
+. (Join-Path $PSScriptRoot 'CoverageLowReport.ps1')
 
 function Get-CiTestPath {
     param([Parameter(Mandatory)][pscustomobject]$ProjectInfo)
@@ -62,6 +63,11 @@ Import-Module Pester -ErrorAction Stop
 Invoke-NovaBuild
 
 $projectInfo = Get-NovaProjectInfo
+$builtModulePath = $projectInfo.OutputModuleDir
+Remove-Module $projectInfo.ProjectName -ErrorAction SilentlyContinue
+Import-Module $builtModulePath -Force
+$projectInfo = Get-NovaProjectInfo
+
 if (-not $projectInfo.SetSourcePath) {
     throw "Code coverage upload requires project.json to set SetSourcePath=true so dist line coverage can be remapped back to src/ files for CodeScene."
 }
@@ -86,6 +92,7 @@ finally {
 $configuration = Get-CiPesterConfiguration -ProjectInfo $projectInfo -ArtifactsDirectory $OutputDirectory -ExcludedTags $ExcludeTag
 $result = Invoke-Pester -Configuration $configuration
 Convert-CoberturaCoverageToSourcePath -CoveragePath (Join-Path $OutputDirectory 'pester-coverage.cobertura.xml') -BuiltModulePath $projectInfo.ModuleFilePSM1 -RepoRoot $projectInfo.ProjectRoot
+Write-CoverageLowReport -CoveragePath (Join-Path $OutputDirectory 'pester-coverage.cobertura.xml') -OutputPath (Join-Path $OutputDirectory 'coverage-low.txt')
 
 if ($novaModuleToolsTestFailed -or $result.FailedCount -gt 0) {
     exit 1

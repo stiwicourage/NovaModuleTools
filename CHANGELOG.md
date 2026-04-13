@@ -23,6 +23,7 @@ The format follows the principles from Keep a Changelog and the project aims to 
     - build-time resource lookup from `src/resources`
     - packaged/built module publish behavior
     - `Update-NovaModuleVersion -WhatIf`
+  - `Read-AwesomeHost` standard, mandatory, default, and choice prompt flows
 - Added a working `example/` project that can be built, tested, imported, and used as a practical reference for new
   NovaModuleTools users.
 - Added a standalone `scripts/build/Invoke-ScriptAnalyzerCI.ps1` helper so ScriptAnalyzer can run as a dedicated quality
@@ -35,6 +36,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
   JUnit/Cobertura test
   reports, remap coverage to source paths, and upload coverage to CodeScene.
 - Added regression coverage for the Cobertura source-path remapping used by the CodeScene upload flow.
+- Added `artifacts/coverage-low.txt` generation in the CI helper flow so low-coverage files are refreshed from the
+  latest Cobertura report.
 - Added optional `Preamble` support in `project.json` so builds can inject module-level setup lines at the very top of
   the generated `.psm1` before any `# Source:` markers or other generated content.
 
@@ -80,6 +83,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 - Fixed the standalone macOS/Linux `nova` launcher so `nova build -Verbose` now forwards the verbose flag into the
   actual build command instead of being consumed at the launcher boundary.
+- Fixed the CI helper flow so its second Pester pass now reloads the freshly built `dist/` module instead of relying on
+  an installed `NovaModuleTools` copy during test discovery.
 - Fixed `Get-NovaProjectInfo` to report empty `project.json` files with a clear configuration error instead of failing
   later with a null-argument binding exception.
 - Fixed internal build, release, and CLI code paths so enabling a module preamble such as
@@ -134,6 +139,7 @@ The format follows the principles from Keep a Changelog and the project aims to 
   separate ScriptAnalyzer CI workflow.
 - Documented the new GitHub Actions coverage and CodeScene integration, including artifact paths and required CodeScene
   secrets.
+- Documented the generated `artifacts/coverage-low.txt` summary in the README artifact list.
 - Documented how to install the standalone `nova` launcher with `Install-NovaCli` and when to use the PowerShell alias
   instead.
 - Documented the new `Preamble` build setting in `README.md` and updated the example project to show a practical

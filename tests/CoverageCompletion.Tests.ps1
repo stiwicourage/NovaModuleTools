@@ -1,11 +1,30 @@
+$script:coverageCompletionTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'CoverageCompletion.TestSupport.ps1')).Path
+$global:coverageCompletionTestSupportFunctionNameList = @(
+    'New-TestPromptHostUi'
+    'New-TestChoiceHostUi'
+)
+. $script:coverageCompletionTestSupportPath
+
+foreach ($functionName in $global:coverageCompletionTestSupportFunctionNameList) {
+    $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+    Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+}
+
 BeforeAll {
     $here = Split-Path -Parent $PSCommandPath
+    $coverageCompletionTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'CoverageCompletion.TestSupport.ps1')).Path
     $script:repoRoot = Split-Path -Parent $here
     $script:moduleName = (Get-Content -LiteralPath (Join-Path $script:repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
     $script:distModuleDir = Join-Path $script:repoRoot "dist/$script:moduleName"
 
     if (-not (Test-Path -LiteralPath $script:distModuleDir)) {
         throw "Expected built $script:moduleName module at: $script:distModuleDir. Run Invoke-NovaBuild in the repo root first."
+    }
+
+    . $coverageCompletionTestSupportPath
+    foreach ($functionName in $global:coverageCompletionTestSupportFunctionNameList) {
+        $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+        Set-Item -Path "function:global:$functionName" -Value $scriptBlock
     }
 
     Remove-Module $script:moduleName -ErrorAction SilentlyContinue
@@ -53,6 +72,84 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
                 $message | Should -Be "No macOS/Linux module path matching $pattern found in PSModulePath."
             }
         }
+    }
+
+    It 'Read-AwesomeHost handles standard prompt case <Name>' -ForEach @(
+        @{
+            Name = 'entered text'
+            Caption = 'Module Name'
+            Message = 'Enter module name'
+            Default = 'ignored'
+            Responses = @('NovaModuleTools')
+            Expected = 'NovaModuleTools'
+            ExpectedPromptCalls = 1
+        }
+        @{
+            Name = 'mandatory retry'
+            Caption = 'Module Name'
+            Message = 'Enter module name'
+            Default = 'MANDATORY'
+            Responses = @($null, 'NovaModuleTools')
+            Expected = 'NovaModuleTools'
+            ExpectedPromptCalls = 2
+        }
+        @{
+            Name = 'default fallback'
+            Caption = 'Semantic Version'
+            Message = 'Starting version'
+            Default = '0.0.1'
+            Responses = @('')
+            Expected = '0.0.1'
+            ExpectedPromptCalls = 1
+        }
+    ) {
+        $hostUi = New-TestPromptHostUi {
+            param($CallCount)
+
+            return [pscustomobject]@{Values = $Responses[$CallCount - 1]}
+        }
+
+        $result = InModuleScope $script:moduleName -Parameters @{HostUi = $hostUi; PromptCase = $_} {
+            param($HostUi, $PromptCase)
+
+            Mock Get-AwesomeHostUi {$HostUi}
+
+            Read-AwesomeHost -Ask ([pscustomobject]@{
+                Caption = $PromptCase.Caption
+                Message = $PromptCase.Message
+                Prompt = @{}
+                Default = $PromptCase.Default
+                Choice = $null
+            })
+        }
+
+        $result | Should -Be $Expected
+        $hostUi.State.PromptCalls | Should -Be $ExpectedPromptCalls
+    }
+
+    It 'Read-AwesomeHost returns the selected label for choice prompts' {
+        $hostUi = New-TestChoiceHostUi -ChoiceIndex 0
+
+        $result = InModuleScope $script:moduleName -Parameters @{HostUi = $hostUi} {
+            param($HostUi)
+
+            Mock Get-AwesomeHostUi {$HostUi}
+
+            Read-AwesomeHost -Ask ([pscustomobject]@{
+                Caption = 'Git Version Control'
+                Message = 'Enable git?'
+                Default = 'No'
+                Choice = [ordered]@{
+                    Yes = 'Enable Git'
+                    No = 'Skip Git initialization'
+                }
+            })
+        }
+
+        $result | Should -Be 'Yes'
+        $hostUi.State.ChoiceCalls | Should -Be 1
+        $hostUi.State.DefaultChoiceIndex | Should -Be 1
+        $hostUi.State.ChoiceLabels | Should -Be @('&Yes', '&No')
     }
 
     It 'Get-FunctionSourceIndex adds entries for indexable files' {
