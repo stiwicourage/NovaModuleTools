@@ -98,6 +98,62 @@ function Get-CoberturaPackageName {
     return (ConvertTo-CoberturaRelativePath $parentPath)
 }
 
+function Get-CoberturaSourceLineRange {
+    param([Parameter(Mandatory)][object[]]$Sections)
+
+    return [pscustomobject]@{
+        FirstSourceLine = ($Sections | Measure-Object -Property StartLine -Minimum).Minimum
+        LastSourceLine = ($Sections | Measure-Object -Property EndLine -Maximum).Maximum
+    }
+}
+
+function Test-CoberturaLineOutsideSourceRange {
+    param(
+        [Parameter(Mandatory)][pscustomobject]$LineRange,
+        [Parameter(Mandatory)][int]$LineNumber
+    )
+
+    return $LineNumber -lt $LineRange.FirstSourceLine -or $LineNumber -gt $LineRange.LastSourceLine
+}
+
+function Add-CoberturaMappedLineHit {
+    param(
+        [Parameter(Mandatory)][hashtable]$LineBucketsByFile,
+        [Parameter(Mandatory)][pscustomobject]$SourceSection,
+        [Parameter(Mandatory)][int]$BuiltLineNumber,
+        [Parameter(Mandatory)][int]$Hits
+    )
+
+    if (-not $LineBucketsByFile.ContainsKey($SourceSection.RelativePath)) {
+        $LineBucketsByFile[$SourceSection.RelativePath] = Get-EmptyCoberturaLineBucket
+    }
+
+    $sourceLineNumber = $BuiltLineNumber - $SourceSection.MarkerLine
+    Add-CoberturaLineHit -Bucket $LineBucketsByFile[$SourceSection.RelativePath] -LineNumber $sourceLineNumber -Hits $Hits
+}
+
+function Add-CoberturaLineNodeHit {
+    param(
+        [Parameter(Mandatory)][System.Xml.XmlNode]$LineNode,
+        [Parameter(Mandatory)][object[]]$SourceSections,
+        [Parameter(Mandatory)][pscustomobject]$SourceLineRange,
+        [Parameter(Mandatory)][hashtable]$LineBucketsByFile
+    )
+
+    $builtLineNumber = [int]$LineNode.number
+    $sourceSection = Find-SourceSectionForLine -Sections $SourceSections -LineNumber $builtLineNumber
+    if ($null -eq $sourceSection) {
+        if (Test-CoberturaLineOutsideSourceRange -LineRange $SourceLineRange -LineNumber $builtLineNumber) {
+            return $null
+        }
+
+        return $builtLineNumber
+    }
+
+    Add-CoberturaMappedLineHit -LineBucketsByFile $LineBucketsByFile -SourceSection $sourceSection -BuiltLineNumber $builtLineNumber -Hits ([int]$LineNode.hits)
+    return $null
+}
+
 function Get-CoberturaLineBucketMap {
     param(
         [Parameter(Mandatory)][string]$CoveragePath,
@@ -117,23 +173,16 @@ function Get-CoberturaLineBucketMap {
         throw "No Cobertura class nodes were found in coverage file: $CoveragePath"
     }
 
+    $sourceLineRange = Get-CoberturaSourceLineRange -Sections $sourceSections
+
     $lineBucketsByFile = @{}
     $unmappedLineNumbers = @()
     foreach ($classNode in $classNodes) {
         foreach ($lineNode in @($classNode.lines.line)) {
-            $builtLineNumber = [int]$lineNode.number
-            $sourceSection = Find-SourceSectionForLine -Sections $sourceSections -LineNumber $builtLineNumber
-            if ($null -eq $sourceSection) {
-                $unmappedLineNumbers += $builtLineNumber
-                continue
+            $unmappedLineNumber = Add-CoberturaLineNodeHit -LineNode $lineNode -SourceSections $sourceSections -SourceLineRange $sourceLineRange -LineBucketsByFile $lineBucketsByFile
+            if ($null -ne $unmappedLineNumber) {
+                $unmappedLineNumbers += $unmappedLineNumber
             }
-
-            if (-not $lineBucketsByFile.ContainsKey($sourceSection.RelativePath)) {
-                $lineBucketsByFile[$sourceSection.RelativePath] = Get-EmptyCoberturaLineBucket
-            }
-
-            $sourceLineNumber = $builtLineNumber - $sourceSection.MarkerLine
-            Add-CoberturaLineHit -Bucket $lineBucketsByFile[$sourceSection.RelativePath] -LineNumber $sourceLineNumber -Hits ([int]$lineNode.hits)
         }
     }
 

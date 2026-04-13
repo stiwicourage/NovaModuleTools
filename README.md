@@ -309,6 +309,7 @@ Expected CI artifacts:
 - `artifacts/novamoduletools-nunit.xml` — NUnit XML from `Test-NovaBuild`
 - `artifacts/pester-junit.xml` — JUnit XML for CI systems that expect JUnit-compatible test reports
 - `artifacts/pester-coverage.cobertura.xml` — Cobertura XML with source-relative paths suitable for CodeScene upload
+- `artifacts/coverage-low.txt` — a simple low-coverage summary sorted by the least-covered source files first
 - `artifacts/scriptanalyzer.txt` — ScriptAnalyzer findings (or a no-findings report)
 
 ## Commands

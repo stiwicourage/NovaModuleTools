@@ -1,5 +1,19 @@
+$script:gitTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'GitTestSupport.ps1')).Path
+$global:gitTestSupportFunctionNameList = @(
+    'Initialize-TestGitRepository'
+    'New-TestGitCommit'
+    'New-TestGitTag'
+)
+. $script:gitTestSupportPath
+
+foreach ($functionName in $global:gitTestSupportFunctionNameList) {
+    $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+    Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+}
+
 BeforeAll {
     $here = Split-Path -Parent $PSCommandPath
+    $gitTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'GitTestSupport.ps1')).Path
     $script:repoRoot = Split-Path -Parent $here
     $script:moduleName = (Get-Content -LiteralPath (Join-Path $script:repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
     $script:distModuleDir = Join-Path $script:repoRoot "dist/$script:moduleName"
@@ -7,6 +21,12 @@ BeforeAll {
 
     if (-not (Test-Path -LiteralPath $script:distModuleDir)) {
         throw "Expected built $script:moduleName module at: $script:distModuleDir. Run Invoke-NovaBuild in the repo root first."
+    }
+
+    . $gitTestSupportPath
+    foreach ($functionName in $global:gitTestSupportFunctionNameList) {
+        $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+        Set-Item -Path "function:global:$functionName" -Value $scriptBlock
     }
 
     Remove-Module $script:moduleName -ErrorAction SilentlyContinue
@@ -315,8 +335,11 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
         }
     }
 
-    It 'Get-NovaCliLauncherPath reports missing file-backed commands and missing launcher files' {
+    It 'Get-NovaCliLauncherPath reports missing commands, missing file-backed commands, and missing launcher files' {
         InModuleScope $script:moduleName {
+            Mock Get-Command {$null}
+            {Get-NovaCliLauncherPath} | Should -Throw 'Install-NovaCli command not found.'
+
             Mock Get-Command {
                 [pscustomobject]@{
                     ScriptBlock = [pscustomobject]@{File = $null}
@@ -331,6 +354,16 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             }
             Mock Test-Path {$false}
             {Get-NovaCliLauncherPath} | Should -Throw 'Nova CLI launcher not found*'
+        }
+    }
+
+    It 'Get-NovaCliInstalledVersion returns the currently loaded module version' {
+        $expectedVersion = (Get-Module $script:moduleName -ErrorAction Stop).Version.ToString()
+
+        InModuleScope $script:moduleName -Parameters @{ExpectedVersion = $expectedVersion} {
+            param($ExpectedVersion)
+
+            Get-NovaCliInstalledVersion | Should -Be $ExpectedVersion
         }
     }
 
@@ -453,12 +486,27 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
         }
     }
 
-    It 'Build-Manifest includes resource paths and prerelease manifest metadata' {
-        InModuleScope $script:moduleName {
+    It 'Build-Manifest includes expected resource paths and prerelease manifest metadata when resources go to <ResourceLocation>' -ForEach @(
+        @{
+            ResourceLocation = 'resources/'
+            CopyResourcesToModuleRoot = $false
+            ExpectedFormatPath = 'resources/Nova.Format.ps1xml'
+            ExpectedTypePath = 'resources/Nova.Types.ps1xml'
+        }
+        @{
+            ResourceLocation = 'module root'
+            CopyResourcesToModuleRoot = $true
+            ExpectedFormatPath = 'Nova.Format.ps1xml'
+            ExpectedTypePath = 'Nova.Types.ps1xml'
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{ManifestCase = $_} {
+            param($ManifestCase)
+
             $projectInfo = [pscustomobject]@{
                 PublicDir = '/tmp/public'
                 ResourcesDir = '/tmp/resources'
-                CopyResourcesToModuleRoot = $false
+                CopyResourcesToModuleRoot = $ManifestCase.CopyResourcesToModuleRoot
                 Manifest = [ordered]@{Author = 'Tester'; CompanyName = 'Nova'}
                 Version = '1.2.3-preview'
                 Description = 'Example'
@@ -480,8 +528,8 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
                 $Path -eq '/tmp/NovaModuleTools.psd1' -and
                         $FunctionsToExport -eq @('Get-Thing') -and
                         $AliasesToExport -eq @('gt') -and
-                        $FormatsToProcess -eq @('resources/Nova.Format.ps1xml') -and
-                        $TypesToProcess -eq @('resources/Nova.Types.ps1xml') -and
+                        $FormatsToProcess -eq @($ManifestCase.ExpectedFormatPath) -and
+                        $TypesToProcess -eq @($ManifestCase.ExpectedTypePath) -and
                         $Prerelease -eq 'preview' -and
                         $Author -eq 'Tester' -and
                         $CompanyName -eq 'Nova'
@@ -539,6 +587,32 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             $message | Should -Match 'dist line 12'
             $message | Should -Match 'src/public/Dup.ps1:3'
             $message | Should -Match 'src/private/Dup.ps1:9'
+        }
+    }
+
+    It 'Format-ProjectJsonValue returns null for null input' {
+        InModuleScope $script:moduleName {
+            Format-ProjectJsonValue -Value $null | Should -Be 'null'
+        }
+    }
+
+    It 'Format-ProjectJsonValue falls back to string conversion when ConvertTo-Json fails' {
+        InModuleScope $script:moduleName {
+            Mock ConvertTo-Json {throw 'json failed'}
+
+            Format-ProjectJsonValue -Value 42 | Should -Be '42'
+        }
+    }
+
+    It 'Get-ProjectJsonValueTypeName returns null for null input' {
+        InModuleScope $script:moduleName {
+            Get-ProjectJsonValueTypeName -Value $null | Should -Be 'null'
+        }
+    }
+
+    It 'Get-ProjectJsonValueTypeName returns the CLR type name for non-null values' {
+        InModuleScope $script:moduleName {
+            Get-ProjectJsonValueTypeName -Value 42 | Should -Be 'System.Int32'
         }
     }
 
@@ -708,6 +782,64 @@ function Second {
         InModuleScope $script:moduleName {
             $projectRoot = Join-Path $TestDrive 'no-git-project'
             New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+
+            $messages = @(Get-GitCommitMessageForVersionBump -ProjectRoot $projectRoot)
+
+            $messages.Count | Should -Be 0
+        }
+    }
+
+    It 'Get-GitCommitMessageForVersionBump returns commits since the latest tag when tags exist' {
+        if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+            Set-ItResult -Skipped -Because 'git is not available in this environment'
+            return
+        }
+
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'tagged-git-project'
+            Initialize-TestGitRepository -Path $projectRoot
+            New-TestGitCommit -RepositoryPath $projectRoot -Message 'feat: initial release' -File @{Name = 'first.txt'; Content = 'first'}
+            New-TestGitTag -RepositoryPath $projectRoot -TagName 'v1.0.0'
+            New-TestGitCommit -RepositoryPath $projectRoot -Message 'fix: patch bug' -Body 'Detailed patch note' -File @{Name = 'second.txt'; Content = 'second'}
+            New-TestGitCommit -RepositoryPath $projectRoot -Message 'docs: update readme' -File @{Name = 'third.txt'; Content = 'third'}
+
+            $messages = @(Get-GitCommitMessageForVersionBump -ProjectRoot $projectRoot)
+
+            $messages.Count | Should -Be 2
+            $messages[0] | Should -Be 'docs: update readme'
+            $messages[1] | Should -Be "fix: patch bug$( [Environment]::NewLine )Detailed patch note"
+        }
+    }
+
+    It 'Get-GitCommitMessageForVersionBump returns all commits when no tags exist' {
+        if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+            Set-ItResult -Skipped -Because 'git is not available in this environment'
+            return
+        }
+
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'untagged-git-project'
+            Initialize-TestGitRepository -Path $projectRoot
+            New-TestGitCommit -RepositoryPath $projectRoot -Message 'feat: add capability' -Body 'Implements the new path' -File @{Name = 'first.txt'; Content = 'first'}
+            New-TestGitCommit -RepositoryPath $projectRoot -Message 'chore: tidy metadata' -File @{Name = 'second.txt'; Content = 'second'}
+
+            $messages = @(Get-GitCommitMessageForVersionBump -ProjectRoot $projectRoot)
+
+            $messages.Count | Should -Be 2
+            $messages[0] | Should -Be 'chore: tidy metadata'
+            $messages[1] | Should -Be "feat: add capability$( [Environment]::NewLine )Implements the new path"
+        }
+    }
+
+    It 'Get-GitCommitMessageForVersionBump returns empty when the git directory exists but git log fails' {
+        if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+            Set-ItResult -Skipped -Because 'git is not available in this environment'
+            return
+        }
+
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'broken-git-project'
+            New-Item -ItemType Directory -Path (Join-Path $projectRoot '.git') -Force | Out-Null
 
             $messages = @(Get-GitCommitMessageForVersionBump -ProjectRoot $projectRoot)
 
