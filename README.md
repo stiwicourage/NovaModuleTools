@@ -173,7 +173,7 @@ class AgentListing {
 - All functions in the `public` folder are exported during the module build.
 - All functions in the `private` folder are accessible internally within the module but are not exposed outside the module.
 - `src/classes` should contain classes and enums. These files are placed at the top of the generated `psm1`.
-- `src/resources` content is handled based on `CopyResourcesToModuleRoot`.
+- `src/resources` content is handled based on the optional `CopyResourcesToModuleRoot` setting.
 
 #### Deterministic processing order
 To ensure builds are deterministic across platforms, files are processed in this order:
@@ -201,9 +201,10 @@ The `resources` folder within the `src` directory is intended for including any 
 - **Data files**: Store any data files that are used by your module, such as CSV or JSON files.
 - **Subfolder**: Include any additional folders and their content to be included with the module, such as dependant Modules, APIs, DLLs, etc... organized by a subfolder.
 
-By default, resource files from `src/resources` go into `dist/resources`. To place them directly in dist (avoiding the
-resources subfolder), set `CopyResourcesToModuleRoot` to `true`. This provides greater control in certain deployment
-scenarios where resources files are preferred in module root directory.
+By default, resource files from `src/resources` go into `dist/resources`. You do not need to add
+`CopyResourcesToModuleRoot` to `project.json` unless you want to override that default. To place resources directly in
+dist (avoiding the resources subfolder), set `CopyResourcesToModuleRoot` to `true`. This provides greater control in
+certain deployment scenarios where resources files are preferred in module root directory.
 
 Leave `src\resources` empty if there is no need to include any additional content in the `dist` folder.
 

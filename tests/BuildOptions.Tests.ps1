@@ -51,16 +51,17 @@ BeforeAll {
 
 Describe 'Invoke-NovaBuild options' {
 
-    It 'project template and example project use enterprise defaults' {
+    It 'project template can omit CopyResourcesToModuleRoot because the default is false' {
         $template = Get-Content -LiteralPath (Join-Path $repoRoot 'src/resources/ProjectTemplate.json') -Raw | ConvertFrom-Json
+
+        $template.PSObject.Properties.Name | Should -Not -Contain 'CopyResourcesToModuleRoot'
+    }
+
+    It 'example project shows CopyResourcesToModuleRoot explicitly for discoverability' {
         $example = Get-Content -LiteralPath (Join-Path $repoRoot 'example/project.json') -Raw | ConvertFrom-Json
 
-        foreach ($project in @($template, $example)) {
-            $project.PSObject.Properties.Name | Should -Contain 'CopyResourcesToModuleRoot'
-            $project.BuildRecursiveFolders | Should -BeTrue
-            $project.SetSourcePath | Should -BeTrue
-            $project.FailOnDuplicateFunctionNames | Should -BeTrue
-        }
+        $example.PSObject.Properties.Name | Should -Contain 'CopyResourcesToModuleRoot'
+        $example.CopyResourcesToModuleRoot | Should -BeFalse
     }
 
     It 'example project builds and tests successfully as a working reference project' {

@@ -37,7 +37,6 @@ function Write-TestProjectJson {
         ProjectName = ('' + $Options.ProjectName)
         Description = 'Test project'
         Version = '0.0.1'
-        CopyResourcesToModuleRoot = $false
         Manifest = [ordered]@{
             Author = 'Test'
             PowerShellHostVersion = '7.4'

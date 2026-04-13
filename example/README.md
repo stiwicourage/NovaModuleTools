@@ -13,6 +13,8 @@ It is meant to help a new user understand the smallest useful setup that can:
 
 - `project.json` – the NovaModuleTools project definition
     - includes a `Preamble` example that is written at the top of the built `.psm1`
+  - intentionally keeps common top-level settings visible, including `CopyResourcesToModuleRoot`, so new users can
+    see the available configuration keys in one place
 - `src/public/Get-ExampleGreeting.ps1` – a public function exported from the built module
 - `src/private/Get-ExampleConfiguration.ps1` – a private helper used by the public function
 - `src/resources/greeting-config.json` – a resource file bundled into the built module
@@ -24,8 +26,8 @@ It is meant to help a new user understand the smallest useful setup that can:
 
 Run these commands from the repository root:
 
-If `./dist/NovaModuleTools` is not available yet, run `./run.ps1` once first or use the PowerShell Gallery workflow
-below.
+If `./dist/NovaModuleTools` is not available yet, build `NovaModuleTools` from the repository root first, or use the
+PowerShell Gallery workflow below.
 
 ```powershell
 Import-Module ./dist/NovaModuleTools -Force

@@ -42,6 +42,10 @@ The format follows the principles from Keep a Changelog and the project aims to 
 ### Changed
 
 - Standardized the project setting name on `CopyResourcesToModuleRoot` across templates, tests, code, and documentation.
+- Made `CopyResourcesToModuleRoot` optional in `project.json`; when omitted, NovaModuleTools now defaults it to `false`.
+- Kept `CopyResourcesToModuleRoot` visible in `example/project.json` so new users can still discover the setting from
+  the
+  working reference project even though generated projects may omit it.
 - Internal build, scaffold, and CI entrypoints no longer rely on blanket `$ErrorActionPreference = 'Stop'` settings;
   they now use
   explicit terminating errors where needed, and the repository examples were updated to match.
@@ -241,6 +245,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ## Fixed
 
+- Fixed the example project README so it no longer suggests that `example/` includes a `run.ps1` helper script; it now
+  points users to building `NovaModuleTools` from the repository root or using the Gallery workflow.
 - Corrected typo in ProjectUri from `ProjecUri` to correct spelling.
 
 ## [0.0.6] - 2024-07-08
