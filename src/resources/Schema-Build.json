@@ -27,6 +27,13 @@
             "type": "boolean",
             "description": "Default enabled validation: fail build when duplicate top-level function names exist in the generated dist/<Project>/<Project>.psm1."
         },
+      "Preamble": {
+        "type": "array",
+        "description": "Optional module-level lines written at the very top of the generated dist/<Project>/<Project>.psm1 before any source markers or other generated content.",
+        "items": {
+          "type": "string"
+        }
+      },
         "Manifest": {
             "type": "object",
             "properties": {

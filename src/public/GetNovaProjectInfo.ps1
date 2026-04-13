@@ -30,6 +30,8 @@ function Get-NovaProjectInfo {
         $Out[$boolKey] = [bool]$Out[$boolKey]
     }
 
+    $Out['Preamble'] = @(Get-ProjectPreamble -ProjectData $jsonData)
+
     $Out.ProjectJson = $projectJson
     $Out.PSTypeName = 'MTProjectInfo'
     $ProjectName = $jsonData.ProjectName

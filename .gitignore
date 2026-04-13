@@ -7,4 +7,5 @@ node_modules/
 artifacts/
 dist/
 run.ps1
+reload.ps1
 /.tmp-nova-bin/

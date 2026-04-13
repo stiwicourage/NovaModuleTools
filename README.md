@@ -97,6 +97,12 @@ If a setting is omitted, NovaModuleTools now treats it as `true` by default:
   - When `true`, NovaModuleTools writes exactly one `# Source: <relative path>` line before each concatenated source file in the generated `dist/<Project>/<Project>.psm1`.
   - Relative paths are project-relative and normalized to `/`, for example `# Source: src/private/core/security/SetTls12SecurityProtocol.ps1`.
   - This is useful when parser errors or runtime exceptions point at line numbers in the generated `.psm1` and you need to map them back to files under `src`.
+- `Preamble` (default: omitted / no output)
+    - When present, this must be a top-level array of strings in `project.json`.
+    - NovaModuleTools writes each configured line at the very top of the generated `dist/<Project>/<Project>.psm1`, then
+      inserts one blank line before the rest of the generated module content.
+    - `Preamble` is independent from `SetSourcePath`: if both are used, the preamble is written first and the generated
+      `# Source: ...` markers come after the blank line.
 - `FailOnDuplicateFunctionNames` (default: `true`)
   - When `true`, NovaModuleTools will parse the generated `dist/<Project>/<Project>.psm1` and fail the build if duplicate **top-level** function names exist.
 
@@ -105,6 +111,10 @@ Example:
 {
   "BuildRecursiveFolders": true,
   "SetSourcePath": true,
+  "Preamble": [
+    "Set-StrictMode -Version Latest",
+    "$ErrorActionPreference = 'Stop'"
+  ],
   "FailOnDuplicateFunctionNames": true
 }
 ```
@@ -132,6 +142,31 @@ class AgentListing {
 
 # Source: src/private/core/security/SetTls12SecurityProtocol.ps1
 function Set-Tls12SecurityProtocol {
+    # ...
+}
+```
+
+With `Preamble`, you can inject module-level setup lines before those source markers and before any generated class or
+function content:
+
+```json
+{
+  "Preamble": [
+    "Set-StrictMode -Version Latest",
+    "$ErrorActionPreference = 'Stop'"
+  ],
+  "SetSourcePath": true
+}
+```
+
+This produces a generated module that starts like this:
+
+```powershell
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+# Source: src/classes/AgentListing.ps1
+class AgentListing {
     # ...
 }
 ```
@@ -347,6 +382,10 @@ outlined above, and you can run `Invoke-NovaBuild` (`nova build`) to build the m
 
 If `SetSourcePath` is enabled in `project.json`, `Invoke-NovaBuild` (`nova build`) also annotates the generated `.psm1`
 with `# Source: src/...` comments before each concatenated file block to make debugging easier.
+
+If `Preamble` is present, `Invoke-NovaBuild` writes those lines first, adds one blank line, and then continues with the
+normal generated module content. This keeps module-level initialization explicit while preserving the existing build
+order for classes, public functions, private functions, exports, and resource handling.
 
 ```powershell
 # From the Module root 

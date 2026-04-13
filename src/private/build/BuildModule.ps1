@@ -6,6 +6,7 @@ function Build-Module {
     Test-ProjectSchema -Schema Build | Out-Null
 
     $sb = [System.Text.StringBuilder]::new()
+    Add-ProjectPreambleToModuleBuilder -Builder $sb -ProjectInfo $data
 
     $files = Get-ProjectScriptFile -ProjectInfo $data
     foreach ($file in $files) {
