@@ -13,6 +13,12 @@ BeforeAll {
 }
 
 Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
+    It 'Format-NovaCliVersionString combines the component name and version' {
+        InModuleScope $script:moduleName {
+            Format-NovaCliVersionString -Name 'NovaModuleTools' -Version '1.9.10' | Should -Be 'NovaModuleTools 1.9.10'
+        }
+    }
+
     It 'Test-ProjectSchema validates the Build schema' {
         InModuleScope $script:moduleName {
             Mock Get-ResourceFilePath {

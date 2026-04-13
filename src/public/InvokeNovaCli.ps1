@@ -21,7 +21,8 @@ function Invoke-NovaCli {
             return Get-NovaProjectInfo @commonParameters
         }
         'version' {
-            return Get-NovaProjectInfo -Version
+            $projectInfo = Get-NovaProjectInfo @commonParameters
+            return Format-NovaCliVersionString -Name $projectInfo.ProjectName -Version $projectInfo.Version
         }
         'build' {
             return Invoke-NovaBuild @commonParameters
@@ -48,7 +49,9 @@ function Invoke-NovaCli {
             return Invoke-NovaRelease -PublishOption $options @commonParameters
         }
         '--version' {
-            return Get-NovaCliInstalledVersion
+            $moduleName = $ExecutionContext.SessionState.Module.Name
+            $moduleVersion = Get-NovaCliInstalledVersion
+            return Format-NovaCliVersionString -Name $moduleName -Version $moduleVersion
         }
         '--help' {
             return Get-NovaCliHelp

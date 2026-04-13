@@ -47,6 +47,7 @@ nova --version
 ```
 
 Returns the installed `NovaModuleTools` module version.
+The output format is `NovaModuleTools <Version>`.
 
 ### EXAMPLE 2
 
@@ -55,6 +56,7 @@ nova version
 ```
 
 Returns the current project version from `project.json`.
+The output format is `<ProjectName> <Version>`.
 
 ### EXAMPLE 3
 

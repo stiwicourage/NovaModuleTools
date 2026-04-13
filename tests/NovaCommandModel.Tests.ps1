@@ -423,6 +423,7 @@ title: Invoke-NovaBuild
         $targetDirectory = Join-Path $TestDrive 'bin'
         $installedPath = Join-Path $targetDirectory 'nova'
         $installedModuleVersion = (Get-Module $script:moduleName).Version.ToString()
+        $expectedProjectVersionText = "$( $script:projectInfo.ProjectName ) $( $script:projectInfo.Version )"
         $originalModulePath = $env:PSModulePath
         $modulePathSeparator = [string][System.IO.Path]::PathSeparator
         $distParent = Split-Path -Parent $distModuleDir
@@ -437,6 +438,15 @@ title: Invoke-NovaBuild
             $versionOutput = & $installedPath --version 2>&1
             $versionText = @($versionOutput) -join [Environment]::NewLine
             $versionExitCode = $LASTEXITCODE
+            Push-Location $script:projectInfo.ProjectRoot
+            try {
+                $projectVersionOutput = & $installedPath version 2>&1
+                $projectVersionText = @($projectVersionOutput) -join [Environment]::NewLine
+                $projectVersionExitCode = $LASTEXITCODE
+            }
+            finally {
+                Pop-Location
+            }
 
             $result.CommandName | Should -Be 'nova'
             $result.InstalledPath | Should -Be $installedPath
@@ -444,9 +454,11 @@ title: Invoke-NovaBuild
             (Test-Path -LiteralPath $installedPath) | Should -BeTrue
             $helpExitCode | Should -Be 0
             $versionExitCode | Should -Be 0
+            $projectVersionExitCode | Should -Be 0
             $helpText | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
-            $helpText | Should -Match 'version\s+Show the current project version from project.json'
-            $versionText | Should -Match ([regex]::Escape($installedModuleVersion))
+            $helpText | Should -Match 'version\s+Show the current project name and version from project.json'
+            $versionText | Should -Be "$script:moduleName $installedModuleVersion"
+            $projectVersionText | Should -Be $expectedProjectVersionText
         }
         finally {
             $env:PSModulePath = $originalModulePath
@@ -522,20 +534,22 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Invoke-NovaCli version maps to Get-NovaProjectInfo -Version' {
+    It 'Invoke-NovaCli version returns the project name and version' {
         InModuleScope $script:moduleName {
-            Mock Get-NovaProjectInfo {'1.2.3'} -ParameterFilter {$Version}
+            Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectName = 'AzureDevOpsAgentInstaller'; Version = '1.2.3'}}
 
-            Invoke-NovaCli version | Should -Be '1.2.3'
-            Assert-MockCalled Get-NovaProjectInfo -Times 1 -ParameterFilter {$Version}
+            Invoke-NovaCli version | Should -Be 'AzureDevOpsAgentInstaller 1.2.3'
+            Assert-MockCalled Get-NovaProjectInfo -Times 1 -ParameterFilter {-not $Version}
         }
     }
 
-    It 'Invoke-NovaCli --version returns the installed NovaModuleTools version' {
-        InModuleScope $script:moduleName {
+    It 'Invoke-NovaCli --version returns the installed NovaModuleTools name and version' {
+        InModuleScope $script:moduleName -Parameters @{ModuleName = $script:moduleName} {
+            param($ModuleName)
+
             Mock Get-NovaCliInstalledVersion {'9.9.9'}
 
-            Invoke-NovaCli --version | Should -Be '9.9.9'
+            Invoke-NovaCli --version | Should -Be "$ModuleName 9.9.9"
             Assert-MockCalled Get-NovaCliInstalledVersion -Times 1
         }
     }
@@ -546,8 +560,8 @@ function Invoke-TestCliVerbose {
 
             $result | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
             $result | Should -Match 'init\s+Create a new Nova module scaffold'
-            $result | Should -Match 'version\s+Show the current project version from project.json'
-            $result | Should -Match '--version\s+Show the installed NovaModuleTools module version'
+            $result | Should -Match 'version\s+Show the current project name and version from project.json'
+            $result | Should -Match '--version\s+Show the installed NovaModuleTools module name and version'
             $result | Should -Match 'publish\s+Build, test, and publish the module locally or to a repository'
         }
     }
