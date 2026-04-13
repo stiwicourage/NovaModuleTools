@@ -74,6 +74,33 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
         }
     }
 
+    It 'Get-LocalModulePathPattern and Get-LocalModulePathErrorMessage support the opposite platform branch' {
+        $targetIsWindows = -not [bool]$IsWindows
+
+        InModuleScope $script:moduleName -Parameters @{TargetIsWindows = $targetIsWindows} {
+            param($TargetIsWindows)
+
+            try {
+                Set-Variable -Name IsWindows -Value $TargetIsWindows -Force
+
+                $pattern = Get-LocalModulePathPattern
+                $message = Get-LocalModulePathErrorMessage -MatchPattern $pattern
+
+                if ($TargetIsWindows) {
+                    $pattern | Should -Be ([regex]::Escape('\Documents\PowerShell\Modules'))
+                    $message | Should -Be "No windows module path matching $pattern found"
+                }
+                else {
+                    $pattern | Should -Be '/\.local/share/powershell/Modules$'
+                    $message | Should -Be "No macOS/Linux module path matching $pattern found in PSModulePath."
+                }
+            }
+            finally {
+                Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
     It 'Get-AwesomeHostUi returns the current host UI instance type' {
         $expectedType = $Host.UI.GetType().FullName
 
