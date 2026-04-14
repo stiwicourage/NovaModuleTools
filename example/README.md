@@ -30,25 +30,25 @@ If `./dist/NovaModuleTools` is not available yet, build `NovaModuleTools` from t
 PowerShell Gallery workflow below.
 
 ```powershell
-Import-Module ./dist/NovaModuleTools -Force
-Set-Location ./example
-Invoke-NovaBuild
-Test-NovaBuild
-Import-Module ./dist/NovaExampleModule -Force
-Get-ExampleGreeting
-Get-ExampleGreeting -Name 'Stiwi' -AsObject
+PS> Import-Module ./dist/NovaModuleTools -Force
+PS> Set-Location ./example
+PS> Invoke-NovaBuild
+PS> Test-NovaBuild
+PS> Import-Module ./dist/NovaExampleModule -Force
+PS> Get-ExampleGreeting
+PS> Get-ExampleGreeting -Name 'Stiwi' -AsObject
 ```
 
 ### If you installed NovaModuleTools from the PowerShell Gallery
 
 ```powershell
-Install-Module NovaModuleTools
-Import-Module NovaModuleTools
-Set-Location /path/to/NovaModuleTools/example
-Invoke-NovaBuild
-Test-NovaBuild
-Import-Module ./dist/NovaExampleModule -Force
-Get-ExampleGreeting
+PS> Install-Module NovaModuleTools
+PS> Import-Module NovaModuleTools
+PS> Set-Location /path/to/NovaModuleTools/example
+PS> Invoke-NovaBuild
+PS> Test-NovaBuild
+PS> Import-Module ./dist/NovaExampleModule -Force
+PS> Get-ExampleGreeting
 ```
 
 ## Expected result
@@ -62,7 +62,7 @@ example/dist/NovaExampleModule
 You can then import it and call:
 
 ```powershell
-Get-ExampleGreeting
+PS> Get-ExampleGreeting
 ```
 
 which returns:

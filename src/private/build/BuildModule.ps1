@@ -8,7 +8,15 @@ function Build-Module {
     $sb = [System.Text.StringBuilder]::new()
     Add-ProjectPreambleToModuleBuilder -Builder $sb -ProjectInfo $data
 
-    $files = Get-ProjectScriptFile -ProjectInfo $data
+    $files = @(Get-ProjectScriptFile -ProjectInfo $data)
+    $allSourceFiles = @(
+        Get-ChildItem -Path $data.ClassesDir, $data.PublicDir, $data.PrivateDir -Filter '*.ps1' -File -Recurse -ErrorAction SilentlyContinue
+    )
+
+    if ($files.Count -eq 0 -and $allSourceFiles.Count -eq 0) {
+        throw 'No source files found to build. Add one or more scripts under src/public, src/private, or src/classes.'
+    }
+
     foreach ($file in $files) {
         Add-ScriptFileContentToModuleBuilder -Builder $sb -ProjectInfo $data -File $file
     }

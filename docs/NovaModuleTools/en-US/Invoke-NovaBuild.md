@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 03/19/2026
+ms.date: 04/14/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-NovaBuild
 ---
@@ -13,36 +13,51 @@ title: Invoke-NovaBuild
 
 ## SYNOPSIS
 
-Build a NovaModuleTools project to generate a ready-to-import PowerShell module.
+Builds the current NovaModuleTools project into a ready-to-import PowerShell module.
 
 ## SYNTAX
 
 ### __AllParameterSets
 
-```
+```powershell
 Invoke-NovaBuild [<CommonParameters>]
 ```
 
-## ALIASES
-
-This cmdlet has the following aliases,
-  {{Insert list of aliases}}
-
 ## DESCRIPTION
 
-Builds the module from the current NovaModuleTools project. The `dist` folder is cleaned and the module is rebuilt from
-scratch,
-including the required resource files.
+`Invoke-NovaBuild` runs the NovaModuleTools build pipeline for the current project.
+
+The command:
+
+1. clears the existing `dist/` output
+2. generates the module `.psm1`
+3. validates duplicate top-level function names when enabled
+4. writes the module manifest
+5. builds external help from the Markdown files in `docs/`
+6. copies project resources into the built module output
+
+If `SetSourcePath` is enabled, the generated `.psm1` includes `# Source:` markers before each source block.
+
+If `Preamble` is configured, those lines are written at the very top of the generated `.psm1` before the rest of the
+module content.
 
 ## EXAMPLES
 
-### EXAMPLE 1: Builds module from the project files.
+### EXAMPLE 1
 
-Invoke-NovaBuild
+```powershell
+PS> Invoke-NovaBuild
+```
 
-### EXAMPLE 2: Builds module and outputs verbose details during entire workflow.
+Builds the current project into `dist/<ProjectName>/`.
 
-Invoke-NovaBuild -Verbose
+### EXAMPLE 2
+
+```powershell
+PS> Invoke-NovaBuild -Verbose
+```
+
+Builds the current project and writes verbose progress for the build workflow.
 
 ## PARAMETERS
 
@@ -55,11 +70,22 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
+### None
+
+You can't pipe objects to this cmdlet.
+
 ## OUTPUTS
+
+### None
+
+This cmdlet does not emit an output object.
 
 ## NOTES
 
+Run this command from the project root so `project.json`, `src/`, `docs/`, and `tests/` resolve correctly.
+
 ## RELATED LINKS
 
-{{ Fill in the related links here }}
-
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Get-NovaProjectInfo.md
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Test-NovaBuild.md
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Publish-NovaModule.md

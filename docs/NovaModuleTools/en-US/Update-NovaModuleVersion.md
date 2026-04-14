@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 03/19/2026
+ms.date: 04/14/2026
 PlatyPS schema version: 2024-05-01
 title: Update-NovaModuleVersion
 ---
@@ -13,78 +13,65 @@ title: Update-NovaModuleVersion
 
 ## SYNOPSIS
 
-Updates the version number of a module in project.json file. Uses [semver] object type.
+Updates the project version in `project.json` based on git commit history.
 
 ## SYNTAX
 
 ### __AllParameterSets
 
+```powershell
+Update-NovaModuleVersion [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
-Update-NovaModuleVersion [[-Label] <string>] [-PreviewRelease] [-StableRelease] [-WhatIf] [-Confirm]
- [<CommonParameters>]
-```
-
-## ALIASES
-
-This cmdlet has the following aliases,
-  {{Insert list of aliases}}
 
 ## DESCRIPTION
 
-This script updates the version number of a PowerShell module by modifying the project.json file, which gets written into module manifest file (.psd1).
-[semver] is supported only powershell 7 and above.
-It increments the version number based on the specified version part (Major, Minor, Patch).
-Can also attach preview/stable release to Release property
+`Update-NovaModuleVersion` reads the current project version from `project.json`, collects Git commit messages from the
+project repository, chooses a semantic version bump label, and writes the updated version back to `project.json`.
+
+The release label is inferred from the commit set:
+
+- `Major` for breaking changes
+- `Minor` for `feat:` commits
+- `Patch` for `fix:` commits and all other cases
+
+When Git tags exist, only commits since the latest tag are considered. If the folder is not a Git repository, the
+command falls back to a patch bump.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-Update-NovaModuleVersion -Label Major
-Updates the Major version part of the module. Version 2.1.3 will become 3.0.0.
+```powershell
+PS> Update-NovaModuleVersion
+```
+
+Updates the version in the current project using the release label inferred from recent commit messages.
 
 ### EXAMPLE 2
 
-Update-NovaModuleVersion
-Updates the Patch version part of the module. Version 2.1.3 will become 2.1.4
+```powershell
+PS> Update-NovaModuleVersion -Path ./example
+```
+
+Updates the version for the project rooted at `./example`.
 
 ### EXAMPLE 3
 
-Update-NovaModuleVersion -PreviewRelease
-Updates the Patch version part of the module. Version 2.1.6 will become 2.1.7-preview
+```powershell
+PS> Update-NovaModuleVersion -WhatIf
+```
+
+Shows the planned version update without modifying `project.json`.
 
 ## PARAMETERS
 
-### -Confirm
+### -Path
 
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: ''
-SupportsWildcards: false
-Aliases:
-- cf
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Label
-
-The part of the version number to increment (Major, Minor, Patch).
-Default is patch.
+Project root path that contains `project.json`.
 
 ```yaml
 Type: System.String
-DefaultValue: Patch
+DefaultValue: (Get-Location).Path
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -99,58 +86,38 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -PreviewRelease
-
-Use this to use semantic version and attach release name as 'preview' which is supported by PowerShell gallery, to remove it use stable release parameter
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -StableRelease
-
-Use this to use semantic version and removes 'preview' release name converting it to stable release
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
 ### -WhatIf
 
-Runs the command in a mode that only reports what would happen without performing the actions.
+Shows what would happen if the cmdlet runs. The cmdlet is not run.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
-DefaultValue: ''
+DefaultValue: False
 SupportsWildcards: false
 Aliases:
-- wi
+  - wi
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Confirm
+
+Prompts for confirmation before `project.json` is updated.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases:
+  - cf
 ParameterSets:
 - Name: (All)
   Position: Named
@@ -172,16 +139,29 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
+### None
+
+You can't pipe objects to this cmdlet.
+
 ## OUTPUTS
+
+### PSCustomObject
+
+Returns the previous version, new version, selected release label, and commit count.
 
 ## NOTES
 
-Ensure you are in project directory when you run this command.
+Run this command from a NovaModuleTools project root or supply `-Path`.
+
+This command updates `project.json`. Rebuild the module afterward if you want the generated manifest and built output to
+reflect the new version.
 
 
 ## RELATED LINKS
 
-{{ Fill in the related links here }}
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Get-NovaProjectInfo.md
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaRelease.md
 
 
 

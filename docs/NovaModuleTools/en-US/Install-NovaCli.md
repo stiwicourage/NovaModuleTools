@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/12/2026
+ms.date: 04/14/2026
 PlatyPS schema version: 2024-05-01
 title: Install-NovaCli
 ---
@@ -39,7 +39,7 @@ NovaModuleTools.
 ### EXAMPLE 1
 
 ```powershell
-Install-NovaCli
+PS> Install-NovaCli
 ```
 
 Installs `nova` to `~/.local/bin/nova`.
@@ -47,10 +47,18 @@ Installs `nova` to `~/.local/bin/nova`.
 ### EXAMPLE 2
 
 ```powershell
-Install-NovaCli -DestinationDirectory ~/bin -Force
+PS> Install-NovaCli -DestinationDirectory ~/bin -Force
 ```
 
 Installs or overwrites `nova` in a custom directory.
+
+### EXAMPLE 3
+
+```powershell
+PS> Install-NovaCli -WhatIf
+```
+
+Shows what would be installed without copying the launcher.
 
 ## PARAMETERS
 
@@ -96,6 +104,50 @@ AcceptedValues: [ ]
 HelpMessage: ''
 ```
 
+### -WhatIf
+
+Shows what would happen if the cmdlet runs. The cmdlet is not run.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases:
+- wi
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
+### -Confirm
+
+Prompts for confirmation before the launcher is installed.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases:
+- cf
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
 ### CommonParameters
 
 This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`, `-ErrorVariable`, `-InformationAction`,
@@ -103,6 +155,10 @@ This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`, `-ErrorVar
 `-WarningAction`, `-WarningVariable`, `-WhatIf`, and `-Confirm`.
 
 ## INPUTS
+
+### None
+
+You can't pipe objects to this cmdlet.
 
 ## OUTPUTS
 
@@ -114,6 +170,8 @@ currently on `PATH`.
 ## NOTES
 
 After running `Install-NovaCli`, add the destination directory to your shell `PATH` if needed.
+
+On Windows, keep using the `nova` alias inside `pwsh` instead of this command.
 
 ## RELATED LINKS
 

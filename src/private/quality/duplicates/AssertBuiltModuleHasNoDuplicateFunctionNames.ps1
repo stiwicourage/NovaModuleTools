@@ -15,7 +15,11 @@ function Assert-BuiltModuleHasNoDuplicateFunctionName {
         throw "Built module contains parse errors and cannot be validated for duplicates. File: $psm1Path. Errors: $messages"
     }
 
-    $topLevelFunctions = Get-TopLevelFunctionAst -Ast $parsed.Ast
+    $topLevelFunctions = @(Get-TopLevelFunctionAst -Ast $parsed.Ast)
+    if ($topLevelFunctions.Count -eq 0) {
+        throw "No functions found to build. Add a function to the source file."
+    }
+
     $duplicates = Get-DuplicateFunctionGroup -FunctionAst $topLevelFunctions
 
     if (-not $duplicates) {

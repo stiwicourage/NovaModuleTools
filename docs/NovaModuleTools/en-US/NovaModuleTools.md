@@ -5,7 +5,7 @@ HelpInfoUri: ''
 Locale: en-US
 Module Guid: 6b9202c8-0353-473b-b73c-afab632125a6
 Module Name: NovaModuleTools
-ms.date: 03/19/2026
+ms.date: 04/14/2026
 PlatyPS schema version: 2024-05-01
 title: NovaModuleTools Module
 ---
@@ -14,25 +14,29 @@ title: NovaModuleTools Module
 
 ## Description
 
-NovaModuleTools is a versatile, standalone PowerShell module builder. Create anything from simple to robust modules with ease. Built for CICD and Automation.
+NovaModuleTools helps you scaffold, build, test, version, and publish PowerShell modules with a consistent project
+layout and a repeatable workflow.
+
+Use the module when you want a structured path from source files under `src/` to a built module under `dist/`, including
+manifest generation, external help generation, resource copying, and Pester-based validation.
 
 ## NovaModuleTools Cmdlets
 
 ### `Get-NovaProjectInfo`
 
-Retrieves information about a project by reading data from a project.json file in a NovaModuleTools project folder.
+Reads `project.json` and returns resolved project metadata and paths.
 
 ### `Install-NovaCli`
 
-Install the bundled `nova` launcher into a user command directory on macOS or Linux.
+Installs the bundled `nova` launcher into a user command directory on macOS or Linux.
 
 ### `Invoke-NovaBuild`
 
-Build a NovaModuleTools project to generate a ready-to-import PowerShell module.
+Builds the current NovaModuleTools project into a ready-to-import PowerShell module.
 
 ### `Invoke-NovaCli`
 
-Runs Nova CLI-style commands through a single command entrypoint.
+Routes the `nova` CLI experience through a single PowerShell command entrypoint.
 
 ### `Invoke-NovaRelease`
 
@@ -40,19 +44,19 @@ Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
 
 ### `Test-NovaBuild`
 
-Runs Pester tests using settings from project.json
+Runs the project's Pester test workflow using settings from `project.json`.
 
 ### `New-NovaModule`
 
-Create module scaffolding along with project.json file to easily build and manage modules in the NovaModuleTools opinionated format.
+Creates a new NovaModuleTools project scaffold through an interactive prompt flow.
 
 ### `Publish-NovaModule`
 
-Copy built module to local PSModulePath.
+Builds, tests, and publishes the current project either locally or to a repository.
 
 ### `Update-NovaModuleVersion`
 
-Updates the version number of a module in project.json file. Uses [semver] object type.
+Updates the project version in `project.json` based on the current git commit history.
 
 
 

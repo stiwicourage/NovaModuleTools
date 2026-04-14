@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 03/19/2026
+ms.date: 04/14/2026
 PlatyPS schema version: 2024-05-01
 title: Publish-NovaModule
 ---
@@ -13,42 +13,91 @@ title: Publish-NovaModule
 
 ## SYNOPSIS
 
-Copy built module to local PSModulePath.
+Builds, tests, and publishes the current project either locally or to a PowerShell repository.
 
 ## SYNTAX
 
-### __AllParameterSets
+### Local
 
+```powershell
+Publish-NovaModule [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [<CommonParameters>]
 ```
-Publish-NovaModule [[-ModuleDirectoryPath] <string>] [<CommonParameters>]
+
+### Repository
+
+```powershell
+Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [<CommonParameters>]
 ```
-
-## ALIASES
-
-This cmdlet has the following aliases,
-  {{Insert list of aliases}}
 
 ## DESCRIPTION
 
-Useful quick testing and private modules which don't get hosted in PSGallery or other repository. This command publishes the generated module to local PSModulePath location which gets autoimported when porfile loads.
+`Publish-NovaModule` runs the normal NovaModuleTools build and test flow, then publishes the built module.
+
+Use local mode when you want to copy the built module into a module directory on the current machine.
+
+Use repository mode when you want to publish the built module to a registered PowerShell repository such as
+`PSGallery`.
 
 ## EXAMPLES
 
-### Example 1
+### EXAMPLE 1
 
-Publish-NovaModule
-Publishes to local $PSModulePath
+```powershell
+PS> Publish-NovaModule -Local
+```
 
-### Example 2
+Builds, tests, and copies the module to the default local module path.
 
-Publish-NovaModule -ModuleDirectoryPath \\Some\Path
-Publishes/Copies to path provided
+### EXAMPLE 2
+
+```powershell
+PS> Publish-NovaModule -Local -ModuleDirectoryPath ~/Modules
+```
+
+Builds, tests, and copies the module to a custom local directory.
+
+### EXAMPLE 3
+
+```powershell
+PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
+```
+
+Builds, tests, and publishes the module to `PSGallery`.
+
+### EXAMPLE 4
+
+```powershell
+nova publish --repository PSGallery --apikey $env:PSGALLERY_API
+```
+
+Runs the same publish flow through the `nova` CLI.
 
 ## PARAMETERS
 
-### -ModuleDirectoryPath
+### -Local
 
-Path to save the built module.
+Use local publish mode. When no repository is supplied, the command publishes to a local module directory.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Local
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Repository
+
+Target repository name for repository publishing, for example `PSGallery`.
 
 ```yaml
 Type: System.String
@@ -56,8 +105,54 @@ DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: (All)
-  Position: 0
+- Name: Repository
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ModuleDirectoryPath
+
+Custom destination directory for local publishing.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Local
+  Position: Named
+- Name: Repository
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ApiKey
+
+Repository API key used when publishing to a repository. This value is ignored for normal local publishing.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Local
+  Position: Named
+- Name: Repository
+  Position: Named
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
@@ -76,19 +171,25 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
+### None
+
+You can't pipe objects to this cmdlet.
+
 ## OUTPUTS
 
-### System.Object
+### None
 
-{{ Fill in the Description }}
+This cmdlet does not emit an output object.
 
 ## NOTES
 
-{{ Fill in the Notes }}
+The command always builds and tests before publishing.
 
 ## RELATED LINKS
 
-{{ Fill in the related links here }}
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Test-NovaBuild.md
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaRelease.md
 
 
 

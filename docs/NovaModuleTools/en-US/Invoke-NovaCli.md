@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/11/2026
+ms.date: 04/14/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-NovaCli
 ---
@@ -26,14 +26,14 @@ Invoke-NovaCli [[-Command] <string>] [[-Arguments] <string[]>] [<CommonParameter
 ## DESCRIPTION
 
 `Invoke-NovaCli` is the cmdlet behind the `nova` alias. In day-to-day usage, the intended experience is to run the
-`nova` command rather than call `Invoke-NovaCli` directly.
+`nova` CLI rather than call `Invoke-NovaCli` directly.
 
 It dispatches high-level commands such as `nova info`, `nova version`, `nova --version`, `nova --help`, `nova build`,
 `nova test`,
 `nova init`, `nova publish`, `nova bump`, and `nova release` to the matching Nova cmdlet.
 
-Use `Invoke-NovaCli` when you need a scriptable PowerShell command entrypoint. Use `nova` when you want the more
-user-friendly CLI-style experience.
+Use `Invoke-NovaCli` when you need a scriptable PowerShell command entrypoint. Use `nova` when you want the
+user-focused CLI experience.
 
 Inside an imported PowerShell session, `nova` is available through the cmdlet alias. To make `nova` available directly
 from zsh/bash on macOS or Linux, install the launcher once with `Install-NovaCli`.
@@ -69,7 +69,7 @@ Builds the module using `Invoke-NovaBuild`.
 ### EXAMPLE 4
 
 ```powershell
-nova publish --repository PSGallery --apikey ***
+nova publish --repository PSGallery --apikey $env:PSGALLERY_API
 ```
 
 Parses CLI arguments and publishes using `Publish-NovaModule`.
@@ -85,7 +85,7 @@ Displays the built-in Nova CLI help text.
 ### EXAMPLE 6
 
 ```powershell
-Invoke-NovaCli -Command build
+PS> Invoke-NovaCli -Command build
 ```
 
 Shows the equivalent scripted PowerShell form behind `nova build`.
@@ -145,6 +145,18 @@ This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`, `-ErrorVar
 ## INPUTS
 
 ## OUTPUTS
+
+### System.String
+
+Returned for text-oriented commands such as `nova --help`, `nova version`, and `nova --version`.
+
+### PSCustomObject
+
+Returned when the selected subcommand returns an object, for example `nova info`.
+
+### None
+
+Some routed commands complete without returning an output object.
 
 ## NOTES
 

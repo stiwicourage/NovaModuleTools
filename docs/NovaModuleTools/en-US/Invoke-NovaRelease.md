@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/11/2026
+ms.date: 04/14/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-NovaRelease
 ---
@@ -40,7 +40,7 @@ The command changes location to `-Path` for execution and always restores the pr
 ### EXAMPLE 1
 
 ```powershell
-Invoke-NovaRelease -PublishOption @{Local = $true}
+PS> Invoke-NovaRelease -PublishOption @{ Local = $true }
 ```
 
 Runs a local release flow and publishes to the local module path.
@@ -48,10 +48,18 @@ Runs a local release flow and publishes to the local module path.
 ### EXAMPLE 2
 
 ```powershell
-Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API}
+PS> Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API }
 ```
 
 Runs release flow and publishes to the specified repository.
+
+### EXAMPLE 3
+
+```powershell
+PS> Invoke-NovaRelease -Path ./example -PublishOption @{ Local = $true }
+```
+
+Runs the release workflow from the project rooted at `./example`.
 
 ## PARAMETERS
 
@@ -66,9 +74,11 @@ Common keys:
 - `ApiKey`
 - `ModuleDirectoryPath`
 
+Use `Local = $true` for local publishing, or provide `Repository` and `ApiKey` for repository publishing.
+
 ```yaml
 Type: System.Collections.Hashtable
-DefaultValue: @{ }
+DefaultValue: '@{}'
 SupportsWildcards: false
 Aliases: [ ]
 ParameterSets:
@@ -112,7 +122,16 @@ This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`, `-ErrorVar
 
 ## INPUTS
 
+### None
+
+You can't pipe objects to this cmdlet.
+
 ## OUTPUTS
+
+### PSCustomObject
+
+Returns the version update result from `Update-NovaModuleVersion`, including the previous version, new version,
+selected release label, and commit count.
 
 ## NOTES
 
