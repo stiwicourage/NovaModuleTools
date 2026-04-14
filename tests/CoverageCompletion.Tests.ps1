@@ -119,6 +119,7 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             Name = 'entered text'
             Caption = 'Module Name'
             Message = 'Enter module name'
+            Prompt = 'Name'
             Default = 'ignored'
             Responses = @('NovaModuleTools')
             Expected = 'NovaModuleTools'
@@ -128,6 +129,7 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             Name = 'mandatory retry'
             Caption = 'Module Name'
             Message = 'Enter module name'
+            Prompt = 'Name'
             Default = 'MANDATORY'
             Responses = @($null, 'NovaModuleTools')
             Expected = 'NovaModuleTools'
@@ -137,6 +139,7 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             Name = 'default fallback'
             Caption = 'Semantic Version'
             Message = 'Starting version'
+            Prompt = 'Version'
             Default = '0.0.1'
             Responses = @('')
             Expected = '0.0.1'
@@ -157,7 +160,7 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             Read-AwesomeHost -Ask ([pscustomobject]@{
                 Caption = $PromptCase.Caption
                 Message = $PromptCase.Message
-                Prompt = @{}
+                Prompt = $PromptCase.Prompt
                 Default = $PromptCase.Default
                 Choice = $null
             })
@@ -165,6 +168,17 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
 
         $result | Should -Be $Expected
         $hostUi.State.PromptCalls | Should -Be $ExpectedPromptCalls
+        $hostUi.State.Caption | Should -Be $Caption
+        $hostUi.State.Message | Should -Be $Message
+        $hostUi.State.FieldDescriptions.Count | Should -Be 1
+        $hostUi.State.FieldDescriptions[0].Name | Should -Be $Prompt
+
+        if ($Default -eq 'MANDATORY') {
+            $hostUi.State.FieldDescriptions[0].DefaultValue | Should -BeNullOrEmpty
+        }
+        else {
+            $hostUi.State.FieldDescriptions[0].DefaultValue | Should -Be $Default
+        }
     }
 
     It 'Read-AwesomeHost returns the selected label for choice prompts' {
@@ -190,6 +204,54 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
         $hostUi.State.ChoiceCalls | Should -Be 1
         $hostUi.State.DefaultChoiceIndex | Should -Be 1
         $hostUi.State.ChoiceLabels | Should -Be @('&Yes', '&No')
+    }
+
+    It 'Read-AwesomeHost uses choice prompts for hashtable-based scaffold questions' {
+        $hostUi = New-TestChoiceHostUi -ChoiceIndex 1
+
+        $result = InModuleScope $script:moduleName -Parameters @{HostUi = $hostUi} {
+            param($HostUi)
+
+            Mock Get-AwesomeHostUi {$HostUi}
+
+            Read-AwesomeHost -Ask @{
+                Caption = 'Pester Testing'
+                Message = 'Do you want to enable basic Pester Testing'
+                Prompt = 'EnablePester'
+                Default = 'No'
+                Choice = [ordered]@{
+                    Yes = 'Enable pester to perform testing'
+                    No = 'Skip pester testing'
+                }
+            }
+        }
+
+        $result | Should -Be 'No'
+        $hostUi.State.ChoiceCalls | Should -Be 1
+        $hostUi.State.DefaultChoiceIndex | Should -Be 1
+        $hostUi.State.ChoiceLabels | Should -Be @('&Yes', '&No')
+    }
+
+    It 'Read-AwesomeHost treats prompts without a Choice property as standard prompts' {
+        $hostUi = New-TestPromptHostUi {
+            [pscustomobject]@{Values = 'NovaModuleTools'}
+        }
+
+        $result = InModuleScope $script:moduleName -Parameters @{HostUi = $hostUi} {
+            param($HostUi)
+
+            Mock Get-AwesomeHostUi {$HostUi}
+
+            Read-AwesomeHost -Ask ([pscustomobject]@{
+                Caption = 'Module Name'
+                Message = 'Enter module name'
+                Prompt = @{}
+                Default = 'MANDATORY'
+            })
+        }
+
+        $result | Should -Be 'NovaModuleTools'
+        $hostUi.State.PromptCalls | Should -Be 1
     }
 
     It 'Get-FunctionSourceIndex adds entries for indexable files' {

@@ -1,12 +1,12 @@
 function Read-NovaModuleAnswerSet {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][hashtable]$Questions
+        [Parameter(Mandatory)][System.Collections.IDictionary]$Questions
     )
 
-    $answer = @{}
-    foreach ($key in $Questions.Keys) {
-        $answer[$key] = Read-AwesomeHost -Ask $Questions[$key]
+    $answer = [ordered]@{}
+    foreach ($question in $Questions.GetEnumerator()) {
+        $answer[$question.Key] = Read-AwesomeHost -Ask $question.Value
     }
 
     if ($answer.ProjectName -notmatch '^[A-Za-z][A-Za-z0-9_.]*$') {

@@ -36,7 +36,6 @@ The format follows the principles from Keep a Changelog and the project aims to 
   build command.
 - Fix the CI helper flow so its second Pester pass reloads the freshly built `dist/` module during test discovery.
 - Fix `Get-NovaProjectInfo` so empty `project.json` files fail with a clear configuration error.
-- Fix build, release, and CLI flows so module preambles no longer break repository tests or the example project build.
 - Fix `Invoke-CodeSceneAnalysis.ps1` so `-TriggerAnalysis` can run without `-CoveragePath`.
 - Fix local publishing and release flows so module paths are resolved correctly before helper reloads, and
   `Publish-NovaModule -Local` no longer falls back to the legacy path.
