@@ -59,8 +59,8 @@ The generated module is stored in the `dist` folder. You can easily import it or
 ```
 dist
 └── TestModule
-   ├── TestModule.psd1
-   └── TestModule.psm1
+    ├── TestModule.psd1
+    └── TestModule.psm1
 ```
 
 ### Docs Folder
@@ -213,16 +213,16 @@ An example of the module build where resources were included and `CopyResourcesT
 ```powershell
 dist
 └── TestModule
-        ├── TestModule.psd1
-        ├── TestModule.psm1
-        ├── config.json
-        ├── additionalScript.ps1
-        ├── helpDocumentation.md
-        ├── sampleData.csv
-        └── subfolder
-            ├── subConfig.json
-            ├── subScript.ps1
-            └── subData.csv
+├── TestModule.psd1
+├── TestModule.psm1
+├── config.json
+├── additionalScript.ps1
+├── helpDocumentation.md
+├── sampleData.csv
+└── subfolder
+├── subConfig.json
+├── subScript.ps1
+└── subData.csv
 ```
 
 ### Tests Folder
