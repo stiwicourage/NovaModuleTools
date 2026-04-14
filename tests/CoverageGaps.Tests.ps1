@@ -113,6 +113,34 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
         }
     }
 
+    It 'Read-NovaModuleAnswerSet preserves the scaffold question order' {
+        InModuleScope $script:moduleName {
+            $questions = Get-NovaModuleQuestionSet
+            $askedCaptions = [System.Collections.Generic.List[string]]::new()
+            Mock Read-AwesomeHost {
+                $askedCaptions.Add($Ask.Caption)
+
+                if ($Ask.Caption -eq 'Module Name') {
+                    return 'NovaSample'
+                }
+
+                return 'value'
+            }
+
+            $null = Read-NovaModuleAnswerSet -Questions $questions
+
+            $askedCaptions | Should -Be @(
+                'Module Name',
+                'Module Description',
+                'Semantic Version',
+                'Module Author',
+                'Supported PowerShell Version',
+                'Git Version Control',
+                'Pester Testing'
+            )
+        }
+    }
+
     It 'Read-NovaModuleAnswerSet rejects invalid project names' {
         InModuleScope $script:moduleName {
             $questions = Get-NovaModuleQuestionSet

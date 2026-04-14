@@ -5,10 +5,16 @@ function New-TestPromptHostUi {
         State = [ordered]@{
             PromptCalls = 0
             GetResponse = $GetResponse
+            Caption = $null
+            Message = $null
+            FieldDescriptions = @()
         }
     }
     $hostUi | Add-Member -MemberType ScriptMethod -Name Prompt -Value {
         $this.State.PromptCalls += 1
+        $this.State.Caption = $args[0]
+        $this.State.Message = $args[1]
+        $this.State.FieldDescriptions = @($args[2])
         return & $this.State.GetResponse $this.State.PromptCalls
     }
 

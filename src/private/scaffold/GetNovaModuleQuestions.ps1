@@ -38,7 +38,7 @@ function Get-NovaModuleQuestionSet {
             Message = 'Do you want to enable version controlling using Git'
             Prompt = 'EnableGit'
             Default = 'No'
-            Choice = @{
+            Choice = [ordered]@{
                 Yes = 'Enable Git'
                 No = 'Skip Git initialization'
             }
@@ -48,7 +48,7 @@ function Get-NovaModuleQuestionSet {
             Message = 'Do you want to enable basic Pester Testing'
             Prompt = 'EnablePester'
             Default = 'No'
-            Choice = @{
+            Choice = [ordered]@{
                 Yes = 'Enable pester to perform testing'
                 No = 'Skip pester testing'
             }
