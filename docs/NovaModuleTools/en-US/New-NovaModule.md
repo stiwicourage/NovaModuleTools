@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 03/19/2026
+ms.date: 04/14/2026
 PlatyPS schema version: 2024-05-01
 title: New-NovaModule
 ---
@@ -13,31 +13,52 @@ title: New-NovaModule
 
 ## SYNOPSIS
 
-Create module scaffolding along with project.json file to easily build and manage modules in the NovaModuleTools opinionated format.
+Creates a new NovaModuleTools project scaffold through an interactive prompt flow.
 
 ## SYNTAX
 
 ### __AllParameterSets
 
-```
+```powershell
 New-NovaModule [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
-## ALIASES
-
-This cmdlet has the following aliases,
-  {{Insert list of aliases}}
-
 ## DESCRIPTION
 
-This command creates folder structure and project.json file easily. Use this to quickly set up a NovaModuleTools-compatible module. Provide all parameters to the command or enter details in the interactive prompts with sane defaults. Generated projects now start with enterprise-oriented defaults for recursive discovery, source-path markers, and duplicate-function validation.
+`New-NovaModule` creates a new project folder, the standard `src/`, `tests/`, and `docs/` layout, and a starter
+`project.json` file.
+
+The command collects project details interactively, including the module name, description, version, author, minimum
+PowerShell version, Git initialization, and basic Pester support.
+
+Use this command when you want to start a new module in the NovaModuleTools structure without hand-creating the project
+layout.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-New-NovaModule -Path c:\work
-Creates module inside c:\work folder
+```powershell
+PS> New-NovaModule -Path ~/Work
+```
+
+Starts the interactive scaffold flow and creates the new module under `~/Work`.
+
+### EXAMPLE 2
+
+```powershell
+PS> New-NovaModule -Path ~/Work -WhatIf
+```
+
+Shows what would be created without writing the scaffold.
+
+### EXAMPLE 3
+
+```powershell
+nova init ~/Work
+```
+
+Runs the same scaffold flow through the `nova` CLI.
 
 ## PARAMETERS
 
@@ -65,7 +86,7 @@ HelpMessage: ''
 
 ### -Path
 
-Path where module will be created.
+Base directory where the new project folder will be created.
 
 ```yaml
 Type: System.String
@@ -115,17 +136,27 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
+### None
+
+You can't pipe objects to this cmdlet.
+
 ## OUTPUTS
+
+### None
+
+This cmdlet does not emit an output object.
 
 ## NOTES
 
-The structure of the NovaModuleTools module is meticulously designed according to PowerShell best practices for module development.
-While some design decisions may seem unconventional, they are made to ensure that NovaModuleTools and the process of building modules remain straightforward and easy to manage.
+Generated projects start with NovaModuleTools defaults for recursive discovery, source markers, and duplicate-function
+validation.
 
 
 ## RELATED LINKS
 
-{{ Fill in the related links here }}
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Get-NovaProjectInfo.md
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaCli.md
 
 
 

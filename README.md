@@ -13,11 +13,11 @@ repository details, see the public landing page in `docs/index.html`.
 
 ## Install | [![NovaModuleTools@PowerShell Gallery][BadgeIOCount]][PSGalleryLink]
 ```PowerShell
-Install-Module -Name NovaModuleTools
-Import-Module NovaModuleTools
+PS> Install-Module -Name NovaModuleTools
+PS> Import-Module NovaModuleTools
 
 # Optional on macOS/Linux: install the standalone nova launcher
-Install-NovaCli
+PS> Install-NovaCli
 ```
 
 `nova` is always available as a PowerShell alias after the module is imported.
@@ -210,7 +210,8 @@ certain deployment scenarios where resources files are preferred in module root 
 Leave `src\resources` empty if there is no need to include any additional content in the `dist` folder.
 
 An example of the module build where resources were included and `CopyResourcesToModuleRoot` is set to true.
-```powershell
+
+```text
 dist
 └── TestModule
 ├── TestModule.psd1
@@ -251,12 +252,12 @@ Start here:
 Typical local flow from the repository root:
 
 ```powershell
-Import-Module ./dist/NovaModuleTools -Force
-Set-Location ./example
-Invoke-NovaBuild
-Test-NovaBuild
-Import-Module ./dist/NovaExampleModule -Force
-Get-ExampleGreeting
+PS> Import-Module ./dist/NovaModuleTools -Force
+PS> Set-Location ./example
+PS> Invoke-NovaBuild
+PS> Test-NovaBuild
+PS> Import-Module ./dist/NovaExampleModule -Force
+PS> Get-ExampleGreeting
 ```
 
 Expected output:
@@ -326,10 +327,10 @@ Use `Install-NovaCli` when you want the bundled `nova` launcher available direct
 
 ```powershell
 # Install to the default macOS/Linux location
-Install-NovaCli
+PS> Install-NovaCli
 
 # Install to a custom directory
-Install-NovaCli -DestinationDirectory ~/bin -Force
+PS> Install-NovaCli -DestinationDirectory ~/bin -Force
 ```
 
 On Windows, keep using the `nova` alias inside `pwsh` after importing the module.
@@ -339,9 +340,9 @@ On Windows, keep using the `nova` alias inside `pwsh` after importing the module
 This interactive command helps you create the module structure. Easily create the skeleton of your module and get started with module building in no time.
 ```powershell
 ## Create a module skeleton in Work Directory
-New-NovaModule ~/Work
+PS> New-NovaModule ~/Work
 
-## Same flow through the CLI shortcut
+## Same action through the nova CLI
 nova init ~/Work
 ```
 
@@ -396,12 +397,12 @@ order for classes, public functions, private functions, exports, and resource ha
 
 ```powershell
 # From the Module root 
-Invoke-NovaBuild
+PS> Invoke-NovaBuild
 
 ## Verbose for more details
-Invoke-NovaBuild -Verbose
+PS> Invoke-NovaBuild -Verbose
 
-## CLI shortcut
+## Same action through the nova CLI
 nova build
 ```
 
@@ -430,15 +431,15 @@ to run only top-level `tests/*.Tests.ps1` files, matching Pester's normal test-f
 Use `Publish-NovaModule` (`nova publish`) to build, test, and publish in one step.
 ```powershell
 # Publish to your local PowerShell modules path
-Publish-NovaModule -Local
+PS> Publish-NovaModule -Local
 
 # Publish to a repository
-Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
+PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
 
-# CLI shortcut for local publish
+# Same action through the nova CLI
 nova publish --local
 
-# CLI shortcut for repository publish
+# Same repository publish through the nova CLI
 nova publish --repository PSGallery --apikey $env:PSGALLERY_API
 ```
 
@@ -449,9 +450,9 @@ module path.
 > During local development, make sure your shell uses the module you just built (not an older installed copy).
 >
 > ```powershell
-> Remove-Module NovaModuleTools -ErrorAction SilentlyContinue
-> Publish-NovaModule -Local
-> Import-Module ./dist/NovaModuleTools -Force
+> PS> Remove-Module NovaModuleTools -ErrorAction SilentlyContinue
+> PS> Publish-NovaModule -Local
+> PS> Import-Module ./dist/NovaModuleTools -Force
 > ```
 
 When running from the repository root, build-time schema/resource lookup also falls back to project resources under

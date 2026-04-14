@@ -111,6 +111,47 @@ Describe 'Nova command model' {
         }
     }
 
+    It 'Get-Help supports Detailed, Full, Examples, and Parameter views for every public command' {
+        $commonParameterNames = @(
+            'Verbose',
+            'Debug',
+            'ErrorAction',
+            'WarningAction',
+            'InformationAction',
+            'ProgressAction',
+            'ErrorVariable',
+            'WarningVariable',
+            'InformationVariable',
+            'OutVariable',
+            'OutBuffer',
+            'PipelineVariable'
+        )
+
+        foreach ($testCase in $script:helpActivationTestCases) {
+            $command = Get-Command $testCase.HelpTarget -ErrorAction Stop
+            $expectedParameterNames = @(
+            $command.Parameters.Keys |
+                    Where-Object {$_ -notin $commonParameterNames} |
+                    Sort-Object
+            )
+
+            $detailedText = Get-Help $testCase.HelpTarget -Detailed -ErrorAction Stop | Out-String
+            $fullText = Get-Help $testCase.HelpTarget -Full -ErrorAction Stop | Out-String
+            $examplesText = Get-Help $testCase.HelpTarget -Examples -ErrorAction Stop | Out-String
+            $detailedText | Should -Match 'DESCRIPTION' -Because "$( $testCase.HelpTarget ) should render a detailed help description"
+            $detailedText | Should -Match 'PARAMETERS' -Because "$( $testCase.HelpTarget ) should render a detailed parameter section"
+            $fullText | Should -Match 'INPUTS' -Because "$( $testCase.HelpTarget ) should render an inputs section"
+            $fullText | Should -Match 'OUTPUTS' -Because "$( $testCase.HelpTarget ) should render an outputs section"
+            $fullText | Should -Match 'NOTES' -Because "$( $testCase.HelpTarget ) should render a notes section"
+            $examplesText | Should -Match 'PS>' -Because "$( $testCase.HelpTarget ) examples should use PowerShell prompt formatting"
+
+            foreach ($parameterName in $expectedParameterNames) {
+                $parameterText = Get-Help $testCase.HelpTarget -Parameter $parameterName -ErrorAction Stop | Out-String
+                $parameterText | Should -Match ([regex]::Escape("-$parameterName")) -Because "$( $testCase.HelpTarget ) should document -$parameterName"
+            }
+        }
+    }
+
     It 'Invoke-NovaBuild runs module build pipeline' {
         InModuleScope $script:moduleName {
             Mock Reset-ProjectDist {}
