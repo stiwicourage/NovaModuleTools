@@ -300,6 +300,28 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
         }
     }
 
+    It 'Assert-BuiltModuleHasNoDuplicateFunctionName throws when the built module has no top-level functions' {
+        InModuleScope $script:moduleName {
+            $tokens = $null
+            $errors = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput('Set-StrictMode -Version Latest', [ref]$tokens, [ref]$errors)
+
+            Mock Test-Path {$true}
+            Mock Get-PowerShellAstFromFile {
+                [pscustomobject]@{
+                    Errors = @()
+                    Ast = $ast
+                }
+            }
+            Mock Get-DuplicateFunctionGroup {}
+
+            {
+                Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo ([pscustomobject]@{ModuleFilePSM1 = '/tmp/empty.psm1'})
+            } | Should -Throw 'No functions found to build. Add a function to the source file.'
+            Assert-MockCalled Get-DuplicateFunctionGroup -Times 0
+        }
+    }
+
     It 'Publish-NovaBuiltModuleToDirectory creates the destination when it is missing' {
         InModuleScope $script:moduleName {
             Mock Test-Path {

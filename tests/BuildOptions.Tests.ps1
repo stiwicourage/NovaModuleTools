@@ -74,6 +74,13 @@ Describe 'Invoke-NovaBuild options' {
         (Test-Path -LiteralPath $builtModulePath) | Should -BeTrue
     }
 
+    It 'empty projects fail with a readable no-source-files error' {
+        $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'EmptyProject'
+        Write-TestProjectJson -ProjectRoot $root -Options @{ProjectName = 'EmptyProject'; BuildRecursiveFolders = $false}
+
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root -ExpectedMessage 'No source files found to build*'
+    }
+
     It 'BuildRecursiveFolders=false excludes nested classes/private and nested public' {
         $root = New-TestProjectWithNestedSourceFiles -TestDriveRoot $TestDrive -Name 'NoRecurse' -Options @{ ProjectName = 'NoRecurse'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false }
         $summary = Get-NestedSourceBuildSummary -ProjectRoot $root
