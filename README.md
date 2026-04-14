@@ -41,15 +41,16 @@ All module files should be inside the `src` folder.
 ```
 .
 ├── project.json
-├── private
-│  └── New-PrivateFunction.ps1
-├── public
-│  └── New-PublicFunction.ps1
-├── resources
-│  └── some-config.json
-└── classes
-   └── Person.classes.ps1
-   └── Person.enums.ps1
+└── src
+    ├── classes
+    │   └── Person.classes.ps1
+    │   └── Person.enums.ps1
+    ├── public
+    │   └── New-PublicFunction.ps1
+    ├── resources
+    │   └── some-config.json
+    └── private
+        └── New-PrivateFunction.ps1
 ```
 
 ### Dist Folder
