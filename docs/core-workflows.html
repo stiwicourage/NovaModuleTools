@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>NovaModuleTools — Core Workflows</title>
+    <meta content="Follow the normal NovaModuleTools workflow for scaffolding, building, testing, versioning, and releasing a PowerShell module."
+          name="description">
+    <link href="./assets/site.css" rel="stylesheet">
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">NovaModuleTools</a>
+        <nav aria-label="Primary" class="site-nav">
+            <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+            <a class="site-nav__link site-nav__link--active" href="./core-workflows.html">Core Workflows</a>
+            <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
+            <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+            <a class="site-nav__link" href="./advanced.html">Advanced</a>
+        </nav>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="guide-hero">
+        <p class="eyebrow">Core workflows</p>
+        <h1>Use NovaModuleTools as a repeatable scaffold → build → test → bump → release flow</h1>
+        <p class="lead">This guide explains the normal command sequence for day-to-day module work.</p>
+    </section>
+
+    <section class="content-grid">
+        <aside class="toc-card">
+            <h2>On this page</h2>
+            <ul class="toc-list">
+                <li><a href="#scaffold">Scaffold</a></li>
+                <li><a href="#build">Build</a></li>
+                <li><a href="#test">Test</a></li>
+                <li><a href="#bump">Version bump</a></li>
+                <li><a href="#release">Release</a></li>
+            </ul>
+        </aside>
+
+        <div class="guide-content">
+            <section class="content-section" id="scaffold">
+                <h2>Create a project scaffold</h2>
+                <pre><code>nova init
+nova init -Path ~/Work
+nova init -Example</code></pre>
+                <p>Use the default scaffold when you want a clean starting point. Use <code>-Example</code> when you
+                    want a complete working reference project.</p>
+            </section>
+
+            <section class="content-section" id="build">
+                <h2>Build the module</h2>
+                <pre><code>nova build</code></pre>
+                <p>The build combines your source files into a real PowerShell module under <code>dist/&lt;ProjectName&gt;</code>.
+                </p>
+                <p>Use the built output when validating import, test, and publish behavior.</p>
+            </section>
+
+            <section class="content-section" id="test">
+                <h2>Test the built result</h2>
+                <pre><code>nova test</code></pre>
+                <p>NovaModuleTools runs Pester against the project test suite and writes test results for the workflow
+                    under <code>artifacts/TestResults.xml</code>.</p>
+                <p>If your project uses nested test folders, discovery follows the <code>BuildRecursiveFolders</code>
+                    setting in <code>project.json</code>.</p>
+            </section>
+
+            <section class="content-section" id="bump">
+                <h2>Update the project version</h2>
+                <pre><code>nova bump
+nova bump -WhatIf</code></pre>
+                <p>NovaModuleTools chooses the bump label from your Git commit history:</p>
+                <ul class="plain-list">
+                    <li>breaking change → <strong>Major</strong></li>
+                    <li><code>feat:</code> → <strong>Minor</strong></li>
+                    <li><code>fix:</code> and other commit types → <strong>Patch</strong></li>
+                </ul>
+                <p>If the current folder is not a Git repository, NovaModuleTools falls back to a patch bump. If the
+                    repository exists but has no commits yet, create the first commit before running <code>nova
+                        bump</code>.</p>
+            </section>
+
+            <section class="content-section" id="release">
+                <h2>Run the release workflow</h2>
+                <pre><code>nova release -local
+nova release -repository PSGallery -apikey $env:PSGALLERY_API</code></pre>
+                <p>The release flow coordinates build, test, version bump, rebuild, and publish. Use local mode when you
+                    want to validate the release path without pushing to a repository.</p>
+            </section>
+        </div>
+    </section>
+</main>
+</body>
+</html>
+

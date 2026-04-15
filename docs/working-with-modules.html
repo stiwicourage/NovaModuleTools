@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>NovaModuleTools — Working with Modules</title>
+    <meta content="Import built modules, reload them during local development, and use NovaModuleTools effectively while you iterate."
+          name="description">
+    <link href="./assets/site.css" rel="stylesheet">
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">NovaModuleTools</a>
+        <nav aria-label="Primary" class="site-nav">
+            <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+            <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+            <a class="site-nav__link site-nav__link--active" href="./working-with-modules.html">Working with Modules</a>
+            <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+            <a class="site-nav__link" href="./advanced.html">Advanced</a>
+        </nav>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="guide-hero">
+        <p class="eyebrow">Working with modules</p>
+        <h1>Import, reload, and validate the built module during local development</h1>
+        <p class="lead">NovaModuleTools is designed around working with the built module in <code>dist/</code>, not just
+            loose script files.</p>
+    </section>
+
+    <section class="content-grid">
+        <aside class="toc-card">
+            <h2>On this page</h2>
+            <ul class="toc-list">
+                <li><a href="#import-built">Import the built module</a></li>
+                <li><a href="#reload">Reload after changes</a></li>
+                <li><a href="#local-publish">Use local publish</a></li>
+                <li><a href="#example">Use the packaged example</a></li>
+            </ul>
+        </aside>
+
+        <div class="guide-content">
+            <section class="content-section" id="import-built">
+                <h2>Import the built module</h2>
+                <p>After building, import the output from <code>dist/&lt;ProjectName&gt;</code>:</p>
+                <pre><code>nova build
+$project = Get-NovaProjectInfo
+Import-Module $project.OutputModuleDir -Force</code></pre>
+                <p>This keeps your runtime behavior aligned with what you intend to publish.</p>
+            </section>
+
+            <section class="content-section" id="reload">
+                <h2>Reload after changes</h2>
+                <p>When you edit source files, rebuild and reload the module to avoid using stale code already loaded in
+                    the session:</p>
+                <pre><code>$project = Get-NovaProjectInfo
+Remove-Module $project.ProjectName -ErrorAction SilentlyContinue
+nova build
+Import-Module $project.OutputModuleDir -Force</code></pre>
+            </section>
+
+            <section class="content-section" id="local-publish">
+                <h2>Validate a local publish flow</h2>
+                <p>If you want to test how the module behaves when copied to your local PowerShell module path:</p>
+                <pre><code>nova publish -local</code></pre>
+                <p>This is useful when you want to simulate a more realistic install-and-import cycle without publishing
+                    to a shared repository.</p>
+            </section>
+
+            <section class="content-section" id="example">
+                <h2>Use the packaged example as a working reference</h2>
+                <p>The packaged example is available through <code>nova init -Example</code>. It is the fastest way to
+                    inspect a complete workflow that includes:</p>
+                <ul class="plain-list">
+                    <li>a real <code>project.json</code></li>
+                    <li>a public command</li>
+                    <li>a private helper</li>
+                    <li>a resource file</li>
+                    <li>Pester tests against the built output</li>
+                </ul>
+                <p>If you prefer learning from a working sample first, start there and then adapt the generated project
+                    to your own module.</p>
+            </section>
+        </div>
+    </section>
+</main>
+</body>
+</html>
+

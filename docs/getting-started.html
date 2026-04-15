@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>NovaModuleTools — Getting Started</title>
+    <meta content="Install NovaModuleTools, import the module, add the optional nova launcher, and create your first project with a guided setup path."
+          name="description">
+    <link href="./assets/site.css" rel="stylesheet">
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">NovaModuleTools</a>
+        <nav aria-label="Primary" class="site-nav">
+            <a class="site-nav__link site-nav__link--active" href="./getting-started.html">Getting Started</a>
+            <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+            <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
+            <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+            <a class="site-nav__link" href="./advanced.html">Advanced</a>
+        </nav>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="guide-hero">
+        <p class="eyebrow">Getting started</p>
+        <h1>Install NovaModuleTools and create your first project</h1>
+        <p class="lead">This guide takes you from installation to a working project scaffold.</p>
+    </section>
+
+    <section class="content-grid">
+        <aside class="toc-card">
+            <h2>On this page</h2>
+            <ul class="toc-list">
+                <li><a href="#install">1. Install the module</a></li>
+                <li><a href="#launcher">2. Optional CLI launcher</a></li>
+                <li><a href="#first-project">3. Create your first project</a></li>
+                <li><a href="#example-project">4. Start from the example</a></li>
+                <li><a href="#next-step">5. What to do next</a></li>
+            </ul>
+        </aside>
+
+        <div class="guide-content">
+            <section class="content-section" id="install">
+                <h2>1. Install the module</h2>
+                <p>Install NovaModuleTools from the PowerShell Gallery and load it into your session:</p>
+                <pre><code>Install-Module -Name NovaModuleTools
+Import-Module NovaModuleTools</code></pre>
+                <p>After import, you can use the PowerShell cmdlets directly, and the <code>nova</code> alias is also
+                    available inside PowerShell.</p>
+            </section>
+
+            <section class="content-section" id="launcher">
+                <h2>2. Optional CLI launcher for macOS and Linux</h2>
+                <p>If you want to run <code>nova</code> directly from your shell instead of from inside PowerShell,
+                    install the launcher:</p>
+                <pre><code>Install-NovaCli</code></pre>
+                <p>The launcher is copied to <code>~/.local/bin/nova</code> by default. If that folder is not on your
+                    shell path yet, add it:</p>
+                <pre><code>echo 'export PATH="$HOME/.local/bin:$PATH"' &gt;&gt; ~/.zshrc
+source ~/.zshrc</code></pre>
+                <p>On Windows, keep using the <code>nova</code> alias inside PowerShell after importing the module.</p>
+            </section>
+
+            <section class="content-section" id="first-project">
+                <h2>3. Create your first project</h2>
+                <p>The normal entry point is the scaffold flow:</p>
+                <pre><code>nova init</code></pre>
+                <p>If you want to create the project under a specific parent folder, make the destination explicit:</p>
+                <pre><code>nova init -Path ~/Work</code></pre>
+                <p>NovaModuleTools will ask for:</p>
+                <ul class="plain-list">
+                    <li>module name</li>
+                    <li>description</li>
+                    <li>starting semantic version</li>
+                    <li>author name</li>
+                    <li>minimum PowerShell version</li>
+                    <li>whether Git should be initialized</li>
+                </ul>
+                <p>When the prompts finish, you get a project folder with <code>src/</code>, <code>tests/</code> (if
+                    enabled), and <code>project.json</code>.</p>
+            </section>
+
+            <section class="content-section" id="example-project">
+                <h2>4. Start from the packaged example when you want a working reference</h2>
+                <p>If you would rather inspect a complete example than start from a minimal scaffold, use:</p>
+                <pre><code>nova init -Example
+nova init -Example -Path ~/Work</code></pre>
+                <p>This creates a project from the packaged example template, including source files, a resource file,
+                    and tests. The interactive prompt still applies your own project name, description, version, author,
+                    and PowerShell version.</p>
+            </section>
+
+            <section class="content-section" id="next-step">
+                <h2>5. What to do next</h2>
+                <p>After your project exists, continue with the workflow guides:</p>
+                <div class="guide-links">
+                    <a class="button button--primary" href="./core-workflows.html">Go to Core Workflows</a>
+                    <a class="button button--secondary" href="./working-with-modules.html">Learn how to import and
+                        reload modules</a>
+                </div>
+            </section>
+        </div>
+    </section>
+</main>
+</body>
+</html>
+

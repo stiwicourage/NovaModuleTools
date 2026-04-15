@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>NovaModuleTools — Troubleshooting</title>
+    <meta content="Fix common NovaModuleTools issues around scaffolding, building, testing, module reloads, and version bumps."
+          name="description">
+    <link href="./assets/site.css" rel="stylesheet">
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">NovaModuleTools</a>
+        <nav aria-label="Primary" class="site-nav">
+            <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+            <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+            <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
+            <a class="site-nav__link site-nav__link--active" href="./troubleshooting.html">Troubleshooting</a>
+            <a class="site-nav__link" href="./advanced.html">Advanced</a>
+        </nav>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="guide-hero">
+        <p class="eyebrow">Troubleshooting</p>
+        <h1>Common NovaModuleTools problems and how to get unstuck</h1>
+        <p class="lead">These are the issues users most often hit while scaffolding, building, testing, and versioning a
+            project.</p>
+    </section>
+
+    <section class="guide-content guide-content--single">
+        <section class="content-section">
+            <h2><code>nova init some/path</code> does not work</h2>
+            <p>Path input is explicit. Use:</p>
+            <pre><code>nova init -Path ~/Work</code></pre>
+            <p>or, for the full working example:</p>
+            <pre><code>nova init -Example -Path ~/Work</code></pre>
+        </section>
+
+        <section class="content-section">
+            <h2><code>nova bump</code> says the repository has no commits yet</h2>
+            <p><code>nova bump</code> chooses the version label from Git history. If the repository exists but has no
+                commits yet, create the first commit and run the command again.</p>
+            <pre><code>git add .
+git commit -m "feat: initial project scaffold"
+nova bump -WhatIf</code></pre>
+        </section>
+
+        <section class="content-section">
+            <h2>The module does not seem to reload after I rebuild</h2>
+            <p>PowerShell may still have the previous version loaded in memory. Remove the module first, then rebuild
+                and import again:</p>
+            <pre><code>$project = Get-NovaProjectInfo
+Remove-Module $project.ProjectName -ErrorAction SilentlyContinue
+nova build
+Import-Module $project.OutputModuleDir -Force</code></pre>
+        </section>
+
+        <section class="content-section">
+            <h2>Tests fail but I cannot see where the results went</h2>
+            <p>The normal Nova test workflow writes XML results to:</p>
+            <pre><code>artifacts/TestResults.xml</code></pre>
+            <p>If you run Pester directly instead of through <code>nova test</code> / <code>Test-NovaBuild</code>, you
+                may get different output behavior.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Build errors point at the generated <code>.psm1</code> file</h2>
+            <p>Enable or keep <code>SetSourcePath</code> in <code>project.json</code>. NovaModuleTools will add <code>#
+                Source:</code> markers to the generated module so you can map errors back to the original files under
+                <code>src/</code>.</p>
+        </section>
+    </section>
+</main>
+</body>
+</html>
+
