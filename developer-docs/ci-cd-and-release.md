@@ -2,6 +2,13 @@
 
 This guide describes the current repository automation used to validate and publish NovaModuleTools.
 
+## See also
+
+- [Developer docs hub](./README.md)
+- [Contribution guide](../CONTRIBUTING.md)
+- [Development workflow](./development-workflow.md)
+- [Repository structure](./repository-structure.md)
+
 ## CI expectations
 
 The repository uses GitHub Actions under `.github/workflows/`.

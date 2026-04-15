@@ -2,6 +2,13 @@
 
 This guide describes how to work on the NovaModuleTools repository itself.
 
+## See also
+
+- [Developer docs hub](./README.md)
+- [Contribution guide](../CONTRIBUTING.md)
+- [Repository structure](./repository-structure.md)
+- [CI/CD and release automation](./ci-cd-and-release.md)
+
 ## Prerequisites
 
 Repository development expects:

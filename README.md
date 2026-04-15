@@ -6,8 +6,9 @@ strong emphasis on structure, maintainability, and automated CI/CD pipelines tha
 This `README.md` is intentionally a **short contributor entry page**. Detailed developer guidance lives under
 `developer-docs/` and should not be duplicated here.
 
-If you are looking for **user guides** to NovaModuleTools, proceed to https://www.novamoduletools.com for more
-information.
+If you are looking for **user guides** to NovaModuleTools, proceed
+to [novamoduletools.com](https://www.novamoduletools.com/)
+for more information.
 
 ## Documentation split
 
@@ -18,11 +19,14 @@ information.
 
 ## Contributor docs in this repository
 
-- `CONTRIBUTING.md` — contribution expectations and review checklist
-- `developer-docs/README.md` — developer documentation hub
-- `developer-docs/development-workflow.md` — local setup, build, test, reload, and quality loop
-- `developer-docs/repository-structure.md` — repository architecture and ownership
-- `developer-docs/ci-cd-and-release.md` — CI, semantic-release, and publish pipeline responsibilities
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md) — contribution expectations and review checklist
+- [`developer-docs/README.md`](./developer-docs/README.md) — developer documentation hub
+- [`developer-docs/development-workflow.md`](./developer-docs/development-workflow.md) — local setup, build, test,
+  reload, and quality loop
+- [`developer-docs/repository-structure.md`](./developer-docs/repository-structure.md) — repository architecture and
+  ownership
+- [`developer-docs/ci-cd-and-release.md`](./developer-docs/ci-cd-and-release.md) — CI, semantic-release, and publish
+  pipeline responsibilities
 
 ## End-user docs on GitHub Pages
 
@@ -44,14 +48,17 @@ High-level responsibilities:
 - `scripts/` — build, CI, and release automation
 - `docs/NovaModuleTools/en-US/` — PlatyPS command-help source
 
-For structure and ownership details, use `developer-docs/repository-structure.md`.
+For structure and ownership details, use [
+`developer-docs/repository-structure.md`](./developer-docs/repository-structure.md).
 
 ## Start here as a contributor
 
-1. Read `CONTRIBUTING.md`
-2. Use `developer-docs/README.md` as the developer docs hub
-3. Follow `developer-docs/development-workflow.md` for local build, test, reload, and quality flows
-4. Use `developer-docs/ci-cd-and-release.md` when your change touches workflows, release automation, or publishing
+1. Read [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+2. Use [`developer-docs/README.md`](./developer-docs/README.md) as the developer docs hub
+3. Follow [`developer-docs/development-workflow.md`](./developer-docs/development-workflow.md) for local build, test,
+   reload, and quality flows
+4. Use [`developer-docs/ci-cd-and-release.md`](./developer-docs/ci-cd-and-release.md) when your change touches
+   workflows, release automation, or publishing
 
 ## Documentation ownership rules
 

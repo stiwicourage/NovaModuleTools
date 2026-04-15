@@ -2,6 +2,13 @@
 
 This guide explains how the NovaModuleTools repository is organized and what each major area owns.
 
+## See also
+
+- [Developer docs hub](./README.md)
+- [Contribution guide](../CONTRIBUTING.md)
+- [Development workflow](./development-workflow.md)
+- [CI/CD and release automation](./ci-cd-and-release.md)
+
 ## Top-level overview
 
 ```text
@@ -70,11 +77,11 @@ Shared test utilities live alongside the tests, for example:
 
 ## Documentation layout
 
-### `README.md` and `CONTRIBUTING.md`
+### [`README.md`](../README.md) and [`CONTRIBUTING.md`](../CONTRIBUTING.md)
 
 These are the top-level GitHub entry points for contributors and maintainers.
 
-### `developer-docs/`
+### [`developer-docs/`](./README.md)
 
 Structured contributor documentation for repository workflows, architecture, and CI/release behavior.
 

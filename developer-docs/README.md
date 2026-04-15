@@ -4,16 +4,25 @@ This folder is the developer-side documentation hub for the NovaModuleTools repo
 
 Use these documents when you are changing the module, tests, workflows, or release automation.
 
+## Navigation
+
+- [Contributor entry page](../README.md)
+- [Contribution guide](../CONTRIBUTING.md)
+- [Development workflow](./development-workflow.md)
+- [Repository structure](./repository-structure.md)
+- [CI/CD and release automation](./ci-cd-and-release.md)
+
 ## Start here
 
-- `../README.md` — contributor entry point and local workflow summary
-- `../CONTRIBUTING.md` — contribution expectations and review checklist
+- [`../README.md`](../README.md) — contributor entry point and local workflow summary
+- [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — contribution expectations and review checklist
 
 ## Developer guides
 
-- `development-workflow.md` — local setup, build, test, reload, and quality loop
-- `repository-structure.md` — top-level architecture and ownership of major folders
-- `ci-cd-and-release.md` — CI jobs, release automation, semantic-release, and publish flow responsibilities
+- [`development-workflow.md`](./development-workflow.md) — local setup, build, test, reload, and quality loop
+- [`repository-structure.md`](./repository-structure.md) — top-level architecture and ownership of major folders
+- [`ci-cd-and-release.md`](./ci-cd-and-release.md) — CI jobs, release automation, semantic-release, and publish flow
+  responsibilities
 
 ## Documentation ownership rules
 
