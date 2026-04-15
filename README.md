@@ -488,15 +488,16 @@ When running from the repository root, build-time schema/resource lookup also fa
 
 ### Update-NovaModuleVersion (`nova bump`)
 
-A siple command to update the module version by modifying the values in `project.json`. You can also manually edit the
-file in your favorite editor. This command makes it easy to update the semantic version, and the CLI shortcut is
-`nova bump`.
+Use `Update-NovaModuleVersion` (`nova bump`) to update the version stored in `project.json` based on your Git commit
+history.
 
-- Running `Update-NovaModuleVersion` (`nova bump`) without any parameters will update the patch version (e.g., 1.2.3 ->
-  1.2.4)
-- Running `Update-NovaModuleVersion -Label Major` updates the major version and resets Minor, Patch to 0 (e.g., 1.2.1 ->
-  2.0.0)
-- Running `Update-NovaModuleVersion -Label Minor` updates the minor version and resets Patch to 0 (e.g., 1.2.3 -> 1.3.0)
+- breaking changes produce a `Major` bump
+- `feat:` commits produce a `Minor` bump
+- `fix:` commits and all other cases produce a `Patch` bump
+
+Use `nova bump -WhatIf` when you want to preview the exact next version before writing it. The preview returns the same
+`PreviousVersion`, `NewVersion`, `Label`, and `CommitCount` information as a real bump, but it leaves `project.json`
+unchanged.
 
 ## Advanced - Use it in Github Actions
 > [!TIP]

@@ -578,7 +578,7 @@ title: Invoke-NovaBuild
         $publishSource.IndexOf('Resolve-NovaPublishInvocation') | Should -BeLessThan $publishSource.IndexOf('Invoke-NovaBuild')
     }
 
-    It 'Update-NovaModuleVersion -WhatIf does not invoke Set-NovaModuleVersion' {
+    It 'Update-NovaModuleVersion -WhatIf previews the calculated next version without persisting it' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {
                 [pscustomobject]@{
@@ -588,12 +588,19 @@ title: Invoke-NovaBuild
             }
             Mock Get-GitCommitMessageForVersionBump {@('feat: add change')}
             Mock Get-VersionLabelFromCommitSet {'Minor'}
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    ProjectFile = '/tmp/project.json'
+                    CurrentVersion = [semver]'1.0.0'
+                    NewVersion = [semver]'1.1.0'
+                }
+            }
             Mock Set-NovaModuleVersion {}
 
             $result = Update-NovaModuleVersion -Path (Get-Location).Path -WhatIf
 
             $result.PreviousVersion | Should -Be '1.0.0'
-            $result.NewVersion | Should -Be '1.0.0'
+            $result.NewVersion | Should -Be '1.1.0'
             $result.Label | Should -Be 'Minor'
             Assert-MockCalled Set-NovaModuleVersion -Times 0
         }
@@ -748,6 +755,7 @@ function Invoke-TestCliVerbose {
             $publishResult.Text | Should -Match 'What if:'
             $publishResult.Text | Should -Not -Match 'Unknown argument:'
             $bumpResult.Text | Should -Match 'What if:'
+            $bumpResult.Text | Should -Match '0\.0\.1\s+0\.1\.0\s+Minor\s+1'
             $bumpResult.Text | Should -Not -Match 'Version bumped to :'
             $versionAfterBump | Should -Be '0.0.1'
             (Test-Path -LiteralPath $builtModulePath) | Should -BeFalse

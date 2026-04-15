@@ -8,18 +8,17 @@ function Update-NovaModuleVersion {
     $before = Get-NovaProjectInfo -Path $projectRoot
     $commitMessages = @(Get-GitCommitMessageForVersionBump -ProjectRoot $projectRoot)
     $label = Get-VersionLabelFromCommitSet -Messages $commitMessages
+    $nextVersion = $null
 
     Push-Location -LiteralPath $projectRoot
     try {
-        $target = $before.ProjectJSON
+        $versionUpdatePlan = Get-NovaVersionUpdatePlan -Label $label
+        $target = [System.IO.Path]::GetFileName($before.ProjectJSON)
         $action = "Update module version using $label release label"
+        $nextVersion = $versionUpdatePlan.NewVersion.ToString()
 
         if ( $PSCmdlet.ShouldProcess($target, $action)) {
-            Set-NovaModuleVersion -Label $label
-            $after = Get-NovaProjectInfo
-        }
-        else {
-            $after = $before
+            Set-NovaModuleVersion -Label $label -Confirm:$false
         }
     }
     finally {
@@ -28,7 +27,7 @@ function Update-NovaModuleVersion {
 
     return [pscustomobject]@{
         PreviousVersion = $before.Version
-        NewVersion = $after.Version
+        NewVersion = $nextVersion
         Label = $label
         CommitCount = $commitMessages.Count
     }

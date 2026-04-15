@@ -388,20 +388,21 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
 
     It 'Update-NovaModuleVersion updates the version when the change is approved' {
         InModuleScope $script:moduleName {
-            $script:getNovaProjectInfoCallCount = 0
             $projectRoot = Join-Path $TestDrive 'project-root'
             New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
 
             Mock Get-NovaProjectInfo {
-                $script:getNovaProjectInfoCallCount += 1
-                if ($script:getNovaProjectInfoCallCount -eq 1) {
-                    return [pscustomobject]@{Version = '1.2.3'; ProjectJSON = (Join-Path $projectRoot 'project.json')}
-                }
-
-                return [pscustomobject]@{Version = '1.2.4'; ProjectJSON = (Join-Path $projectRoot 'project.json')}
+                [pscustomobject]@{Version = '1.2.3'; ProjectJSON = (Join-Path $projectRoot 'project.json')}
             }
             Mock Get-GitCommitMessageForVersionBump {@('fix: patch bug')}
             Mock Get-VersionLabelFromCommitSet {'Patch'}
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    ProjectFile = (Join-Path $projectRoot 'project.json')
+                    CurrentVersion = [semver]'1.2.3'
+                    NewVersion = [semver]'1.2.4'
+                }
+            }
             Mock Set-NovaModuleVersion {}
 
             $result = Update-NovaModuleVersion -Path $projectRoot -Confirm:$false
@@ -410,7 +411,7 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             $result.NewVersion | Should -Be '1.2.4'
             $result.Label | Should -Be 'Patch'
             $result.CommitCount | Should -Be 1
-            Assert-MockCalled Set-NovaModuleVersion -Times 1 -ParameterFilter {$Label -eq 'Patch'}
+            Assert-MockCalled Set-NovaModuleVersion -Times 1 -ParameterFilter {$Label -eq 'Patch' -and $Confirm -eq $false}
         }
     }
 

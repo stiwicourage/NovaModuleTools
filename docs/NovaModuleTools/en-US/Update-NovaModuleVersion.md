@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/14/2026
+ms.date: 04/15/2026
 PlatyPS schema version: 2024-05-01
 title: Update-NovaModuleVersion
 ---
@@ -26,7 +26,8 @@ PS> Update-NovaModuleVersion [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonPar
 ## DESCRIPTION
 
 `Update-NovaModuleVersion` reads the current project version from `project.json`, collects Git commit messages from the
-project repository, chooses a semantic version bump label, and writes the updated version back to `project.json`.
+project repository, chooses a semantic version bump label, calculates the next semantic version, and writes the updated
+version back to `project.json`.
 
 The release label is inferred from the commit set:
 
@@ -38,7 +39,7 @@ When Git tags exist, only commits since the latest tag are considered. If the fo
 command falls back to a patch bump.
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
-calculated release label and target `project.json` without changing the stored version.
+calculated release label and the exact next version without changing the stored version.
 
 ## EXAMPLES
 
@@ -62,9 +63,15 @@ Updates the version for the project rooted at `./example`.
 
 ```powershell
 PS> Update-NovaModuleVersion -WhatIf
+
+What if: Performing the operation "Update module version using Minor release label" on target "project.json".
+
+PreviousVersion NewVersion Label CommitCount
+--------------- ---------- ----- -----------
+1.12.0          1.13.0     Minor          12
 ```
 
-Shows the planned version update without modifying `project.json`.
+Shows the calculated version update without modifying `project.json`.
 
 ## PARAMETERS
 
