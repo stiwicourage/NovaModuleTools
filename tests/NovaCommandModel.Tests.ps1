@@ -630,6 +630,65 @@ title: Invoke-NovaBuild
         }
     }
 
+    It 'Update-NovaModuleVersion -WhatIf falls back to a Patch preview when the project is not a git repository' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'no-git-bump-project'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    Version = '1.0.0'
+                    ProjectJSON = (Join-Path $projectRoot 'project.json')
+                }
+            }
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    ProjectFile = (Join-Path $projectRoot 'project.json')
+                    CurrentVersion = [semver]'1.0.0'
+                    NewVersion = [semver]'1.0.1'
+                }
+            }
+            Mock Set-NovaModuleVersion {}
+
+            $result = Update-NovaModuleVersion -Path $projectRoot -WhatIf
+
+            $result.PreviousVersion | Should -Be '1.0.0'
+            $result.NewVersion | Should -Be '1.0.1'
+            $result.Label | Should -Be 'Patch'
+            $result.CommitCount | Should -Be 0
+            Assert-MockCalled Set-NovaModuleVersion -Times 0
+        }
+    }
+
+    It 'Update-NovaModuleVersion -WhatIf throws a clear error when the repository has no commits yet' {
+        if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+            Set-ItResult -Skipped -Because 'git is not available in this environment'
+            return
+        }
+
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'empty-git-bump-project'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            & git -C $projectRoot init --quiet | Out-Null
+            & git -C $projectRoot config user.name 'NovaModuleTools Tests' | Out-Null
+            & git -C $projectRoot config user.email 'tests@example.invalid' | Out-Null
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    Version = '1.0.0'
+                    ProjectJSON = (Join-Path $projectRoot 'project.json')
+                }
+            }
+            Mock Get-NovaVersionUpdatePlan {throw 'should not calculate a version plan'}
+            Mock Set-NovaModuleVersion {throw 'should not write project.json'}
+
+            {Update-NovaModuleVersion -Path $projectRoot -WhatIf} | Should -Throw 'Cannot bump version because the repository has no commits yet. Create an initial commit first.'
+
+            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 0
+            Assert-MockCalled Set-NovaModuleVersion -Times 0
+        }
+    }
+
     It 'Update-NovaModuleVersion returns no output when the CLI confirm prompt declines the bump' {
         InModuleScope $script:moduleName {
             $originalCliConfirm = $env:NOVA_CLI_CONFIRM_BUMP

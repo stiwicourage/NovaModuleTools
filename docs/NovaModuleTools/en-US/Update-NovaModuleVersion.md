@@ -38,6 +38,9 @@ The release label is inferred from the commit set:
 When Git tags exist, only commits since the latest tag are considered. If the folder is not a Git repository, the
 command falls back to a patch bump.
 
+If the repository exists but has no commits yet, the command stops with: `Cannot bump version because the repository
+has no commits yet. Create an initial commit first.`
+
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
 calculated release label and the exact next version without changing the stored version.
 
