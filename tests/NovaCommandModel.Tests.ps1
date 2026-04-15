@@ -578,6 +578,25 @@ title: Invoke-NovaBuild
         $publishSource.IndexOf('Resolve-NovaPublishInvocation') | Should -BeLessThan $publishSource.IndexOf('Invoke-NovaBuild')
     }
 
+    It 'Get-NovaCliConfirmDecision approves Yes and Yes to All, and cancels No, No to All, and Suspend' {
+        InModuleScope $script:moduleName {
+            foreach ($testCase in @(
+                @{Key = 'Y'; Expected = $true},
+                @{Key = 'A'; Expected = $true},
+                @{Key = 'N'; Expected = $false},
+                @{Key = 'L'; Expected = $false},
+                @{Key = 'S'; Expected = $false},
+                @{Key = 'y'; Expected = $true},
+                @{Key = 'n'; Expected = $false}
+            )) {
+                $result = Get-NovaCliConfirmDecision -KeyChar ([char]$testCase.Key)
+                $result | Should -Be $testCase.Expected
+            }
+
+            Get-NovaCliConfirmDecision -KeyChar ([char]'?') | Should -BeNullOrEmpty
+        }
+    }
+
     It 'Update-NovaModuleVersion -WhatIf previews the calculated next version without persisting it' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {
@@ -602,6 +621,47 @@ title: Invoke-NovaBuild
             $result.PreviousVersion | Should -Be '1.0.0'
             $result.NewVersion | Should -Be '1.1.0'
             $result.Label | Should -Be 'Minor'
+            Assert-MockCalled Set-NovaModuleVersion -Times 0
+        }
+    }
+
+    It 'Update-NovaModuleVersion returns no output when the CLI confirm prompt declines the bump' {
+        InModuleScope $script:moduleName {
+            $originalCliConfirm = $env:NOVA_CLI_CONFIRM_BUMP
+            $env:NOVA_CLI_CONFIRM_BUMP = '1'
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    Version = '1.0.0'
+                    ProjectJSON = '/tmp/project.json'
+                }
+            }
+            Mock Get-GitCommitMessageForVersionBump {@('feat: add change')}
+            Mock Get-VersionLabelFromCommitSet {'Minor'}
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    ProjectFile = '/tmp/project.json'
+                    CurrentVersion = [semver]'1.0.0'
+                    NewVersion = [semver]'1.1.0'
+                }
+            }
+            Mock Confirm-NovaCliBumpAction {$false}
+            Mock Set-NovaModuleVersion {}
+
+            try {
+                $result = Update-NovaModuleVersion -Path (Get-Location).Path
+            }
+            finally {
+                if ($null -eq $originalCliConfirm) {
+                    Remove-Item Env:NOVA_CLI_CONFIRM_BUMP -ErrorAction SilentlyContinue
+                }
+                else {
+                    $env:NOVA_CLI_CONFIRM_BUMP = $originalCliConfirm
+                }
+            }
+
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled Confirm-NovaCliBumpAction -Times 1
             Assert-MockCalled Set-NovaModuleVersion -Times 0
         }
     }

@@ -499,6 +499,10 @@ Use `nova bump -WhatIf` when you want to preview the exact next version before w
 `PreviousVersion`, `NewVersion`, `Label`, and `CommitCount` information as a real bump, but it leaves `project.json`
 unchanged.
 
+Use `nova bump -Confirm` when you want an interactive CLI confirmation before applying the version bump. If you decline
+or suspend that confirmation, NovaModuleTools returns to your shell without changing `project.json` and without printing
+the version result table.
+
 ## Advanced - Use it in Github Actions
 > [!TIP]
 > This repository uses Github actions to run tests and publish to PowerShell Gallery, use it as reference.

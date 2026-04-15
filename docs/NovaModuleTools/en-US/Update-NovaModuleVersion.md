@@ -41,6 +41,11 @@ command falls back to a patch bump.
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
 calculated release label and the exact next version without changing the stored version.
 
+From the standalone `nova` launcher on macOS/Linux, `nova bump -Confirm` uses a CLI-friendly confirmation prompt. If you
+choose `No`, `No to All`, or `Suspend`, the command exits without changing `project.json` and without returning a
+version
+result object.
+
 ## EXAMPLES
 
 ### EXAMPLE 1

@@ -48,6 +48,8 @@ $invokeParameters = @{
     Arguments = @($Arguments)
 }
 
+$originalCliConfirmSetting = $env:NOVA_CLI_CONFIRM_BUMP
+
 if ($forwardVerbose) {
     $invokeParameters.Verbose = $true
 }
@@ -56,8 +58,21 @@ if ($forwardWhatIf) {
     $invokeParameters.WhatIf = $true
 }
 
-if ($forwardConfirm) {
+if ($forwardConfirm -and $Command -eq 'bump') {
+    $env:NOVA_CLI_CONFIRM_BUMP = '1'
+}
+elseif ($forwardConfirm) {
     $invokeParameters.Confirm = $true
 }
 
-Invoke-NovaCli @invokeParameters
+try {
+    Invoke-NovaCli @invokeParameters
+}
+finally {
+    if ($null -eq $originalCliConfirmSetting) {
+        Remove-Item Env:NOVA_CLI_CONFIRM_BUMP -ErrorAction SilentlyContinue
+    }
+    else {
+        $env:NOVA_CLI_CONFIRM_BUMP = $originalCliConfirmSetting
+    }
+}
