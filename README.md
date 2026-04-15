@@ -72,4 +72,7 @@ For structure and ownership details, use
 
 This project is licensed under the MIT License. See LICENSE for details.
 
+[BadgeIOCount]: https://img.shields.io/powershellgallery/dt/NovaModuleTools?label=NovaModuleTools%40PowerShell%20Gallery
+
+[PSGalleryLink]: https://www.powershellgallery.com/packages/NovaModuleTools/
 [WorkFlowStatus]: https://img.shields.io/github/actions/workflow/status/stiwicourage/NovaModuleTools/Tests.yml
