@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>NovaModuleTools — Advanced Usage</title>
+    <meta content="Go beyond the default NovaModuleTools workflow with CI/CD integration, versioning expectations, and project.json customization."
+          name="description">
+    <link href="./assets/site.css" rel="stylesheet">
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">NovaModuleTools</a>
+        <nav aria-label="Primary" class="site-nav">
+            <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+            <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+            <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
+            <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+            <a class="site-nav__link site-nav__link--active" href="./advanced.html">Advanced</a>
+        </nav>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="guide-hero">
+        <p class="eyebrow">Advanced usage</p>
+        <h1>Adapt NovaModuleTools to larger workflows and more opinionated module projects</h1>
+        <p class="lead">Use these advanced options when you want to integrate NovaModuleTools into CI/CD or customize
+            how projects are built and tested.</p>
+    </section>
+
+    <section class="guide-content guide-content--single">
+        <section class="content-section">
+            <h2>Use the CLI or the PowerShell cmdlets directly</h2>
+            <p>Every core workflow is available both as a PowerShell command or <code>nova</code> alias, and through the
+                <code>nova</code> CLI surface. Choose the interface that fits your environment best.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Versioning behavior depends on commit history</h2>
+            <p><code>nova bump</code> reads Git history, not just <code>project.json</code>. If you want predictable
+                release automation, keep your commit messages intentional and make sure release jobs run in repositories
+                with full history and tags available.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Useful <code>project.json</code> settings</h2>
+            <ul class="plain-list">
+                <li><strong><code>BuildRecursiveFolders</code></strong> — switch recursive discovery on or off for
+                    classes, private helpers, and tests
+                </li>
+                <li><strong><code>SetSourcePath</code></strong> — write source markers into the generated module to help
+                    debug parser and runtime issues
+                </li>
+                <li><strong><code>Preamble</code></strong> — add module-level setup lines before generated source
+                    content
+                </li>
+                <li><strong><code>FailOnDuplicateFunctionNames</code></strong> — fail the build if duplicate top-level
+                    function names are emitted
+                </li>
+                <li><strong><code>CopyResourcesToModuleRoot</code></strong> — copy resources directly into the built
+                    module root instead of a nested <code>resources/</code> folder
+                </li>
+            </ul>
+        </section>
+
+        <section class="content-section">
+            <h2>CI/CD integration</h2>
+            <p>NovaModuleTools works well in build pipelines that follow the normal order:</p>
+            <ol class="plain-list plain-list--ordered">
+                <li>build the module</li>
+                <li>run tests</li>
+                <li>publish artifacts or release</li>
+            </ol>
+            <p>If your CI system needs standard report formats, generate JUnit and Cobertura outputs as part of the
+                NovaModuleTools workflow rather than reinventing test-report conversion yourself.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Use local publish before repository publish</h2>
+            <p>When you change manifest, resources, or module loading behavior, validate with local publish first:</p>
+            <pre><code>nova publish -local</code></pre>
+            <p>This helps catch packaging issues before a real repository publish or release run.</p>
+        </section>
+    </section>
+</main>
+</body>
+</html>
+

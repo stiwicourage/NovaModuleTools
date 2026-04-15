@@ -21,6 +21,14 @@ If you want to contribute, please work in the same style as the project:
     - no dead code left behind
 - Follow the Boy Scout Rule: leave the codebase a little cleaner than you found it.
 
+Before making larger changes, read the contributor docs in:
+
+- `README.md`
+- `developer-docs/README.md`
+- `developer-docs/development-workflow.md`
+- `developer-docs/repository-structure.md`
+- `developer-docs/ci-cd-and-release.md`
+
 **Before opening a pull request, please run the local quality flow from the repository root:**
 
 ```powershell title="run.ps1"
@@ -42,9 +50,15 @@ Please also make sure your contribution includes the right kind of follow-up wor
 
 - add or update tests when behavior changes
 - update help files in `docs/` when a command changes
-- update `README.md` when usage, workflow, examples, or contributor expectations change
+- update `README.md` and `developer-docs/` when repository workflow, architecture, or contributor expectations change
 - update `CHANGELOG.md` when the change is relevant to users, maintainers, or future contributors
 - keep `src/resources/example/` useful if your change affects the real-world project layout or workflow
+
+Documentation ownership is intentionally split:
+
+- GitHub repository docs are for contributors and maintainers
+- GitHub Pages content under `docs/*.html` is for end users
+- command-help markdown under `docs/NovaModuleTools/en-US/` is build input, not general prose documentation
 
 When updating documentation, write it for humans first. A reader should quickly understand:
 
