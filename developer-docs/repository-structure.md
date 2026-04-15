@@ -77,11 +77,11 @@ Shared test utilities live alongside the tests, for example:
 
 ## Documentation layout
 
-### [`README.md`](../README.md) and [`CONTRIBUTING.md`](../CONTRIBUTING.md)
+### [README.md](../README.md) and [CONTRIBUTING.md](../CONTRIBUTING.md)
 
 These are the top-level GitHub entry points for contributors and maintainers.
 
-### [`developer-docs/`](./README.md)
+### [developer-docs/](./README.md)
 
 Structured contributor documentation for repository workflows, architecture, and CI/release behavior.
 

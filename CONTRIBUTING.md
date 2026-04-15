@@ -23,11 +23,11 @@ If you want to contribute, please work in the same style as the project:
 
 Before making larger changes, read the contributor docs in:
 
-- [`README.md`](./README.md)
-- [`developer-docs/README.md`](./developer-docs/README.md)
-- [`developer-docs/development-workflow.md`](./developer-docs/development-workflow.md)
-- [`developer-docs/repository-structure.md`](./developer-docs/repository-structure.md)
-- [`developer-docs/ci-cd-and-release.md`](./developer-docs/ci-cd-and-release.md)
+- [README.md](./README.md)
+- [developer-docs/README.md](./developer-docs/README.md)
+- [developer-docs/development-workflow.md](./developer-docs/development-workflow.md)
+- [developer-docs/repository-structure.md](./developer-docs/repository-structure.md)
+- [developer-docs/ci-cd-and-release.md](./developer-docs/ci-cd-and-release.md)
 
 **Before opening a pull request, please run the local quality flow from the repository root:**
 

@@ -14,14 +14,14 @@ Use these documents when you are changing the module, tests, workflows, or relea
 
 ## Start here
 
-- [`../README.md`](../README.md) — contributor entry point and local workflow summary
-- [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — contribution expectations and review checklist
+- [../README.md](../README.md) — contributor entry point and local workflow summary
+- [../CONTRIBUTING.md](../CONTRIBUTING.md) — contribution expectations and review checklist
 
 ## Developer guides
 
-- [`development-workflow.md`](./development-workflow.md) — local setup, build, test, reload, and quality loop
-- [`repository-structure.md`](./repository-structure.md) — top-level architecture and ownership of major folders
-- [`ci-cd-and-release.md`](./ci-cd-and-release.md) — CI jobs, release automation, semantic-release, and publish flow
+- [development-workflow.md](./development-workflow.md) — local setup, build, test, reload, and quality loop
+- [repository-structure.md](./repository-structure.md) — top-level architecture and ownership of major folders
+- [ci-cd-and-release.md](./ci-cd-and-release.md) — CI jobs, release automation, semantic-release, and publish flow
   responsibilities
 
 ## Documentation ownership rules
