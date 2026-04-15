@@ -508,6 +508,10 @@ Use `nova bump -WhatIf` when you want to preview the exact next version before w
 `PreviousVersion`, `NewVersion`, `Label`, and `CommitCount` information as a real bump, but it leaves `project.json`
 unchanged.
 
+If the current folder is not a Git repository, NovaModuleTools falls back to a patch bump. If the repository exists but
+has no commits yet, `nova bump` stops with: `Cannot bump version because the repository has no commits yet. Create an
+initial commit first.`
+
 Use `nova bump -Confirm` when you want an interactive CLI confirmation before applying the version bump. If you decline
 or suspend that confirmation, NovaModuleTools returns to your shell without changing `project.json` and without printing
 the version result table.

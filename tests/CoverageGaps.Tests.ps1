@@ -955,6 +955,45 @@ function Second {
         }
     }
 
+    It 'Get-NovaVersionLabelForBump falls back to Patch when the project is not a git repository' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'no-git-project-for-label'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+
+            Get-NovaVersionLabelForBump -ProjectRoot $projectRoot | Should -Be 'Patch'
+        }
+    }
+
+    It 'Get-NovaVersionLabelForBump throws a clear error when the repository has no commits yet' {
+        if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+            Set-ItResult -Skipped -Because 'git is not available in this environment'
+            return
+        }
+
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'empty-git-project'
+            Initialize-TestGitRepository -Path $projectRoot
+
+            {Get-NovaVersionLabelForBump -ProjectRoot $projectRoot} | Should -Throw 'Cannot bump version because the repository has no commits yet. Create an initial commit first.'
+        }
+    }
+
+    It 'Get-NovaVersionLabelForBump throws when there are no commits since the latest tag' {
+        if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+            Set-ItResult -Skipped -Because 'git is not available in this environment'
+            return
+        }
+
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'tagged-head-git-project'
+            Initialize-TestGitRepository -Path $projectRoot
+            New-TestGitCommit -RepositoryPath $projectRoot -Message 'feat: initial release' -File @{Name = 'first.txt'; Content = 'first'}
+            New-TestGitTag -RepositoryPath $projectRoot -TagName 'v1.0.0'
+
+            {Get-NovaVersionLabelForBump -ProjectRoot $projectRoot} | Should -Throw 'Cannot bump version because there are no commits since the latest tag.'
+        }
+    }
+
     It 'Get-GitCommitMessageForVersionBump returns commits since the latest tag when tags exist' {
         if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
             Set-ItResult -Skipped -Because 'git is not available in this environment'

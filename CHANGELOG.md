@@ -49,6 +49,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Fix `nova bump -WhatIf` so it previews the actual calculated next version instead of echoing the current version.
 - Fix `nova bump -Confirm` so cancelled or suspended CLI confirmations return cleanly without opening an interactive
   PowerShell prompt or printing a misleading version result.
+- Fix `nova bump` and `nova bump -WhatIf` so repositories with no commits yet now fail with a clear initial-commit
+  message instead of an empty-array parameter binding error.
 - Fix standalone CLI `-WhatIf` handling so `build`, `test`, `bump`, `publish`, and `release` forward preview mode
   correctly, while `nova init -WhatIf` now fails with a clear CLI error instead of being treated as a path.
 - Fix `nova init -Example` so it keeps the full example scaffold, skips the Pester enable/disable prompt, preserves the
