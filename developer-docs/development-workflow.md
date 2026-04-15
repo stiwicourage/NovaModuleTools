@@ -43,6 +43,32 @@ Publish-NovaModule -Local
 Import-Module ./dist/NovaModuleTools -Force
 ```
 
+```powershell title="reload.ps1"
+#reload.ps1
+Set-Location $PSScriptRoot
+
+$projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
+$distModuleDir = Join-Path $PSScriptRoot "dist/$projectName"
+$distManifestPath = Join-Path $distModuleDir "$projectName.psd1"
+
+Get-Module $projectName -All | Remove-Module -Force -ErrorAction SilentlyContinue
+Invoke-NovaBuild
+Get-Module $projectName -All | Remove-Module -Force -ErrorAction SilentlyContinue
+$module = Import-Module $distManifestPath -Force -PassThru
+
+& $module {
+    Publish-NovaModule -Local
+}
+
+Get-Module $projectName -All | Remove-Module -Force -ErrorAction SilentlyContinue
+$module = Import-Module $distManifestPath -Force -PassThru
+
+#Only use Install-NovaCli for macOS/Linux users.
+#& $module {
+#    Install-NovaCli -Force
+#}
+```
+
 ## Run tests
 
 Run the repository test workflow from the repository root:

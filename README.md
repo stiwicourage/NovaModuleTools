@@ -84,7 +84,7 @@ High-level layout:
 
 ```text
 .
-├── .github/                     # workflows
+├── .github/                    # workflows
 ├── developer-docs/             # contributor-focused documentation
 ├── docs/                       # GitHub Pages HTML and PlatyPS command-help markdown
 ├── scripts/                    # build, CI, and release automation
@@ -104,6 +104,7 @@ For a deeper breakdown of repository responsibilities and architectural boundari
 Recommended contributor loop from the repository root:
 
 ```powershell
+#run.ps1
 Set-Location $PSScriptRoot
 
 $projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName

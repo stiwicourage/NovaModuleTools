@@ -6,7 +6,7 @@ This guide explains how the NovaModuleTools repository is organized and what eac
 
 ```text
 .
-├── .github/                     # GitHub Actions workflows
+├── .github/                    # GitHub Actions workflows
 ├── developer-docs/             # contributor-focused documentation
 ├── docs/                       # GitHub Pages HTML + PlatyPS help markdown
 ├── scripts/                    # build, CI, and release automation
