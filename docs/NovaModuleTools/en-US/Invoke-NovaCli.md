@@ -39,6 +39,9 @@ Mutating routed commands (`build`, `test`, `bump`, `publish`, and `release`) for
 `-WhatIf`/`-Confirm` to the underlying cmdlet. That means `nova build -WhatIf` and
 `Invoke-NovaCli -Command build -WhatIf` both preview the build instead of running it.
 
+For the standalone launcher, `nova bump -Confirm` uses a CLI-friendly confirmation prompt. Declined or suspended choices
+cancel the bump cleanly and return control to the shell without printing a version result.
+
 `nova init` remains interactive and expects only an optional path argument. For that reason, the CLI rejects
 `nova init -WhatIf` with a clear error instead of treating `-WhatIf` as a path.
 

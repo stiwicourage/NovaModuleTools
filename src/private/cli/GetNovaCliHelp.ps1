@@ -23,7 +23,7 @@ global options
    --version  Show the installed NovaModuleTools module name and version
    -Verbose   Show verbose output for the routed PowerShell command
    -WhatIf    Preview build, test, bump, publish, and release without changing files
-   -Confirm   Request confirmation before mutating routed commands
+   -Confirm   Request confirmation before mutating routed commands; nova bump cancels cleanly on No/No to All/Suspend
 
 Examples:
    nova init ~/Work
