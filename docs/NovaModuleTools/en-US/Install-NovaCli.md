@@ -20,7 +20,7 @@ Installs the bundled `nova` launcher so it can be run directly from zsh/bash on 
 ### __AllParameterSets
 
 ```powershell
-Install-NovaCli [[-DestinationDirectory] <string>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Install-NovaCli [[-DestinationDirectory] <string>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

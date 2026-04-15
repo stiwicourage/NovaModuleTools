@@ -20,7 +20,7 @@ Provides the command backend for the `nova` alias and a more user-friendly CLI e
 ### __AllParameterSets
 
 ```powershell
-Invoke-NovaCli [[-Command] <string>] [[-Arguments] <string[]>] [<CommonParameters>]
+PS> Invoke-NovaCli [[-Command] <string>] [[-Arguments] <string[]>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -35,8 +35,13 @@ It dispatches high-level commands such as `nova info`, `nova version`, `nova --v
 Use `Invoke-NovaCli` when you need a scriptable PowerShell command entrypoint. Use `nova` when you want the
 user-focused CLI experience.
 
+Mutating routed commands (`build`, `test`, `init`, `bump`, `publish`, and `release`) forward PowerShell
+`-WhatIf`/`-Confirm` to the underlying cmdlet. That means `nova build -WhatIf` and
+`Invoke-NovaCli -Command build -WhatIf` both preview the build instead of running it.
+
 Inside an imported PowerShell session, `nova` is available through the cmdlet alias. To make `nova` available directly
-from zsh/bash on macOS or Linux, install the launcher once with `Install-NovaCli`.
+from zsh/bash on macOS or Linux, install the launcher once with `Install-NovaCli`. The standalone launcher also forwards
+`-Verbose`, `-WhatIf`, and `-Confirm` for mutating commands.
 
 ## EXAMPLES
 
@@ -90,6 +95,14 @@ PS> Invoke-NovaCli -Command build
 
 Shows the equivalent scripted PowerShell form behind `nova build`.
 
+### EXAMPLE 7
+
+```powershell
+PS> Invoke-NovaCli -Command publish -Arguments @('-local') -WhatIf
+```
+
+Previews the routed local publish flow without rebuilding, testing, or copying the module.
+
 ## PARAMETERS
 
 ### -Command
@@ -140,7 +153,7 @@ HelpMessage: ''
 
 This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`, `-ErrorVariable`, `-InformationAction`,
 `-InformationVariable`, `-OutBuffer`, `-OutVariable`, `-PipelineVariable`, `-ProgressAction`, `-Verbose`,
-`-WarningAction`, and `-WarningVariable`.
+`-WarningAction`, `-WarningVariable`, `-WhatIf`, and `-Confirm`.
 
 ## INPUTS
 
@@ -164,6 +177,9 @@ For interactive use, prefer the `nova` alias.
 
 Use `Invoke-NovaCli` directly when you need the underlying PowerShell command in scripts, tests, or command dispatch
 implementations.
+
+`Invoke-NovaCli` uses `SupportsShouldProcess` to surface native `-WhatIf` and `-Confirm`, then forwards those switches
+only to mutating subcommands.
 
 ## RELATED LINKS
 

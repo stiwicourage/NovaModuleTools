@@ -20,7 +20,7 @@ Updates the project version in `project.json` based on git commit history.
 ### __AllParameterSets
 
 ```powershell
-Update-NovaModuleVersion [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Update-NovaModuleVersion [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

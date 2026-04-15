@@ -28,10 +28,10 @@ Examples:
    nova version
    nova build
    nova test
-   nova publish --local
-   nova publish --repository PSGallery --apikey <key>
+   nova publish -local
+   nova publish -repository PSGallery -apikey <key>
    nova bump
-   nova release --repository PSGallery --apikey <key>
+   nova release -repository PSGallery -apikey <key>
 
 After installing the module on macOS/Linux, run Install-NovaCli once if you want
 the standalone 'nova' command available from zsh/bash.

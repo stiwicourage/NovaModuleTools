@@ -66,8 +66,8 @@ Builds, tests, and publishes the module to `PSGallery`.
 
 ### EXAMPLE 4
 
-```powershell
-nova publish --repository PSGallery --apikey $env:PSGALLERY_API
+```bash
+nova publish -repository PSGallery -apikey $PSGALLERY_API
 ```
 
 Runs the same publish flow through the `nova` CLI.

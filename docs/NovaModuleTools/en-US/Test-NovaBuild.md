@@ -20,7 +20,7 @@ Runs Pester tests for the current NovaModuleTools project.
 ### __AllParameterSets
 
 ```powershell
-Test-NovaBuild [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>] [[-OutputVerbosity] <string>]
+PS> Test-NovaBuild [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>] [[-OutputVerbosity] <string>]
  [[-OutputRenderMode] <string>] [<CommonParameters>]
 ```
 

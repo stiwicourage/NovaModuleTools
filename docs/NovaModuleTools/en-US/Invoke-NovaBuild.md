@@ -20,12 +20,15 @@ Builds the current NovaModuleTools project into a ready-to-import PowerShell mod
 ### __AllParameterSets
 
 ```powershell
-Invoke-NovaBuild [<CommonParameters>]
+PS> Invoke-NovaBuild [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
 `Invoke-NovaBuild` runs the NovaModuleTools build pipeline for the current project.
+
+This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
+build target without clearing `dist/` or generating new build output.
 
 The command:
 
@@ -59,13 +62,21 @@ PS> Invoke-NovaBuild -Verbose
 
 Builds the current project and writes verbose progress for the build workflow.
 
+### EXAMPLE 3
+
+```powershell
+PS> Invoke-NovaBuild -WhatIf
+```
+
+Previews the build action without resetting `dist/` or generating module output.
+
 ## PARAMETERS
 
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
 -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+-ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
@@ -83,6 +94,9 @@ This cmdlet does not emit an output object.
 ## NOTES
 
 Run this command from the project root so `project.json`, `src/`, `docs/`, and `tests/` resolve correctly.
+
+`Invoke-NovaBuild` uses `SupportsShouldProcess`, so `Get-Help Invoke-NovaBuild -Full` shows the native `-WhatIf` and
+`-Confirm` behavior.
 
 ## RELATED LINKS
 

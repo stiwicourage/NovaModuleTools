@@ -20,7 +20,7 @@ Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
 ### __AllParameterSets
 
 ```powershell
-Invoke-NovaRelease [[-PublishOption] <hashtable>] [[-Path] <string>] [<CommonParameters>]
+PS> Invoke-NovaRelease [[-PublishOption] <hashtable>] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -34,6 +34,9 @@ Invoke-NovaRelease [[-PublishOption] <hashtable>] [[-Path] <string>] [<CommonPar
 5. Publish via `Publish-NovaBuiltModule`
 
 The command changes location to `-Path` for execution and always restores the previous location.
+
+This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
+entire release workflow and resolved publish target without building, testing, versioning, or publishing.
 
 ## EXAMPLES
 
@@ -60,6 +63,14 @@ PS> Invoke-NovaRelease -Path ./example -PublishOption @{ Local = $true }
 ```
 
 Runs the release workflow from the project rooted at `./example`.
+
+### EXAMPLE 4
+
+```powershell
+PS> Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API} -WhatIf
+```
+
+Previews the release workflow and repository target without making changes.
 
 ## PARAMETERS
 
@@ -118,7 +129,7 @@ HelpMessage: ''
 
 This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`, `-ErrorVariable`, `-InformationAction`,
 `-InformationVariable`, `-OutBuffer`, `-OutVariable`, `-PipelineVariable`, `-ProgressAction`, `-Verbose`,
-`-WarningAction`, and `-WarningVariable`.
+`-WarningAction`, `-WarningVariable`, `-WhatIf`, and `-Confirm`.
 
 ## INPUTS
 
@@ -136,6 +147,9 @@ selected release label, and commit count.
 ## NOTES
 
 If build or tests fail, version bump and publish are not completed.
+
+`Invoke-NovaRelease` uses `SupportsShouldProcess`, so `Get-Help Invoke-NovaRelease -Full` surfaces native `-WhatIf`
+and `-Confirm` support.
 
 ## RELATED LINKS
 

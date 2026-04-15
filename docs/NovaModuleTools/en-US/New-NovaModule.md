@@ -20,7 +20,7 @@ Creates a new NovaModuleTools project scaffold through an interactive prompt flo
 ### __AllParameterSets
 
 ```powershell
-New-NovaModule [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> New-NovaModule [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
