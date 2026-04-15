@@ -25,15 +25,22 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Change `CopyResourcesToModuleRoot` to an optional project setting that defaults to `false`, and standardize the
   setting name across templates, tests, and docs.
 - Change `Publish-NovaModule` and `Invoke-NovaRelease` to resolve publish targets before running build and test steps.
+- Change publish and release orchestration to share the same resolved publish execution helper, keeping preview
+  forwarding and publish-target handling consistent.
 - Change the bundled `nova` launcher to ship as a packaged module resource instead of a repo-root helper file.
 - Change `nova version` and `nova --version` to include the component name alongside the version for clearer CLI output.
+- Change mutating commands to support consistent native `-WhatIf`/`-Confirm` behavior, including routed preview support
+  through `Invoke-NovaCli` and updated `Get-Help` examples.
 - Change CI, release, and contributor documentation to reflect the Nova workflow, refreshed command help, and GitHub
   comparison links.
 
 ### Fixed
 
+- Fix the internal CLI forwarding helper name so ScriptAnalyzer no longer reports a plural-noun cmdlet warning.
 - Fix the standalone macOS/Linux `nova` launcher so `nova build -Verbose` forwards the verbose flag to the underlying
   build command.
+- Fix standalone CLI `-WhatIf` handling so `build`, `test`, `bump`, `publish`, and `release` forward preview mode
+  correctly, while `nova init -WhatIf` now fails with a clear CLI error instead of being treated as a path.
 - Fix the CI helper flow so its second Pester pass reloads the freshly built `dist/` module during test discovery.
 - Fix `Get-NovaProjectInfo` so empty `project.json` files fail with a clear configuration error.
 - Fix `Invoke-CodeSceneAnalysis.ps1` so `-TriggerAnalysis` can run without `-CoveragePath`.

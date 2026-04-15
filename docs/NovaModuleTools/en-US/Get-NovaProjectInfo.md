@@ -20,7 +20,7 @@ Reads `project.json` and returns resolved NovaModuleTools project metadata.
 ### __AllParameterSets
 
 ```powershell
-Get-NovaProjectInfo [[-Path] <string>] [-Version] [<CommonParameters>]
+PS> Get-NovaProjectInfo [[-Path] <string>] [-Version] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

@@ -1,5 +1,5 @@
 function Publish-NovaModule {
-    [CmdletBinding(DefaultParameterSetName = 'Local')]
+    [CmdletBinding(DefaultParameterSetName = 'Local', SupportsShouldProcess = $true)]
     param(
         [Parameter(ParameterSetName = 'Local')]
         [switch]$Local,
@@ -12,34 +12,34 @@ function Publish-NovaModule {
     )
 
     $projectInfo = Get-NovaProjectInfo
-    $publishParams = @{ProjectInfo = $projectInfo}
+    $workflowParams = Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference
+    $publishInvocation = Resolve-NovaPublishInvocation -ProjectInfo $projectInfo -Repository $Repository -ModuleDirectoryPath $ModuleDirectoryPath -ApiKey $ApiKey
 
-    if ( $PSBoundParameters.ContainsKey('Repository')) {
-        $publishAction = (Get-Command -Name Publish-NovaBuiltModuleToRepository -CommandType Function).ScriptBlock
-        $publishParams.Repository = $Repository
-        $publishParams.ApiKey = $ApiKey
-    }
-    else {
-        $publishAction = (Get-Command -Name Publish-NovaBuiltModuleToDirectory -CommandType Function).ScriptBlock
-        if ($Local) {
-            Write-Verbose 'Using local publish mode.'
-        }
+    Write-NovaLocalWorkflowMode -WorkflowName publish -LocalRequested:$Local
+    Write-NovaResolvedLocalPublishTarget -PublishInvocation $publishInvocation
 
-        $resolvedModuleDirectoryPath = $ModuleDirectoryPath
-        if ( [string]::IsNullOrWhiteSpace($resolvedModuleDirectoryPath)) {
-            $resolvedModuleDirectoryPath = Get-LocalModulePath
-        }
+    $publishOperation = Get-NovaPublishWorkflowOperation -IsLocal:$publishInvocation.IsLocal
 
-        $publishParams.ModuleDirectoryPath = $resolvedModuleDirectoryPath
-        Write-Verbose "Using $resolvedModuleDirectoryPath as path"
+    $shouldRun = $PSCmdlet.ShouldProcess($publishInvocation.Target, $publishOperation)
+    if (-not $shouldRun -and -not $WhatIfPreference) {
+        return
     }
 
-    Invoke-NovaBuild
-    Test-NovaBuild
+    Invoke-NovaBuild @workflowParams
+    Test-NovaBuild @workflowParams
 
-    & $publishAction @publishParams
+    $publishParams = @{}
+    foreach ($parameterName in $publishInvocation.Parameters.Keys) {
+        $publishParams[$parameterName] = $publishInvocation.Parameters[$parameterName]
+    }
 
-    if (-not $PSBoundParameters.ContainsKey('Repository')) {
+    foreach ($parameterName in $workflowParams.Keys) {
+        $publishParams[$parameterName] = $workflowParams[$parameterName]
+    }
+
+    & $publishInvocation.Action @publishParams
+
+    if ($shouldRun -and $publishInvocation.IsLocal) {
         Write-Verbose 'Module copy to local path complete, Refresh session or import module manually'
     }
 }

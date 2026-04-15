@@ -1,5 +1,5 @@
 function Invoke-NovaRelease {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [hashtable]$PublishOption = @{},
         [string]$Path = (Get-Location).Path
@@ -8,42 +8,41 @@ function Invoke-NovaRelease {
     Push-Location -LiteralPath $Path
     try {
         $projectInfo = Get-NovaProjectInfo
-        $publishParams = @{ProjectInfo = $projectInfo}
-        $hasRepository = $PublishOption.ContainsKey('Repository')
+        $workflowParams = Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference
+        $repository = Get-NovaPublishOptionValue -PublishOption $PublishOption -Name Repository
+        $moduleDirectoryPath = Get-NovaPublishOptionValue -PublishOption $PublishOption -Name ModuleDirectoryPath
+        $apiKey = Get-NovaPublishOptionValue -PublishOption $PublishOption -Name ApiKey
+        $publishInvocation = Resolve-NovaPublishInvocation -ProjectInfo $projectInfo -Repository $repository -ModuleDirectoryPath $moduleDirectoryPath -ApiKey $apiKey
 
-        if ($hasRepository) {
-            $publishAction = (Get-Command -Name Publish-NovaBuiltModuleToRepository -CommandType Function).ScriptBlock
-            $publishParams.Repository = $PublishOption.Repository
-            $publishParams.ApiKey = $PublishOption.ApiKey
-        }
-        else {
-            $publishAction = (Get-Command -Name Publish-NovaBuiltModuleToDirectory -CommandType Function).ScriptBlock
-            $resolvedModuleDirectoryPath = if ( $PublishOption.ContainsKey('ModuleDirectoryPath')) {
-                $PublishOption.ModuleDirectoryPath
-            }
-            else {
-                $null
-            }
+        Write-NovaLocalWorkflowMode -WorkflowName release -LocalRequested:($PublishOption.ContainsKey('Local') -and $PublishOption.Local)
 
-            if ( [string]::IsNullOrWhiteSpace($resolvedModuleDirectoryPath)) {
-                $resolvedModuleDirectoryPath = Get-LocalModulePath
-            }
+        $releaseOperation = Get-NovaPublishWorkflowOperation -IsLocal:$publishInvocation.IsLocal -Release
 
-            $publishParams.ModuleDirectoryPath = $resolvedModuleDirectoryPath
+        $shouldRun = $PSCmdlet.ShouldProcess($publishInvocation.Target, $releaseOperation)
+        if (-not $shouldRun -and -not $WhatIfPreference) {
+            return
         }
 
-        if ($PublishOption.ContainsKey('Local') -and $PublishOption.Local) {
-            Write-Verbose 'Using local release mode.'
+        Invoke-NovaBuild @workflowParams
+        Test-NovaBuild @workflowParams
+        $versionResult = Update-NovaModuleVersion @workflowParams
+        Invoke-NovaBuild @workflowParams
+
+        $publishParams = @{}
+        foreach ($parameterName in $publishInvocation.Parameters.Keys) {
+            $publishParams[$parameterName] = $publishInvocation.Parameters[$parameterName]
         }
 
-        Invoke-NovaBuild
-        Test-NovaBuild
-        $versionResult = Update-NovaModuleVersion
-        Invoke-NovaBuild
+        foreach ($parameterName in $workflowParams.Keys) {
+            $publishParams[$parameterName] = $workflowParams[$parameterName]
+        }
 
-        & $publishAction @publishParams
+        & $publishInvocation.Action @publishParams
 
         return $versionResult
+    }
+    catch {
+        throw
     }
     finally {
         Pop-Location

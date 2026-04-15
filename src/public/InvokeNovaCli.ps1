@@ -1,5 +1,5 @@
 function Invoke-NovaCli {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [Alias('nova')]
     param(
         [Parameter(Position = 0)]
@@ -9,10 +9,8 @@ function Invoke-NovaCli {
         [string[]]$Arguments
     )
 
-    $commonParameters = @{}
-    if ( $PSBoundParameters.ContainsKey('Verbose')) {
-        $commonParameters.Verbose = $true
-    }
+    $commonParameters = Get-NovaCliForwardingParameterSet -BoundParameters $PSBoundParameters
+    $mutatingCommonParameters = Get-NovaCliForwardingParameterSet -BoundParameters $PSBoundParameters -IncludeShouldProcess
 
     $Arguments = ConvertTo-NovaCliArgumentArray -BoundParameters $PSBoundParameters -Arguments $Arguments
 
@@ -25,28 +23,32 @@ function Invoke-NovaCli {
             return Format-NovaCliVersionString -Name $projectInfo.ProjectName -Version $projectInfo.Version
         }
         'build' {
-            return Invoke-NovaBuild @commonParameters
+            return Invoke-NovaBuild @mutatingCommonParameters
         }
         'test' {
-            return Test-NovaBuild @commonParameters
+            return Test-NovaBuild @mutatingCommonParameters
         }
         'init' {
-            if ($Arguments.Count -gt 0) {
-                return New-NovaModule -Path $Arguments[0] @commonParameters
+            if ($WhatIfPreference) {
+                throw "The 'nova init' CLI command does not support -WhatIf. Run 'nova init [path]' without -WhatIf."
             }
 
-            return New-NovaModule @commonParameters
+            if ($Arguments.Count -gt 0) {
+                return New-NovaModule -Path $Arguments[0] @mutatingCommonParameters
+            }
+
+            return New-NovaModule @mutatingCommonParameters
         }
         'bump' {
-            return Update-NovaModuleVersion @commonParameters
+            return Update-NovaModuleVersion @mutatingCommonParameters
         }
         'publish' {
             $options = ConvertFrom-NovaCliArgument -Arguments $Arguments
-            return Publish-NovaModule @options @commonParameters
+            return Publish-NovaModule @options @mutatingCommonParameters
         }
         'release' {
             $options = ConvertFrom-NovaCliArgument -Arguments $Arguments
-            return Invoke-NovaRelease -PublishOption $options @commonParameters
+            return Invoke-NovaRelease -PublishOption $options @mutatingCommonParameters
         }
         '--version' {
             $moduleName = $ExecutionContext.SessionState.Module.Name

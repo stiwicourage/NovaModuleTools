@@ -1,5 +1,5 @@
 function Test-NovaBuild {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param (
         [string[]]$TagFilter,
         [string[]]$ExcludeTagFilter,
@@ -35,6 +35,10 @@ function Test-NovaBuild {
 
     $testResultPath = [System.IO.Path]::Join($data.ProjectRoot, 'artifacts', 'TestResults.xml')
     $testResultDirectory = Split-Path -Parent $testResultPath
+
+    if (-not $PSCmdlet.ShouldProcess($testResultPath, 'Run Pester tests and write test results')) {
+        return
+    }
 
     if (-not (Test-Path -LiteralPath $testResultDirectory)) {
         $null = New-Item -ItemType Directory -Path $testResultDirectory -Force

@@ -21,6 +21,9 @@ publish and release
 global options
    --help     Show this help message
    --version  Show the installed NovaModuleTools module name and version
+   -Verbose   Show verbose output for the routed PowerShell command
+   -WhatIf    Preview build, test, bump, publish, and release without changing files
+   -Confirm   Request confirmation before mutating routed commands
 
 Examples:
    nova init ~/Work
@@ -28,16 +31,20 @@ Examples:
    nova version
    nova build
    nova test
-   nova publish --local
-   nova publish --repository PSGallery --apikey <key>
+   nova bump -WhatIf
+   nova publish -local
+   nova publish -repository PSGallery -apikey <key>
    nova bump
-   nova release --repository PSGallery --apikey <key>
+   nova release -repository PSGallery -apikey <key>
 
 After installing the module on macOS/Linux, run Install-NovaCli once if you want
 the standalone 'nova' command available from zsh/bash.
 
 Use 'nova <command>' to run a command, or call the underlying PowerShell cmdlet directly
 when you want a scriptable function interface.
+
+Note: 'nova init' is interactive and expects only an optional path argument. The CLI does
+not support 'nova init -WhatIf'.
 '@
 
     return $help

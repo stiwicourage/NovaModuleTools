@@ -1,27 +1,11 @@
-function Get-TestFrontMatterValue {
+function Get-TestRegexMatchGroup {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$Content,
-        [Parameter(Mandatory)][string]$Key
+        [Parameter(Mandatory)][string]$Pattern
     )
 
-    $pattern = '(?m)^{0}:\s*(.+)$' -f [regex]::Escape($Key)
-    if ($Content -match $pattern) {
-        return $matches[1].Trim()
-    }
-
-    return $null
-}
-
-function Get-TestMarkdownSectionText {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$Content,
-        [Parameter(Mandatory)][string]$SectionName
-    )
-
-    $pattern = '(?ms)^##\s+{0}\s*$\r?\n+(.*?)(?=^##\s+|\z)' -f [regex]::Escape($SectionName)
-    if ($Content -match $pattern) {
+    if ($Content -match $Pattern) {
         return $matches[1].Trim()
     }
 
@@ -51,7 +35,8 @@ function Get-TestHelpLocaleFromMarkdownFiles {
     $Files |
             ForEach-Object {
                 $content = Get-Content -LiteralPath $_.FullName -Raw
-                Get-TestFrontMatterValue -Content $content -Key 'Locale'
+                $pattern = '(?m)^{0}:\s*(.+)$' -f [regex]::Escape('Locale')
+                Get-TestRegexMatchGroup -Content $content -Pattern $pattern
             } |
             Where-Object {-not [string]::IsNullOrWhiteSpace($_)} |
             Select-Object -Unique
@@ -75,20 +60,24 @@ function Get-CommandHelpActivationTestCase {
     )
 
     $content = Get-Content -LiteralPath $File.FullName -Raw
-    $documentType = Get-TestFrontMatterValue -Content $content -Key 'document type'
+    $documentTypePattern = '(?m)^{0}:\s*(.+)$' -f [regex]::Escape('document type')
+    $documentType = Get-TestRegexMatchGroup -Content $content -Pattern $documentTypePattern
     if ($documentType -ne 'cmdlet') {
         return $null
     }
 
-    $helpTarget = Get-TestFrontMatterValue -Content $content -Key 'title'
+    $titlePattern = '(?m)^{0}:\s*(.+)$' -f [regex]::Escape('title')
+    $helpTarget = Get-TestRegexMatchGroup -Content $content -Pattern $titlePattern
     if ( [string]::IsNullOrWhiteSpace($helpTarget)) {
         $helpTarget = [System.IO.Path]::GetFileNameWithoutExtension($File.Name)
     }
 
+    $synopsisPattern = '(?ms)^##\s+{0}\s*$\r?\n+(.*?)(?=^##\s+|\z)' -f [regex]::Escape('SYNOPSIS')
+
     return [pscustomobject]@{
         FileName = $File.Name
         HelpTarget = $helpTarget
-        ExpectedSynopsis = ConvertTo-TestNormalizedText -Text (Get-TestMarkdownSectionText -Content $content -SectionName 'SYNOPSIS')
+        ExpectedSynopsis = ConvertTo-TestNormalizedText -Text (Get-TestRegexMatchGroup -Content $content -Pattern $synopsisPattern)
     }
 }
 
@@ -106,4 +95,102 @@ function Get-CommandHelpActivationTestCases {
     )
 }
 
+function Initialize-TestNovaCliProjectLayout {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot
+    )
+
+    New-Item -ItemType Directory -Path $ProjectRoot -Force | Out-Null
+    foreach ($dir in @('src/public', 'src/private', 'src/classes', 'src/resources', 'tests', 'docs')) {
+        New-Item -ItemType Directory -Path (Join-Path $ProjectRoot $dir) -Force | Out-Null
+    }
+}
+
+function Write-TestNovaCliProjectJson {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot,
+        [Parameter(Mandatory)][string]$ProjectName,
+        [Parameter(Mandatory)][string]$ProjectGuid
+    )
+
+    @"
+{
+  "ProjectName": "$ProjectName",
+  "Description": "CLI test project",
+  "Version": "0.0.1",
+  "CopyResourcesToModuleRoot": false,
+  "Manifest": {
+    "Author": "Test",
+    "PowerShellHostVersion": "7.4",
+    "GUID": "$ProjectGuid",
+    "Tags": [],
+    "ProjectUri": ""
+  },
+  "Pester": {
+    "TestResult": {
+      "Enabled": true,
+      "OutputFormat": "NUnitXml"
+    },
+    "Output": {
+      "Verbosity": "Detailed"
+    }
+  }
+}
+"@ | Set-Content -LiteralPath (Join-Path $ProjectRoot 'project.json') -Encoding utf8
+}
+
+function Write-TestNovaCliPublicFunction {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot,
+        [Parameter(Mandatory)][string]$FunctionName
+    )
+
+    @"
+function $FunctionName {
+    'ok'
+}
+"@ | Set-Content -LiteralPath (Join-Path $ProjectRoot "src/public/$FunctionName.ps1") -Encoding utf8
+}
+
+function Initialize-TestGitRepository {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot,
+        [Parameter(Mandatory)][string]$CommitMessage
+    )
+
+    foreach ($command in @(
+        @('init'),
+        @('config', 'user.name', 'Nova CLI Test'),
+        @('config', 'user.email', 'nova-cli-test@example.invalid'),
+        @('add', '.'),
+        @('-c', 'commit.gpgSign=false', 'commit', '--no-verify', '-m', $CommitMessage, '--quiet')
+    )) {
+        $null = & git -C $ProjectRoot @command 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Git command failed: git -C $ProjectRoot $( $command -join ' ' )"
+        }
+    }
+}
+
+function Invoke-TestInstalledNovaCommand {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$InstalledPath,
+        [Parameter(Mandatory)][string]$WorkingDirectory,
+        [Parameter(Mandatory)][string[]]$Arguments
+    )
+
+    Push-Location $WorkingDirectory
+    try {
+        $output = & $InstalledPath @Arguments 2>&1
+        return [pscustomobject]@{Output = @($output); Text = @($output) -join [Environment]::NewLine; ExitCode = $LASTEXITCODE}
+    }
+    finally {
+        Pop-Location
+    }
+}
 

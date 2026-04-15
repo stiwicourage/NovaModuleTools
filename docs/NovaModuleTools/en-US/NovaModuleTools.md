@@ -22,39 +22,39 @@ manifest generation, external help generation, resource copying, and Pester-base
 
 ## NovaModuleTools Cmdlets
 
-### `Get-NovaProjectInfo`
+### `PS> Get-NovaProjectInfo`
 
 Reads `project.json` and returns resolved project metadata and paths.
 
-### `Install-NovaCli`
+### `PS> Install-NovaCli`
 
 Installs the bundled `nova` launcher into a user command directory on macOS or Linux.
 
-### `Invoke-NovaBuild`
+### `PS> Invoke-NovaBuild`
 
 Builds the current NovaModuleTools project into a ready-to-import PowerShell module.
 
-### `Invoke-NovaCli`
+### `PS> Invoke-NovaCli`
 
 Routes the `nova` CLI experience through a single PowerShell command entrypoint.
 
-### `Invoke-NovaRelease`
+### `PS> Invoke-NovaRelease`
 
 Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
 
-### `Test-NovaBuild`
+### `PS> Test-NovaBuild`
 
 Runs the project's Pester test workflow using settings from `project.json`.
 
-### `New-NovaModule`
+### `PS> New-NovaModule`
 
 Creates a new NovaModuleTools project scaffold through an interactive prompt flow.
 
-### `Publish-NovaModule`
+### `PS> Publish-NovaModule`
 
 Builds, tests, and publishes the current project either locally or to a repository.
 
-### `Update-NovaModuleVersion`
+### `PS> Update-NovaModuleVersion`
 
 Updates the project version in `project.json` based on the current git commit history.
 
