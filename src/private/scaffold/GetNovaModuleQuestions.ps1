@@ -1,8 +1,10 @@
 function Get-NovaModuleQuestionSet {
     [CmdletBinding()]
-    param()
+    param(
+        [switch]$Example
+    )
 
-    return [ordered]@{
+    $questions = [ordered]@{
         ProjectName = @{
             Caption = 'Module Name'
             Message = 'Enter Module name of your choice, should be single word with no special characters'
@@ -43,7 +45,10 @@ function Get-NovaModuleQuestionSet {
                 No = 'Skip Git initialization'
             }
         }
-        EnablePester = @{
+    }
+
+    if (-not $Example) {
+        $questions.EnablePester = @{
             Caption = 'Pester Testing'
             Message = 'Do you want to enable basic Pester Testing'
             Prompt = 'EnablePester'
@@ -54,6 +59,8 @@ function Get-NovaModuleQuestionSet {
             }
         }
     }
+
+    return $questions
 }
 
 

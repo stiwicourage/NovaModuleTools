@@ -59,10 +59,10 @@ Runs release flow and publishes to the specified repository.
 ### EXAMPLE 3
 
 ```powershell
-PS> Invoke-NovaRelease -Path ./example -PublishOption @{ Local = $true }
+PS> Invoke-NovaRelease -Path ./src/resources/example -PublishOption @{Local = $true}
 ```
 
-Runs the release workflow from the project rooted at `./example`.
+Runs the release workflow from the project rooted at `./src/resources/example`.
 
 ### EXAMPLE 4
 

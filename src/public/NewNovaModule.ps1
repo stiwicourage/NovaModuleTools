@@ -1,23 +1,21 @@
 function New-NovaModule {
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding(PositionalBinding = $false, SupportsShouldProcess = $true)]
     param (
-        [string]$Path = (Get-Location).Path
+        [string]$Path = (Get-Location).Path,
+        [switch]$Example
     )
 
-    if (-not (Test-Path $Path)) {
-        throw 'Not a valid path'
-    }
-
-    $questionSet = Get-NovaModuleQuestionSet
+    $basePath = Resolve-NovaModuleScaffoldBasePath -Path $Path
+    $questionSet = Get-NovaModuleQuestionSet -Example:$Example
     $answerSet = Read-NovaModuleAnswerSet -Questions $questionSet
-    $layout = Get-NovaModuleScaffoldLayout -Path $Path -ProjectName $answerSet.ProjectName
+    $layout = Get-NovaModuleScaffoldLayout -Path $basePath -ProjectName $answerSet.ProjectName
 
     if (-not $PSCmdlet.ShouldProcess($layout.Project, 'Create Nova module scaffold')) {
         return
     }
 
-    Initialize-NovaModuleScaffold -Answer $answerSet -Paths $layout
-    Write-NovaModuleProjectJson -Answer $answerSet -ProjectJsonFile $layout.ProjectJsonFile
+    Initialize-NovaModuleScaffold -Answer $answerSet -Paths $layout -Example:$Example
+    Write-NovaModuleProjectJson -Answer $answerSet -ProjectJsonFile $layout.ProjectJsonFile -Example:$Example
 
     'Module {0} scaffolding complete' -f $answerSet.ProjectName | Write-Message -color Green
 }

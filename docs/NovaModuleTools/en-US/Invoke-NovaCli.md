@@ -42,8 +42,9 @@ Mutating routed commands (`build`, `test`, `bump`, `publish`, and `release`) for
 For the standalone launcher, `nova bump -Confirm` uses a CLI-friendly confirmation prompt. Declined or suspended choices
 cancel the bump cleanly and return control to the shell without printing a version result.
 
-`nova init` remains interactive and expects only an optional path argument. For that reason, the CLI rejects
-`nova init -WhatIf` with a clear error instead of treating `-WhatIf` as a path.
+`nova init` remains interactive. Use `nova init -Path <path>` when you want an explicit destination and
+`nova init -Example` when you want the packaged example scaffold. The CLI rejects positional `nova init <path>` usage
+and also rejects `nova init -WhatIf` with a clear error.
 
 Inside an imported PowerShell session, `nova` is available through the cmdlet alias. To make `nova` available directly
 from zsh/bash on macOS or Linux, install the launcher once with `Install-NovaCli`. The standalone launcher also forwards
@@ -108,6 +109,22 @@ PS> Invoke-NovaCli -Command publish -Arguments @('-local') -WhatIf
 ```
 
 Previews the routed local publish flow without rebuilding, testing, or copying the module.
+
+### EXAMPLE 8
+
+```powershell
+PS> Invoke-NovaCli -Command init -Arguments @('-Path', '~/Work')
+```
+
+Runs the interactive init flow and creates the project under `~/Work`.
+
+### EXAMPLE 9
+
+```powershell
+PS> Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '~/Work')
+```
+
+Runs the interactive init flow, scaffolds from the packaged example project, and creates the project under `~/Work`.
 
 ## PARAMETERS
 

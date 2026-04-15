@@ -9,12 +9,15 @@ The format follows the principles from Keep a Changelog and the project aims to 
 ### Added
 
 - Add a standalone `nova` launcher for macOS/Linux through `Install-NovaCli`.
+- Add `New-NovaModule -Example` / `nova init -Example` to scaffold a full working project from the packaged example
+  template while still applying the metadata collected during the init prompt flow.
 - Add release and publish flow support for local module directories, repository publishing, and semantic-version label
   handling.
 - Add reusable CI helpers for ScriptAnalyzer, test reporting, coverage remapping, CodeScene upload, and
   `artifacts/coverage-low.txt` generation.
 - Add optional `Preamble` support in `project.json` to write module-level setup lines before generated source content.
-- Add a working `example/` project and a user-focused landing page under `docs/` to make onboarding easier.
+- Add a working packaged example project under `src/resources/example/` and a user-focused landing page under `docs/`
+  to make onboarding easier.
 - Add command help pages for `Invoke-NovaCli` and `Invoke-NovaRelease`.
 - Add regression coverage for release, publish, CLI install, prompt handling, project metadata, and CI coverage flows.
 
@@ -31,6 +34,10 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Change `nova version` and `nova --version` to include the component name alongside the version for clearer CLI output.
 - Change mutating commands to support consistent native `-WhatIf`/`-Confirm` behavior, including routed preview support
   through `Invoke-NovaCli` and updated `Get-Help` examples.
+- Change `New-NovaModule` / `nova init` so destination paths must be passed explicitly with `-Path`; positional
+  `nova init <path>` is now rejected with a clear migration hint.
+- Change the example project to use a single packaged source of truth under `src/resources/example/`, so `nova build`
+  includes it in the built module resources.
 - Change CI, release, and contributor documentation to reflect the Nova workflow, refreshed command help, and GitHub
   comparison links.
 
@@ -44,6 +51,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
   PowerShell prompt or printing a misleading version result.
 - Fix standalone CLI `-WhatIf` handling so `build`, `test`, `bump`, `publish`, and `release` forward preview mode
   correctly, while `nova init -WhatIf` now fails with a clear CLI error instead of being treated as a path.
+- Fix `nova init -Example` so it keeps the full example scaffold, skips the Pester enable/disable prompt, preserves the
+  example template settings, and only overrides the project metadata gathered during init.
 - Fix the CI helper flow so its second Pester pass reloads the freshly built `dist/` module during test discovery.
 - Fix `Get-NovaProjectInfo` so empty `project.json` files fail with a clear configuration error.
 - Fix `Invoke-CodeSceneAnalysis.ps1` so `-TriggerAnalysis` can run without `-CoveragePath`.
@@ -56,6 +65,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Fix manifest validation so unsupported `Manifest` keys fail fast instead of being silently tolerated.
 - Fix `Test-NovaBuild` so its Pester XML report is written to `artifacts/TestResults.xml`.
 - Fix ScriptAnalyzer and related test-support issues uncovered during the Nova standardization work.
+- Fix `Invoke-ScriptAnalyzerCI.ps1` so generated `dist/` and `artifacts/` content under the packaged example no longer
+  produces false-positive analyzer failures during repository quality runs.
 
 ### Removed
 

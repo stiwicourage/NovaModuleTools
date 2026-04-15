@@ -58,8 +58,9 @@ nova publish -local -WhatIf
 nova release -local -WhatIf
 ```
 
-`nova init` is intentionally still interactive and expects only an optional path argument, so the standalone CLI does
-not support `nova init -WhatIf`.
+`nova init` is intentionally still interactive, so the standalone CLI does not support `nova init -WhatIf`.
+Use `nova init -Path <path>` when you want an explicit destination, and use `nova init -Example` when you want the
+packaged working example instead of the minimal scaffold. Positional `nova init <path>` is no longer supported.
 
 For command-specific details and examples, run `Get-Help <CommandName> -Full` after importing the module.
 
@@ -107,8 +108,8 @@ docs
 ### Project JSON File
 
 The `project.json` file contains all the important details about your module and is used during the module build. It
-should comply with a specific schema. You can refer to the working example project in `example/`, especially
-`example/project.json` and `example/README.md`, for guidance.
+should comply with a specific schema. You can refer to the packaged working example project in `src/resources/example/`,
+especially `src/resources/example/project.json` and `src/resources/example/README.md`, for guidance.
 
 Run `New-NovaModule` (`nova init`) to generate the scaffolding; this will also create the `project.json` file.
 
@@ -259,7 +260,7 @@ If you want to run Pester tests, keep them in the `tests` folder. Otherwise, you
 
 ## Working example project
 
-This repository includes a real example project in `example/`.
+This repository includes a real example project in `src/resources/example/`.
 
 Use it when you want something you can build, test, import, and inspect right away instead of reading a minimal schema
 example in isolation.
@@ -274,17 +275,18 @@ The example demonstrates:
 
 Start here:
 
-- `example/README.md`
-- `example/project.json`
+- `src/resources/example/README.md`
+- `src/resources/example/project.json`
 
 Typical local flow from the repository root:
 
 ```powershell
 PS> Import-Module ./dist/NovaModuleTools -Force
-PS> Set-Location ./example
+PS> Set-Location ./src/resources/example
 PS> Invoke-NovaBuild
 PS> Test-NovaBuild
-PS> Import-Module ./dist/NovaExampleModule -Force
+PS> $project = Get-NovaProjectInfo
+PS> Import-Module $project.OutputModuleDir -Force
 PS> Get-ExampleGreeting
 ```
 
@@ -367,17 +369,27 @@ On Windows, keep using the `nova` alias inside `pwsh` after importing the module
 
 This interactive command helps you create the module structure. Easily create the skeleton of your module and get started with module building in no time.
 ```powershell
-## Create a module skeleton in Work Directory
-PS> New-NovaModule ~/Work
+## Create a module skeleton in the current directory
+PS> New-NovaModule
 
-## Same action through the nova CLI
-nova init ~/Work
+## Create a module skeleton under an explicit base path
+PS> New-NovaModule -Path ~/Work
+
+## Create a working example-based project under an explicit base path
+PS> New-NovaModule -Example -Path ~/Work
+
+## Same actions through the nova CLI
+nova init -Path ~/Work
+nova init -Example -Path ~/Work
 ```
+
+`New-NovaModule` and `nova init` now require `-Path` when you want to target a specific base directory.
+`nova init some/path` is intentionally rejected instead of being treated as path shorthand.
 
 ### A typical interactive session looks like this:
 
 ```text
-PS ~/Work> nova init
+PS ~/Work> nova init -Example
 
 Module Name
 Enter Module name of your choice, should be single word with no special characters
@@ -403,9 +415,6 @@ Git Version Control
 Do you want to enable version controlling using Git
 [Y] Enable Git  [N] Skip Git initialization: Y
 
-Pester Testing
-Do you want to enable basic Pester Testing
-[Y] Enable pester to perform testing  [N] Skip pester testing: Y
 
 Module NovaModuleTools scaffolding complete
 ```

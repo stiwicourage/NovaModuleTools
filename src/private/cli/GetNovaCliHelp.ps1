@@ -26,7 +26,10 @@ global options
    -Confirm   Request confirmation before mutating routed commands; nova bump cancels cleanly on No/No to All/Suspend
 
 Examples:
-   nova init ~/Work
+   nova init
+   nova init -Path ~/Work
+   nova init -Example
+   nova init -Example -Path ~/Work
    nova info
    nova version
    nova build
@@ -43,8 +46,8 @@ the standalone 'nova' command available from zsh/bash.
 Use 'nova <command>' to run a command, or call the underlying PowerShell cmdlet directly
 when you want a scriptable function interface.
 
-Note: 'nova init' is interactive and expects only an optional path argument. The CLI does
-not support 'nova init -WhatIf'.
+Note: 'nova init' is interactive. Use 'nova init -Path <path>' for an explicit destination,
+'nova init -Example' for the packaged example scaffold, and do not use 'nova init -WhatIf'.
 '@
 
     return $help
