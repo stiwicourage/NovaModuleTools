@@ -30,14 +30,11 @@ function Invoke-NovaCli {
         }
         'init' {
             if ($WhatIfPreference) {
-                throw "The 'nova init' CLI command does not support -WhatIf. Run 'nova init [path]' without -WhatIf."
+                throw "The 'nova init' CLI command does not support -WhatIf. Run 'nova init' or 'nova init -Path <path>' without -WhatIf."
             }
 
-            if ($Arguments.Count -gt 0) {
-                return New-NovaModule -Path $Arguments[0] @mutatingCommonParameters
-            }
-
-            return New-NovaModule @mutatingCommonParameters
+            $options = ConvertFrom-NovaInitCliArgument -Arguments $Arguments
+            return New-NovaModule @options @mutatingCommonParameters
         }
         'bump' {
             return Update-NovaModuleVersion @mutatingCommonParameters

@@ -89,6 +89,11 @@ Describe 'Nova command model' {
         Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/nova') | Should -BeTrue
     }
 
+    It 'build output includes the packaged example project resource' {
+        Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/example/project.json') | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/example/src/public/Get-ExampleGreeting.ps1') | Should -BeTrue
+    }
+
     It 'discovers command help files dynamically from docs' {
         $script:helpActivationTestCases | Should -Not -BeNullOrEmpty
     }
@@ -850,6 +855,30 @@ function Invoke-TestCliVerbose {
         }
     }
 
+    It 'Install-NovaCli rejects positional init paths with a migration hint' {
+        $targetDirectory = Join-Path $TestDrive 'init-positional-bin'
+        $installedPath = Join-Path $targetDirectory 'nova'
+        $workspaceRoot = Join-Path $TestDrive 'CliInitPositionalRoot'
+        $originalModulePath = $env:PSModulePath
+        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
+        $distParent = Split-Path -Parent $distModuleDir
+
+        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
+        New-Item -ItemType Directory -Path $workspaceRoot -Force | Out-Null
+
+        try {
+            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
+            $initResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $workspaceRoot -Arguments @('init', 'some/path')
+
+            $initResult.ExitCode | Should -Not -Be 0
+            $initResult.Text | Should -Match 'positional paths are no longer accepted'
+            $initResult.Text | Should -Match 'nova init -Path some/path'
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+    }
+
     It 'Invoke-NovaCli version returns the project name and version' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectName = 'AzureDevOpsAgentInstaller'; Version = '1.2.3'}}
@@ -913,6 +942,12 @@ function Invoke-TestCliVerbose {
     It 'Invoke-NovaCli init rejects -WhatIf with a clear error' {
         InModuleScope $script:moduleName {
             {Invoke-NovaCli init -WhatIf} | Should -Throw "*does not support -WhatIf*"
+        }
+    }
+
+    It 'Invoke-NovaCli init rejects positional paths instead of treating them as -Path' {
+        InModuleScope $script:moduleName {
+            {Invoke-NovaCli init 'some/path'} | Should -Throw "*positional paths are no longer accepted*"
         }
     }
 

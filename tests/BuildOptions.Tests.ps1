@@ -57,21 +57,67 @@ Describe 'Invoke-NovaBuild options' {
         $template.PSObject.Properties.Name | Should -Not -Contain 'CopyResourcesToModuleRoot'
     }
 
-    It 'example project shows CopyResourcesToModuleRoot explicitly for discoverability' {
-        $example = Get-Content -LiteralPath (Join-Path $repoRoot 'example/project.json') -Raw | ConvertFrom-Json
+    It 'packaged example project shows CopyResourcesToModuleRoot explicitly for discoverability' {
+        $example = Get-Content -LiteralPath (Join-Path $repoRoot 'src/resources/example/project.json') -Raw | ConvertFrom-Json
 
         $example.PSObject.Properties.Name | Should -Contain 'CopyResourcesToModuleRoot'
         $example.CopyResourcesToModuleRoot | Should -BeFalse
     }
 
-    It 'example project builds and tests successfully as a working reference project' {
-        $exampleRoot = Join-Path $repoRoot 'example'
+    It 'packaged example project builds and tests successfully as a working reference project' {
+        $exampleRoot = Join-Path $repoRoot 'src/resources/example'
         $result = Invoke-TestProjectTests -ProjectRoot $exampleRoot -ModulePath $distModuleDir
         $exampleProject = Get-Content -LiteralPath (Join-Path $exampleRoot 'project.json') -Raw | ConvertFrom-Json
         $builtModulePath = Join-Path $exampleRoot ("dist/{0}/{0}.psm1" -f $exampleProject.ProjectName)
 
         $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
         (Test-Path -LiteralPath $builtModulePath) | Should -BeTrue
+    }
+
+    It 'module build output includes the packaged example project resources' {
+        (Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/example/project.json')) | Should -BeTrue
+        (Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/example/README.md')) | Should -BeTrue
+        (Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/example/tests/Pester.Some.Tests.ps1')) | Should -BeTrue
+    }
+
+    It 'ScriptAnalyzer ignores generated packaged example dist and artifacts content' {
+        if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
+            Set-ItResult -Skipped -Because 'PSScriptAnalyzer is not available in this environment'
+            return
+        }
+
+        $exampleDistRoot = Join-Path $repoRoot 'src/resources/example/dist/NovaExampleModule'
+        $exampleArtifactsRoot = Join-Path $repoRoot 'src/resources/example/artifacts'
+        $manifestPath = Join-Path $exampleDistRoot 'NovaExampleModule.psd1'
+        $brokenScriptPath = Join-Path $exampleArtifactsRoot 'Broken.Generated.ps1'
+        $analyzerScriptPath = Join-Path $repoRoot 'scripts/build/Invoke-ScriptAnalyzerCI.ps1'
+
+        New-Item -ItemType Directory -Path $exampleDistRoot -Force | Out-Null
+        New-Item -ItemType Directory -Path $exampleArtifactsRoot -Force | Out-Null
+
+        @'
+@{
+    RootModule = 'NovaExampleModule.psm1'
+    ModuleVersion = '0.1.0'
+    GUID = '44444444-4444-4444-4444-444444444444'
+    Author = 'Test'
+    CmdletsToExport = '*'
+}
+'@ | Set-Content -LiteralPath $manifestPath -Encoding utf8
+
+        "function Invoke-BrokenGenerated {" | Set-Content -LiteralPath $brokenScriptPath -Encoding utf8
+
+        try {
+            $output = & pwsh -NoLogo -NoProfile -File $analyzerScriptPath 2>&1
+            $report = Get-Content -LiteralPath (Join-Path $repoRoot 'artifacts/scriptanalyzer.txt') -Raw
+
+            $LASTEXITCODE | Should -Be 0 -Because (@($output) -join [Environment]::NewLine)
+            $report | Should -Match 'PSScriptAnalyzer: no findings\.'
+        }
+        finally {
+            Remove-Item -LiteralPath (Join-Path $repoRoot 'src/resources/example/dist') -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath $exampleArtifactsRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
     }
 
     It 'empty projects fail with a readable no-source-files error' {

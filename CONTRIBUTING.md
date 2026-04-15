@@ -44,7 +44,7 @@ Please also make sure your contribution includes the right kind of follow-up wor
 - update help files in `docs/` when a command changes
 - update `README.md` when usage, workflow, examples, or contributor expectations change
 - update `CHANGELOG.md` when the change is relevant to users, maintainers, or future contributors
-- keep `example/` useful if your change affects the real-world project layout or workflow
+- keep `src/resources/example/` useful if your change affects the real-world project layout or workflow
 
 When updating documentation, write it for humans first. A reader should quickly understand:
 

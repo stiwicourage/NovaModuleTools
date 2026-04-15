@@ -8,10 +8,12 @@ function Get-NovaCliInstallDirectory {
         return [System.IO.Path]::GetFullPath($DestinationDirectory)
     }
 
-    if ( [string]::IsNullOrWhiteSpace($HOME)) {
+    $homeDirectory = $env:HOME
+
+    if ( [string]::IsNullOrWhiteSpace($homeDirectory)) {
         throw 'HOME environment variable is not set. Provide -DestinationDirectory explicitly.'
     }
 
-    return [System.IO.Path]::Join($HOME, '.local', 'bin')
+    return [System.IO.Path]::Join($homeDirectory, '.local', 'bin')
 }
 

@@ -21,7 +21,8 @@
             <a class="button button--primary"
                href="https://github.com/stiwicourage/NovaModuleTools/blob/main/README.md">Read the quick start</a>
             <a class="button button--secondary"
-               href="https://github.com/stiwicourage/NovaModuleTools/tree/main/example">Open the working example</a>
+               href="https://github.com/stiwicourage/NovaModuleTools/tree/main/src/resources/example">Open the working
+                example</a>
         </div>
         <ul class="hero__signals">
             <li>Clear project structure</li>
@@ -138,8 +139,10 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                 <article class="step-card">
                     <span class="step-number">02</span>
                     <h3>Create a module scaffold</h3>
-                    <pre><code>nova init</code></pre>
-                    <p>Answer the prompts and let NovaModuleTools create the project structure for you.</p>
+                    <pre><code>nova init
+nova init -Example</code></pre>
+                    <p>Answer the prompts and let NovaModuleTools create either the default scaffold or the packaged
+                        working example. Use <code>-Path</code> when you want an explicit destination folder.</p>
                 </article>
                 <article class="step-card">
                     <span class="step-number">03</span>
@@ -195,11 +198,13 @@ dist/</code></pre>
             <div class="cta-banner">
                 <div>
                     <h3>Recommended next step for new users</h3>
-                    <p>Open the example project, run the commands, and compare the source files with the built
+                    <p>Open the packaged example project under <code>src/resources/example</code>, run the commands, and
+                        compare the source files with the built
                         output.</p>
                 </div>
                 <a class="button button--primary"
-                   href="https://github.com/stiwicourage/NovaModuleTools/blob/main/example/README.md">View example
+                   href="https://github.com/stiwicourage/NovaModuleTools/blob/main/src/resources/example/README.md">View
+                    example
                     guide</a>
             </div>
         </div>

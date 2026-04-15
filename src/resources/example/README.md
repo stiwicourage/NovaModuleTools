@@ -1,4 +1,4 @@
-# NovaExampleModule
+# Nova example project
 
 This folder is a **working example project** for `NovaModuleTools`.
 
@@ -31,10 +31,11 @@ PowerShell Gallery workflow below.
 
 ```powershell
 PS> Import-Module ./dist/NovaModuleTools -Force
-PS> Set-Location ./example
+PS> Set-Location ./src/resources/example
 PS> Invoke-NovaBuild
 PS> Test-NovaBuild
-PS> Import-Module ./dist/NovaExampleModule -Force
+PS> $project = Get-NovaProjectInfo
+PS> Import-Module $project.OutputModuleDir -Force
 PS> Get-ExampleGreeting
 PS> Get-ExampleGreeting -Name 'Stiwi' -AsObject
 ```
@@ -44,10 +45,12 @@ PS> Get-ExampleGreeting -Name 'Stiwi' -AsObject
 ```powershell
 PS> Install-Module NovaModuleTools
 PS> Import-Module NovaModuleTools
-PS> Set-Location /path/to/NovaModuleTools/example
+PS> $module = Get-Module NovaModuleTools -ListAvailable | Select-Object -First 1
+PS> Set-Location (Join-Path $module.ModuleBase 'resources/example')
 PS> Invoke-NovaBuild
 PS> Test-NovaBuild
-PS> Import-Module ./dist/NovaExampleModule -Force
+PS> $project = Get-NovaProjectInfo
+PS> Import-Module $project.OutputModuleDir -Force
 PS> Get-ExampleGreeting
 ```
 
@@ -56,7 +59,7 @@ PS> Get-ExampleGreeting
 After `Invoke-NovaBuild`, the built module is written to:
 
 ```text
-example/dist/NovaExampleModule
+src/resources/example/dist/<ProjectName>
 ```
 
 You can then import it and call:
@@ -81,5 +84,5 @@ This example is intentionally small, but it demonstrates the most important Nova
 - how resource files are copied and used at runtime
 - how tests should import the built module from `dist/`
 
-If you want a new project scaffold, use `New-NovaModule` (`nova init`). If you want a concrete project you can inspect
-and run immediately, use this example folder.
+If you want a new project scaffold, use `New-NovaModule` (`nova init`). If you want a concrete project you can inspect,
+run, or copy through `nova init -Example`, use this example folder.

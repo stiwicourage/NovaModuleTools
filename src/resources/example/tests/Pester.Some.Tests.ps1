@@ -4,7 +4,7 @@ BeforeAll {
     Import-Module $project.OutputModuleDir -Force
 }
 
-Describe 'NovaExampleModule example project' {
+Describe 'Nova example project' {
     It 'returns a default greeting from the bundled configuration' {
         Get-ExampleGreeting | Should -Be 'Hello, Nova user!'
     }

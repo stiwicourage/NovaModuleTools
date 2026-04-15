@@ -19,7 +19,7 @@
       "NovaModuleTools",
       "PowerShell"
     ],
-    "ProjectUri": "https://github.com/stiwicourage/NovaModuleTools"
+    "ProjectUri": "https://www.novamoduletools.com/"
   },
   "Pester": {
     "TestResult": {

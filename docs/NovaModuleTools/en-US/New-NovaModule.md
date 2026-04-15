@@ -20,19 +20,25 @@ Creates a new NovaModuleTools project scaffold through an interactive prompt flo
 ### __AllParameterSets
 
 ```powershell
-PS> New-NovaModule [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> New-NovaModule [-Path <string>] [-Example] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-`New-NovaModule` creates a new project folder, the standard `src/`, `tests/`, and `docs/` layout, and a starter
-`project.json` file.
+`New-NovaModule` creates a new project folder, the standard `src/` layout, and a starter `project.json` file.
 
 The command collects project details interactively, including the module name, description, version, author, minimum
-PowerShell version, Git initialization, and basic Pester support.
+PowerShell version, Git initialization, and, for the standard scaffold, optional basic Pester support.
 
 Use this command when you want to start a new module in the NovaModuleTools structure without hand-creating the project
 layout.
+
+Use `-Path` when you want to create the project under a specific base directory. Positional path syntax is no longer
+supported.
+
+Use `-Example` when you want the scaffold to start from the packaged example project instead of the minimal default
+layout. The example flow keeps the example source, resource, and test files, skips the Pester enable/disable question,
+and applies the interactive metadata values to the copied `project.json`.
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
 scaffold target after the interactive answers have been collected, without creating folders, writing `project.json`, or
@@ -58,11 +64,20 @@ Shows what would be created without writing the scaffold.
 
 ### EXAMPLE 3
 
-```bash
-nova init ~/Work
+```powershell
+PS> New-NovaModule -Example -Path ~/Work
 ```
 
-Runs the same scaffold flow through the `nova` CLI.
+Creates a new project under `~/Work` from the packaged example template and applies the answers from the interactive
+prompt flow to the copied `project.json`.
+
+### EXAMPLE 4
+
+```bash
+nova init -Example -Path ~/Work
+```
+
+Runs the same example-based scaffold flow through the `nova` CLI.
 
 ## PARAMETERS
 
@@ -77,7 +92,28 @@ SupportsWildcards: false
 Aliases: []
 ParameterSets:
 - Name: (All)
-  Position: 0
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Example
+
+Create the new project from the packaged example template instead of the minimal default scaffold.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
@@ -109,7 +145,8 @@ This cmdlet does not emit an output object.
 ## NOTES
 
 Generated projects start with NovaModuleTools defaults for recursive discovery, source markers, and duplicate-function
-validation.
+validation. The packaged example scaffold keeps its bundled example source and tests, while still updating prompt-driven
+metadata such as project name, description, version, author, and PowerShell host version.
 
 `New-NovaModule` uses `SupportsShouldProcess`, so `Get-Help New-NovaModule -Full` surfaces native `-WhatIf` and
 `-Confirm` support.

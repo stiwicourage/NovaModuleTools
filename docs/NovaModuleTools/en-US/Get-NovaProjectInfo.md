@@ -50,10 +50,10 @@ Returns the full project information object for the current directory.
 ### EXAMPLE 2
 
 ```powershell
-PS> Get-NovaProjectInfo -Path ./example
+PS> Get-NovaProjectInfo -Path ./src/resources/example
 ```
 
-Returns the full project information object for the project rooted at `./example`.
+Returns the full project information object for the packaged example project rooted at `./src/resources/example`.
 
 ### EXAMPLE 3
 

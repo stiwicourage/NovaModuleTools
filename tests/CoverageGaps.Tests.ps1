@@ -53,6 +53,22 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
         }
     }
 
+    It 'Get-NovaModuleQuestionSet omits the Pester prompt for the example flow' {
+        InModuleScope $script:moduleName {
+            $questions = Get-NovaModuleQuestionSet -Example
+
+            $questions.Keys | Should -Be @(
+                'ProjectName',
+                'Description',
+                'Version',
+                'Author',
+                'PowerShellHostVersion',
+                'EnableGit'
+            )
+            $questions.Contains('EnablePester') | Should -BeFalse
+        }
+    }
+
     It 'Get-NovaModuleScaffoldLayout returns the expected scaffold paths' {
         InModuleScope $script:moduleName {
             $layout = Get-NovaModuleScaffoldLayout -Path '/tmp/root' -ProjectName 'NovaSample'
@@ -65,6 +81,24 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             $layout.Classes | Should -Be '/tmp/root/NovaSample/src/classes'
             $layout.Tests | Should -Be '/tmp/root/NovaSample/tests'
             $layout.ProjectJsonFile | Should -Be '/tmp/root/NovaSample/project.json'
+        }
+    }
+
+    It 'Resolve-NovaModuleScaffoldBasePath normalizes slash styles to the current platform' {
+        InModuleScope $script:moduleName {
+            $root = Join-Path $TestDrive 'scaffold-root'
+            $nested = Join-Path $root 'nested/child'
+            $null = New-Item -ItemType Directory -Path $nested -Force
+            $mixedStylePath = if ([System.IO.Path]::DirectorySeparatorChar -eq '/') {
+                $nested.Replace('/', '\')
+            }
+            else {
+                $nested.Replace('\', '/')
+            }
+
+            $resolved = Resolve-NovaModuleScaffoldBasePath -Path $mixedStylePath
+
+            $resolved | Should -Be ([System.IO.Path]::GetFullPath($nested))
         }
     }
 
@@ -195,6 +229,20 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
         }
     }
 
+    It 'Initialize-NovaModuleScaffold copies the example template and keeps tests in place' {
+        InModuleScope $script:moduleName {
+            $paths = Get-NovaModuleScaffoldLayout -Path $TestDrive -ProjectName 'ExampleScaffold'
+            Mock Write-Message {}
+            Mock New-InitiateGitRepo {}
+
+            Initialize-NovaModuleScaffold -Answer @{EnableGit = 'No'} -Paths $paths -Example
+
+            (Test-Path -LiteralPath (Join-Path $paths.Project 'README.md')) | Should -BeTrue
+            (Test-Path -LiteralPath $paths.Tests) | Should -BeTrue
+            (Test-Path -LiteralPath (Join-Path $paths.Public 'Get-ExampleGreeting.ps1')) | Should -BeTrue
+        }
+    }
+
     It 'Initialize-NovaModuleScaffold reports an existing project path' {
         InModuleScope $script:moduleName {
             $paths = [pscustomobject]@{
@@ -246,6 +294,31 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
         }
     }
 
+    It 'Write-NovaModuleProjectJson preserves example-only settings while applying prompt values' {
+        InModuleScope $script:moduleName {
+            $projectJsonPath = Join-Path $TestDrive 'example-project.json'
+
+            Write-NovaModuleProjectJson -Answer @{
+                ProjectName = 'CustomExample'
+                Description = 'Customized example project'
+                Version = '9.8.7'
+                Author = 'Example Author'
+                PowerShellHostVersion = '7.5'
+            } -ProjectJsonFile $projectJsonPath -Example
+
+            $project = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json -AsHashtable
+            $project.ProjectName | Should -Be 'CustomExample'
+            $project.Description | Should -Be 'Customized example project'
+            $project.Version | Should -Be '9.8.7'
+            $project.CopyResourcesToModuleRoot | Should -BeFalse
+            $project.BuildRecursiveFolders | Should -BeTrue
+            $project.Manifest.Author | Should -Be 'Example Author'
+            $project.Manifest.PowerShellHostVersion | Should -Be '7.5'
+            $project.Manifest.GUID | Should -Be 'b3b4ca64-a274-4768-872d-2b3c8bc12a39'
+            $project.ContainsKey('Pester') | Should -BeTrue
+        }
+    }
+
     It 'New-NovaModule creates a scaffolded project when confirmed' {
         InModuleScope $script:moduleName {
             $answer = @{
@@ -270,6 +343,40 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
         }
     }
 
+    It 'New-NovaModule -Example creates the packaged example scaffold without asking about Pester' {
+        InModuleScope $script:moduleName {
+            $answer = @{
+                ProjectName = 'NovaExampleScaffold'
+                Description = 'Scaffolded from example'
+                Version = '1.0.0'
+                Author = 'Tester'
+                PowerShellHostVersion = '7.4'
+                EnableGit = 'No'
+            }
+            Mock Read-NovaModuleAnswerSet {$answer}
+            Mock Write-Message {}
+            Mock New-InitiateGitRepo {}
+
+            New-NovaModule -Path $TestDrive -Example -Confirm:$false
+
+            $projectRoot = Join-Path $TestDrive 'NovaExampleScaffold'
+            $project = Get-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Raw | ConvertFrom-Json -AsHashtable
+
+            Test-Path -LiteralPath (Join-Path $projectRoot 'tests') | Should -BeTrue
+            Test-Path -LiteralPath (Join-Path $projectRoot 'src/public/Get-ExampleGreeting.ps1') | Should -BeTrue
+            $project.ProjectName | Should -Be 'NovaExampleScaffold'
+            $project.Description | Should -Be 'Scaffolded from example'
+            $project.Manifest.Author | Should -Be 'Tester'
+            $project.ContainsKey('Pester') | Should -BeTrue
+            $project.Manifest.GUID | Should -Be 'b3b4ca64-a274-4768-872d-2b3c8bc12a39'
+
+            Assert-MockCalled Read-NovaModuleAnswerSet -Times 1
+            Assert-MockCalled Read-NovaModuleAnswerSet -ParameterFilter {
+                -not $Questions.Contains('EnablePester')
+            }
+        }
+    }
+
     It 'New-NovaModule reports invalid paths and skips initialization on WhatIf' {
         InModuleScope $script:moduleName {
             Mock Test-Path {$false}
@@ -284,7 +391,7 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             Mock Initialize-NovaModuleScaffold {}
             Mock Write-NovaModuleProjectJson {}
 
-            {New-NovaModule -Path '/tmp/does-not-exist' -WhatIf} | Should -Throw 'Not a valid path'
+            {New-NovaModule -Path '/tmp/does-not-exist' -WhatIf} | Should -Throw 'Not a valid path*'
 
             Assert-MockCalled Initialize-NovaModuleScaffold -Times 0
             Assert-MockCalled Write-NovaModuleProjectJson -Times 0
@@ -307,7 +414,15 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             Mock Invoke-NovaBuild {'build-value'}
             Mock Test-NovaBuild {'test-value'}
             Mock New-NovaModule {
-                param([string]$Path)
+                param([string]$Path, [switch]$Example)
+                if ($Example) {
+                    if ( $PSBoundParameters.ContainsKey('Path')) {
+                        return "init-example:$Path"
+                    }
+
+                    return 'init-example-default'
+                }
+
                 if ( $PSBoundParameters.ContainsKey('Path')) {
                     return "init:$Path"
                 }
@@ -321,9 +436,32 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             Invoke-NovaCli build | Should -Be 'build-value'
             Invoke-NovaCli test | Should -Be 'test-value'
             Invoke-NovaCli init | Should -Be 'init-default'
-            Invoke-NovaCli -Command init -Arguments @('/tmp/demo') | Should -Be 'init:/tmp/demo'
+            Invoke-NovaCli -Command init -Arguments @('-Path', '/tmp/demo') | Should -Be 'init:/tmp/demo'
+            Invoke-NovaCli -Command init -Arguments @('-Example') | Should -Be 'init-example-default'
+            Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '/tmp/demo') | Should -Be 'init-example:/tmp/demo'
             Invoke-NovaCli bump | Should -Be 'bump-value'
             (Invoke-NovaCli release --repository PSGallery --apikey key123).Repository | Should -Be 'PSGallery'
+        }
+    }
+
+    It 'ConvertFrom-NovaInitCliArgument parses explicit path and example switches' {
+        InModuleScope $script:moduleName {
+            $options = ConvertFrom-NovaInitCliArgument -Arguments @('--example', '--path', 'tmp/project/root')
+
+            $options.Example | Should -BeTrue
+            $options.Path | Should -Be 'tmp/project/root'
+        }
+    }
+
+    It 'ConvertFrom-NovaInitCliArgument rejects positional init paths' {
+        InModuleScope $script:moduleName {
+            {ConvertFrom-NovaInitCliArgument -Arguments @('some/path')} | Should -Throw "Unsupported 'nova init' usage*"
+        }
+    }
+
+    It 'ConvertFrom-NovaInitCliArgument reports a missing path value' {
+        InModuleScope $script:moduleName {
+            {ConvertFrom-NovaInitCliArgument -Arguments @('--path')} | Should -Throw 'Missing value for --path'
         }
     }
 
@@ -350,15 +488,15 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             $custom = Get-NovaCliInstallDirectory -DestinationDirectory "$TestDrive/custom-bin"
             $custom | Should -Be ([System.IO.Path]::GetFullPath("$TestDrive/custom-bin"))
 
-            $originalHome = $HOME
+            $originalHome = $env:HOME
             try {
-                $HOME = $TestDrive
+                $env:HOME = $TestDrive
                 Get-NovaCliInstallDirectory | Should -Be ([System.IO.Path]::Join($TestDrive, '.local', 'bin'))
-                $HOME = ''
+                $env:HOME = ''
                 {Get-NovaCliInstallDirectory} | Should -Throw 'HOME environment variable is not set*'
             }
             finally {
-                $HOME = $originalHome
+                $env:HOME = $originalHome
             }
         }
     }

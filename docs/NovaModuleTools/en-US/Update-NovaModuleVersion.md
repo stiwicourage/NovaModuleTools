@@ -59,10 +59,10 @@ Updates the version in the current project using the release label inferred from
 ### EXAMPLE 2
 
 ```powershell
-PS> Update-NovaModuleVersion -Path ./example
+PS> Update-NovaModuleVersion -Path ./src/resources/example
 ```
 
-Updates the version for the project rooted at `./example`.
+Updates the version for the project rooted at `./src/resources/example`.
 
 ### EXAMPLE 3
 
