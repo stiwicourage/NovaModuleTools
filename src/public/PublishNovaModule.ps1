@@ -28,9 +28,20 @@ function Publish-NovaModule {
     Invoke-NovaBuild @workflowParams
     Test-NovaBuild @workflowParams
 
-    Invoke-NovaResolvedPublishInvocation -PublishInvocation $publishInvocation -WorkflowParams $workflowParams
+    $publishParams = @{}
+    foreach ($parameterName in $publishInvocation.Parameters.Keys) {
+        $publishParams[$parameterName] = $publishInvocation.Parameters[$parameterName]
+    }
 
-    Write-NovaLocalPublishCompletionMessage -ShouldRun:$shouldRun -PublishInvocation $publishInvocation
+    foreach ($parameterName in $workflowParams.Keys) {
+        $publishParams[$parameterName] = $workflowParams[$parameterName]
+    }
+
+    & $publishInvocation.Action @publishParams
+
+    if ($shouldRun -and $publishInvocation.IsLocal) {
+        Write-Verbose 'Module copy to local path complete, Refresh session or import module manually'
+    }
 }
 
 

@@ -28,7 +28,16 @@ function Invoke-NovaRelease {
         $versionResult = Update-NovaModuleVersion @workflowParams
         Invoke-NovaBuild @workflowParams
 
-        Invoke-NovaResolvedPublishInvocation -PublishInvocation $publishInvocation -WorkflowParams $workflowParams
+        $publishParams = @{}
+        foreach ($parameterName in $publishInvocation.Parameters.Keys) {
+            $publishParams[$parameterName] = $publishInvocation.Parameters[$parameterName]
+        }
+
+        foreach ($parameterName in $workflowParams.Keys) {
+            $publishParams[$parameterName] = $workflowParams[$parameterName]
+        }
+
+        & $publishInvocation.Action @publishParams
 
         return $versionResult
     }
