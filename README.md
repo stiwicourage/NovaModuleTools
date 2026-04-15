@@ -6,7 +6,7 @@ strong emphasis on structure, maintainability, and automated CI/CD pipelines tha
 This `README.md` is intentionally a **short contributor entry page**. Detailed developer guidance lives under
 `developer-docs/` and should not be duplicated here.
 
-If you are looking for **user guides** to NovaModuleTools, proceed to https://www.novamoduletools.com/ for more
+If you are looking for **user guides** to NovaModuleTools, proceed to https://www.novamoduletools.com for more
 information.
 
 ## Documentation split
