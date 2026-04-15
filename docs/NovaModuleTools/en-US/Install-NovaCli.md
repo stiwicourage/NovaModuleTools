@@ -34,9 +34,6 @@ By default, the launcher is installed to `~/.local/bin/nova` on macOS and Linux.
 This command is currently intended for macOS and Linux. On Windows, use the `nova` alias inside `pwsh` after importing
 NovaModuleTools.
 
-This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
-launcher destination without copying the file or changing executable permissions.
-
 ## EXAMPLES
 
 ### EXAMPLE 1
@@ -107,6 +104,50 @@ AcceptedValues: [ ]
 HelpMessage: ''
 ```
 
+### -WhatIf
+
+Shows what would happen if the cmdlet runs. The cmdlet is not run.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases:
+  - wi
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
+### -Confirm
+
+Prompts for confirmation before the launcher is installed.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases:
+  - cf
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
 ### CommonParameters
 
 This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`, `-ErrorVariable`, `-InformationAction`,
@@ -131,9 +172,6 @@ currently on `PATH`.
 After running `Install-NovaCli`, add the destination directory to your shell `PATH` if needed.
 
 On Windows, keep using the `nova` alias inside `pwsh` instead of this command.
-
-`Install-NovaCli` uses `SupportsShouldProcess`, so `Get-Help Install-NovaCli -Full` surfaces native `-WhatIf` and
-`-Confirm` support.
 
 ## RELATED LINKS
 

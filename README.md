@@ -36,7 +36,6 @@ best way to get started is by running `New-NovaModule` (`nova init`), which guid
 and creates the necessary scaffolding.
 
 ## Preview changes safely with `-WhatIf`
-
 State-changing NovaModuleTools commands support PowerShell `-WhatIf`, so you can preview what would happen before files,
 versions, test artifacts, or publish targets are changed.
 

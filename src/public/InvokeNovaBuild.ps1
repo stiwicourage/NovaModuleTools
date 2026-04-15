@@ -2,8 +2,8 @@ function Invoke-NovaBuild {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
     )
-
     $data = Get-NovaProjectInfo
+
     if (-not $PSCmdlet.ShouldProcess($data.OutputModuleDir, 'Build Nova module output')) {
         return
     }

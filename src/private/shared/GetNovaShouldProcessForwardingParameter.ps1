@@ -4,7 +4,7 @@ function Get-NovaShouldProcessForwardingParameter {
         [switch]$WhatIfEnabled
     )
 
-    $forwardingParameter = @{Confirm = $false}
+    $forwardingParameter = @{}
     if ($WhatIfEnabled) {
         $forwardingParameter.WhatIf = $true
     }

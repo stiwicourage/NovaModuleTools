@@ -1,5 +1,5 @@
 function Publish-NovaBuiltModule {
-    [CmdletBinding(DefaultParameterSetName = 'Local', SupportsShouldProcess = $true)]
+    [CmdletBinding(DefaultParameterSetName = 'Local')]
     param(
         [Parameter(ParameterSetName = 'Repository')]
         [string]$Repository,
@@ -14,12 +14,7 @@ function Publish-NovaBuiltModule {
     }
 
     if ( $PSBoundParameters.ContainsKey('Repository')) {
-        $shouldRun = $PSCmdlet.ShouldProcess($Repository, 'Publish built module to repository')
-        if (-not $shouldRun -and -not $WhatIfPreference) {
-            return
-        }
-
-        Publish-NovaBuiltModuleToRepository -ProjectInfo $ProjectInfo -Repository $Repository -ApiKey $ApiKey -WhatIf:$WhatIfPreference -Confirm:$false
+        Publish-NovaBuiltModuleToRepository -ProjectInfo $ProjectInfo -Repository $Repository -ApiKey $ApiKey
         return
     }
 
@@ -28,10 +23,5 @@ function Publish-NovaBuiltModule {
         $resolvedModuleDirectoryPath = Resolve-NovaLocalPublishPath -ModuleDirectoryPath $ModuleDirectoryPath
     }
 
-    $shouldRun = $PSCmdlet.ShouldProcess($resolvedModuleDirectoryPath, 'Publish built module to local directory')
-    if (-not $shouldRun -and -not $WhatIfPreference) {
-        return
-    }
-
-    Publish-NovaBuiltModuleToDirectory -ProjectInfo $ProjectInfo -ModuleDirectoryPath $resolvedModuleDirectoryPath -WhatIf:$WhatIfPreference -Confirm:$false
+    Publish-NovaBuiltModuleToDirectory -ProjectInfo $ProjectInfo -ModuleDirectoryPath $resolvedModuleDirectoryPath
 }

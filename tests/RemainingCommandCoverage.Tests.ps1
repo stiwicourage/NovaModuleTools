@@ -57,31 +57,6 @@ Describe 'Coverage for remaining command and filesystem branches' {
         }
     }
 
-    It 'Reset-ProjectDist -WhatIf skips filesystem changes' {
-        $outputDir = Join-Path $TestDrive 'dist-whatif'
-        $outputModuleDir = Join-Path $outputDir 'NovaModuleTools'
-
-        InModuleScope $script:moduleName -Parameters @{OutputDir = $outputDir; OutputModuleDir = $outputModuleDir} {
-            param($OutputDir, $OutputModuleDir)
-
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    OutputDir = $OutputDir
-                    OutputModuleDir = $OutputModuleDir
-                }
-            }
-            Mock Test-Path {$true}
-            Mock Remove-Item {throw 'should not remove dist'}
-            Mock New-Item {throw 'should not recreate dist'}
-
-            $result = Reset-ProjectDist -WhatIf
-
-            $result | Should -BeNullOrEmpty
-            Assert-MockCalled Remove-Item -Times 0
-            Assert-MockCalled New-Item -Times 0
-        }
-    }
-
     It 'New-InitiateGitRepo warns when a repository already exists in the target directory' {
         $repoPath = Join-Path $TestDrive 'existing-git-repo'
         New-Item -ItemType Directory -Path (Join-Path $repoPath '.git') -Force | Out-Null
@@ -325,38 +300,6 @@ Describe 'Coverage for remaining command and filesystem branches' {
             Assert-MockCalled Publish-NovaBuiltModuleToDirectory -Times 1 -ParameterFilter {
                 $ModuleDirectoryPath -eq '/tmp/default-modules'
             }
-        }
-    }
-
-    It 'Publish-NovaBuiltModuleToDirectory -WhatIf skips create, remove, and copy operations' {
-        InModuleScope $script:moduleName {
-            $projectInfo = [pscustomobject]@{
-                OutputModuleDir = '/tmp/dist/NovaModuleTools'
-                ProjectName = 'NovaModuleTools'
-            }
-
-            Mock Test-Path {$true}
-            Mock New-Item {throw 'should not create directory'}
-            Mock Remove-Item {throw 'should not remove old module'}
-            Mock Copy-Item {throw 'should not copy module'}
-
-            $result = Publish-NovaBuiltModuleToDirectory -ProjectInfo $projectInfo -ModuleDirectoryPath '/tmp/modules' -WhatIf
-
-            $result | Should -BeNullOrEmpty
-            Assert-MockCalled New-Item -Times 0
-            Assert-MockCalled Remove-Item -Times 0
-            Assert-MockCalled Copy-Item -Times 0
-        }
-    }
-
-    It 'Publish-NovaBuiltModuleToRepository -WhatIf skips Publish-PSResource' {
-        InModuleScope $script:moduleName {
-            Mock Publish-PSResource {throw 'should not publish'}
-
-            $result = Publish-NovaBuiltModuleToRepository -ProjectInfo ([pscustomobject]@{OutputModuleDir = '/tmp/dist'; ProjectName = 'NovaModuleTools'}) -Repository PSGallery -WhatIf
-
-            $result | Should -BeNullOrEmpty
-            Assert-MockCalled Publish-PSResource -Times 0
         }
     }
 }

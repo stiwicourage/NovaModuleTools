@@ -39,8 +39,7 @@ Use repository mode when you want to publish the built module to a registered Po
 `PSGallery`.
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
-build, test, and publish workflow without changing `dist/`, writing test artifacts, copying module files, or calling the
-target repository.
+resolved publish target and workflow without building, testing, or publishing.
 
 ## EXAMPLES
 
@@ -70,19 +69,19 @@ Builds, tests, and publishes the module to `PSGallery`.
 
 ### EXAMPLE 4
 
-```powershell
-PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -WhatIf
-```
-
-Previews the build, test, and repository publish workflow without making changes.
-
-### EXAMPLE 5
-
 ```bash
 nova publish -repository PSGallery -apikey $PSGALLERY_API
 ```
 
 Runs the same publish flow through the `nova` CLI.
+
+### EXAMPLE 5
+
+```powershell
+PS> Publish-NovaModule -Local -WhatIf
+```
+
+Previews the local publish workflow and target directory without making changes.
 
 ## PARAMETERS
 
@@ -197,8 +196,8 @@ This cmdlet does not emit an output object.
 
 The command always builds and tests before publishing.
 
-`Publish-NovaModule` uses `SupportsShouldProcess`, so `Get-Help Publish-NovaModule -Full` surfaces native `-WhatIf` and
-`-Confirm` support.
+`Publish-NovaModule` uses `SupportsShouldProcess`, so `Get-Help Publish-NovaModule -Full` should surface native
+`-WhatIf` and `-Confirm` support.
 
 ## RELATED LINKS
 
