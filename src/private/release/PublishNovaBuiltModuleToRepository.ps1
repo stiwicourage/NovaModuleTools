@@ -1,5 +1,5 @@
 function Publish-NovaBuiltModuleToRepository {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [Parameter(Mandatory)]
         [pscustomobject]$ProjectInfo,
@@ -23,6 +23,10 @@ function Publish-NovaBuiltModuleToRepository {
 
     if (-not [string]::IsNullOrWhiteSpace($resolvedApiKey)) {
         $publishParams.ApiKey = $resolvedApiKey
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($Repository, 'Publish built module to repository')) {
+        return
     }
 
     Publish-PSResource @publishParams

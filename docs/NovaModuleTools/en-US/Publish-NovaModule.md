@@ -20,13 +20,13 @@ Builds, tests, and publishes the current project either locally or to a PowerShe
 ### Local
 
 ```powershell
-Publish-NovaModule [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [<CommonParameters>]
+PS> Publish-NovaModule [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### Repository
 
 ```powershell
-Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [<CommonParameters>]
+PS> Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -37,6 +37,10 @@ Use local mode when you want to copy the built module into a module directory on
 
 Use repository mode when you want to publish the built module to a registered PowerShell repository such as
 `PSGallery`.
+
+This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
+build, test, and publish workflow without changing `dist/`, writing test artifacts, copying module files, or calling the
+target repository.
 
 ## EXAMPLES
 
@@ -65,6 +69,14 @@ PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
 Builds, tests, and publishes the module to `PSGallery`.
 
 ### EXAMPLE 4
+
+```powershell
+PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -WhatIf
+```
+
+Previews the build, test, and repository publish workflow without making changes.
+
+### EXAMPLE 5
 
 ```bash
 nova publish -repository PSGallery -apikey $PSGALLERY_API
@@ -166,7 +178,7 @@ HelpMessage: ''
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
 -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+-ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
@@ -184,6 +196,9 @@ This cmdlet does not emit an output object.
 ## NOTES
 
 The command always builds and tests before publishing.
+
+`Publish-NovaModule` uses `SupportsShouldProcess`, so `Get-Help Publish-NovaModule -Full` surfaces native `-WhatIf` and
+`-Confirm` support.
 
 ## RELATED LINKS
 

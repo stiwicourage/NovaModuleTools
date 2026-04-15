@@ -25,8 +25,12 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Change `CopyResourcesToModuleRoot` to an optional project setting that defaults to `false`, and standardize the
   setting name across templates, tests, and docs.
 - Change `Publish-NovaModule` and `Invoke-NovaRelease` to resolve publish targets before running build and test steps.
+- Change publish and release orchestration to share the same resolved publish execution helper, keeping preview
+  forwarding and publish-target handling consistent.
 - Change the bundled `nova` launcher to ship as a packaged module resource instead of a repo-root helper file.
 - Change `nova version` and `nova --version` to include the component name alongside the version for clearer CLI output.
+- Change mutating commands to support consistent native `-WhatIf`/`-Confirm` behavior, including routed preview support
+  through `Invoke-NovaCli` and updated `Get-Help` examples.
 - Change CI, release, and contributor documentation to reflect the Nova workflow, refreshed command help, and GitHub
   comparison links.
 

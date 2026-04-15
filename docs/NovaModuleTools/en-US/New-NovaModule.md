@@ -34,6 +34,10 @@ PowerShell version, Git initialization, and basic Pester support.
 Use this command when you want to start a new module in the NovaModuleTools structure without hand-creating the project
 layout.
 
+This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
+scaffold target after the interactive answers have been collected, without creating folders, writing `project.json`, or
+initializing Git.
+
 ## EXAMPLES
 
 ### EXAMPLE 1
@@ -54,35 +58,13 @@ Shows what would be created without writing the scaffold.
 
 ### EXAMPLE 3
 
-```powershell
+```bash
 nova init ~/Work
 ```
 
 Runs the same scaffold flow through the `nova` CLI.
 
 ## PARAMETERS
-
-### -Confirm
-
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: ''
-SupportsWildcards: false
-Aliases:
-- cf
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
 
 ### -Path
 
@@ -105,33 +87,11 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -WhatIf
-
-Runs the command in a mode that only reports what would happen without performing the actions.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: ''
-SupportsWildcards: false
-Aliases:
-- wi
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
 -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+-ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
@@ -151,6 +111,8 @@ This cmdlet does not emit an output object.
 Generated projects start with NovaModuleTools defaults for recursive discovery, source markers, and duplicate-function
 validation.
 
+`New-NovaModule` uses `SupportsShouldProcess`, so `Get-Help New-NovaModule -Full` surfaces native `-WhatIf` and
+`-Confirm` support.
 
 ## RELATED LINKS
 

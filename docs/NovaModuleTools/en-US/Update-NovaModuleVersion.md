@@ -37,6 +37,9 @@ The release label is inferred from the commit set:
 When Git tags exist, only commits since the latest tag are considered. If the folder is not a Git repository, the
 command falls back to a patch bump.
 
+This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
+calculated release label and target `project.json` without changing the stored version.
+
 ## EXAMPLES
 
 ### EXAMPLE 1
@@ -86,55 +89,11 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -WhatIf
-
-Shows what would happen if the cmdlet runs. The cmdlet is not run.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases:
-  - wi
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Confirm
-
-Prompts for confirmation before `project.json` is updated.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases:
-  - cf
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
 -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+-ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
@@ -156,6 +115,8 @@ Run this command from a NovaModuleTools project root or supply `-Path`.
 This command updates `project.json`. Rebuild the module afterward if you want the generated manifest and built output to
 reflect the new version.
 
+`Update-NovaModuleVersion` uses `SupportsShouldProcess`, so `Get-Help Update-NovaModuleVersion -Full` surfaces native
+`-WhatIf` and `-Confirm` support.
 
 ## RELATED LINKS
 

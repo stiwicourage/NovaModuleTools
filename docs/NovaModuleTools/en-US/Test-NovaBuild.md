@@ -21,7 +21,7 @@ Runs Pester tests for the current NovaModuleTools project.
 
 ```powershell
 PS> Test-NovaBuild [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>] [[-OutputVerbosity] <string>]
- [[-OutputRenderMode] <string>] [<CommonParameters>]
+[[-OutputRenderMode] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -33,6 +33,9 @@ With the default
 `BuildRecursiveFolders=true`, test files in nested folders under `tests` are discovered and run. Set
 `BuildRecursiveFolders=false` to limit discovery to top-level `tests/*.Tests.ps1` files, following Pester's normal
 test-file convention. The generated Pester XML report is written to `artifacts/TestResults.xml`.
+
+This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
+planned test run and XML output path without creating `artifacts/` or invoking Pester.
 
 ## EXAMPLES
 
@@ -67,6 +70,14 @@ PS> Test-NovaBuild -OutputVerbosity Normal -OutputRenderMode Plaintext
 ```
 
 Overrides the console output settings for the current test run.
+
+### EXAMPLE 5
+
+```powershell
+PS> Test-NovaBuild -WhatIf
+```
+
+Previews the planned Pester run without executing tests or writing `artifacts/TestResults.xml`.
 
 ## PARAMETERS
 
@@ -165,7 +176,7 @@ HelpMessage: ''
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
 -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+-ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
@@ -183,6 +194,9 @@ This cmdlet does not emit an output object. It throws when the test run fails.
 ## NOTES
 
 The generated test result XML is written to `artifacts/TestResults.xml`.
+
+`Test-NovaBuild` uses `SupportsShouldProcess`, so `Get-Help Test-NovaBuild -Full` surfaces native `-WhatIf` and
+`-Confirm` support.
 
 ## RELATED LINKS
 

@@ -35,6 +35,31 @@ To ensure this module works correctly, you need to maintain the folder structure
 best way to get started is by running `New-NovaModule` (`nova init`), which guides you through a series of questions
 and creates the necessary scaffolding.
 
+## Preview changes safely with `-WhatIf`
+
+State-changing NovaModuleTools commands support PowerShell `-WhatIf`, so you can preview what would happen before files,
+versions, test artifacts, or publish targets are changed.
+
+```powershell
+PS> Invoke-NovaBuild -WhatIf
+PS> Test-NovaBuild -WhatIf
+PS> Publish-NovaModule -Local -WhatIf
+PS> Invoke-NovaRelease -PublishOption @{ Local = $true } -WhatIf
+PS> Update-NovaModuleVersion -WhatIf
+PS> Install-NovaCli -WhatIf
+```
+
+From the standalone CLI on macOS/Linux, the routed commands forward preview mode to the underlying PowerShell cmdlets:
+
+```bash
+nova build -WhatIf
+nova test -WhatIf
+nova publish -local -WhatIf
+nova release -local -WhatIf
+```
+
+For command-specific details and examples, run `Get-Help <CommandName> -Full` after importing the module.
+
 ## Folder Structure
 All module files should be inside the `src` folder.
 

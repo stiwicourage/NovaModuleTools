@@ -124,7 +124,9 @@ Describe 'Nova command model' {
             'InformationVariable',
             'OutVariable',
             'OutBuffer',
-            'PipelineVariable'
+            'PipelineVariable',
+            'WhatIf',
+            'Confirm'
         )
 
         foreach ($testCase in $script:helpActivationTestCases) {
@@ -152,11 +154,29 @@ Describe 'Nova command model' {
         }
     }
 
+    It 'Get-Help surfaces native WhatIf and Confirm support for mutating public commands' {
+        foreach ($commandName in @(
+            'Invoke-NovaBuild',
+            'Test-NovaBuild',
+            'Publish-NovaModule',
+            'Invoke-NovaRelease',
+            'New-NovaModule',
+            'Install-NovaCli',
+            'Update-NovaModuleVersion',
+            'Invoke-NovaCli'
+        )) {
+            $fullText = Get-Help $commandName -Full -ErrorAction Stop | Out-String
+
+            $fullText | Should -Match '-WhatIf' -Because "$commandName should surface native WhatIf support in full help"
+            $fullText | Should -Match '-Confirm' -Because "$commandName should surface native Confirm support in full help"
+        }
+    }
+
     It 'Invoke-NovaBuild runs module build pipeline' {
         InModuleScope $script:moduleName {
             Mock Reset-ProjectDist {}
             Mock Build-Module {}
-            Mock Get-NovaProjectInfo {[pscustomobject]@{FailOnDuplicateFunctionNames = $false}}
+            Mock Get-NovaProjectInfo {[pscustomobject]@{FailOnDuplicateFunctionNames = $false; OutputModuleDir = '/tmp/dist/NovaModuleTools'}}
             Mock Build-Manifest {}
             Mock Build-Help {}
             Mock Copy-ProjectResource {}
@@ -164,6 +184,31 @@ Describe 'Nova command model' {
             Invoke-NovaBuild
 
             Assert-MockCalled Build-Module -Times 1
+        }
+    }
+
+    It 'Invoke-NovaBuild -WhatIf skips the build pipeline' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    FailOnDuplicateFunctionNames = $false
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            }
+            Mock Reset-ProjectDist {throw 'should not reset dist'}
+            Mock Build-Module {throw 'should not build'}
+            Mock Build-Manifest {throw 'should not build manifest'}
+            Mock Build-Help {throw 'should not build help'}
+            Mock Copy-ProjectResource {throw 'should not copy resources'}
+
+            $result = Invoke-NovaBuild -WhatIf
+
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled Reset-ProjectDist -Times 0
+            Assert-MockCalled Build-Module -Times 0
+            Assert-MockCalled Build-Manifest -Times 0
+            Assert-MockCalled Build-Help -Times 0
+            Assert-MockCalled Copy-ProjectResource -Times 0
         }
     }
 
@@ -252,6 +297,38 @@ title: Invoke-NovaBuild
         }
     }
 
+    It 'Test-NovaBuild -WhatIf skips Pester execution and artifact creation' {
+        InModuleScope $script:moduleName {
+            $projectRoot = '/tmp/nova-project'
+            $cfg = [pscustomobject]@{
+                Run = [pscustomobject]@{Path = $null; PassThru = $false; Exit = $false; Throw = $false}
+                Filter = [pscustomobject]@{Tag = @(); ExcludeTag = @()}
+                Output = [pscustomobject]@{Verbosity = 'Detailed'; RenderMode = 'Auto'}
+                TestResult = [pscustomobject]@{OutputPath = $null}
+            }
+
+            Mock Test-ProjectSchema {}
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    Pester = @{}
+                    BuildRecursiveFolders = $true
+                    TestsDir = 'tests'
+                    ProjectRoot = $projectRoot
+                }
+            }
+            Mock New-PesterConfiguration {$cfg}
+            Mock Test-Path {$false}
+            Mock New-Item {throw 'should not create artifacts'}
+            Mock Invoke-Pester {throw 'should not run tests'}
+
+            $result = Test-NovaBuild -WhatIf
+
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled New-Item -Times 0
+            Assert-MockCalled Invoke-Pester -Times 0
+        }
+    }
+
     It 'Invoke-NovaRelease runs build test bump build publish in order' {
         InModuleScope $script:moduleName {
             $script:steps = @()
@@ -297,6 +374,40 @@ title: Invoke-NovaBuild
         }
     }
 
+    It 'Invoke-NovaRelease -WhatIf forwards preview mode through the nested workflow' {
+        InModuleScope $script:moduleName {
+            $script:steps = @()
+            $publishAction = {
+                param($ProjectInfo, $ModuleDirectoryPath)
+
+                Publish-NovaBuiltModuleToDirectory @PSBoundParameters
+            }
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            }
+            Mock Get-Command {
+                [pscustomobject]@{ScriptBlock = $publishAction}
+            } -ParameterFilter {$Name -eq 'Publish-NovaBuiltModuleToDirectory' -and $CommandType -eq 'Function'}
+            Mock Get-LocalModulePath {'/tmp/modules'}
+            Mock Invoke-NovaBuild {$script:steps += "build:$WhatIfPreference"}
+            Mock Test-NovaBuild {$script:steps += "test:$WhatIfPreference"}
+            Mock Update-NovaModuleVersion {
+                $script:steps += "bump:$WhatIfPreference"
+                [pscustomobject]@{PreviousVersion = '1.0.0'; NewVersion = '1.0.0'; Label = 'Patch'; CommitCount = 0}
+            }
+            Mock Publish-NovaBuiltModuleToDirectory {$script:steps += "publish:$WhatIfPreference"}
+
+            $result = Invoke-NovaRelease -PublishOption @{Local = $true} -Path (Get-Location).Path -WhatIf
+
+            $script:steps -join ',' | Should -Be 'build:True,test:True,bump:True,build:True,publish:True'
+            $result.NewVersion | Should -Be '1.0.0'
+        }
+    }
+
     It 'Publish-NovaModule resolves local path before tests can reload helpers' {
         InModuleScope $script:moduleName {
             $script:steps = @()
@@ -324,6 +435,36 @@ title: Invoke-NovaBuild
 
             $script:steps -join ',' | Should -Be 'resolve,build,test,copy'
             Assert-MockCalled Copy-Item -Times 1 -ParameterFilter {$Destination -eq '/tmp/modules'}
+        }
+    }
+
+    It 'Publish-NovaModule -WhatIf forwards preview mode to build, test, and publish helpers' {
+        InModuleScope $script:moduleName {
+            $script:steps = @()
+            $publishAction = {
+                param($ProjectInfo, $ModuleDirectoryPath)
+
+                Publish-NovaBuiltModuleToDirectory @PSBoundParameters
+            }
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            }
+            Mock Get-Command {
+                [pscustomobject]@{ScriptBlock = $publishAction}
+            } -ParameterFilter {$Name -eq 'Publish-NovaBuiltModuleToDirectory' -and $CommandType -eq 'Function'}
+            Mock Get-LocalModulePath {'/tmp/modules'}
+            Mock Invoke-NovaBuild {$script:steps += "build:$WhatIfPreference"}
+            Mock Test-NovaBuild {$script:steps += "test:$WhatIfPreference"}
+            Mock Publish-NovaBuiltModuleToDirectory {$script:steps += "publish:$WhatIfPreference"}
+
+            $result = Publish-NovaModule -Local -WhatIf
+
+            $result | Should -BeNullOrEmpty
+            $script:steps -join ',' | Should -Be 'build:True,test:True,publish:True'
         }
     }
 
@@ -433,10 +574,9 @@ title: Invoke-NovaBuild
         $publishFunction | Should -Not -BeNullOrEmpty
         $publishSource = $publishFunction.Extent.Text
 
-        $publishSource.IndexOf('$PSBoundParameters.ContainsKey(''Repository'')') | Should -BeGreaterThan -1
-        $publishSource.IndexOf('Get-LocalModulePath') | Should -BeGreaterThan -1
+        $publishSource.IndexOf('Resolve-NovaPublishInvocation') | Should -BeGreaterThan -1
         $publishSource.IndexOf('Invoke-NovaBuild') | Should -BeGreaterThan -1
-        $publishSource.IndexOf('Get-LocalModulePath') | Should -BeLessThan $publishSource.IndexOf('Invoke-NovaBuild')
+        $publishSource.IndexOf('Resolve-NovaPublishInvocation') | Should -BeLessThan $publishSource.IndexOf('Invoke-NovaBuild')
     }
 
     It 'Update-NovaModuleVersion -WhatIf does not invoke Set-NovaModuleVersion' {
@@ -620,6 +760,18 @@ function Invoke-TestCliVerbose {
 
             $result.Repository | Should -Be 'PSGallery'
             $result.ApiKey | Should -Be 'key123'
+        }
+    }
+
+    It 'Invoke-NovaCli forwards WhatIf to mutating routed commands' {
+        InModuleScope $script:moduleName {
+            Mock Publish-NovaModule {
+                [pscustomobject]@{WhatIfSeen = $WhatIfPreference}
+            }
+
+            $result = Invoke-NovaCli publish --repository PSGallery --apikey key123 -WhatIf
+
+            $result.WhatIfSeen | Should -BeTrue
         }
     }
 

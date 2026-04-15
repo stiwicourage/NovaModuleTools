@@ -1,5 +1,5 @@
 function Publish-NovaBuiltModuleToDirectory {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [Parameter(Mandatory)]
         [pscustomobject]$ProjectInfo,
@@ -8,11 +8,16 @@ function Publish-NovaBuiltModuleToDirectory {
         [string]$ModuleDirectoryPath
     )
 
+    $targetPath = Join-Path -Path $ModuleDirectoryPath -ChildPath $ProjectInfo.ProjectName
+    if (-not $PSCmdlet.ShouldProcess($targetPath, 'Publish built module to local directory')) {
+        return
+    }
+
     if (-not (Test-Path -LiteralPath $ModuleDirectoryPath -PathType Container)) {
         New-Item -Path $ModuleDirectoryPath -ItemType Directory -Force | Out-Null
     }
 
-    $oldModule = Join-Path -Path $ModuleDirectoryPath -ChildPath $ProjectInfo.ProjectName
+    $oldModule = $targetPath
     if (Test-Path -LiteralPath $oldModule) {
         Remove-Item -LiteralPath $oldModule -Recurse -Force
     }

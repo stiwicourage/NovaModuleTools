@@ -5,6 +5,10 @@ function Reset-ProjectDist {
     $data = Get-NovaProjectInfo
     try {
         Write-Verbose 'Running dist folder reset'
+        if (-not $PSCmdlet.ShouldProcess($data.OutputDir, 'Reset build output directory')) {
+            return
+        }
+
         if (Test-Path $data.OutputDir) {
             Remove-Item -Path $data.OutputDir -Recurse -Force -ProgressAction SilentlyContinue -ErrorAction Stop
         }
