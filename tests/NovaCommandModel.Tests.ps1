@@ -14,10 +14,9 @@ BeforeAll {
 
     Remove-Module $script:moduleName -ErrorAction SilentlyContinue
     Import-Module $distModuleDir -Force
+    . $testSupportPath
 
     $helpMetadata = & {
-        . $testSupportPath
-
         $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:projectInfo.DocsDir -Filter '*.md' -Recurse
         [pscustomobject]@{
             HelpLocale = Get-TestHelpLocaleFromMarkdownFiles -Files $helpMarkdownFiles
@@ -715,6 +714,74 @@ function Invoke-TestCliVerbose {
         }
     }
 
+    It 'Install-NovaCli forwards -WhatIf from the standalone launcher without mutating build, bump, or publish state' {
+        $targetDirectory = Join-Path $TestDrive 'whatif-bin'
+        $installedPath = Join-Path $targetDirectory 'nova'
+        $projectRoot = Join-Path $TestDrive 'CliWhatIfProject'
+        $projectJsonPath = Join-Path $projectRoot 'project.json'
+        $builtModulePath = Join-Path $projectRoot 'dist/CliWhatIfProject/CliWhatIfProject.psm1'
+        $testResultPath = Join-Path $projectRoot 'artifacts/TestResults.xml'
+        $originalModulePath = $env:PSModulePath
+        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
+        $distParent = Split-Path -Parent $distModuleDir
+
+        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
+
+        Initialize-TestNovaCliProjectLayout -ProjectRoot $projectRoot
+        Write-TestNovaCliProjectJson -ProjectRoot $projectRoot -ProjectName 'CliWhatIfProject' -ProjectGuid '33333333-3333-3333-3333-333333333333'
+        Write-TestNovaCliPublicFunction -ProjectRoot $projectRoot -FunctionName 'Invoke-TestCliWhatIf'
+
+        try {
+            Initialize-TestGitRepository -ProjectRoot $projectRoot -CommitMessage 'feat: add cli whatif coverage'
+
+            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
+
+            $buildResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('build', '-WhatIf')
+            $publishResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('publish', '--local', '-WhatIf')
+            $bumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '-WhatIf')
+            $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
+
+            $buildResult.ExitCode | Should -Be 0
+            $publishResult.ExitCode | Should -Be 0
+            $bumpResult.ExitCode | Should -Be 0
+            $buildResult.Text | Should -Match 'What if:'
+            $publishResult.Text | Should -Match 'What if:'
+            $publishResult.Text | Should -Not -Match 'Unknown argument:'
+            $bumpResult.Text | Should -Match 'What if:'
+            $bumpResult.Text | Should -Not -Match 'Version bumped to :'
+            $versionAfterBump | Should -Be '0.0.1'
+            (Test-Path -LiteralPath $builtModulePath) | Should -BeFalse
+            (Test-Path -LiteralPath $testResultPath) | Should -BeFalse
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+    }
+
+    It 'Install-NovaCli rejects nova init -WhatIf with a clear CLI error' {
+        $targetDirectory = Join-Path $TestDrive 'init-whatif-bin'
+        $installedPath = Join-Path $targetDirectory 'nova'
+        $workspaceRoot = Join-Path $TestDrive 'CliInitWhatIfRoot'
+        $originalModulePath = $env:PSModulePath
+        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
+        $distParent = Split-Path -Parent $distModuleDir
+
+        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
+        New-Item -ItemType Directory -Path $workspaceRoot -Force | Out-Null
+
+        try {
+            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
+            $initResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $workspaceRoot -Arguments @('init', '-WhatIf')
+
+            $initResult.ExitCode | Should -Not -Be 0
+            $initResult.Text | Should -Match 'does not support -WhatIf'
+            $initResult.Text | Should -Not -Match 'Not a valid path'
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+    }
+
     It 'Invoke-NovaCli version returns the project name and version' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectName = 'AzureDevOpsAgentInstaller'; Version = '1.2.3'}}
@@ -772,6 +839,12 @@ function Invoke-TestCliVerbose {
             $result = Invoke-NovaCli publish --repository PSGallery --apikey key123 -WhatIf
 
             $result.WhatIfSeen | Should -BeTrue
+        }
+    }
+
+    It 'Invoke-NovaCli init rejects -WhatIf with a clear error' {
+        InModuleScope $script:moduleName {
+            {Invoke-NovaCli init -WhatIf} | Should -Throw "*does not support -WhatIf*"
         }
     }
 

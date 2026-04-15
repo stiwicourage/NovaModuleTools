@@ -9,23 +9,8 @@ function Invoke-NovaCli {
         [string[]]$Arguments
     )
 
-    $commonParameters = @{}
-    if ( $PSBoundParameters.ContainsKey('Verbose')) {
-        $commonParameters.Verbose = $true
-    }
-
-    $mutatingCommonParameters = @{}
-    foreach ($parameterKey in $commonParameters.Keys) {
-        $mutatingCommonParameters[$parameterKey] = $commonParameters[$parameterKey]
-    }
-
-    if ($WhatIfPreference) {
-        $mutatingCommonParameters.WhatIf = $true
-    }
-
-    if ( $PSBoundParameters.ContainsKey('Confirm')) {
-        $mutatingCommonParameters.Confirm = [bool]$PSBoundParameters.Confirm
-    }
+    $commonParameters = Get-NovaCliForwardingParameterSet -BoundParameters $PSBoundParameters
+    $mutatingCommonParameters = Get-NovaCliForwardingParameterSet -BoundParameters $PSBoundParameters -IncludeShouldProcess
 
     $Arguments = ConvertTo-NovaCliArgumentArray -BoundParameters $PSBoundParameters -Arguments $Arguments
 
@@ -44,6 +29,10 @@ function Invoke-NovaCli {
             return Test-NovaBuild @mutatingCommonParameters
         }
         'init' {
+            if ($WhatIfPreference) {
+                throw "The 'nova init' CLI command does not support -WhatIf. Run 'nova init [path]' without -WhatIf."
+            }
+
             if ($Arguments.Count -gt 0) {
                 return New-NovaModule -Path $Arguments[0] @mutatingCommonParameters
             }

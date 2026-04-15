@@ -35,9 +35,12 @@ It dispatches high-level commands such as `nova info`, `nova version`, `nova --v
 Use `Invoke-NovaCli` when you need a scriptable PowerShell command entrypoint. Use `nova` when you want the
 user-focused CLI experience.
 
-Mutating routed commands (`build`, `test`, `init`, `bump`, `publish`, and `release`) forward PowerShell
+Mutating routed commands (`build`, `test`, `bump`, `publish`, and `release`) forward PowerShell
 `-WhatIf`/`-Confirm` to the underlying cmdlet. That means `nova build -WhatIf` and
 `Invoke-NovaCli -Command build -WhatIf` both preview the build instead of running it.
+
+`nova init` remains interactive and expects only an optional path argument. For that reason, the CLI rejects
+`nova init -WhatIf` with a clear error instead of treating `-WhatIf` as a path.
 
 Inside an imported PowerShell session, `nova` is available through the cmdlet alias. To make `nova` available directly
 from zsh/bash on macOS or Linux, install the launcher once with `Install-NovaCli`. The standalone launcher also forwards

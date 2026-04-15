@@ -36,8 +36,11 @@ The format follows the principles from Keep a Changelog and the project aims to 
 
 ### Fixed
 
+- Fix the internal CLI forwarding helper name so ScriptAnalyzer no longer reports a plural-noun cmdlet warning.
 - Fix the standalone macOS/Linux `nova` launcher so `nova build -Verbose` forwards the verbose flag to the underlying
   build command.
+- Fix standalone CLI `-WhatIf` handling so `build`, `test`, `bump`, `publish`, and `release` forward preview mode
+  correctly, while `nova init -WhatIf` now fails with a clear CLI error instead of being treated as a path.
 - Fix the CI helper flow so its second Pester pass reloads the freshly built `dist/` module during test discovery.
 - Fix `Get-NovaProjectInfo` so empty `project.json` files fail with a clear configuration error.
 - Fix `Invoke-CodeSceneAnalysis.ps1` so `-TriggerAnalysis` can run without `-CoveragePath`.

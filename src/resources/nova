@@ -15,12 +15,22 @@ else {
 }
 
 $forwardVerbose = $false
+$forwardWhatIf = $false
+$forwardConfirm = $false
 $remainingArguments = New-Object 'System.Collections.Generic.List[string]'
 
 foreach ($argument in $Arguments) {
     switch -Regex ($argument) {
         '^(--verbose|-Verbose)$' {
             $forwardVerbose = $true
+            continue
+        }
+        '^-WhatIf$' {
+            $forwardWhatIf = $true
+            continue
+        }
+        '^-Confirm$' {
+            $forwardConfirm = $true
             continue
         }
         default {
@@ -40,6 +50,14 @@ $invokeParameters = @{
 
 if ($forwardVerbose) {
     $invokeParameters.Verbose = $true
+}
+
+if ($forwardWhatIf) {
+    $invokeParameters.WhatIf = $true
+}
+
+if ($forwardConfirm) {
+    $invokeParameters.Confirm = $true
 }
 
 Invoke-NovaCli @invokeParameters

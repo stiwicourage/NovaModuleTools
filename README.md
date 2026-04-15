@@ -53,9 +53,13 @@ From the standalone CLI on macOS/Linux, the routed commands forward preview mode
 ```bash
 nova build -WhatIf
 nova test -WhatIf
+nova bump -WhatIf
 nova publish -local -WhatIf
 nova release -local -WhatIf
 ```
+
+`nova init` is intentionally still interactive and expects only an optional path argument, so the standalone CLI does
+not support `nova init -WhatIf`.
 
 For command-specific details and examples, run `Get-Help <CommandName> -Full` after importing the module.
 
