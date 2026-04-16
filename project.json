@@ -1,7 +1,7 @@
 {
   "ProjectName": "NovaModuleTools",
   "Description": "NovaModuleTools is an enterprise-focused evolution of ModuleTools, designed for large-scale PowerShell projects with a strong emphasis on structure, maintainability, and automated CI/CD pipelines.",
-  "Version": "1.10.2",
+  "Version": "1.10.3",
   "Preamble": [
     "Set-StrictMode -Version Latest",
     "$ErrorActionPreference = 'Stop'"
