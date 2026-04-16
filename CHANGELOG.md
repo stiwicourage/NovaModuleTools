@@ -27,6 +27,7 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Change the project to a Nova-first command model, replacing the previous mixed MT/Nova workflow.
 - Change documentation ownership so GitHub repository docs focus on contributors, while GitHub Pages now provides the
   task-oriented end-user guide experience.
+- Change contributor documentation to use `README.md` as the single developer source of truth.
 - Change `CopyResourcesToModuleRoot` to an optional project setting that defaults to `false`, and standardize the
   setting name across templates, tests, and docs.
 - Change `Publish-NovaModule` and `Invoke-NovaRelease` to resolve publish targets before running build and test steps.

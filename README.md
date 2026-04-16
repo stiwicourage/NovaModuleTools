@@ -1,14 +1,11 @@
 # NovaModuleTools | [![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/78904) ![WorkFlow Status][WorkFlowStatus]
 
-NovaModuleTools is an enterprise-focused evolution of ModuleTools, designed for large-scale PowerShell projects with a
-strong emphasis on structure, maintainability, and automated CI/CD pipelines that make up the Nova workflow.
+NovaModuleTools is an enterprise-focused evolution of ModuleTools for structured PowerShell module development,
+repository automation, and maintainable Nova workflows.
 
-This README is intentionally a **short contributor entry page**. Detailed developer guidance lives under
-developer-docs/ and should not be duplicated here.
+This README is the single developer-documentation entry point for the repository.
 
-If you are looking for **user guides** to NovaModuleTools, proceed
-to [novamoduletools.com](https://www.novamoduletools.com/)
-for more information.
+### If you are looking for end-user guides, go to [www.novamoduletools.com](https://www.novamoduletools.com/).
 
 ## Documentation split
 
@@ -17,56 +14,353 @@ for more information.
 | Contributors and maintainers | GitHub repository | Build, test, debug, document, and release NovaModuleTools |
 | End users                    | GitHub Pages      | Install NovaModuleTools and follow guided usage workflows |
 
-## Contributor docs in this repository
+## Table of contents
+
+- [Contributor entry points](#contributor-entry-points)
+- [Development workflow](#development-workflow)
+- [Repository structure and ownership](#repository-structure-and-ownership)
+- [CI/CD and release automation](#cicd-and-release-automation)
+- [Documentation ownership rules](#documentation-ownership-rules)
+- [End-user docs on GitHub Pages](#end-user-docs-on-github-pages)
+- [License](#license)
+
+## Contributor entry points
+
+Start here when you work on NovaModuleTools itself:
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — contribution expectations and review checklist
-- [developer-docs/README.md](./developer-docs/README.md) — developer documentation hub
-- [developer-docs/development-workflow.md](./developer-docs/development-workflow.md) — local setup, build, test,
-  reload, and quality loop
-- [developer-docs/repository-structure.md](./developer-docs/repository-structure.md) — repository architecture and
-  ownership
-- [developer-docs/ci-cd-and-release.md](./developer-docs/ci-cd-and-release.md) — CI, semantic-release, and publish
-  pipeline responsibilities
+- [Development workflow](#development-workflow) — local setup, build, test, reload, and quality loop
+- [Repository structure and ownership](#repository-structure-and-ownership) — architecture and folder responsibilities
+- [CI/CD and release automation](#cicd-and-release-automation) — workflow, release, and publish responsibilities
 
-## End-user docs on GitHub Pages
-
-- `docs/index.html` — landing page
-- `docs/getting-started.html` — install and first project setup
-- `docs/core-workflows.html` — scaffold, build, test, bump, and release flows
-- `docs/working-with-modules.html` — import and reload usage
-- `docs/troubleshooting.html` — common issues and fixes
-- `docs/advanced.html` — advanced usage and CI/CD-oriented user guidance
-
-## Repository overview
-
-High-level responsibilities:
-
-- `src/public/` — public cmdlets
-- `src/private/` — internal helpers
-- `src/resources/` — packaged resources
-- `tests/` — Pester coverage and test helpers
-- `scripts/` — build, CI, and release automation
-- `docs/NovaModuleTools/en-US/` — PlatyPS command-help source
-
-For structure and ownership details, use
-[developer-docs/repository-structure.md](./developer-docs/repository-structure.md).
-
-## Start here as a contributor
+Suggested reading order:
 
 1. Read [CONTRIBUTING.md](./CONTRIBUTING.md)
-2. Use [developer-docs/README.md](./developer-docs/README.md) as the developer docs hub
-3. Follow [developer-docs/development-workflow.md](./developer-docs/development-workflow.md) for local build, test,
-   reload, and quality flows
-4. Use [developer-docs/ci-cd-and-release.md](./developer-docs/ci-cd-and-release.md) when your change touches
-   workflows, release automation, or publishing
+2. Follow [Development workflow](#development-workflow) for local iteration
+3. Use [Repository structure and ownership](#repository-structure-and-ownership) when deciding where changes belong
+4. Use [CI/CD and release automation](#cicd-and-release-automation) when your change touches workflows, release
+   automation, or publishing
+
+## Development workflow
+
+This section describes how to work on the NovaModuleTools repository itself.
+
+### Prerequisites
+
+Repository development expects:
+
+- PowerShell 7.4 or newer
+- Git
+- `Pester`
+- `PSScriptAnalyzer`
+- `Microsoft.PowerShell.PlatyPS`
+
+Node.js is only required if you are working on the current semantic-release-based publish pipeline.
+
+### Build the module locally
+
+From the repository root:
+
+```powershell
+PS> Set-Location $PSScriptRoot
+PS> Invoke-NovaBuild
+```
+
+This creates the built module under `dist/NovaModuleTools/`.
+
+### Reload the built module while iterating
+
+Use the built output during development so you validate the same shape CI uses:
+
+```powershell
+PS> Remove-Module NovaModuleTools -ErrorAction SilentlyContinue
+PS> Invoke-NovaBuild
+PS> Import-Module ./dist/NovaModuleTools -Force
+```
+
+If you are testing local publish behavior:
+
+```powershell
+PS> Remove-Module NovaModuleTools -ErrorAction SilentlyContinue
+PS> Publish-NovaModule -Local
+PS> Import-Module ./dist/NovaModuleTools -Force
+```
+
+Useful local helper:
+
+```powershell
+# reload.ps1
+Set-Location $PSScriptRoot
+
+$projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
+$distModuleDir = Join-Path $PSScriptRoot "dist/$projectName"
+$distManifestPath = Join-Path $distModuleDir "$projectName.psd1"
+
+Get-Module $projectName -All | Remove-Module -Force -ErrorAction SilentlyContinue
+Invoke-NovaBuild
+Get-Module $projectName -All | Remove-Module -Force -ErrorAction SilentlyContinue
+$module = Import-Module $distManifestPath -Force -PassThru
+
+& $module {
+    Publish-NovaModule -Local
+}
+
+Get-Module $projectName -All | Remove-Module -Force -ErrorAction SilentlyContinue
+$module = Import-Module $distManifestPath -Force -PassThru
+
+# Only use Install-NovaCli for macOS/Linux users.
+# & $module {
+#     Install-NovaCli -Force
+# }
+```
+
+### Run tests
+
+Run the repository test workflow from the repository root:
+
+```powershell
+PS> Test-NovaBuild
+```
+
+Notes:
+
+- `Test-NovaBuild` validates the built module output, not just loose source files
+- it writes NUnit XML to `artifacts/TestResults.xml`
+- it respects `BuildRecursiveFolders` when discovering tests
+
+### Run code quality checks
+
+Run ScriptAnalyzer with the repository helper:
+
+```powershell
+PS> & ./scripts/build/Invoke-ScriptAnalyzerCI.ps1
+```
+
+This writes findings to `artifacts/scriptanalyzer.txt`.
+
+For CI-parity coverage and report generation, use:
+
+```powershell
+PS> & ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1
+```
+
+That flow builds the module, runs ScriptAnalyzer, runs the normal test workflow, and emits CI-friendly reports such as:
+
+- `artifacts/novamoduletools-nunit.xml`
+- `artifacts/pester-junit.xml`
+- `artifacts/pester-coverage.cobertura.xml`
+- `artifacts/coverage-low.txt`
+
+### Recommended local quality loop
+
+```powershell
+# run.ps1
+Set-Location $PSScriptRoot
+
+$projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
+$distModuleDir = Join-Path $PSScriptRoot "dist/$projectName"
+
+Invoke-NovaBuild
+& (Join-Path $PSScriptRoot 'scripts/build/Invoke-ScriptAnalyzerCI.ps1')
+Remove-Module $projectName -ErrorAction SilentlyContinue
+Import-Module $distModuleDir -Force
+Test-NovaBuild
+```
+
+### Working on help and docs
+
+Command help markdown lives under `docs/NovaModuleTools/en-US/` and is consumed by `Invoke-NovaBuild`.
+
+Important distinction:
+
+- `docs/NovaModuleTools/en-US/*.md` → PlatyPS command-help source
+- `docs/*.html` → GitHub Pages end-user guides
+- `README.md` and `CONTRIBUTING.md` → contributor documentation
+
+Do not place general developer markdown under `docs/`, because the build scans `docs/**/*.md` when generating help.
+
+## Repository structure and ownership
+
+This section explains how the NovaModuleTools repository is organized and what each major area owns.
+
+### Top-level overview
+
+```text
+.
+├── .github/                    # GitHub Actions workflows
+├── docs/                       # GitHub Pages HTML + PlatyPS help markdown
+├── scripts/                    # build, CI, and release automation
+├── src/                        # production PowerShell code and packaged resources
+├── tests/                      # Pester suites and reusable test helpers
+├── project.json                # NovaModuleTools project definition
+├── package.json                # semantic-release tooling for current publish automation
+└── CHANGELOG.md                # release notes and unreleased change tracking
+```
+
+### Source code layout
+
+#### `src/public/`
+
+Public cmdlets that make up the NovaModuleTools API surface, for example:
+
+- `Invoke-NovaBuild`
+- `Test-NovaBuild`
+- `New-NovaModule`
+- `Update-NovaModuleVersion`
+
+#### `src/private/`
+
+Internal implementation helpers grouped by concern, including:
+
+- `build/`
+- `cli/`
+- `quality/`
+- `release/`
+- `scaffold/`
+- `shared/`
+
+Keep new helpers small, focused, and near the concern they belong to.
+
+#### `src/resources/`
+
+Packaged resources that ship with the module, including:
+
+- schemas
+- the standalone `nova` launcher
+- the packaged example project under `src/resources/example/`
+
+The example project is both a shipped resource and a maintained working reference.
+
+### Test layout
+
+#### `tests/`
+
+Repository-level Pester coverage for:
+
+- public command behavior
+- internal helper behavior
+- build and packaging expectations
+- CI/report generation flows
+
+Shared test utilities live alongside the tests, for example:
+
+- `GitTestSupport.ps1`
+- `BuildOptions.TestSupport.ps1`
+- `NovaCommandModel.TestSupport.ps1`
+
+### Documentation layout
+
+#### `README.md` and `CONTRIBUTING.md`
+
+These are the top-level GitHub entry points for contributors and maintainers.
+
+#### `docs/`
+
+This folder has two different responsibilities that must stay separated by file type:
+
+- `docs/*.html` → GitHub Pages end-user guides
+- `docs/NovaModuleTools/en-US/*.md` → PlatyPS command-help source
+
+The build treats markdown under `docs/` as help input, so general-purpose developer documentation should not be added
+there.
+
+### Scripts and automation
+
+#### `scripts/build/`
+
+Build, analyzer, and CI helper scripts.
+
+#### `scripts/release/`
+
+Release preparation and publish helpers used by the current release workflow.
+
+These scripts are currently part of a wider GitHub Actions + semantic-release pipeline, not a standalone replacement for
+it.
+
+## CI/CD and release automation
+
+This section describes the current repository automation used to validate and publish NovaModuleTools.
+
+### CI expectations
+
+The repository uses GitHub Actions under `.github/workflows/`.
+
+At a minimum, contributor changes are expected to keep these workflows healthy:
+
+- build
+- test
+- analyzer / coverage
+- publish / release automation
+
+Repository scripts under `scripts/build/ci/` provide local parity for CI-oriented reporting.
+
+### Build and test automation
+
+The normal repository workflow is:
+
+1. `Invoke-NovaBuild`
+2. `Test-NovaBuild`
+3. ScriptAnalyzer via `scripts/build/Invoke-ScriptAnalyzerCI.ps1`
+4. Optional CI helper flow via `scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
+
+The CI helper flow also produces JUnit and Cobertura artifacts for external systems.
+
+### Release automation
+
+The current publish pipeline is still semantic-release based.
+
+Key pieces:
+
+- `.github/workflows/Publish.yml`
+- `.releaserc.json`
+- `package.json`
+- `scripts/release/Prepare-SemanticRelease.ps1`
+- `scripts/release/Publish-ToPSGallery.ps1`
+- `scripts/release/SemanticReleaseSupport.ps1`
+
+Responsibilities currently covered by the release pipeline include:
+
+- choosing the next release version from commit history
+- updating `project.json`
+- finalizing `CHANGELOG.md`
+- rebuilding after version changes
+- creating release tags
+- creating GitHub releases
+- publishing to PowerShell Gallery
+
+### Where NovaModuleTools cmdlets fit
+
+NovaModuleTools already provides strong release building blocks:
+
+- `Update-NovaModuleVersion`
+- `Publish-NovaModule`
+- `Invoke-NovaRelease`
+
+But these do not yet replace every semantic-release responsibility in the current repository workflow.
+
+If you work on release automation, treat `package.json` and `.releaserc.json` as active parts of the present release
+system.
+
+### Contributor expectations for workflow changes
+
+When you change CI, build, or release behavior:
+
+- update tests
+- update command help if public command behavior changes
+- update `README.md` when contributor workflow changes
+- update `CHANGELOG.md` when the change is relevant to users or maintainers
 
 ## Documentation ownership rules
 
-- Keep detailed contributor workflow documentation under developer-docs/
-- Keep README.md short and navigation-focused
-- Keep docs/NovaModuleTools/en-US/*.md focused on command-help source material
-- Keep docs/*.html focused on end-user guides
-- Do not duplicate the same workflow or setup prose across README.md and developer-docs/
+- Keep contributor workflow, architecture, and automation documentation in `README.md`
+- Keep `CONTRIBUTING.md` focused on contribution expectations and review checklist items
+- Keep `docs/NovaModuleTools/en-US/*.md` focused on command-help source material
+- Keep `docs/*.html` focused on end-user guides
+- Do not duplicate the same workflow or setup prose across multiple contributor documents
+
+## End-user docs on GitHub Pages
+
+### [www.novamoduletools.com](https://www.novamoduletools.com/)
 
 ## License
 

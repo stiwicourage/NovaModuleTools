@@ -24,10 +24,9 @@ If you want to contribute, please work in the same style as the project:
 Before making larger changes, read the contributor docs in:
 
 - [README.md](./README.md)
-- [developer-docs/README.md](./developer-docs/README.md)
-- [developer-docs/development-workflow.md](./developer-docs/development-workflow.md)
-- [developer-docs/repository-structure.md](./developer-docs/repository-structure.md)
-- [developer-docs/ci-cd-and-release.md](./developer-docs/ci-cd-and-release.md)
+- [README.md#development-workflow](./README.md#development-workflow)
+- [README.md#repository-structure-and-ownership](./README.md#repository-structure-and-ownership)
+- [README.md#cicd-and-release-automation](./README.md#cicd-and-release-automation)
 
 **Before opening a pull request, please run the local quality flow from the repository root:**
 
@@ -50,7 +49,7 @@ Please also make sure your contribution includes the right kind of follow-up wor
 
 - add or update tests when behavior changes
 - update help files in `docs/` when a command changes
-- update `README.md` and `developer-docs/` when repository workflow, architecture, or contributor expectations change
+- update `README.md` when repository workflow, architecture, or contributor expectations change
 - update `CHANGELOG.md` when the change is relevant to users, maintainers, or future contributors
 - keep `src/resources/example/` useful if your change affects the real-world project layout or workflow
 
