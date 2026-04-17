@@ -470,6 +470,40 @@ p {
     max-width: 780px;
 }
 
+.footer__legal {
+    margin-top: 1.25rem;
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+.legal-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.legal-link:hover {
+    text-decoration: underline;
+}
+
+.license-card {
+    background: var(--panel);
+    border: 1px solid var(--outline);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(12px);
+    padding: 1.35rem;
+}
+
+.license-copy {
+    margin-top: 1rem;
+}
+
+.license-copy pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 @media (max-width: 960px) {
     .site-header__inner,
     .hero,

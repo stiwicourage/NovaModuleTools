@@ -22,7 +22,7 @@
     "ProjectUri": "https://www.novamoduletools.com",
     "ReleaseNotes": "https://github.com/stiwicourage/NovaModuleTools/blob/main/CHANGELOG.md",
     "IconUri": "https://www.novamoduletools.com/assets/icon.png",
-    "LicenseUri": "https://github.com/stiwicourage/NovaModuleTools/blob/main/LICENSE"
+    "LicenseUri": "https://www.novamoduletools.com/license.html"
   },
   "Pester": {
     "TestResult": {

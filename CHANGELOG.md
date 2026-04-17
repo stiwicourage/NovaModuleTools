@@ -41,6 +41,7 @@ The format follows the principles from Keep a Changelog and the project aims to 
   `nova init <path>` is now rejected with a clear migration hint.
 - Change the example project to use a single packaged source of truth under `src/resources/example/`, so `nova build`
   includes it in the built module resources.
+- Change the public documentation site to host the project license directly and link to it from the published pages.
 - Change CI, release, and contributor documentation to reflect the Nova workflow, refreshed command help, and GitHub
   comparison links.
 
