@@ -42,4 +42,3 @@ function Format-ReleaseChangelogText {
 
     return ($bodyWithoutFooter.TrimEnd() + "`n`n" + $referenceFooter.TrimEnd() + "`n")
 }
-

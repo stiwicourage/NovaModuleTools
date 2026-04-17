@@ -8,4 +8,3 @@ function Get-ChangelogReleaseVersionList {
             ForEach-Object {$_.Groups['version'].Value}
     )
 }
-

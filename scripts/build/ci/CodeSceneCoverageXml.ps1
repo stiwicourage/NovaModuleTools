@@ -181,5 +181,3 @@ function Convert-CoberturaCoverageToSourcePath {
         $xmlWriter.Dispose()
     }
 }
-
-

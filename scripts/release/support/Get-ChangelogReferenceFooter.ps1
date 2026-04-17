@@ -29,4 +29,3 @@ function Get-ChangelogReferenceFooter {
 
     return $footerLines -join "`n"
 }
-

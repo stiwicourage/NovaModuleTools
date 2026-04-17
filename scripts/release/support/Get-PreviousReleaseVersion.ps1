@@ -15,4 +15,3 @@ function Get-PreviousReleaseVersion {
             Select-Object -Last 1
     )[0]
 }
-

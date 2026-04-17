@@ -16,4 +16,3 @@ function Get-OrderedReleaseVersionList {
             ForEach-Object {$_.Version}
     )
 }
-

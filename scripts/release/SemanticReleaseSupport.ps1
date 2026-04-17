@@ -23,5 +23,3 @@ $script:supportFileList = @(
 foreach ($supportFile in $script:supportFileList) {
     . (Join-Path $script:supportRoot $supportFile)
 }
-
-

@@ -16,6 +16,3 @@ Write-ChangelogFileForRelease -Path $ChangelogFile -Version $Version -Date (Get-
 
 Import-Module NovaModuleTools -Force
 Invoke-NovaBuild -Verbose
-
-
-

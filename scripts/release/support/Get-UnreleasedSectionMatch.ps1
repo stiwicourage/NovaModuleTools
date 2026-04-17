@@ -12,4 +12,3 @@ function Get-UnreleasedSectionMatch {
 
     return $match
 }
-

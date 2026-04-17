@@ -14,5 +14,3 @@ if (-not (Test-Path -LiteralPath $ModulePath)) {
 }
 
 Publish-PSResource -Path $ModulePath -Repository PSGallery -ApiKey $ApiKey -Verbose
-
-

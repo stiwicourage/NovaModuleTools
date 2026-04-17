@@ -97,4 +97,3 @@ Write-CoverageLowReport -CoveragePath (Join-Path $OutputDirectory 'pester-covera
 if ($novaModuleToolsTestFailed -or $result.FailedCount -gt 0) {
     exit 1
 }
-

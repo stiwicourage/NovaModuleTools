@@ -1,7 +1,7 @@
 param(
     [string[]]$ModuleName = @(
     'Pester',
-    'NovaModuleTools',
+    'NovaModuleTools -AllowPrerelease',
     'Microsoft.PowerShell.PlatyPS'
 )
 )
@@ -28,5 +28,3 @@ Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 foreach ($name in $ModuleName) {
     Install-CiModule -Name $name
 }
-
-

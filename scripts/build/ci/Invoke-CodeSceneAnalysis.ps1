@@ -87,5 +87,3 @@ if ($shouldUploadCoverage) {
 if ($shouldRunAnalysis) {
     Invoke-CodeSceneAnalysisTrigger -CodeSceneUrl $codeSceneUrl -ProjectId $projectId -AccessToken $accessToken
 }
-
-

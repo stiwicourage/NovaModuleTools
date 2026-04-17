@@ -50,4 +50,3 @@ function Write-CoverageLowReport {
 
     Set-Content -LiteralPath $OutputPath -Value $reportLines -Encoding utf8
 }
-

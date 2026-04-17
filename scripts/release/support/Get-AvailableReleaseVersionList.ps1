@@ -13,5 +13,3 @@ function Get-AvailableReleaseVersionList {
             Where-Object {-not [string]::IsNullOrWhiteSpace($_)}
     )
 }
-
-

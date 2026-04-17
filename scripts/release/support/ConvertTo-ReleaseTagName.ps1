@@ -5,4 +5,3 @@ function ConvertTo-ReleaseTagName {
 
     return "Version_$Version"
 }
-

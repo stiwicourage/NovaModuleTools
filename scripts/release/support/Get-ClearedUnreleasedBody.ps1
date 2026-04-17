@@ -15,4 +15,3 @@ function Get-ClearedUnreleasedBody {
 
     return ($headings -join "`n`n")
 }
-

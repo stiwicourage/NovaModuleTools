@@ -22,5 +22,3 @@ function Get-ChangelogWithoutReferenceFooter {
 
     return ($lines -join "`n")
 }
-
-

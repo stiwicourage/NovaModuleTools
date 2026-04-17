@@ -196,5 +196,3 @@ function Get-CoberturaLineBucketMap {
         LineBucketMap = $lineBucketsByFile
     }
 }
-
-

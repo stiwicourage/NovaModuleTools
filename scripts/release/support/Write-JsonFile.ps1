@@ -7,4 +7,3 @@ function Write-JsonFile {
     $json = $Data | ConvertTo-Json -Depth 20
     Set-Content -LiteralPath $Path -Value $json -Encoding utf8
 }
-

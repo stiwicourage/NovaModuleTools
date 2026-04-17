@@ -9,4 +9,3 @@ function Write-ChangelogFileForRelease {
     $updated = Format-ReleaseChangelogText -Text $text -Version $Version -Date $Date
     Set-Content -LiteralPath $Path -Value $updated -Encoding utf8
 }
-

@@ -5,4 +5,3 @@ function Read-JsonFile {
 
     return (Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json -AsHashtable)
 }
-

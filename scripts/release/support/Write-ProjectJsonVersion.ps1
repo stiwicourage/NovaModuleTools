@@ -8,4 +8,3 @@ function Write-ProjectJsonVersion {
     $project.Version = $Version
     Write-JsonFile -Path $Path -Data $project
 }
-
