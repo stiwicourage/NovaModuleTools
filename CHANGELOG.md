@@ -43,7 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Remove the legacy `MT` commands and MT-branded command documentation in favor of the Nova command model.
+- **BREAKING CHANGE**: Remove the legacy `MT` commands and MT-branded command documentation in favor of the Nova command
+  model.
+    - All public commands are now Nova commands, and the `nova` CLI/Powershell alias is the primary entry point for all
+      operations.
 
 ## [1.9.0] - 2026-04-10
 
