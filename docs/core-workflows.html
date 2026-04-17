@@ -3,13 +3,34 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
-    <title>NovaModuleTools — Core Workflows</title>
+    <title>NovaModuleTools — PowerShell module build, test, bump, and release workflows</title>
     <meta content="Follow the normal NovaModuleTools workflow for scaffolding, building, testing, versioning, and releasing a PowerShell module."
           name="description">
+    <meta content="index,follow,max-image-preview:large" name="robots">
     <meta content="#0b1020" name="theme-color">
+    <link href="https://www.novamoduletools.com/core-workflows.html" rel="canonical">
     <link href="./assets/icon.png" rel="icon" type="image/png">
     <link href="./assets/icon.png" rel="apple-touch-icon">
+    <meta content="article" property="og:type">
+    <meta content="NovaModuleTools — PowerShell module build, test, bump, and release workflows" property="og:title">
+    <meta content="Learn the standard NovaModuleTools workflow for scaffolding, building, testing, versioning, and releasing a PowerShell module."
+          property="og:description">
+    <meta content="https://www.novamoduletools.com/core-workflows.html" property="og:url">
+    <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
+    <meta content="summary" name="twitter:card">
+    <meta content="NovaModuleTools — PowerShell module build, test, bump, and release workflows" name="twitter:title">
+    <meta content="Learn the standard NovaModuleTools workflow for scaffolding, building, testing, versioning, and releasing a PowerShell module."
+          name="twitter:description">
     <link href="./assets/site.css" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            "headline": "NovaModuleTools Core Workflows",
+            "description": "Build, test, bump, and release PowerShell modules with NovaModuleTools.",
+            "url": "https://www.novamoduletools.com/core-workflows.html"
+        }
+    </script>
 </head>
 <body>
 <header class="site-header">
@@ -32,7 +53,7 @@
     <section class="guide-hero">
         <p class="eyebrow">Core workflows</p>
         <h1>Use NovaModuleTools as a repeatable scaffold → build → test → bump → release flow</h1>
-        <p class="lead">This guide explains the normal command sequence for day-to-day module work.</p>
+        <p class="lead">This guide explains the normal command sequence for day-to-day PowerShell module work.</p>
     </section>
 
     <section class="content-grid">
@@ -95,6 +116,9 @@ nova bump -WhatIf</code></pre>
 nova release -repository PSGallery -apikey $env:PSGALLERY_API</code></pre>
                 <p>The release flow coordinates build, test, version bump, rebuild, and publish. Use local mode when you
                     want to validate the release path without pushing to a repository.</p>
+                <p>For local import and reload habits after release validation, continue to <a class="text-link"
+                                                                                               href="./working-with-modules.html">Working
+                    with Modules</a>.</p>
             </section>
         </div>
     </section>

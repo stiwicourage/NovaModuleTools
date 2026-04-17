@@ -3,13 +3,34 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
-    <title>NovaModuleTools — Advanced Usage</title>
-    <meta content="Go beyond the default NovaModuleTools workflow with CI/CD integration, versioning expectations, and project.json customization."
+    <title>NovaModuleTools — Advanced PowerShell module usage and CI workflows</title>
+    <meta content="Go beyond the default NovaModuleTools workflow with PowerShell module CI/CD integration, versioning expectations, and project.json customization."
           name="description">
+    <meta content="index,follow,max-image-preview:large" name="robots">
     <meta content="#0b1020" name="theme-color">
+    <link href="https://www.novamoduletools.com/advanced.html" rel="canonical">
     <link href="./assets/icon.png" rel="icon" type="image/png">
     <link href="./assets/icon.png" rel="apple-touch-icon">
+    <meta content="article" property="og:type">
+    <meta content="NovaModuleTools — Advanced PowerShell module usage and CI workflows" property="og:title">
+    <meta content="Learn advanced NovaModuleTools usage for PowerShell module CI/CD, project.json customization, and release workflows."
+          property="og:description">
+    <meta content="https://www.novamoduletools.com/advanced.html" property="og:url">
+    <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
+    <meta content="summary" name="twitter:card">
+    <meta content="NovaModuleTools — Advanced PowerShell module usage and CI workflows" name="twitter:title">
+    <meta content="Learn advanced NovaModuleTools usage for PowerShell module CI/CD, project.json customization, and release workflows."
+          name="twitter:description">
     <link href="./assets/site.css" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            "headline": "Advanced NovaModuleTools usage",
+            "description": "Advanced PowerShell module CI/CD and project.json customization with NovaModuleTools.",
+            "url": "https://www.novamoduletools.com/advanced.html"
+        }
+    </script>
 </head>
 <body>
 <header class="site-header">
@@ -33,7 +54,7 @@
         <p class="eyebrow">Advanced usage</p>
         <h1>Adapt NovaModuleTools to larger workflows and more opinionated module projects</h1>
         <p class="lead">Use these advanced options when you want to integrate NovaModuleTools into CI/CD or customize
-            how projects are built and tested.</p>
+            how PowerShell module projects are built and tested.</p>
     </section>
 
     <section class="guide-content guide-content--single">
@@ -88,6 +109,8 @@
             <p>When you change manifest, resources, or module loading behavior, validate with local publish first:</p>
             <pre><code>nova publish -local</code></pre>
             <p>This helps catch packaging issues before a real repository publish or release run.</p>
+            <p>Need the standard command order first? Return to <a class="text-link" href="./core-workflows.html">Core
+                Workflows</a>.</p>
         </section>
     </section>
 </main>

@@ -3,13 +3,34 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
-    <title>NovaModuleTools — Troubleshooting</title>
-    <meta content="Fix common NovaModuleTools issues around scaffolding, building, testing, module reloads, and version bumps."
+    <title>NovaModuleTools — Troubleshooting PowerShell module workflow issues</title>
+    <meta content="Fix common NovaModuleTools issues around PowerShell module scaffolding, building, testing, module reloads, and version bumps."
           name="description">
+    <meta content="index,follow,max-image-preview:large" name="robots">
     <meta content="#0b1020" name="theme-color">
+    <link href="https://www.novamoduletools.com/troubleshooting.html" rel="canonical">
     <link href="./assets/icon.png" rel="icon" type="image/png">
     <link href="./assets/icon.png" rel="apple-touch-icon">
+    <meta content="article" property="og:type">
+    <meta content="NovaModuleTools — Troubleshooting PowerShell module workflow issues" property="og:title">
+    <meta content="Resolve common NovaModuleTools problems around PowerShell module scaffolding, build, test, reload, and version bump workflows."
+          property="og:description">
+    <meta content="https://www.novamoduletools.com/troubleshooting.html" property="og:url">
+    <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
+    <meta content="summary" name="twitter:card">
+    <meta content="NovaModuleTools — Troubleshooting PowerShell module workflow issues" name="twitter:title">
+    <meta content="Resolve common NovaModuleTools problems around PowerShell module scaffolding, build, test, reload, and version bump workflows."
+          name="twitter:description">
     <link href="./assets/site.css" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            "headline": "NovaModuleTools troubleshooting",
+            "description": "Resolve common PowerShell module workflow problems in NovaModuleTools.",
+            "url": "https://www.novamoduletools.com/troubleshooting.html"
+        }
+    </script>
 </head>
 <body>
 <header class="site-header">
@@ -33,7 +54,7 @@
         <p class="eyebrow">Troubleshooting</p>
         <h1>Common NovaModuleTools problems and how to get unstuck</h1>
         <p class="lead">These are the issues users most often hit while scaffolding, building, testing, and versioning a
-            project.</p>
+            PowerShell module project.</p>
     </section>
 
     <section class="guide-content guide-content--single">
@@ -77,6 +98,13 @@ Import-Module $project.OutputModuleDir -Force</code></pre>
             <p>Enable or keep <code>SetSourcePath</code> in <code>project.json</code>. NovaModuleTools will add <code>#
                 Source:</code> markers to the generated module so you can map errors back to the original files under
                 <code>src/</code>.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>I want the normal command flow after fixing an issue</h2>
+            <p>Go back to <a class="text-link" href="./core-workflows.html">Core Workflows</a> for the standard build,
+                test, bump, and release sequence, or use <a class="text-link" href="./working-with-modules.html">Working
+                    with Modules</a> if you need import and reload steps.</p>
         </section>
     </section>
 </main>

@@ -3,13 +3,34 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
-    <title>NovaModuleTools — Working with Modules</title>
-    <meta content="Import built modules, reload them during local development, and use NovaModuleTools effectively while you iterate."
+    <title>NovaModuleTools — Working with PowerShell modules during development</title>
+    <meta content="Import built PowerShell modules, reload them during local development, and use NovaModuleTools effectively while you iterate."
           name="description">
+    <meta content="index,follow,max-image-preview:large" name="robots">
     <meta content="#0b1020" name="theme-color">
+    <link href="https://www.novamoduletools.com/working-with-modules.html" rel="canonical">
     <link href="./assets/icon.png" rel="icon" type="image/png">
     <link href="./assets/icon.png" rel="apple-touch-icon">
+    <meta content="article" property="og:type">
+    <meta content="NovaModuleTools — Working with PowerShell modules during development" property="og:title">
+    <meta content="Import, reload, and validate the built PowerShell module during local development with NovaModuleTools."
+          property="og:description">
+    <meta content="https://www.novamoduletools.com/working-with-modules.html" property="og:url">
+    <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
+    <meta content="summary" name="twitter:card">
+    <meta content="NovaModuleTools — Working with PowerShell modules during development" name="twitter:title">
+    <meta content="Import, reload, and validate the built PowerShell module during local development with NovaModuleTools."
+          name="twitter:description">
     <link href="./assets/site.css" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            "headline": "Working with PowerShell modules in NovaModuleTools",
+            "description": "Import, reload, and validate the built PowerShell module during local development.",
+            "url": "https://www.novamoduletools.com/working-with-modules.html"
+        }
+    </script>
 </head>
 <body>
 <header class="site-header">
@@ -32,7 +53,8 @@
     <section class="guide-hero">
         <p class="eyebrow">Working with modules</p>
         <h1>Import, reload, and validate the built module during local development</h1>
-        <p class="lead">NovaModuleTools is designed around working with the built module in <code>dist/</code>, not just
+        <p class="lead">NovaModuleTools is designed around working with the built PowerShell module in
+            <code>dist/</code>, not just
             loose script files.</p>
     </section>
 
@@ -88,6 +110,11 @@ Import-Module $project.OutputModuleDir -Force</code></pre>
                 </ul>
                 <p>If you prefer learning from a working sample first, start there and then adapt the generated project
                     to your own module.</p>
+                <p>If you have not scaffolded a project yet, go back to <a class="text-link"
+                                                                           href="./getting-started.html">Getting
+                    Started</a>.
+                    For the command sequence after that, use <a class="text-link" href="./core-workflows.html">Core
+                        Workflows</a>.</p>
             </section>
         </div>
     </section>
