@@ -4,11 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format follows the principles from Keep a Changelog and the project aims to follow Semantic Versioning.
 
-## [Unreleased]
+## [Unreleased] - Will be included in the next release
 
 ### Added
 
 - Add a standalone `nova` launcher for macOS/Linux through `Install-NovaCli`.
+- Add a public `Release Notes` page on the site that renders the `develop` branch changelog without sending users to
+  GitHub.
 - Add `New-NovaModule -Example` / `nova init -Example` to scaffold a full working project from the packaged example
   template while still applying the metadata collected during the init prompt flow.
 - Add release and publish flow support for local module directories, repository publishing, and semantic-version label
@@ -42,6 +44,8 @@ The format follows the principles from Keep a Changelog and the project aims to 
 - Change the example project to use a single packaged source of truth under `src/resources/example/`, so `nova build`
   includes it in the built module resources.
 - Change the public documentation site to host the project license directly and link to it from the published pages.
+- Change the public site navigation so `Release Notes` moved from the header menu to the footer legal links beside the
+  license link.
 - Change CI, release, and contributor documentation to reflect the Nova workflow, refreshed command help, and GitHub
   comparison links.
 
