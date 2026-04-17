@@ -2,85 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
-The format follows the principles from Keep a Changelog and the project aims to follow Semantic Versioning.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] - Will be included in the next release
 
 ### Added
 
-- Add a standalone `nova` launcher for macOS/Linux through `Install-NovaCli`.
-- Add a public `Release Notes` page on the site that renders the `develop` branch changelog without sending users to
-  GitHub.
-- Add `New-NovaModule -Example` / `nova init -Example` to scaffold a full working project from the packaged example
-  template while still applying the metadata collected during the init prompt flow.
-- Add release and publish flow support for local module directories, repository publishing, and semantic-version label
-  handling.
-- Add reusable CI helpers for ScriptAnalyzer, test reporting, coverage remapping, CodeScene upload, and
-  `artifacts/coverage-low.txt` generation.
-- Add optional `Preamble` support in `project.json` to write module-level setup lines before generated source content.
-- Add a working packaged example project under `src/resources/example/` and a user-focused landing page under `docs/`
-  to make onboarding easier.
-- Add command help pages for `Invoke-NovaCli` and `Invoke-NovaRelease`.
-- Add regression coverage for release, publish, CLI install, prompt handling, project metadata, and CI coverage flows.
-
+- Add `Install-NovaCli` and a packaged `nova` launcher so macOS and Linux users can install and run `nova` directly
+  from zsh or bash.
+- Add optional `Preamble` support in `project.json` to write module-level setup lines at the top of generated `.psm1`
+  files.
+- Add `New-NovaModule -Example` and `nova init -Example` to scaffold a full working project from the packaged example
+  resources.
+    - Runs the normal init flow
+    - Applies the metadata entered during init to the generated `project.json`
+    - Always creates the example test structure without prompting to enable tests
+- Add native `-WhatIf` and `-Confirm` support across mutating Nova commands, including routed CLI support for
+  `build`, `test`, `bump`, `publish`, and `release`.
 
 ### Changed
 
-- Change the project to a Nova-first command model, replacing the previous mixed MT/Nova workflow.
-- Change documentation ownership so GitHub repository docs focus on contributors, while GitHub Pages now provides the
-  task-oriented end-user guide experience.
-- Change contributor documentation to use `README.md` as the single developer source of truth.
-- Change `CopyResourcesToModuleRoot` to an optional project setting that defaults to `false`, and standardize the
-  setting name across templates, tests, and docs.
-- Change `Publish-NovaModule` and `Invoke-NovaRelease` to resolve publish targets before running build and test steps.
-- Change publish and release orchestration to share the same resolved publish execution helper, keeping preview
-  forwarding and publish-target handling consistent.
-- Change the bundled `nova` launcher to ship as a packaged module resource instead of a repo-root helper file.
-- Change `nova version` and `nova --version` to include the component name alongside the version for clearer CLI output.
-- Change mutating commands to support consistent native `-WhatIf`/`-Confirm` behavior, including routed preview support
-  through `Invoke-NovaCli` and updated `Get-Help` examples.
-- Change `New-NovaModule` / `nova init` so destination paths must be passed explicitly with `-Path`; positional
-  `nova init <path>` is now rejected with a clear migration hint.
-- Change the example project to use a single packaged source of truth under `src/resources/example/`, so `nova build`
-  includes it in the built module resources.
-- Change the public documentation site to host the project license directly and link to it from the published pages.
-- Change the public site navigation so `Release Notes` moved from the header menu to the footer legal links beside the
-  license link.
-- Change CI, release, and contributor documentation to reflect the Nova workflow, refreshed command help, and GitHub
-  comparison links.
+- Change the project to a Nova command model, replacing the previous mixed MT/Nova workflow.
+    - All public commands are now Nova commands, and the `nova` CLI/Powershell alias is the primary entry point for all
+      operations.
+- Change `CopyResourcesToModuleRoot` to the canonical project setting name while keeping the default value `false`.
 
 ### Fixed
 
-- Fix the internal CLI forwarding helper name so ScriptAnalyzer no longer reports a plural-noun cmdlet warning.
-- Fix the standalone macOS/Linux `nova` launcher so `nova build -Verbose` forwards the verbose flag to the underlying
-  build command.
-- Fix `nova bump -WhatIf` so it previews the actual calculated next version instead of echoing the current version.
-- Fix `nova bump -Confirm` so cancelled or suspended CLI confirmations return cleanly without opening an interactive
-  PowerShell prompt or printing a misleading version result.
-- Fix `nova bump` and `nova bump -WhatIf` so repositories with no commits yet now fail with a clear initial-commit
-  message instead of an empty-array parameter binding error.
-- Fix standalone CLI `-WhatIf` handling so `build`, `test`, `bump`, `publish`, and `release` forward preview mode
-  correctly, while `nova init -WhatIf` now fails with a clear CLI error instead of being treated as a path.
-- Fix `nova init -Example` so it keeps the full example scaffold, skips the Pester enable/disable prompt, preserves the
-  example template settings, and only overrides the project metadata gathered during init.
-- Fix the CI helper flow so its second Pester pass reloads the freshly built `dist/` module during test discovery.
-- Fix `Get-NovaProjectInfo` so empty `project.json` files fail with a clear configuration error.
-- Fix `Invoke-CodeSceneAnalysis.ps1` so `-TriggerAnalysis` can run without `-CoveragePath`.
-- Fix local publishing and release flows so module paths are resolved correctly before helper reloads, and
-  `Publish-NovaModule -Local` no longer falls back to the legacy path.
-- Fix build-time resource lookup so schema and template files are found in project `src/resources` when building from
-  the repository root.
-- Fix `ShouldProcess` behavior in `Update-NovaModuleVersion`, `Set-NovaModuleVersion`, and `New-NovaModule`.
-- Fix generated help activation so module and command help load correctly after build and import.
-- Fix manifest validation so unsupported `Manifest` keys fail fast instead of being silently tolerated.
-- Fix `Test-NovaBuild` so its Pester XML report is written to `artifacts/TestResults.xml`.
-- Fix ScriptAnalyzer and related test-support issues uncovered during the Nova standardization work.
-- Fix `Invoke-ScriptAnalyzerCI.ps1` so generated `dist/` and `artifacts/` content under the packaged example no longer
-  produces false-positive analyzer failures during repository quality runs.
+- Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
+  clear messages.
+
+### Documentation
+
+- Split documentation into contributor-focused repository docs and task-oriented GitHub Pages user guides.
+- Add and expand the public site with getting started, core workflows, working with modules, troubleshooting, advanced
+  usage, license, and release notes pages.
+- Refresh public `Get-Help` content and examples for the Nova commands, including CLI usage and preview/confirmation
+  scenarios.
 
 ### Removed
 
-- Remove the legacy `MT` commands, MT-oriented internal layout, and MT-focused command documentation.
+- Remove the legacy `MT` commands and MT-branded command documentation in favor of the Nova command model.
 
 ## [1.9.0] - 2026-04-10
 
