@@ -56,9 +56,25 @@ a {
 }
 
 .site-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
     text-decoration: none;
     font-weight: 800;
     letter-spacing: 0.02em;
+}
+
+.site-brand__icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    display: block;
+    border-radius: 0.85rem;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+.site-brand__text {
+    display: inline-flex;
+    align-items: center;
 }
 
 .site-nav {
@@ -504,6 +520,16 @@ p {
     .site-header__inner {
         padding-left: 1rem;
         padding-right: 1rem;
+    }
+
+    .site-brand {
+        gap: 0.6rem;
+    }
+
+    .site-brand__icon {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.75rem;
     }
 
     .button {

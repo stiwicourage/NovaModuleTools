@@ -19,7 +19,10 @@
       "Maintainability",
       "Enterprise"
     ],
-    "ProjectUri": "https://www.novamoduletools.com"
+    "ProjectUri": "https://www.novamoduletools.com",
+    "ReleaseNotes": "https://github.com/stiwicourage/NovaModuleTools/blob/main/CHANGELOG.md",
+    "IconUri": "https://www.novamoduletools.com/assets/icon.png",
+    "LicenseUri": "https://github.com/stiwicourage/NovaModuleTools/blob/main/LICENSE"
   },
   "Pester": {
     "TestResult": {
