@@ -1,7 +1,7 @@
 param(
     [string[]]$ModuleName = @(
     'Pester',
-    'NovaModuleTools -AllowPrerelease -Force',
+    'NovaModuleTools',
     'Microsoft.PowerShell.PlatyPS'
 )
 )
