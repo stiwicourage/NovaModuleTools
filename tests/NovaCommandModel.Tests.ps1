@@ -182,14 +182,15 @@ Describe 'Nova command model - project, help, and build behavior' {
         }
     }
 
-    It 'Get-Help explains how to disable and re-enable prerelease update notifications' {
+    It 'Get-Help explains how to manage prerelease self-update eligibility' {
         $buildHelp = Get-Help Invoke-NovaBuild -Full -ErrorAction Stop | Out-String
+        $updateHelp = Get-Help Update-NovaModuleTool -Full -ErrorAction Stop | Out-String
         $getPreferenceHelp = Get-Help Get-NovaUpdateNotificationPreference -Full -ErrorAction Stop | Out-String
         $setPreferenceHelp = Get-Help Set-NovaUpdateNotificationPreference -Full -ErrorAction Stop | Out-String
 
-        $buildHelp | Should -Match 'DisablePrereleaseNotifications'
-        $buildHelp | Should -Match 'EnablePrereleaseNotifications'
-        $getPreferenceHelp | Should -Match 'Stable release notifications always remain enabled'
+        $buildHelp | Should -Match 'Update-NovaModuleTool'
+        $updateHelp | Should -Match 'prerelease'
+        $getPreferenceHelp | Should -Match 'Stable self-updates remain available'
         $setPreferenceHelp | Should -Match 'DisablePrereleaseNotifications'
         $setPreferenceHelp | Should -Match 'EnablePrereleaseNotifications'
     }

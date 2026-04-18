@@ -68,12 +68,10 @@ PS> Invoke-NovaBuild
 
 This creates the built module under `dist/NovaModuleTools/`.
 
-After a successful build, NovaModuleTools performs a silent best-effort check for newer `NovaModuleTools` releases.
-When the PowerShell Gallery cannot be reached or the lookup takes longer than three seconds, the build stays silent.
-Only newer versions emit a warning.
+NovaModuleTools can self-update the installed module from PowerShell or the `nova` CLI.
 
-- Stable release notifications are always enabled.
-- Prerelease notifications are optional and can be managed with:
+- Stable self-updates are always available.
+- Prerelease self-updates are optional and can be managed with:
 
 ```powershell
 PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
@@ -90,10 +88,10 @@ PS> nova update
 Use `nova notification` when you want the CLI-oriented workflow and the `Set-` / `Get-` cmdlets when you want the
 PowerShell function form in scripts.
 
-`Update-NovaModuleTool` (and its `Update-NovaModuleTools` alias) / `nova update` use the same stored prerelease
-preference as the automatic build notifications. When prerelease notifications are disabled, self-update stays on stable
-releases. When prerelease notifications are enabled, self-update may target a prerelease, but it asks for explicit
-confirmation before proceeding.
+`Update-NovaModuleTool` (and its `Update-NovaModuleTools` alias) / `nova update` use that stored prerelease
+preference to decide whether prerelease self-updates are eligible. When prerelease self-updates are disabled,
+self-update stays on stable releases. When they are enabled, self-update may target a prerelease, but it asks for
+explicit confirmation before proceeding.
 
 To compare the current project version with what is installed locally for that same module, use:
 

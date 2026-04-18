@@ -43,9 +43,9 @@ PowerShell
 For local publish inside an imported PowerShell session, `nova publish -local` now reloads the published module from the
 resolved local install path after the copy succeeds. Preview or cancelled runs do not import anything.
 
-Use `nova notification` to show the current prerelease build-update notification preference,
-`nova notification -disable` to stop prerelease warnings after successful builds, and
-`nova notification -enable` to turn those warnings back on. Stable release notifications remain enabled.
+Use `nova notification` to show the current prerelease self-update preference,
+`nova notification -disable` to keep `nova update` on stable releases only, and
+`nova notification -enable` to allow prerelease self-update targets again.
 
 Use `nova version` to show the current project version from `project.json`.
 
@@ -54,8 +54,8 @@ PowerShell module path.
 
 Use `nova --version` to show the installed `NovaModuleTools` version. Those are intentionally separate version views.
 
-Use `nova update` to self-update the installed `NovaModuleTools` module. It uses the same stored prerelease preference
-as the automatic post-build update notifications. When that preference is disabled, `nova update` only targets stable
+Use `nova update` to self-update the installed `NovaModuleTools` module. It uses the stored prerelease preference to
+decide whether a prerelease target is eligible. When that preference is disabled, `nova update` only targets stable
 releases. When it is enabled, `nova update` may target a prerelease, but it always asks for explicit confirmation
 before running a prerelease update.
 
@@ -163,8 +163,8 @@ Runs the interactive init flow, scaffolds from the packaged example project, and
 nova update
 ```
 
-Updates the installed `NovaModuleTools` module using the same stored prerelease preference as the automatic build-update
-notifications.
+Updates the installed `NovaModuleTools` module by using the stored prerelease preference to resolve the best eligible
+target.
 
 If the resolved target is a prerelease, `nova update` asks for explicit confirmation before calling
 `Update-Module NovaModuleTools -AllowPrerelease`.
@@ -175,7 +175,7 @@ If the resolved target is a prerelease, `nova update` asks for explicit confirma
 nova notification
 ```
 
-Shows whether prerelease build-update notifications are enabled and where the preference is stored.
+Shows whether prerelease self-updates are enabled and where the preference is stored.
 
 ### EXAMPLE 13
 
@@ -183,7 +183,7 @@ Shows whether prerelease build-update notifications are enabled and where the pr
 nova notification -disable
 ```
 
-Disables prerelease build-update notifications while keeping stable release notifications enabled.
+Disables prerelease self-update targets so `nova update` stays on stable releases.
 
 ### EXAMPLE 14
 
@@ -191,7 +191,7 @@ Disables prerelease build-update notifications while keeping stable release noti
 PS> Invoke-NovaCli -Command notification -Arguments @('-enable')
 ```
 
-Re-enables prerelease build-update notifications from the routed PowerShell entrypoint.
+Re-enables prerelease self-update targets from the routed PowerShell entrypoint.
 
 ## PARAMETERS
 

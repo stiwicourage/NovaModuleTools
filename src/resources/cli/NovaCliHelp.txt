@@ -12,7 +12,7 @@ work with the current project
    test       Run Pester tests for the project
    bump       Update the module version in project.json
    update     Update the installed NovaModuleTools module using the stored prerelease preference
-   notification Show or change prerelease build-update notifications
+   notification Show or change prerelease self-update eligibility
 
 publish and release
    publish    Build, test, and publish the module locally or to a repository
@@ -51,17 +51,17 @@ the standalone 'nova' command available from zsh/bash.
 Use 'nova <command>' to run a command, or call the underlying PowerShell cmdlet directly
 when you want a scriptable function interface.
 
-Use 'nova notification' to show the current prerelease notification preference,
-'nova notification -disable' to suppress prerelease build-update warnings,
-and 'nova notification -enable' to turn them back on.
+Use 'nova notification' to show the current prerelease self-update preference,
+'nova notification -disable' to keep 'nova update' on stable releases only,
+and 'nova notification -enable' to allow prerelease self-update targets again.
 
 Use 'nova version' for the current project version from project.json,
 'nova version -Installed' for the locally installed version of the current project/module,
 and 'nova --version' for the installed NovaModuleTools version.
 
-Use 'nova update' to self-update NovaModuleTools. It uses the same stored prerelease
-preference as the automatic build-update notifications. Stable updates proceed normally,
-while prerelease targets require explicit confirmation before the update runs.
+Use 'nova update' to self-update NovaModuleTools. It uses the stored prerelease
+preference to decide whether a prerelease target is eligible. Stable updates proceed
+normally, while prerelease targets require explicit confirmation before the update runs.
 
 Inside PowerShell, 'nova publish -local' also reloads the published module from the
 local install path after a successful publish.

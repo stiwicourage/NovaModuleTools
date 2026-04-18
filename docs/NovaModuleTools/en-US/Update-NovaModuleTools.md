@@ -29,8 +29,9 @@ PS> Update-NovaModuleTool [-WhatIf] [-Confirm] [<CommonParameters>]
 
 The cmdlet is also available through the compatibility alias `Update-NovaModuleTools`.
 
-Before it runs `Update-Module`, it resolves the best available update candidate by using the same stored prerelease
-preference that controls the automatic post-build update notifications.
+Before it runs `Update-Module`, it resolves the best available update candidate by using the stored prerelease
+preference exposed through `Get-NovaUpdateNotificationPreference`, `Set-NovaUpdateNotificationPreference`, and
+`nova notification`.
 
 When prerelease notifications are disabled, `Update-NovaModuleTool` only considers stable releases and never passes
 `-AllowPrerelease` to the update flow.

@@ -13,7 +13,7 @@ title: Get-NovaUpdateNotificationPreference
 
 ## SYNOPSIS
 
-Shows the current build-update notification preference for prerelease checks.
+Shows the current prerelease update preference used by Nova self-update commands.
 
 ## SYNTAX
 
@@ -25,13 +25,14 @@ PS> Get-NovaUpdateNotificationPreference [<CommonParameters>]
 
 ## DESCRIPTION
 
-`Get-NovaUpdateNotificationPreference` returns the current user preference that controls whether successful builds also
-notify about newer prerelease versions of `NovaModuleTools`.
+`Get-NovaUpdateNotificationPreference` returns the current user preference that controls whether
+`Update-NovaModuleTool` / `Update-NovaModuleTools` and `nova update` may select prerelease versions of
+`NovaModuleTools`.
 
 The same stored preference is also used by `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) and `nova update`
 when they decide whether a prerelease self-update is eligible.
 
-Stable release notifications always remain enabled and cannot be disabled.
+Stable self-updates remain available and do not require prerelease eligibility.
 
 If you prefer the Nova CLI surface, run `nova notification` to view the same preference.
 
@@ -43,8 +44,8 @@ If you prefer the Nova CLI surface, run `nova notification` to view the same pre
 PS> Get-NovaUpdateNotificationPreference
 ```
 
-Shows whether prerelease update notifications are currently enabled, whether stable notifications remain enabled, and
-where the preference is stored.
+Shows whether prerelease self-updates are currently enabled, whether stable self-updates remain available, and where the
+preference is stored.
 
 ### EXAMPLE 2
 
@@ -52,7 +53,7 @@ where the preference is stored.
 nova notification
 ```
 
-Shows the same prerelease notification state from the Nova CLI entrypoint.
+Shows the same prerelease self-update state from the Nova CLI entrypoint.
 
 ## PARAMETERS
 
@@ -72,15 +73,15 @@ You can't pipe objects to this cmdlet.
 
 ### PSCustomObject
 
-Returns the prerelease-notification state, the always-on stable-notification state, and the user settings path.
+Returns the prerelease self-update state, the always-available stable-update state, and the user settings path.
 
 ## NOTES
 
 Use `PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications` or `nova notification -disable` to stop
-prerelease notifications.
+prerelease self-updates from being eligible.
 
-Use `PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications` or `nova notification -enable` to turn
-prerelease notifications back on.
+Use `PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications` or `nova notification -enable` to allow
+prerelease self-updates again.
 
 When prerelease notifications are enabled again, `Update-NovaModuleTool` / `Update-NovaModuleTools` and `nova update`
 may again select a prerelease target. Prerelease self-updates still require explicit confirmation before the update

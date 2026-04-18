@@ -13,7 +13,7 @@ title: Set-NovaUpdateNotificationPreference
 
 ## SYNOPSIS
 
-Enables or disables prerelease build-update notifications.
+Enables or disables prerelease self-update eligibility.
 
 ## SYNTAX
 
@@ -31,13 +31,14 @@ PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications [-WhatI
 
 ## DESCRIPTION
 
-`Set-NovaUpdateNotificationPreference` manages the user preference that controls whether successful builds warn about
-newer prerelease versions of `NovaModuleTools`.
+`Set-NovaUpdateNotificationPreference` manages the user preference that controls whether
+`Update-NovaModuleTool` / `Update-NovaModuleTools` and `nova update` may select prerelease versions of
+`NovaModuleTools`.
 
 The same stored preference is also used by `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) and `nova update`
 when they decide whether a prerelease self-update can be selected.
 
-Stable release notifications always remain enabled and cannot be disabled.
+Stable self-updates remain available and do not require prerelease eligibility.
 
 If you prefer the Nova CLI surface, use `nova notification -disable` and `nova notification -enable` for the same
 stored preference.
@@ -50,7 +51,7 @@ stored preference.
 PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
 ```
 
-Turns off prerelease update notifications for future successful builds and restricts `Update-NovaModuleTool` /
+Turns off prerelease self-update eligibility and restricts `Update-NovaModuleTool` /
 `nova update` to stable releases only.
 
 ### EXAMPLE 2
@@ -59,8 +60,8 @@ Turns off prerelease update notifications for future successful builds and restr
 PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
 ```
 
-Turns prerelease update notifications back on, which allows `Update-NovaModuleTool` / `Update-NovaModuleTools` and
-`nova update` to consider a prerelease target again.
+Turns prerelease self-update eligibility back on, which allows `Update-NovaModuleTool` /
+`Update-NovaModuleTools` and `nova update` to consider a prerelease target again.
 
 ### EXAMPLE 3
 
@@ -68,7 +69,7 @@ Turns prerelease update notifications back on, which allows `Update-NovaModuleTo
 nova notification -disable
 ```
 
-Uses the Nova CLI entrypoint to disable prerelease update notifications.
+Uses the Nova CLI entrypoint to disable prerelease self-update eligibility.
 
 ### EXAMPLE 4
 
@@ -76,13 +77,13 @@ Uses the Nova CLI entrypoint to disable prerelease update notifications.
 nova notification -enable
 ```
 
-Uses the Nova CLI entrypoint to re-enable prerelease update notifications.
+Uses the Nova CLI entrypoint to re-enable prerelease self-update eligibility.
 
 ## PARAMETERS
 
 ### -EnablePrereleaseNotifications
 
-Enables prerelease update notifications after successful builds.
+Enables prerelease self-update eligibility.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -103,7 +104,7 @@ HelpMessage: ''
 
 ### -DisablePrereleaseNotifications
 
-Disables prerelease update notifications after successful builds. Stable release notifications still remain enabled.
+Disables prerelease self-update eligibility. Stable self-updates still remain available.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -194,7 +195,7 @@ You can't pipe objects to this cmdlet.
 
 ### PSCustomObject
 
-Returns the current prerelease-notification state, the always-on stable-notification state, and the user settings path.
+Returns the current prerelease self-update state, the always-available stable-update state, and the user settings path.
 
 ## NOTES
 
@@ -205,4 +206,4 @@ Use `nova notification` when you want to view the same setting through the CLI s
 ## RELATED LINKS
 
 - `Get-NovaUpdateNotificationPreference`
-- `Invoke-NovaBuild`
+- `Update-NovaModuleTool`

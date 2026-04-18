@@ -258,7 +258,7 @@ throw 'offline'
             $cliHelp | Should -Match 'update\s+Update the installed NovaModuleTools module using the stored prerelease preference'
             $cliHelp | Should -Match 'nova update'
             $cliHelp | Should -Match 'prerelease targets require explicit confirmation'
-            $commandHelp | Should -Match 'same stored prerelease preference'
+            $commandHelp | Should -Match 'stored prerelease preference'
             $commandHelp | Should -Match 'explicit confirmation'
             $commandHelp | Should -Match 'nova update'
         }

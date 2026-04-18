@@ -39,22 +39,11 @@ The command:
 5. builds external help from the Markdown files in `docs/`
 6. copies project resources into the built module output
 
-After a successful build, NovaModuleTools performs a silent best-effort update check for the `NovaModuleTools` module.
-When a newer stable release is available, the command writes a warning with update instructions. When prerelease update
-notifications are enabled and a newer prerelease is available, the command also writes a prerelease warning.
+To update the installed `NovaModuleTools` module itself, use `Update-NovaModuleTool` (alias:
+`Update-NovaModuleTools`) or `nova update`.
 
-This lookup never waits longer than three seconds and stays silent when the gallery cannot be reached.
-
-Stable release notifications always remain enabled. To control prerelease notifications, use
-`PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications` or
-`PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications`.
-
-For the CLI-oriented workflow, use `nova notification -disable`, `nova notification -enable`, and
-`nova notification`.
-
-When you decide to apply one of the reported updates, you can either run the suggested `Update-Module` command directly
-or use `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) / `nova update`. The self-update command uses the same
-stored prerelease preference.
+Use `Set-NovaUpdateNotificationPreference`, `Get-NovaUpdateNotificationPreference`, or the `nova notification`
+commands when you want to control whether prerelease self-updates are eligible.
 
 If `SetSourcePath` is enabled, the generated `.psm1` includes `# Source:` markers before each source block.
 
@@ -90,16 +79,10 @@ Previews the build action without resetting `dist/` or generating module output.
 ### EXAMPLE 4
 
 ```powershell
-PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
-PS> Invoke-NovaBuild
+PS> Invoke-NovaBuild -Confirm
 ```
 
-Builds the current project and keeps stable release notifications enabled while suppressing prerelease update warnings.
-
-The CLI equivalent is `nova notification -disable` before running `nova build`.
-
-With prerelease notifications disabled, `Update-NovaModuleTool` / `Update-NovaModuleTools` and `nova update` also stay
-on the stable release channel.
+Prompts before the build workflow runs when confirmation is required.
 
 ## PARAMETERS
 
@@ -129,13 +112,9 @@ Run this command from the project root so `project.json`, `src/`, `docs/`, and `
 `Invoke-NovaBuild` uses `SupportsShouldProcess`, so `Get-Help Invoke-NovaBuild -Full` shows the native `-WhatIf` and
 `-Confirm` behavior.
 
-When no newer version is found, the gallery is unavailable, or the lookup exceeds three seconds, the update check stays
-silent.
-
 ## RELATED LINKS
 
 - https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Get-NovaProjectInfo.md
 - https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Test-NovaBuild.md
 - https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Publish-NovaModule.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Get-NovaUpdateNotificationPreference.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Set-NovaUpdateNotificationPreference.md
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Update-NovaModuleTools.md

@@ -52,8 +52,8 @@ Runs the project's Pester test workflow using settings from `project.json`.
 
 ### `PS> Update-NovaModuleTool`
 
-Updates the installed `NovaModuleTools` module by using the same prerelease preference shared with the automatic
-post-build update notifications. The compatibility alias `Update-NovaModuleTools` is also available.
+Updates the installed `NovaModuleTools` module by using the stored prerelease preference that also controls whether
+prerelease self-updates are eligible. The compatibility alias `Update-NovaModuleTools` is also available.
 
 ### `PS> New-NovaModule`
 
@@ -65,7 +65,7 @@ Builds, tests, and publishes the current project either locally or to a reposito
 
 ### `PS> Set-NovaUpdateNotificationPreference`
 
-Enables or disables prerelease update notifications that can appear after a successful build.
+Enables or disables whether prerelease self-updates are eligible for `Update-NovaModuleTool` and `nova update`.
 
 ### `PS> Update-NovaModuleVersion`
 

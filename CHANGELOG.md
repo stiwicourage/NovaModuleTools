@@ -22,13 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Always creates the example test structure without prompting to enable tests
 - Add native `-WhatIf` and `-Confirm` support across mutating Nova commands, including routed CLI support for
   `build`, `test`, `bump`, `publish`, and `release`.
-- Add silent post-build NovaModuleTools update notifications for `Invoke-NovaBuild`, with an always-on stable release
-  check and a user-configurable prerelease notification preference.
+- Add `Update-NovaModuleTool` (with `Update-NovaModuleTools` as a compatibility alias) and `nova update` for
+  self-updating the installed module.
     - Supports `Set-NovaUpdateNotificationPreference` / `Get-NovaUpdateNotificationPreference` for PowerShell usage.
     - Supports `nova notification`, `nova notification -disable`, and `nova notification -enable` for CLI usage.
-  - Supports `Update-NovaModuleTool` (with `Update-NovaModuleTools` as a compatibility alias) and `nova update` for
-    self-updating the installed module.
-  - Reuses the same stored prerelease preference for both build notifications and self-update eligibility.
+  - Uses the stored prerelease update preference to decide whether prerelease self-updates are eligible.
   - Requires explicit confirmation before a prerelease self-update proceeds.
 - Add `nova version -Installed` so users can compare the locally installed version of the current project/module with
   the current project version from `project.json`, while keeping `nova --version` dedicated to the installed
