@@ -490,6 +490,14 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
         }
     }
 
+    It 'ConvertFrom-NovaVersionCliArgument resolves default and installed version modes' {
+        InModuleScope $script:moduleName {
+            (ConvertFrom-NovaVersionCliArgument).Installed | Should -BeFalse
+            (ConvertFrom-NovaVersionCliArgument -Arguments @('-Installed')).Installed | Should -BeTrue
+            {ConvertFrom-NovaVersionCliArgument -Arguments @('--bogus')} | Should -Throw "Unsupported 'nova version' usage*"
+        }
+    }
+
     It 'ConvertFrom-NovaCliArgument parses local, path, and api key options' {
         InModuleScope $script:moduleName {
             $options = ConvertFrom-NovaCliArgument -Arguments @('--local', '--path', '/tmp/modules', '--apikey', 'secret')
@@ -585,6 +593,67 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             }
 
             Get-NovaCliInstalledVersion -Module $moduleInfo | Should -Be '1.11.1-preview'
+        }
+    }
+
+    It 'Get-NovaInstalledProjectManifestPath builds the expected local manifest path for the current project' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{ProjectName = 'AzureDevOpsAgentInstaller'}
+
+            Mock Resolve-NovaLocalPublishPath {'/tmp/local-modules'}
+
+            $result = Get-NovaInstalledProjectManifestPath -ProjectInfo $projectInfo
+
+            $result | Should -Be '/tmp/local-modules/AzureDevOpsAgentInstaller/AzureDevOpsAgentInstaller.psd1'
+        }
+    }
+
+    It 'Get-NovaInstalledProjectVersion reads the locally installed module version and updates after the local manifest changes' {
+        InModuleScope $script:moduleName {
+            $moduleRoot = Join-Path $TestDrive 'modules'
+            $manifestDirectory = Join-Path $moduleRoot 'AzureDevOpsAgentInstaller'
+            $manifestPath = Join-Path $manifestDirectory 'AzureDevOpsAgentInstaller.psd1'
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'AzureDevOpsAgentInstaller'
+                Version = '1.12.1'
+            }
+
+            New-Item -ItemType Directory -Path $manifestDirectory -Force | Out-Null
+            New-Item -ItemType File -Path (Join-Path $manifestDirectory 'AzureDevOpsAgentInstaller.psm1') -Force | Out-Null
+
+            Mock Resolve-NovaLocalPublishPath {$moduleRoot}
+
+            @'
+@{
+    RootModule = 'AzureDevOpsAgentInstaller.psm1'
+    ModuleVersion = '1.12.0'
+    GUID = '11111111-1111-1111-1111-111111111111'
+    Author = 'Test'
+}
+'@ | Set-Content -LiteralPath $manifestPath -Encoding utf8
+
+            Get-NovaInstalledProjectVersion -ProjectInfo $projectInfo | Should -Be 'AzureDevOpsAgentInstaller 1.12.0'
+
+            @'
+@{
+    RootModule = 'AzureDevOpsAgentInstaller.psm1'
+    ModuleVersion = '1.12.1'
+    GUID = '11111111-1111-1111-1111-111111111111'
+    Author = 'Test'
+}
+'@ | Set-Content -LiteralPath $manifestPath -Encoding utf8
+
+            Get-NovaInstalledProjectVersion -ProjectInfo $projectInfo | Should -Be 'AzureDevOpsAgentInstaller 1.12.1'
+        }
+    }
+
+    It 'Get-NovaInstalledProjectVersion fails clearly when the current project is not installed locally' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{ProjectName = 'AzureDevOpsAgentInstaller'}
+
+            Mock Resolve-NovaLocalPublishPath {'/tmp/local-modules'}
+
+            {Get-NovaInstalledProjectVersion -ProjectInfo $projectInfo} | Should -Throw 'Local module install not found for AzureDevOpsAgentInstaller*Run ''nova publish -local'' first*'
         }
     }
 

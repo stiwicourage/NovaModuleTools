@@ -47,6 +47,13 @@ Use `nova notification` to show the current prerelease build-update notification
 `nova notification -disable` to stop prerelease warnings after successful builds, and
 `nova notification -enable` to turn those warnings back on. Stable release notifications remain enabled.
 
+Use `nova version` to show the current project version from `project.json`.
+
+Use `nova version -Installed` to show the locally installed version of the current project/module from the local
+PowerShell module path.
+
+Use `nova --version` to show the installed `NovaModuleTools` version. Those are intentionally separate version views.
+
 Use `nova update` to self-update the installed `NovaModuleTools` module. It uses the same stored prerelease preference
 as the automatic post-build update notifications. When that preference is disabled, `nova update` only targets stable
 releases. When it is enabled, `nova update` may target a prerelease, but it always asks for explicit confirmation
@@ -87,12 +94,20 @@ The output format is `<ProjectName> <Version>`.
 ### EXAMPLE 3
 
 ```powershell
+nova version -Installed
+```
+
+Returns the version currently installed locally for the current project/module.
+
+### EXAMPLE 4
+
+```powershell
 nova build
 ```
 
 Builds the module using `Invoke-NovaBuild`.
 
-### EXAMPLE 4
+### EXAMPLE 5
 
 ```powershell
 nova publish --repository PSGallery --apikey $env:PSGALLERY_API
@@ -102,7 +117,7 @@ Parses CLI arguments and publishes using `Publish-NovaModule`.
 
 When routed inside PowerShell with `-local`, the published module is reloaded from the local install path.
 
-### EXAMPLE 5
+### EXAMPLE 6
 
 ```powershell
 nova --help
@@ -110,7 +125,7 @@ nova --help
 
 Displays the built-in Nova CLI help text.
 
-### EXAMPLE 6
+### EXAMPLE 7
 
 ```powershell
 PS> Invoke-NovaCli -Command build
@@ -118,7 +133,7 @@ PS> Invoke-NovaCli -Command build
 
 Shows the equivalent scripted PowerShell form behind `nova build`.
 
-### EXAMPLE 7
+### EXAMPLE 8
 
 ```powershell
 PS> Invoke-NovaCli -Command publish -Arguments @('-local') -WhatIf
@@ -126,7 +141,7 @@ PS> Invoke-NovaCli -Command publish -Arguments @('-local') -WhatIf
 
 Previews the routed local publish flow without rebuilding, testing, or copying the module.
 
-### EXAMPLE 8
+### EXAMPLE 9
 
 ```powershell
 PS> Invoke-NovaCli -Command init -Arguments @('-Path', '~/Work')
@@ -134,7 +149,7 @@ PS> Invoke-NovaCli -Command init -Arguments @('-Path', '~/Work')
 
 Runs the interactive init flow and creates the project under `~/Work`.
 
-### EXAMPLE 9
+### EXAMPLE 10
 
 ```powershell
 PS> Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '~/Work')
@@ -142,7 +157,7 @@ PS> Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '~/Work')
 
 Runs the interactive init flow, scaffolds from the packaged example project, and creates the project under `~/Work`.
 
-### EXAMPLE 10
+### EXAMPLE 11
 
 ```powershell
 nova update
@@ -154,7 +169,7 @@ notifications.
 If the resolved target is a prerelease, `nova update` asks for explicit confirmation before calling
 `Update-Module NovaModuleTools -AllowPrerelease`.
 
-### EXAMPLE 11
+### EXAMPLE 12
 
 ```powershell
 nova notification
@@ -162,7 +177,7 @@ nova notification
 
 Shows whether prerelease build-update notifications are enabled and where the preference is stored.
 
-### EXAMPLE 12
+### EXAMPLE 13
 
 ```powershell
 nova notification -disable
@@ -170,7 +185,7 @@ nova notification -disable
 
 Disables prerelease build-update notifications while keeping stable release notifications enabled.
 
-### EXAMPLE 13
+### EXAMPLE 14
 
 ```powershell
 PS> Invoke-NovaCli -Command notification -Arguments @('-enable')
@@ -235,7 +250,8 @@ This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`, `-ErrorVar
 
 ### System.String
 
-Returned for text-oriented commands such as `nova --help`, `nova version`, and `nova --version`.
+Returned for text-oriented commands such as `nova --help`, `nova version`, `nova version -Installed`, and
+`nova --version`.
 
 ### PSCustomObject
 

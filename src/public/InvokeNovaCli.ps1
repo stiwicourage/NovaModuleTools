@@ -17,8 +17,7 @@ function Invoke-NovaCli {
             return Get-NovaProjectInfo @commonParameters
         }
         'version' {
-            $projectInfo = Get-NovaProjectInfo @commonParameters
-            return Format-NovaCliVersionString -Name $projectInfo.ProjectName -Version $projectInfo.Version
+            return Invoke-NovaCliVersionCommand -Arguments $Arguments -ForwardedParameters $commonParameters
         }
         'build' {
             return Invoke-NovaBuild @mutatingCommonParameters
