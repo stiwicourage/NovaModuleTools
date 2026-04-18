@@ -179,7 +179,7 @@ function $FunctionName {
 "@ | Set-Content -LiteralPath (Join-Path $ProjectRoot "src/public/$FunctionName.ps1") -Encoding utf8
 }
 
-function Initialize-TestGitRepository {
+function Initialize-TestNovaCliGitRepository {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot,
@@ -217,3 +217,36 @@ function Invoke-TestInstalledNovaCommand {
         Pop-Location
     }
 }
+
+function New-TestPesterConfigStub {
+    [CmdletBinding()]
+    param(
+        [switch]$IncludeOutput
+    )
+
+    $config = [ordered]@{
+        Run = [pscustomobject]@{
+            Path = $null
+            PassThru = $false
+            Exit = $false
+            Throw = $false
+        }
+        Filter = [pscustomobject]@{
+            Tag = @()
+            ExcludeTag = @()
+        }
+        TestResult = [pscustomobject]@{
+            OutputPath = $null
+        }
+    }
+
+    if ($IncludeOutput) {
+        $config.Output = [pscustomobject]@{
+            Verbosity = 'Detailed'
+            RenderMode = 'Auto'
+        }
+    }
+
+    return [pscustomobject]$config
+}
+

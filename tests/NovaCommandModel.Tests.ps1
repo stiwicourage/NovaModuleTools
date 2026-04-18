@@ -1,3 +1,25 @@
+$script:testSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.ps1')).Path
+$global:novaCommandModelTestSupportFunctionNameList = @(
+    'Get-TestRegexMatchGroup'
+    'ConvertTo-TestNormalizedText'
+    'Get-TestModuleDisplayVersion'
+    'Get-TestHelpLocaleFromMarkdownFiles'
+    'Get-CommandHelpActivationTestCase'
+    'Get-CommandHelpActivationTestCases'
+    'Initialize-TestNovaCliProjectLayout'
+    'Write-TestNovaCliProjectJson'
+    'Write-TestNovaCliPublicFunction'
+    'Initialize-TestNovaCliGitRepository'
+    'Invoke-TestInstalledNovaCommand'
+    'New-TestPesterConfigStub'
+)
+. $script:testSupportPath
+
+foreach ($functionName in $global:novaCommandModelTestSupportFunctionNameList) {
+    $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+    Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+}
+
 BeforeAll {
     $testSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.ps1')).Path
     $here = Split-Path -Parent $PSCommandPath
@@ -5,14 +27,18 @@ BeforeAll {
     $script:projectInfo = Get-NovaProjectInfo -Path $repoRoot
     $script:moduleName = (Get-Content -LiteralPath (Join-Path $repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
 
-    $distModuleDir = Join-Path $repoRoot "dist/$script:moduleName"
-    if (-not (Test-Path -LiteralPath $distModuleDir)) {
-        throw "Expected built $script:moduleName module at: $distModuleDir. Run Invoke-NovaBuild in the repo root first."
+    $script:distModuleDir = Join-Path $repoRoot "dist/$script:moduleName"
+    if (-not (Test-Path -LiteralPath $script:distModuleDir)) {
+        throw "Expected built $script:moduleName module at: $script:distModuleDir. Run Invoke-NovaBuild in the repo root first."
     }
 
     Remove-Module $script:moduleName -ErrorAction SilentlyContinue
-    Import-Module $distModuleDir -Force
+    Import-Module $script:distModuleDir -Force
     . $testSupportPath
+    foreach ($functionName in $global:novaCommandModelTestSupportFunctionNameList) {
+        $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+        Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+    }
 
     $helpMetadata = & {
         $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:projectInfo.DocsDir -Filter '*.md' -Recurse
@@ -23,10 +49,11 @@ BeforeAll {
     }
 
     $script:helpLocale = $helpMetadata.HelpLocale
-    $script:helpXmlPath = Join-Path $distModuleDir "$script:helpLocale/$script:moduleName-Help.xml"
+    $script:helpXmlPath = Join-Path $script:distModuleDir "$script:helpLocale/$script:moduleName-Help.xml"
     $script:helpActivationTestCases = $helpMetadata.HelpActivationTestCases
 }
-Describe 'Nova command model' {
+
+Describe 'Nova command model - project, help, and build behavior' {
     It 'Get-NovaProjectInfo -Version returns only version' {
         InModuleScope $script:moduleName {
             Mock Get-Content {'{"ProjectName":"X","Version":"9.9.9"}'}
@@ -83,12 +110,12 @@ Describe 'Nova command model' {
     }
 
     It 'build output includes the bundled nova launcher resource' {
-        Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/nova') | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $script:distModuleDir 'resources/nova') | Should -BeTrue
     }
 
     It 'build output includes the packaged example project resource' {
-        Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/example/project.json') | Should -BeTrue
-        Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/example/src/public/Get-ExampleGreeting.ps1') | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $script:distModuleDir 'resources/example/project.json') | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $script:distModuleDir 'resources/example/src/public/Get-ExampleGreeting.ps1') | Should -BeTrue
     }
 
     It 'discovers command help files dynamically from docs' {
@@ -254,44 +281,43 @@ title: Invoke-NovaBuild
         }
     }
 
-    It 'Test-NovaBuild applies tag filters to Pester config' {
-        InModuleScope $script:moduleName {
-            $projectRoot = '/tmp/nova-project'
-            $cfg = [pscustomobject]@{
-                Run = [pscustomobject]@{Path = $null; PassThru = $false; Exit = $false; Throw = $false}
-                Filter = [pscustomobject]@{Tag = @(); ExcludeTag = @()}
-                TestResult = [pscustomobject]@{OutputPath = $null}
+    It 'Test-NovaBuild applies optional tag and output overrides to the Pester config' -ForEach @(
+        @{
+            Name = 'tag filters'
+            IncludeOutput = $false
+            Invoke = {
+                Test-NovaBuild -TagFilter @('fast') -ExcludeTagFilter @('slow')
             }
+            Assert = {
+                param($Config)
 
-            Mock Test-ProjectSchema {}
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    Pester = @{}
-                    BuildRecursiveFolders = $true
-                    TestsDir = 'tests'
-                    ProjectRoot = $projectRoot
-                }
+                $Config.Filter.Tag | Should -Be @('fast')
+                $Config.Filter.ExcludeTag | Should -Be @('slow')
             }
-            Mock New-PesterConfiguration {$cfg}
-            Mock Test-Path {$true}
-            Mock Invoke-Pester {[pscustomobject]@{Result = 'Passed'}}
-
-            Test-NovaBuild -TagFilter @('fast') -ExcludeTagFilter @('slow')
-
-            $cfg.Filter.Tag | Should -Be @('fast')
-            $cfg.Filter.ExcludeTag | Should -Be @('slow')
-            $cfg.TestResult.OutputPath | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts', 'TestResults.xml'))
         }
-    }
+        @{
+            Name = 'output overrides'
+            IncludeOutput = $true
+            Invoke = {
+                Test-NovaBuild -OutputVerbosity Normal -OutputRenderMode Plaintext
+            }
+            Assert = {
+                param($Config)
 
-    It 'Test-NovaBuild can override Pester console output settings' {
-        InModuleScope $script:moduleName {
+                $Config.Output.Verbosity | Should -Be 'Normal'
+                $Config.Output.RenderMode | Should -Be 'Plaintext'
+            }
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
             $projectRoot = '/tmp/nova-project'
-            $cfg = [pscustomobject]@{
-                Run = [pscustomobject]@{Path = $null; PassThru = $false; Exit = $false; Throw = $false}
-                Filter = [pscustomobject]@{Tag = @(); ExcludeTag = @()}
-                Output = [pscustomobject]@{Verbosity = 'Detailed'; RenderMode = 'Auto'}
-                TestResult = [pscustomobject]@{OutputPath = $null}
+            $cfg = if ($TestCase.IncludeOutput) {
+                New-TestPesterConfigStub -IncludeOutput
+            }
+            else {
+                New-TestPesterConfigStub
             }
 
             Mock Test-ProjectSchema {}
@@ -307,10 +333,9 @@ title: Invoke-NovaBuild
             Mock Test-Path {$true}
             Mock Invoke-Pester {[pscustomobject]@{Result = 'Passed'}}
 
-            Test-NovaBuild -OutputVerbosity Normal -OutputRenderMode Plaintext
+            & $TestCase.Invoke
 
-            $cfg.Output.Verbosity | Should -Be 'Normal'
-            $cfg.Output.RenderMode | Should -Be 'Plaintext'
+            & $TestCase.Assert $cfg
             $cfg.TestResult.OutputPath | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts', 'TestResults.xml'))
         }
     }
@@ -318,12 +343,7 @@ title: Invoke-NovaBuild
     It 'Test-NovaBuild -WhatIf skips Pester execution and artifact creation' {
         InModuleScope $script:moduleName {
             $projectRoot = '/tmp/nova-project'
-            $cfg = [pscustomobject]@{
-                Run = [pscustomobject]@{Path = $null; PassThru = $false; Exit = $false; Throw = $false}
-                Filter = [pscustomobject]@{Tag = @(); ExcludeTag = @()}
-                Output = [pscustomobject]@{Verbosity = 'Detailed'; RenderMode = 'Auto'}
-                TestResult = [pscustomobject]@{OutputPath = $null}
-            }
+            $cfg = New-TestPesterConfigStub -IncludeOutput
 
             Mock Test-ProjectSchema {}
             Mock Get-NovaProjectInfo {
@@ -347,824 +367,6 @@ title: Invoke-NovaBuild
         }
     }
 
-    It 'Invoke-NovaRelease runs build test bump build publish in order' {
-        InModuleScope $script:moduleName {
-            $script:steps = @()
-
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    ProjectName = 'NovaModuleTools'
-                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
-                }
-            }
-            Mock Get-LocalModulePath {'/tmp/modules'}
-            Mock Invoke-NovaBuild {$script:steps += 'build'}
-            Mock Test-NovaBuild {$script:steps += 'test'}
-            Mock Update-NovaModuleVersion {
-                $script:steps += 'bump'
-                return [pscustomobject]@{NewVersion = '1.0.1'}
-            }
-            Mock Test-Path {$true}
-            Mock Remove-Item {}
-            Mock Copy-Item {$script:steps += 'publish'}
-
-            Invoke-NovaRelease -PublishOption @{Local = $true} -Path (Get-Location).Path | Out-Null
-
-            $script:steps -join ',' | Should -Be 'build,test,bump,build,publish'
-        }
-    }
-
-    It 'Invoke-NovaRelease does not bump version when tests fail' {
-        InModuleScope $script:moduleName {
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    ProjectName = 'NovaModuleTools'
-                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
-                }
-            }
-            Mock Get-LocalModulePath {'/tmp/modules'}
-            Mock Invoke-NovaBuild {}
-            Mock Test-NovaBuild {throw 'boom'}
-            Mock Update-NovaModuleVersion {}
-
-            {Invoke-NovaRelease -PublishOption @{Local = $true} -Path (Get-Location).Path} | Should -Throw
-            Assert-MockCalled Update-NovaModuleVersion -Times 0
-        }
-    }
-
-    It 'Invoke-NovaRelease -WhatIf forwards preview mode through the nested workflow' {
-        InModuleScope $script:moduleName {
-            $script:steps = @()
-            $publishAction = {
-                param($ProjectInfo, $ModuleDirectoryPath)
-
-                Publish-NovaBuiltModuleToDirectory @PSBoundParameters
-            }
-
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    ProjectName = 'NovaModuleTools'
-                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
-                }
-            }
-            Mock Get-Command {
-                [pscustomobject]@{ScriptBlock = $publishAction}
-            } -ParameterFilter {$Name -eq 'Publish-NovaBuiltModuleToDirectory' -and $CommandType -eq 'Function'}
-            Mock Get-LocalModulePath {'/tmp/modules'}
-            Mock Invoke-NovaBuild {$script:steps += "build:$WhatIfPreference"}
-            Mock Test-NovaBuild {$script:steps += "test:$WhatIfPreference"}
-            Mock Update-NovaModuleVersion {
-                $script:steps += "bump:$WhatIfPreference"
-                [pscustomobject]@{PreviousVersion = '1.0.0'; NewVersion = '1.0.0'; Label = 'Patch'; CommitCount = 0}
-            }
-            Mock Publish-NovaBuiltModuleToDirectory {$script:steps += "publish:$WhatIfPreference"}
-
-            $result = Invoke-NovaRelease -PublishOption @{Local = $true} -Path (Get-Location).Path -WhatIf
-
-            $script:steps -join ',' | Should -Be 'build:True,test:True,bump:True,build:True,publish:True'
-            $result.NewVersion | Should -Be '1.0.0'
-        }
-    }
-
-    It 'Invoke-NovaRelease reuses shared publish parameter resolution for local release execution' {
-        InModuleScope $script:moduleName {
-            $script:publishBoundParameters = $null
-
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    ProjectName = 'NovaModuleTools'
-                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
-                }
-            }
-            Mock Write-NovaLocalWorkflowMode {}
-            Mock Write-NovaResolvedLocalPublishTarget {}
-            Mock Resolve-NovaPublishInvocation {
-                [pscustomobject]@{
-                    Target = '/tmp/modules'
-                    IsLocal = $true
-                    Parameters = @{
-                        ProjectInfo = [pscustomobject]@{ProjectName = 'Ignored'}
-                        ModuleDirectoryPath = '/tmp/ignored'
-                    }
-                    Action = {
-                        param($ProjectInfo, $ModuleDirectoryPath)
-
-                        $script:publishBoundParameters = @{}
-                        foreach ($parameterName in $PSBoundParameters.Keys) {
-                            $script:publishBoundParameters[$parameterName] = $PSBoundParameters[$parameterName]
-                        }
-                    }
-                }
-            }
-            Mock Get-NovaResolvedPublishParameterMap {
-                @{
-                    ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
-                    ModuleDirectoryPath = '/tmp/modules'
-                }
-            }
-            Mock Invoke-NovaBuild {}
-            Mock Test-NovaBuild {}
-            Mock Update-NovaModuleVersion {
-                [pscustomobject]@{NewVersion = '1.0.1'}
-            }
-            Mock Import-NovaPublishedLocalModule {throw 'release should not import the published module'}
-
-            {Invoke-NovaRelease -PublishOption @{Local = $true} -Path (Get-Location).Path} | Should -Not -Throw
-
-            Assert-MockCalled Get-NovaResolvedPublishParameterMap -Times 1
-            Assert-MockCalled Write-NovaResolvedLocalPublishTarget -Times 1 -ParameterFilter {$PublishInvocation.IsLocal}
-            $script:publishBoundParameters.ProjectInfo.ProjectName | Should -Be 'NovaModuleTools'
-            $script:publishBoundParameters.ModuleDirectoryPath | Should -Be '/tmp/modules'
-            @($script:publishBoundParameters.Keys | Sort-Object) | Should -Be @('ModuleDirectoryPath', 'ProjectInfo')
-        }
-    }
-
-    It 'Publish-NovaModule resolves the local target and published manifest before testing, then imports the published module from that local path' {
-        InModuleScope $script:moduleName {
-            $script:steps = @()
-            $localManifestPath = '/tmp/modules/NovaModuleTools/NovaModuleTools.psd1'
-            $importAction = {
-                param($ProjectName, $ManifestPath)
-
-                Import-NovaPublishedLocalModule @PSBoundParameters
-            }
-
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    ProjectName = 'NovaModuleTools'
-                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
-                }
-            }
-            Mock Get-LocalModulePath {
-                $script:steps += 'resolve'
-                '/tmp/modules'
-            }
-            Mock Get-Command {
-                [pscustomobject]@{ScriptBlock = $importAction}
-            } -ParameterFilter {$Name -eq 'Import-NovaPublishedLocalModule' -and $CommandType -eq 'Function'}
-            Mock Get-NovaPublishedLocalManifestPath {
-                $script:steps += 'manifest'
-                $localManifestPath
-            }
-            Mock Invoke-NovaBuild {$script:steps += 'build'}
-            Mock Test-NovaBuild {
-                $script:steps += 'test'
-                Remove-Item function:Get-LocalModulePath -ErrorAction SilentlyContinue
-            }
-            Mock Test-Path {$true}
-            Mock Remove-Item {}
-            Mock Copy-Item {$script:steps += 'copy'}
-            Mock Import-NovaPublishedLocalModule {$script:steps += 'import'}
-
-            {Publish-NovaModule -Local} | Should -Not -Throw
-
-            $script:steps -join ',' | Should -Be 'resolve,manifest,build,test,copy,import'
-            Assert-MockCalled Copy-Item -Times 1 -ParameterFilter {$Destination -eq '/tmp/modules'}
-            Assert-MockCalled Import-NovaPublishedLocalModule -Times 1 -ParameterFilter {$ProjectName -eq 'NovaModuleTools' -and $ManifestPath -eq $localManifestPath}
-        }
-    }
-
-    It 'Get-NovaPublishedLocalManifestPath resolves the manifest under the local publish directory' {
-        InModuleScope $script:moduleName {
-            $publishInvocation = [pscustomobject]@{
-                IsLocal = $true
-                Target = '/tmp/modules'
-                Parameters = @{
-                    ProjectInfo = [pscustomobject]@{
-                        ProjectName = 'NovaModuleTools'
-                    }
-                }
-            }
-
-            $result = Get-NovaPublishedLocalManifestPath -PublishInvocation $publishInvocation
-
-            $result | Should -Be '/tmp/modules/NovaModuleTools/NovaModuleTools.psd1'
-        }
-    }
-
-    It 'Publish-NovaModule -WhatIf forwards preview mode to build, test, and publish helpers' {
-        InModuleScope $script:moduleName {
-            $script:steps = @()
-            $publishAction = {
-                param($ProjectInfo, $ModuleDirectoryPath)
-
-                Publish-NovaBuiltModuleToDirectory @PSBoundParameters
-            }
-
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    ProjectName = 'NovaModuleTools'
-                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
-                }
-            }
-            Mock Get-Command {
-                [pscustomobject]@{ScriptBlock = $publishAction}
-            } -ParameterFilter {$Name -eq 'Publish-NovaBuiltModuleToDirectory' -and $CommandType -eq 'Function'}
-            Mock Get-LocalModulePath {'/tmp/modules'}
-            Mock Invoke-NovaBuild {$script:steps += "build:$WhatIfPreference"}
-            Mock Test-NovaBuild {$script:steps += "test:$WhatIfPreference"}
-            Mock Publish-NovaBuiltModuleToDirectory {$script:steps += "publish:$WhatIfPreference"}
-            Mock Import-NovaPublishedLocalModule {$script:steps += 'import'}
-
-            $result = Publish-NovaModule -Local -WhatIf
-
-            $result | Should -BeNullOrEmpty
-            $script:steps -join ',' | Should -Be 'build:True,test:True,publish:True'
-            Assert-MockCalled Import-NovaPublishedLocalModule -Times 0
-        }
-    }
-
-    It 'Publish-NovaModule repository mode does not import the published module after publish' {
-        InModuleScope $script:moduleName {
-            $publishAction = {
-                param($ProjectInfo, $Repository, $ApiKey)
-
-                Publish-NovaBuiltModuleToRepository @PSBoundParameters
-            }
-
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    ProjectName = 'NovaModuleTools'
-                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
-                }
-            }
-            Mock Get-Command {
-                [pscustomobject]@{ScriptBlock = $publishAction}
-            } -ParameterFilter {$Name -eq 'Publish-NovaBuiltModuleToRepository' -and $CommandType -eq 'Function'}
-            Mock Invoke-NovaBuild {}
-            Mock Test-NovaBuild {}
-            Mock Publish-NovaBuiltModuleToRepository {}
-            Mock Import-NovaPublishedLocalModule {}
-
-            {Publish-NovaModule -Repository PSGallery -ApiKey key123} | Should -Not -Throw
-
-            Assert-MockCalled Publish-NovaBuiltModuleToRepository -Times 1 -ParameterFilter {$Repository -eq 'PSGallery' -and $ApiKey -eq 'key123'}
-            Assert-MockCalled Import-NovaPublishedLocalModule -Times 0
-        }
-    }
-
-    It 'Get-ResourceFilePath prefers project src resources during build' {
-        InModuleScope $script:moduleName {
-            $expected = [System.IO.Path]::GetFullPath('/tmp/project/src/resources/Schema-Build.json')
-            $script:checkedPaths = @()
-
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    ResourcesDir = '/tmp/project/src/resources'
-                }
-            }
-            Mock Test-Path {
-                param($LiteralPath)
-
-                $script:checkedPaths += $LiteralPath
-                return $LiteralPath -eq $expected
-            }
-
-            $result = Get-ResourceFilePath -FileName 'Schema-Build.json'
-
-            $result | Should -Be $expected
-            $script:checkedPaths[0] | Should -Be $expected
-        }
-    }
-
-    It 'Get-LocalModulePath returns the first matching local module path for the current platform' {
-        InModuleScope $script:moduleName {
-            $originalModulePath = $env:PSModulePath
-            $script:expectedModulePath = if ($IsWindows) {
-                'C:\Users\Stiwi\Documents\PowerShell\Modules'
-            }
-            else {
-                '/Users/stiwi.courage/.local/share/powershell/Modules'
-            }
-
-            $env:PSModulePath = if ($IsWindows) {
-                'C:\Program Files\PowerShell\Modules;C:\Users\Stiwi\Documents\PowerShell\Modules;C:\Temp\Modules'
-            }
-            else {
-                '/usr/local/share/powershell/Modules:/Users/stiwi.courage/.local/share/powershell/Modules:/tmp/modules'
-            }
-
-            Mock Test-Path {
-                param($Path)
-                return $Path -eq $script:expectedModulePath
-            }
-
-            try {
-                Get-LocalModulePath | Should -Be $script:expectedModulePath
-            }
-            finally {
-                $env:PSModulePath = $originalModulePath
-            }
-        }
-    }
-
-    It 'Get-LocalModulePath throws a platform-specific error when no matching path exists' {
-        InModuleScope $script:moduleName {
-            $originalModulePath = $env:PSModulePath
-            $env:PSModulePath = if ($IsWindows) {
-                'C:\Program Files\PowerShell\Modules;C:\Temp\Modules'
-            }
-            else {
-                '/usr/local/share/powershell/Modules:/tmp/modules'
-            }
-
-            Mock Test-Path {$false}
-
-            $expectedError = if ($IsWindows) {
-                'No windows module path matching*'
-            }
-            else {
-                'No macOS/Linux module path matching*'
-            }
-
-            try {
-                {Get-LocalModulePath} | Should -Throw $expectedError
-            }
-            finally {
-                $env:PSModulePath = $originalModulePath
-            }
-        }
-    }
-
-    It 'built module keeps Publish-NovaModule local path resolution before build and test' {
-        $packagedModulePath = (Get-Module $script:moduleName).Path
-
-        Test-Path -LiteralPath $packagedModulePath | Should -BeTrue
-
-        $tokens = $null
-        $errors = $null
-        $ast = [System.Management.Automation.Language.Parser]::ParseFile($packagedModulePath, [ref]$tokens, [ref]$errors)
-
-        $errors.Count | Should -Be 0
-
-        $publishFunction = $ast.Find(
-                {
-                    param($node)
-                    $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-                            $node.Name -eq 'Publish-NovaModule'
-                },
-                $true
-        )
-
-        $publishFunction | Should -Not -BeNullOrEmpty
-        $publishSource = $publishFunction.Extent.Text
-
-        $publishSource.IndexOf('Resolve-NovaPublishInvocation') | Should -BeGreaterThan -1
-        $publishSource.IndexOf('Invoke-NovaBuild') | Should -BeGreaterThan -1
-        $publishSource.IndexOf('Resolve-NovaPublishInvocation') | Should -BeLessThan $publishSource.IndexOf('Invoke-NovaBuild')
-    }
-
-    It 'Get-NovaCliConfirmDecision approves Yes and Yes to All, and cancels No, No to All, and Suspend' {
-        InModuleScope $script:moduleName {
-            foreach ($testCase in @(
-                @{Key = 'Y'; Expected = $true},
-                @{Key = 'A'; Expected = $true},
-                @{Key = 'N'; Expected = $false},
-                @{Key = 'L'; Expected = $false},
-                @{Key = 'S'; Expected = $false},
-                @{Key = 'y'; Expected = $true},
-                @{Key = 'n'; Expected = $false}
-            )) {
-                $result = Get-NovaCliConfirmDecision -KeyChar ([char]$testCase.Key)
-                $result | Should -Be $testCase.Expected
-            }
-
-            Get-NovaCliConfirmDecision -KeyChar ([char]'?') | Should -BeNullOrEmpty
-        }
-    }
-
-    It 'Update-NovaModuleVersion -WhatIf previews the calculated next version without persisting it' {
-        InModuleScope $script:moduleName {
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    Version = '1.0.0'
-                    ProjectJSON = '/tmp/project.json'
-                }
-            }
-            Mock Get-GitCommitMessageForVersionBump {@('feat: add change')}
-            Mock Get-VersionLabelFromCommitSet {'Minor'}
-            Mock Get-NovaVersionUpdatePlan {
-                [pscustomobject]@{
-                    ProjectFile = '/tmp/project.json'
-                    CurrentVersion = [semver]'1.0.0'
-                    NewVersion = [semver]'1.1.0'
-                }
-            }
-            Mock Set-NovaModuleVersion {}
-
-            $result = Update-NovaModuleVersion -Path (Get-Location).Path -WhatIf
-
-            $result.PreviousVersion | Should -Be '1.0.0'
-            $result.NewVersion | Should -Be '1.1.0'
-            $result.Label | Should -Be 'Minor'
-            Assert-MockCalled Set-NovaModuleVersion -Times 0
-        }
-    }
-
-    It 'Update-NovaModuleVersion -WhatIf falls back to a Patch preview when the project is not a git repository' {
-        InModuleScope $script:moduleName {
-            $projectRoot = Join-Path $TestDrive 'no-git-bump-project'
-            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
-
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    Version = '1.0.0'
-                    ProjectJSON = (Join-Path $projectRoot 'project.json')
-                }
-            }
-            Mock Get-NovaVersionUpdatePlan {
-                [pscustomobject]@{
-                    ProjectFile = (Join-Path $projectRoot 'project.json')
-                    CurrentVersion = [semver]'1.0.0'
-                    NewVersion = [semver]'1.0.1'
-                }
-            }
-            Mock Set-NovaModuleVersion {}
-
-            $result = Update-NovaModuleVersion -Path $projectRoot -WhatIf
-
-            $result.PreviousVersion | Should -Be '1.0.0'
-            $result.NewVersion | Should -Be '1.0.1'
-            $result.Label | Should -Be 'Patch'
-            $result.CommitCount | Should -Be 0
-            Assert-MockCalled Set-NovaModuleVersion -Times 0
-        }
-    }
-
-    It 'Update-NovaModuleVersion -WhatIf throws a clear error when the repository has no commits yet' {
-        if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-            Set-ItResult -Skipped -Because 'git is not available in this environment'
-            return
-        }
-
-        InModuleScope $script:moduleName {
-            $projectRoot = Join-Path $TestDrive 'empty-git-bump-project'
-            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
-            & git -C $projectRoot init --quiet | Out-Null
-            & git -C $projectRoot config user.name 'NovaModuleTools Tests' | Out-Null
-            & git -C $projectRoot config user.email 'tests@example.invalid' | Out-Null
-
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    Version = '1.0.0'
-                    ProjectJSON = (Join-Path $projectRoot 'project.json')
-                }
-            }
-            Mock Get-NovaVersionUpdatePlan {throw 'should not calculate a version plan'}
-            Mock Set-NovaModuleVersion {throw 'should not write project.json'}
-
-            {Update-NovaModuleVersion -Path $projectRoot -WhatIf} | Should -Throw 'Cannot bump version because the repository has no commits yet. Create an initial commit first.'
-
-            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 0
-            Assert-MockCalled Set-NovaModuleVersion -Times 0
-        }
-    }
-
-    It 'Update-NovaModuleVersion returns no output when the CLI confirm prompt declines the bump' {
-        InModuleScope $script:moduleName {
-            $originalCliConfirm = $env:NOVA_CLI_CONFIRM_BUMP
-            $env:NOVA_CLI_CONFIRM_BUMP = '1'
-
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    Version = '1.0.0'
-                    ProjectJSON = '/tmp/project.json'
-                }
-            }
-            Mock Get-GitCommitMessageForVersionBump {@('feat: add change')}
-            Mock Get-VersionLabelFromCommitSet {'Minor'}
-            Mock Get-NovaVersionUpdatePlan {
-                [pscustomobject]@{
-                    ProjectFile = '/tmp/project.json'
-                    CurrentVersion = [semver]'1.0.0'
-                    NewVersion = [semver]'1.1.0'
-                }
-            }
-            Mock Confirm-NovaCliBumpAction {$false}
-            Mock Set-NovaModuleVersion {}
-
-            try {
-                $result = Update-NovaModuleVersion -Path (Get-Location).Path
-            }
-            finally {
-                if ($null -eq $originalCliConfirm) {
-                    Remove-Item Env:NOVA_CLI_CONFIRM_BUMP -ErrorAction SilentlyContinue
-                }
-                else {
-                    $env:NOVA_CLI_CONFIRM_BUMP = $originalCliConfirm
-                }
-            }
-
-            $result | Should -BeNullOrEmpty
-            Assert-MockCalled Confirm-NovaCliBumpAction -Times 1
-            Assert-MockCalled Set-NovaModuleVersion -Times 0
-        }
-    }
-
-    It 'Install-NovaCli copies the launcher and the installed command returns CLI help' {
-        $targetDirectory = Join-Path $TestDrive 'bin'
-        $installedPath = Join-Path $targetDirectory 'nova'
-        $installedModuleVersion = Get-TestModuleDisplayVersion -Module (Get-Module $script:moduleName)
-        $expectedProjectVersionText = "$( $script:projectInfo.ProjectName ) $( $script:projectInfo.Version )"
-        $originalModulePath = $env:PSModulePath
-        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
-        $distParent = Split-Path -Parent $distModuleDir
-
-        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
-
-        try {
-            $result = Install-NovaCli -DestinationDirectory $targetDirectory -Force
-            $helpOutput = & $installedPath --help 2>&1
-            $helpText = @($helpOutput) -join [Environment]::NewLine
-            $helpExitCode = $LASTEXITCODE
-            $versionOutput = & $installedPath --version 2>&1
-            $versionText = @($versionOutput) -join [Environment]::NewLine
-            $versionExitCode = $LASTEXITCODE
-            Push-Location $script:projectInfo.ProjectRoot
-            try {
-                $projectVersionOutput = & $installedPath version 2>&1
-                $projectVersionText = @($projectVersionOutput) -join [Environment]::NewLine
-                $projectVersionExitCode = $LASTEXITCODE
-            }
-            finally {
-                Pop-Location
-            }
-
-            $result.CommandName | Should -Be 'nova'
-            $result.InstalledPath | Should -Be $installedPath
-            $result.DestinationDirectory | Should -Be $targetDirectory
-            (Test-Path -LiteralPath $installedPath) | Should -BeTrue
-            $helpExitCode | Should -Be 0
-            $versionExitCode | Should -Be 0
-            $projectVersionExitCode | Should -Be 0
-            $helpText | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
-            ($helpText -match 'notification\s+Show or change prerelease build-update notifications') | Should -BeTrue
-            $helpText | Should -Match 'version\s+Show the current project version, or use -Installed for the locally installed project module version'
-            $versionText | Should -Be "$script:moduleName $installedModuleVersion"
-            $projectVersionText | Should -Be $expectedProjectVersionText
-        }
-        finally {
-            $env:PSModulePath = $originalModulePath
-        }
-    }
-
-    It 'Install-NovaCli forwards -Verbose from the standalone launcher to build output' {
-        $targetDirectory = Join-Path $TestDrive 'verbose-bin'
-        $installedPath = Join-Path $targetDirectory 'nova'
-        $projectRoot = Join-Path $TestDrive 'CliVerboseBuildProject'
-        $originalModulePath = $env:PSModulePath
-        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
-        $distParent = Split-Path -Parent $distModuleDir
-
-        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
-
-        New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
-        foreach ($dir in @('src/public', 'src/private', 'src/classes', 'src/resources', 'tests', 'docs')) {
-            New-Item -ItemType Directory -Path (Join-Path $projectRoot $dir) -Force | Out-Null
-        }
-
-        @'
-{
-  "ProjectName": "CliVerboseBuildProject",
-  "Description": "CLI verbose forwarding test project",
-  "Version": "0.0.1",
-  "CopyResourcesToModuleRoot": false,
-  "Manifest": {
-    "Author": "Test",
-    "PowerShellHostVersion": "7.4",
-    "GUID": "22222222-2222-2222-2222-222222222222",
-    "Tags": [],
-    "ProjectUri": ""
-  },
-  "Pester": {
-    "TestResult": {
-      "Enabled": true,
-      "OutputFormat": "NUnitXml"
-    },
-    "Output": {
-      "Verbosity": "Detailed"
-    }
-  }
-}
-'@ | Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Encoding utf8
-
-        @'
-function Invoke-TestCliVerbose {
-    'ok'
-}
-'@ | Set-Content -LiteralPath (Join-Path $projectRoot 'src/public/Invoke-TestCliVerbose.ps1') -Encoding utf8
-
-        try {
-            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
-
-            Push-Location $projectRoot
-            try {
-                $buildOutput = & $installedPath build -Verbose 2>&1
-                $buildText = @($buildOutput) -join [Environment]::NewLine
-                $buildExitCode = $LASTEXITCODE
-            }
-            finally {
-                Pop-Location
-            }
-
-            $buildExitCode | Should -Be 0
-            $buildText | Should -Match 'VERBOSE: Running NovaModuleTools Version:'
-            $buildText | Should -Match 'VERBOSE: Buidling module psm1 file'
-            (Test-Path -LiteralPath (Join-Path $projectRoot 'dist/CliVerboseBuildProject/CliVerboseBuildProject.psm1')) | Should -BeTrue
-        }
-        finally {
-            $env:PSModulePath = $originalModulePath
-        }
-    }
-
-    It 'Install-NovaCli forwards -WhatIf from the standalone launcher without mutating build, bump, or publish state' {
-        $targetDirectory = Join-Path $TestDrive 'whatif-bin'
-        $installedPath = Join-Path $targetDirectory 'nova'
-        $projectRoot = Join-Path $TestDrive 'CliWhatIfProject'
-        $projectJsonPath = Join-Path $projectRoot 'project.json'
-        $builtModulePath = Join-Path $projectRoot 'dist/CliWhatIfProject/CliWhatIfProject.psm1'
-        $testResultPath = Join-Path $projectRoot 'artifacts/TestResults.xml'
-        $originalModulePath = $env:PSModulePath
-        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
-        $distParent = Split-Path -Parent $distModuleDir
-
-        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
-
-        Initialize-TestNovaCliProjectLayout -ProjectRoot $projectRoot
-        Write-TestNovaCliProjectJson -ProjectRoot $projectRoot -ProjectName 'CliWhatIfProject' -ProjectGuid '33333333-3333-3333-3333-333333333333'
-        Write-TestNovaCliPublicFunction -ProjectRoot $projectRoot -FunctionName 'Invoke-TestCliWhatIf'
-
-        try {
-            Initialize-TestGitRepository -ProjectRoot $projectRoot -CommitMessage 'feat: add cli whatif coverage'
-
-            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
-
-            $buildResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('build', '-WhatIf')
-            $publishResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('publish', '--local', '-WhatIf')
-            $bumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '-WhatIf')
-            $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
-
-            $buildResult.ExitCode | Should -Be 0
-            $publishResult.ExitCode | Should -Be 0
-            $bumpResult.ExitCode | Should -Be 0
-            $buildResult.Text | Should -Match 'What if:'
-            $publishResult.Text | Should -Match 'What if:'
-            $publishResult.Text | Should -Not -Match 'Unknown argument:'
-            $bumpResult.Text | Should -Match 'What if:'
-            $bumpResult.Text | Should -Match '0\.0\.1\s+0\.1\.0\s+Minor\s+1'
-            $bumpResult.Text | Should -Not -Match 'Version bumped to :'
-            $versionAfterBump | Should -Be '0.0.1'
-            (Test-Path -LiteralPath $builtModulePath) | Should -BeFalse
-            (Test-Path -LiteralPath $testResultPath) | Should -BeFalse
-        }
-        finally {
-            $env:PSModulePath = $originalModulePath
-        }
-    }
-
-    It 'Install-NovaCli rejects nova init -WhatIf with a clear CLI error' {
-        $targetDirectory = Join-Path $TestDrive 'init-whatif-bin'
-        $installedPath = Join-Path $targetDirectory 'nova'
-        $workspaceRoot = Join-Path $TestDrive 'CliInitWhatIfRoot'
-        $originalModulePath = $env:PSModulePath
-        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
-        $distParent = Split-Path -Parent $distModuleDir
-
-        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
-        New-Item -ItemType Directory -Path $workspaceRoot -Force | Out-Null
-
-        try {
-            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
-            $initResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $workspaceRoot -Arguments @('init', '-WhatIf')
-
-            $initResult.ExitCode | Should -Not -Be 0
-            $initResult.Text | Should -Match 'does not support -WhatIf'
-            $initResult.Text | Should -Not -Match 'Not a valid path'
-        }
-        finally {
-            $env:PSModulePath = $originalModulePath
-        }
-    }
-
-    It 'Install-NovaCli rejects positional init paths with a migration hint' {
-        $targetDirectory = Join-Path $TestDrive 'init-positional-bin'
-        $installedPath = Join-Path $targetDirectory 'nova'
-        $workspaceRoot = Join-Path $TestDrive 'CliInitPositionalRoot'
-        $originalModulePath = $env:PSModulePath
-        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
-        $distParent = Split-Path -Parent $distModuleDir
-
-        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
-        New-Item -ItemType Directory -Path $workspaceRoot -Force | Out-Null
-
-        try {
-            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
-            $initResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $workspaceRoot -Arguments @('init', 'some/path')
-
-            $initResult.ExitCode | Should -Not -Be 0
-            $initResult.Text | Should -Match 'positional paths are no longer accepted'
-            $initResult.Text | Should -Match 'nova init -Path some/path'
-        }
-        finally {
-            $env:PSModulePath = $originalModulePath
-        }
-    }
-
-    It 'Invoke-NovaCli version returns the project name and version' {
-        InModuleScope $script:moduleName {
-            Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectName = 'AzureDevOpsAgentInstaller'; Version = '1.2.3'}}
-
-            Invoke-NovaCli version | Should -Be 'AzureDevOpsAgentInstaller 1.2.3'
-            Assert-MockCalled Get-NovaProjectInfo -Times 1 -ParameterFilter {-not $Version}
-        }
-    }
-
-    It 'Invoke-NovaCli --version formats stable and prerelease installed versions correctly' {
-        InModuleScope $script:moduleName -Parameters @{ModuleName = $script:moduleName} {
-            param($ModuleName)
-
-            foreach ($testCase in @(
-                @{InstalledVersion = '9.9.9'; Expected = "$ModuleName 9.9.9"},
-                @{InstalledVersion = '9.9.9-preview'; Expected = "$ModuleName 9.9.9-preview"}
-            )) {
-                Mock Get-NovaCliInstalledVersion {$testCase.InstalledVersion}
-
-                Invoke-NovaCli --version | Should -Be $testCase.Expected
-                Assert-MockCalled Get-NovaCliInstalledVersion -Times 1 -Scope It
-            }
-        }
-    }
-
-    It 'Invoke-NovaCli --help returns CLI help text' {
-        InModuleScope $script:moduleName {
-            $result = Invoke-NovaCli --help
-
-            $result | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
-            $result | Should -Match 'init\s+Create a new Nova module scaffold'
-            (($result -match 'notification\s+Show or change prerelease build-update notifications') -and ($result -match 'nova notification -disable') -and ($result -match 'nova notification -enable')) | Should -BeTrue
-            $result | Should -Match 'version\s+Show the current project version, or use -Installed for the locally installed project module version'
-            $result | Should -Match 'nova version -Installed'
-            $result | Should -Match '--version\s+Show the installed NovaModuleTools module name and version'
-            $result | Should -Match 'publish\s+Build, test, and publish the module locally or to a repository'
-        }
-    }
-
-    It 'Invoke-NovaCli publish forwards repository options' {
-        InModuleScope $script:moduleName {
-            Mock Publish-NovaModule {
-                return [pscustomobject]@{
-                    Repository = $Repository
-                    ApiKey = $ApiKey
-                }
-            }
-
-            $result = Invoke-NovaCli publish --repository PSGallery --apikey key123
-
-            $result.Repository | Should -Be 'PSGallery'
-            $result.ApiKey | Should -Be 'key123'
-        }
-    }
-
-    It 'Invoke-NovaCli publish -local routes the local publish flow' {
-        InModuleScope $script:moduleName {
-            Mock Publish-NovaModule {
-                [pscustomobject]@{Local = $Local}
-            }
-
-            $result = Invoke-NovaCli publish -local
-
-            $result.Local | Should -BeTrue
-        }
-    }
-
-    It 'Invoke-NovaCli forwards WhatIf to mutating routed commands' {
-        InModuleScope $script:moduleName {
-            Mock Publish-NovaModule {
-                [pscustomobject]@{WhatIfSeen = $WhatIfPreference}
-            }
-
-            $result = Invoke-NovaCli publish --repository PSGallery --apikey key123 -WhatIf
-
-            $result.WhatIfSeen | Should -BeTrue
-        }
-    }
-
-    It 'Invoke-NovaCli init rejects -WhatIf with a clear error' {
-        InModuleScope $script:moduleName {
-            {Invoke-NovaCli init -WhatIf} | Should -Throw "*does not support -WhatIf*"
-        }
-    }
-
-    It 'Invoke-NovaCli init rejects positional paths instead of treating them as -Path' {
-        InModuleScope $script:moduleName {
-            {Invoke-NovaCli init 'some/path'} | Should -Throw "*positional paths are no longer accepted*"
-        }
-    }
-
-    It 'Invoke-NovaCli throws on unsupported argument' {
-        InModuleScope $script:moduleName {
-            {Invoke-NovaCli publish --bogus} | Should -Throw 'Unknown argument*'
-        }
-    }
 
 }
+
