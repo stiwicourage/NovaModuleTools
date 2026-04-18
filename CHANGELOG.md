@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - All public commands are now Nova commands, and the `nova` CLI/Powershell alias is the primary entry point for all
       operations.
 - Change `CopyResourcesToModuleRoot` to the canonical project setting name while keeping the default value `false`.
+- Change `Publish-NovaModule -Local` and `nova publish -local` so a successful local publish also reloads the published
+  module from the local install path into the active PowerShell session.
 
 ### Fixed
 

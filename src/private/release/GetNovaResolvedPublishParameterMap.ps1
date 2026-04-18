@@ -1,4 +1,4 @@
-function Invoke-NovaResolvedPublishInvocation {
+function Get-NovaResolvedPublishParameterMap {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][pscustomobject]$PublishInvocation,
@@ -14,6 +14,5 @@ function Invoke-NovaResolvedPublishInvocation {
         $publishParams[$parameterName] = $WorkflowParams[$parameterName]
     }
 
-    return & $PublishInvocation.Action @publishParams
+    return $publishParams
 }
-

@@ -46,6 +46,9 @@ the standalone 'nova' command available from zsh/bash.
 Use 'nova <command>' to run a command, or call the underlying PowerShell cmdlet directly
 when you want a scriptable function interface.
 
+Inside PowerShell, 'nova publish -local' also reloads the published module from the
+local install path after a successful publish.
+
 Note: 'nova init' is interactive. Use 'nova init -Path <path>' for an explicit destination,
 'nova init -Example' for the packaged example scaffold, and do not use 'nova init -WhatIf'.
 '@

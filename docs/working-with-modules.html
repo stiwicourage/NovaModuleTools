@@ -94,7 +94,9 @@ Import-Module $project.OutputModuleDir -Force</code></pre>
                 <p>If you want to test how the module behaves when copied to your local PowerShell module path:</p>
                 <pre><code>nova publish -local</code></pre>
                 <p>This is useful when you want to simulate a more realistic install-and-import cycle without publishing
-                    to a shared repository.</p>
+                    to a shared repository. After a successful local publish in PowerShell, NovaModuleTools reloads the
+                    published module from the local install path so you can use the freshly published version right
+                    away.</p>
             </section>
 
             <section class="content-section" id="example">
@@ -129,4 +131,3 @@ Import-Module $project.OutputModuleDir -Force</code></pre>
 </footer>
 </body>
 </html>
-

@@ -412,9 +412,68 @@ title: Invoke-NovaBuild
         }
     }
 
-    It 'Publish-NovaModule resolves local path before tests can reload helpers' {
+    It 'Invoke-NovaRelease reuses shared publish parameter resolution for local release execution' {
+        InModuleScope $script:moduleName {
+            $script:publishBoundParameters = $null
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            }
+            Mock Write-NovaLocalWorkflowMode {}
+            Mock Write-NovaResolvedLocalPublishTarget {}
+            Mock Resolve-NovaPublishInvocation {
+                [pscustomobject]@{
+                    Target = '/tmp/modules'
+                    IsLocal = $true
+                    Parameters = @{
+                        ProjectInfo = [pscustomobject]@{ProjectName = 'Ignored'}
+                        ModuleDirectoryPath = '/tmp/ignored'
+                    }
+                    Action = {
+                        param($ProjectInfo, $ModuleDirectoryPath)
+
+                        $script:publishBoundParameters = @{}
+                        foreach ($parameterName in $PSBoundParameters.Keys) {
+                            $script:publishBoundParameters[$parameterName] = $PSBoundParameters[$parameterName]
+                        }
+                    }
+                }
+            }
+            Mock Get-NovaResolvedPublishParameterMap {
+                @{
+                    ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                    ModuleDirectoryPath = '/tmp/modules'
+                }
+            }
+            Mock Invoke-NovaBuild {}
+            Mock Test-NovaBuild {}
+            Mock Update-NovaModuleVersion {
+                [pscustomobject]@{NewVersion = '1.0.1'}
+            }
+            Mock Import-NovaPublishedLocalModule {throw 'release should not import the published module'}
+
+            {Invoke-NovaRelease -PublishOption @{Local = $true} -Path (Get-Location).Path} | Should -Not -Throw
+
+            Assert-MockCalled Get-NovaResolvedPublishParameterMap -Times 1
+            Assert-MockCalled Write-NovaResolvedLocalPublishTarget -Times 1 -ParameterFilter {$PublishInvocation.IsLocal}
+            $script:publishBoundParameters.ProjectInfo.ProjectName | Should -Be 'NovaModuleTools'
+            $script:publishBoundParameters.ModuleDirectoryPath | Should -Be '/tmp/modules'
+            @($script:publishBoundParameters.Keys | Sort-Object) | Should -Be @('ModuleDirectoryPath', 'ProjectInfo')
+        }
+    }
+
+    It 'Publish-NovaModule resolves the local target and published manifest before testing, then imports the published module from that local path' {
         InModuleScope $script:moduleName {
             $script:steps = @()
+            $localManifestPath = '/tmp/modules/NovaModuleTools/NovaModuleTools.psd1'
+            $importAction = {
+                param($ProjectName, $ManifestPath)
+
+                Import-NovaPublishedLocalModule @PSBoundParameters
+            }
 
             Mock Get-NovaProjectInfo {
                 [pscustomobject]@{
@@ -426,6 +485,13 @@ title: Invoke-NovaBuild
                 $script:steps += 'resolve'
                 '/tmp/modules'
             }
+            Mock Get-Command {
+                [pscustomobject]@{ScriptBlock = $importAction}
+            } -ParameterFilter {$Name -eq 'Import-NovaPublishedLocalModule' -and $CommandType -eq 'Function'}
+            Mock Get-NovaPublishedLocalManifestPath {
+                $script:steps += 'manifest'
+                $localManifestPath
+            }
             Mock Invoke-NovaBuild {$script:steps += 'build'}
             Mock Test-NovaBuild {
                 $script:steps += 'test'
@@ -434,11 +500,31 @@ title: Invoke-NovaBuild
             Mock Test-Path {$true}
             Mock Remove-Item {}
             Mock Copy-Item {$script:steps += 'copy'}
+            Mock Import-NovaPublishedLocalModule {$script:steps += 'import'}
 
             {Publish-NovaModule -Local} | Should -Not -Throw
 
-            $script:steps -join ',' | Should -Be 'resolve,build,test,copy'
+            $script:steps -join ',' | Should -Be 'resolve,manifest,build,test,copy,import'
             Assert-MockCalled Copy-Item -Times 1 -ParameterFilter {$Destination -eq '/tmp/modules'}
+            Assert-MockCalled Import-NovaPublishedLocalModule -Times 1 -ParameterFilter {$ProjectName -eq 'NovaModuleTools' -and $ManifestPath -eq $localManifestPath}
+        }
+    }
+
+    It 'Get-NovaPublishedLocalManifestPath resolves the manifest under the local publish directory' {
+        InModuleScope $script:moduleName {
+            $publishInvocation = [pscustomobject]@{
+                IsLocal = $true
+                Target = '/tmp/modules'
+                Parameters = @{
+                    ProjectInfo = [pscustomobject]@{
+                        ProjectName = 'NovaModuleTools'
+                    }
+                }
+            }
+
+            $result = Get-NovaPublishedLocalManifestPath -PublishInvocation $publishInvocation
+
+            $result | Should -Be '/tmp/modules/NovaModuleTools/NovaModuleTools.psd1'
         }
     }
 
@@ -464,11 +550,42 @@ title: Invoke-NovaBuild
             Mock Invoke-NovaBuild {$script:steps += "build:$WhatIfPreference"}
             Mock Test-NovaBuild {$script:steps += "test:$WhatIfPreference"}
             Mock Publish-NovaBuiltModuleToDirectory {$script:steps += "publish:$WhatIfPreference"}
+            Mock Import-NovaPublishedLocalModule {$script:steps += 'import'}
 
             $result = Publish-NovaModule -Local -WhatIf
 
             $result | Should -BeNullOrEmpty
             $script:steps -join ',' | Should -Be 'build:True,test:True,publish:True'
+            Assert-MockCalled Import-NovaPublishedLocalModule -Times 0
+        }
+    }
+
+    It 'Publish-NovaModule repository mode does not import the published module after publish' {
+        InModuleScope $script:moduleName {
+            $publishAction = {
+                param($ProjectInfo, $Repository, $ApiKey)
+
+                Publish-NovaBuiltModuleToRepository @PSBoundParameters
+            }
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            }
+            Mock Get-Command {
+                [pscustomobject]@{ScriptBlock = $publishAction}
+            } -ParameterFilter {$Name -eq 'Publish-NovaBuiltModuleToRepository' -and $CommandType -eq 'Function'}
+            Mock Invoke-NovaBuild {}
+            Mock Test-NovaBuild {}
+            Mock Publish-NovaBuiltModuleToRepository {}
+            Mock Import-NovaPublishedLocalModule {}
+
+            {Publish-NovaModule -Repository PSGallery -ApiKey key123} | Should -Not -Throw
+
+            Assert-MockCalled Publish-NovaBuiltModuleToRepository -Times 1 -ParameterFilter {$Repository -eq 'PSGallery' -and $ApiKey -eq 'key123'}
+            Assert-MockCalled Import-NovaPublishedLocalModule -Times 0
         }
     }
 
@@ -986,6 +1103,18 @@ function Invoke-TestCliVerbose {
         }
     }
 
+    It 'Invoke-NovaCli publish -local routes the local publish flow' {
+        InModuleScope $script:moduleName {
+            Mock Publish-NovaModule {
+                [pscustomobject]@{Local = $Local}
+            }
+
+            $result = Invoke-NovaCli publish -local
+
+            $result.Local | Should -BeTrue
+        }
+    }
+
     It 'Invoke-NovaCli forwards WhatIf to mutating routed commands' {
         InModuleScope $script:moduleName {
             Mock Publish-NovaModule {
@@ -1022,5 +1151,3 @@ function Invoke-TestCliVerbose {
         }
     }
 }
-
-

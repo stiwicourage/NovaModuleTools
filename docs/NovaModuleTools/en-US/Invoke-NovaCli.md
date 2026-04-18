@@ -39,6 +39,9 @@ Mutating routed commands (`build`, `test`, `bump`, `publish`, and `release`) for
 `-WhatIf`/`-Confirm` to the underlying cmdlet. That means `nova build -WhatIf` and
 `Invoke-NovaCli -Command build -WhatIf` both preview the build instead of running it.
 
+For local publish inside an imported PowerShell session, `nova publish -local` now reloads the published module from the
+resolved local install path after the copy succeeds. Preview or cancelled runs do not import anything.
+
 For the standalone launcher, `nova bump -Confirm` uses a CLI-friendly confirmation prompt. Declined or suspended choices
 cancel the bump cleanly and return control to the shell without printing a version result.
 
@@ -85,6 +88,8 @@ nova publish --repository PSGallery --apikey $env:PSGALLERY_API
 ```
 
 Parses CLI arguments and publishes using `Publish-NovaModule`.
+
+When routed inside PowerShell with `-local`, the published module is reloaded from the local install path.
 
 ### EXAMPLE 5
 

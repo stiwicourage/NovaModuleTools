@@ -34,6 +34,8 @@ PS> Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] 
 `Publish-NovaModule` runs the normal NovaModuleTools build and test flow, then publishes the built module.
 
 Use local mode when you want to copy the built module into a module directory on the current machine.
+After a successful local publish, the command reloads the published module from that local install path into the active
+PowerShell session so the newly published module is ready to use immediately.
 
 Use repository mode when you want to publish the built module to a registered PowerShell repository such as
 `PSGallery`.
@@ -50,6 +52,7 @@ PS> Publish-NovaModule -Local
 ```
 
 Builds, tests, and copies the module to the default local module path.
+When the copy succeeds, the published module is also imported from that local path.
 
 ### EXAMPLE 2
 
@@ -58,6 +61,7 @@ PS> Publish-NovaModule -Local -ModuleDirectoryPath ~/Modules
 ```
 
 Builds, tests, and copies the module to a custom local directory.
+When the copy succeeds, the published module is imported from `~/Modules/<ProjectName>/<ProjectName>.psd1`.
 
 ### EXAMPLE 3
 
@@ -82,6 +86,7 @@ PS> Publish-NovaModule -Local -WhatIf
 ```
 
 Previews the local publish workflow and target directory without making changes.
+No module copy or import happens when `-WhatIf` is used.
 
 ## PARAMETERS
 
@@ -190,11 +195,16 @@ You can't pipe objects to this cmdlet.
 
 ### None
 
-This cmdlet does not emit an output object.
+This cmdlet does not emit an output object. In local mode it updates the active PowerShell session by importing the
+published module from the local install path.
 
 ## NOTES
 
 The command always builds and tests before publishing.
+
+Local publish imports the published module from the resolved local install directory. It does not import directly from
+the
+source project or from `dist/`.
 
 `Publish-NovaModule` uses `SupportsShouldProcess`, so `Get-Help Publish-NovaModule -Full` should surface native
 `-WhatIf` and `-Confirm` support.
@@ -204,6 +214,3 @@ The command always builds and tests before publishing.
 - https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
 - https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Test-NovaBuild.md
 - https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaRelease.md
-
-
-
