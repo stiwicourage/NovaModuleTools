@@ -7,6 +7,7 @@ function Write-NovaAvailableModuleUpdateWarning {
     )
 
     $moduleName = 'NovaModuleTools'
+    $releaseNotesUri = Get-NovaModuleReleaseNotesUri
     $updateCommand = if ($Prerelease) {
         "PS> Update-Module $moduleName -AllowPrerelease"
     }
@@ -25,6 +26,13 @@ function Write-NovaAvailableModuleUpdateWarning {
         $heading
         "Current: $CurrentVersion"
         "Available: $AvailableVersion"
+    )
+
+    if ($null -ne $releaseNotesUri) {
+        $messageLines += "Release notes: $releaseNotesUri"
+    }
+
+    $messageLines += @(
         ''
         'Update:'
         $updateCommand

@@ -121,17 +121,18 @@ function Invoke-TestNovaSelfUpdate {
     )
 
     InModuleScope $script:moduleName -Parameters @{
-        Options = $Options
+        TestOptions = $Options
     } {
-        param($Options)
+        param($TestOptions)
 
         $script:preferenceReadCount = 0
         $script:prereleaseConfirmationCount = 0
+        $script:hostMessages = @()
         $script:updateInvocation = $null
 
         Mock Read-NovaUpdateNotificationPreference {
             $script:preferenceReadCount++
-            [pscustomobject]@{PrereleaseNotificationsEnabled = $Options.PrereleaseNotificationsEnabled}
+            [pscustomobject]@{PrereleaseNotificationsEnabled = $TestOptions.PrereleaseNotificationsEnabled}
         }
         Mock Get-NovaInstalledModuleVersionInfo {
             [pscustomobject]@{
@@ -141,10 +142,17 @@ function Invoke-TestNovaSelfUpdate {
                 IsPrerelease = $false
             }
         }
-        Mock Invoke-NovaModuleUpdateLookup {$Options.LookupResult}
+        Mock Invoke-NovaModuleUpdateLookup {$TestOptions.LookupResult}
         Mock Confirm-NovaPrereleaseModuleUpdate {
             $script:prereleaseConfirmationCount++
-            return $Options.ConfirmPrerelease
+            return $TestOptions.ConfirmPrerelease
+        }
+        Mock Get-NovaModuleReleaseNotesUri {
+            if ($TestOptions.PSObject.Properties.Name -contains 'ReleaseNotesUri') {
+                return $TestOptions.ReleaseNotesUri
+            }
+
+            return 'https://www.novamoduletools.com/release-notes.html'
         }
         Mock Invoke-NovaModuleSelfUpdate {
             param([string]$ModuleName, [switch]$AllowPrerelease)
@@ -154,8 +162,9 @@ function Invoke-TestNovaSelfUpdate {
                 AllowPrerelease = $AllowPrerelease.IsPresent
             }
         }
+        Mock Write-Host {$script:hostMessages += $Object}
 
-        $result = if ($Options.UseCli) {
+        $result = if ($TestOptions.UseCli) {
             Invoke-NovaCli update -Confirm:$false
         }
         else {
@@ -164,6 +173,7 @@ function Invoke-TestNovaSelfUpdate {
 
         return [pscustomobject]@{
             Result = $result
+            HostMessages = @($script:hostMessages)
             PreferenceReadCount = $script:preferenceReadCount
             PrereleaseConfirmationCount = $script:prereleaseConfirmationCount
             UpdateInvocation = $script:updateInvocation
