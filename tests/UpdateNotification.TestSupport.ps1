@@ -33,6 +33,36 @@ function Invoke-TestBuildUpdateNotification {
     }
 }
 
+function Invoke-TestAvailableModuleUpdateWarning {
+    param([switch]$Prerelease)
+
+    InModuleScope $script:moduleName -Parameters @{Prerelease = $Prerelease.IsPresent} {
+        param($Prerelease)
+
+        if ($null -eq $PSStyle -or $PSStyle.PSObject.Properties.Name -notcontains 'OutputRendering') {
+            return [pscustomobject]@{IsSupported = $false}
+        }
+
+        $script:capturedWarnings = @()
+        $previousRendering = $PSStyle.OutputRendering
+
+        try {
+            $PSStyle.OutputRendering = 'Host'
+            Mock Write-Warning {$script:capturedWarnings += $Message}
+            Write-NovaAvailableModuleUpdateWarning -CurrentVersion '1.0.0' -AvailableVersion '1.1.0-preview' -Prerelease:$Prerelease
+
+            return [pscustomobject]@{
+                IsSupported = $true
+                OutputRendering = $PSStyle.OutputRendering
+                Warnings = @($script:capturedWarnings)
+            }
+        }
+        finally {
+            $PSStyle.OutputRendering = $previousRendering
+        }
+    }
+}
+
 function Invoke-TestNotificationPreferenceToggle {
     param(
         [Parameter(Mandatory)][string]$ConfigDirectoryName,

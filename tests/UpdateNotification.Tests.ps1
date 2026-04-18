@@ -1,6 +1,7 @@
 $script:updateNotificationTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'UpdateNotification.TestSupport.ps1')).Path
 $global:updateNotificationTestSupportFunctionNameList = @(
     'Invoke-TestBuildUpdateNotification'
+    'Invoke-TestAvailableModuleUpdateWarning'
     'Invoke-TestNotificationPreferenceToggle'
     'Assert-TestNotificationPreferenceToggleResult'
     'Invoke-TestNovaSelfUpdate'
@@ -179,6 +180,19 @@ throw 'offline'
         $result.Warnings[0] | Should -Match 'nova update'
         $result.Warnings[0] | Should -Match 'Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications'
         $result.Warnings[0] | Should -Match 'nova notification -disable'
+    }
+
+    It 'Write-NovaAvailableModuleUpdateWarning preserves host rendering so warning text can stay colored' {
+        $result = Invoke-TestAvailableModuleUpdateWarning -Prerelease
+
+        if (-not $result.IsSupported) {
+            Set-ItResult -Skipped -Because 'PSStyle.OutputRendering is unavailable in this PowerShell host.'
+            return
+        }
+
+        $result.OutputRendering | Should -Be 'Host'
+        $result.Warnings | Should -HaveCount 1
+        $result.Warnings[0] | Should -Match 'newer NovaModuleTools prerelease is available'
     }
 
     It 'Update-NovaModuleTool applies a stable update without prerelease confirmation' {

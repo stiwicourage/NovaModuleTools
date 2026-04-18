@@ -42,19 +42,5 @@ function Write-NovaAvailableModuleUpdateWarning {
     }
 
     $message = $messageLines -join [Environment]::NewLine
-    $previousRendering = $null
-
-    if ($null -ne $PSStyle -and $PSStyle.PSObject.Properties.Name -contains 'OutputRendering') {
-        $previousRendering = $PSStyle.OutputRendering
-        $PSStyle.OutputRendering = 'PlainText'
-    }
-
-    try {
-        Write-Warning $message
-    }
-    finally {
-        if ($null -ne $previousRendering) {
-            $PSStyle.OutputRendering = $previousRendering
-        }
-    }
+    Write-Warning $message
 }
