@@ -68,6 +68,25 @@ PS> Invoke-NovaBuild
 
 This creates the built module under `dist/NovaModuleTools/`.
 
+After a successful build, NovaModuleTools performs a silent best-effort check for newer `NovaModuleTools` releases.
+When the PowerShell Gallery cannot be reached or the lookup takes longer than three seconds, the build stays silent.
+Only newer versions emit a warning.
+
+- Stable release notifications are always enabled.
+- Prerelease notifications are optional and can be managed with:
+
+```powershell
+PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
+PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
+PS> Get-NovaUpdateNotificationPreference
+PS> nova notification -disable
+PS> nova notification -enable
+PS> nova notification
+```
+
+Use `nova notification` when you want the CLI-oriented workflow and the `Set-` / `Get-` cmdlets when you want the
+PowerShell function form in scripts.
+
 ### Reload the built module while iterating
 
 Use the built output during development so you validate the same shape CI uses:
@@ -221,6 +240,7 @@ Internal implementation helpers grouped by concern, including:
 - `release/`
 - `scaffold/`
 - `shared/`
+- `update/`
 
 Keep new helpers small, focused, and near the concern they belong to.
 

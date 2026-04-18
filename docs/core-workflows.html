@@ -84,6 +84,12 @@ nova init -Example</code></pre>
                 <p>The build combines your source files into a real PowerShell module under <code>dist/&lt;ProjectName&gt;</code>.
                 </p>
                 <p>Use the built output when validating import, test, and publish behavior.</p>
+                <p>Builds also perform a silent best-effort NovaModuleTools update check. Stable release notifications
+                    stay
+                    enabled. If you want to control prerelease update warnings, use:</p>
+                <pre><code>nova notification
+nova notification -disable
+nova notification -enable</code></pre>
             </section>
 
             <section class="content-section" id="test">

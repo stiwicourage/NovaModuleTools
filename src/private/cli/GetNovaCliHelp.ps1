@@ -13,6 +13,7 @@ work with the current project
    build      Build the module into the dist folder
    test       Run Pester tests for the project
    bump       Update the module version in project.json
+   notification Show or change prerelease build-update notifications
 
 publish and release
    publish    Build, test, and publish the module locally or to a repository
@@ -22,7 +23,7 @@ global options
    --help     Show this help message
    --version  Show the installed NovaModuleTools module name and version, including prerelease label when present
    -Verbose   Show verbose output for the routed PowerShell command
-   -WhatIf    Preview build, test, bump, publish, and release without changing files
+   -WhatIf    Preview build, test, bump, notification, publish, and release without changing files
    -Confirm   Request confirmation before mutating routed commands; nova bump cancels cleanly on No/No to All/Suspend
 
 Examples:
@@ -35,6 +36,9 @@ Examples:
    nova build
    nova test
    nova bump -WhatIf
+   nova notification
+   nova notification -disable
+   nova notification -enable
    nova publish -local
    nova publish -repository PSGallery -apikey <key>
    nova bump
@@ -45,6 +49,10 @@ the standalone 'nova' command available from zsh/bash.
 
 Use 'nova <command>' to run a command, or call the underlying PowerShell cmdlet directly
 when you want a scriptable function interface.
+
+Use 'nova notification' to show the current prerelease notification preference,
+'nova notification -disable' to suppress prerelease build-update warnings,
+and 'nova notification -enable' to turn them back on.
 
 Inside PowerShell, 'nova publish -local' also reloads the published module from the
 local install path after a successful publish.

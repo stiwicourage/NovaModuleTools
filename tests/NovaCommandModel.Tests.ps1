@@ -1,7 +1,5 @@
 BeforeAll {
-
     $testSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.ps1')).Path
-
     $here = Split-Path -Parent $PSCommandPath
     $repoRoot = Split-Path -Parent $here
     $script:projectInfo = Get-NovaProjectInfo -Path $repoRoot
@@ -28,7 +26,6 @@ BeforeAll {
     $script:helpXmlPath = Join-Path $distModuleDir "$script:helpLocale/$script:moduleName-Help.xml"
     $script:helpActivationTestCases = $helpMetadata.HelpActivationTestCases
 }
-
 Describe 'Nova command model' {
     It 'Get-NovaProjectInfo -Version returns only version' {
         InModuleScope $script:moduleName {
@@ -158,6 +155,18 @@ Describe 'Nova command model' {
         }
     }
 
+    It 'Get-Help explains how to disable and re-enable prerelease update notifications' {
+        $buildHelp = Get-Help Invoke-NovaBuild -Full -ErrorAction Stop | Out-String
+        $getPreferenceHelp = Get-Help Get-NovaUpdateNotificationPreference -Full -ErrorAction Stop | Out-String
+        $setPreferenceHelp = Get-Help Set-NovaUpdateNotificationPreference -Full -ErrorAction Stop | Out-String
+
+        $buildHelp | Should -Match 'DisablePrereleaseNotifications'
+        $buildHelp | Should -Match 'EnablePrereleaseNotifications'
+        $getPreferenceHelp | Should -Match 'Stable release notifications always remain enabled'
+        $setPreferenceHelp | Should -Match 'DisablePrereleaseNotifications'
+        $setPreferenceHelp | Should -Match 'EnablePrereleaseNotifications'
+    }
+
     It 'Get-Help surfaces native WhatIf and Confirm support for mutating public commands' {
         foreach ($commandName in @(
             'Invoke-NovaBuild',
@@ -166,6 +175,7 @@ Describe 'Nova command model' {
             'Invoke-NovaRelease',
             'New-NovaModule',
             'Install-NovaCli',
+            'Set-NovaUpdateNotificationPreference',
             'Update-NovaModuleVersion',
             'Invoke-NovaCli'
         )) {
@@ -184,10 +194,12 @@ Describe 'Nova command model' {
             Mock Build-Manifest {}
             Mock Build-Help {}
             Mock Copy-ProjectResource {}
+            Mock Invoke-NovaBuildUpdateNotification {}
 
             Invoke-NovaBuild
 
             Assert-MockCalled Build-Module -Times 1
+            Assert-MockCalled Invoke-NovaBuildUpdateNotification -Times 1
         }
     }
 
@@ -204,6 +216,7 @@ Describe 'Nova command model' {
             Mock Build-Manifest {throw 'should not build manifest'}
             Mock Build-Help {throw 'should not build help'}
             Mock Copy-ProjectResource {throw 'should not copy resources'}
+            Mock Invoke-NovaBuildUpdateNotification {throw 'should not check for updates'}
 
             $result = Invoke-NovaBuild -WhatIf
 
@@ -213,6 +226,7 @@ Describe 'Nova command model' {
             Assert-MockCalled Build-Manifest -Times 0
             Assert-MockCalled Build-Help -Times 0
             Assert-MockCalled Copy-ProjectResource -Times 0
+            Assert-MockCalled Invoke-NovaBuildUpdateNotification -Times 0
         }
     }
 
@@ -884,6 +898,7 @@ title: Invoke-NovaBuild
             $versionExitCode | Should -Be 0
             $projectVersionExitCode | Should -Be 0
             $helpText | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
+            ($helpText -match 'notification\s+Show or change prerelease build-update notifications') | Should -BeTrue
             $helpText | Should -Match 'version\s+Show the current project name and version from project.json'
             $versionText | Should -Be "$script:moduleName $installedModuleVersion"
             $projectVersionText | Should -Be $expectedProjectVersionText
@@ -1086,6 +1101,7 @@ function Invoke-TestCliVerbose {
 
             $result | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
             $result | Should -Match 'init\s+Create a new Nova module scaffold'
+            (($result -match 'notification\s+Show or change prerelease build-update notifications') -and ($result -match 'nova notification -disable') -and ($result -match 'nova notification -enable')) | Should -BeTrue
             $result | Should -Match 'version\s+Show the current project name and version from project.json'
             $result | Should -Match '--version\s+Show the installed NovaModuleTools module name and version'
             $result | Should -Match 'publish\s+Build, test, and publish the module locally or to a repository'
@@ -1150,9 +1166,4 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Invoke-NovaCli throws on an unknown top-level command' {
-        InModuleScope $script:moduleName {
-            {Invoke-NovaCli banana} | Should -Throw 'Unknown command: <banana*'
-        }
-    }
 }

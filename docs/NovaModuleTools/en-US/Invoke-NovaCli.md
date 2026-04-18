@@ -29,18 +29,22 @@ PS> Invoke-NovaCli [[-Command] <string>] [[-Arguments] <string[]>] [-WhatIf] [-C
 `nova` CLI rather than call `Invoke-NovaCli` directly.
 
 It dispatches high-level commands such as `nova info`, `nova version`, `nova --version`, `nova --help`, `nova build`,
-`nova test`,
-`nova init`, `nova publish`, `nova bump`, and `nova release` to the matching Nova cmdlet.
+`nova test`, `nova init`, `nova notification`, `nova publish`, `nova bump`, and `nova release` to the matching Nova
+cmdlet.
 
 Use `Invoke-NovaCli` when you need a scriptable PowerShell command entrypoint. Use `nova` when you want the
 user-focused CLI experience.
 
-Mutating routed commands (`build`, `test`, `bump`, `publish`, and `release`) forward PowerShell
+Mutating routed commands (`build`, `test`, `bump`, `notification`, `publish`, and `release`) forward PowerShell
 `-WhatIf`/`-Confirm` to the underlying cmdlet. That means `nova build -WhatIf` and
 `Invoke-NovaCli -Command build -WhatIf` both preview the build instead of running it.
 
 For local publish inside an imported PowerShell session, `nova publish -local` now reloads the published module from the
 resolved local install path after the copy succeeds. Preview or cancelled runs do not import anything.
+
+Use `nova notification` to show the current prerelease build-update notification preference,
+`nova notification -disable` to stop prerelease warnings after successful builds, and
+`nova notification -enable` to turn those warnings back on. Stable release notifications remain enabled.
 
 For the standalone launcher, `nova bump -Confirm` uses a CLI-friendly confirmation prompt. Declined or suspended choices
 cancel the bump cleanly and return control to the shell without printing a version result.
@@ -132,13 +136,36 @@ PS> Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '~/Work')
 
 Runs the interactive init flow, scaffolds from the packaged example project, and creates the project under `~/Work`.
 
+### EXAMPLE 10
+
+```powershell
+nova notification
+```
+
+Shows whether prerelease build-update notifications are enabled and where the preference is stored.
+
+### EXAMPLE 11
+
+```powershell
+nova notification -disable
+```
+
+Disables prerelease build-update notifications while keeping stable release notifications enabled.
+
+### EXAMPLE 12
+
+```powershell
+PS> Invoke-NovaCli -Command notification -Arguments @('-enable')
+```
+
+Re-enables prerelease build-update notifications from the routed PowerShell entrypoint.
+
 ## PARAMETERS
 
 ### -Command
 
-The command to execute. Supported values: `info`, `version`, `--version`, `--help`, `build`, `test`, `init`, `publish`,
-`bump`,
-`release`.
+The command to execute. Supported values: `info`, `version`, `--version`, `--help`, `build`, `test`, `init`,
+`notification`, `publish`, `bump`, `release`.
 
 ```yaml
 Type: System.String
@@ -153,7 +180,7 @@ ParameterSets:
     ValueFromPipelineByPropertyName: false
     ValueFromRemainingArguments: false
 DontShow: false
-AcceptedValues: [ info, version, --version, --help, build, test, init, publish, bump, release ]
+AcceptedValues: [ info, version, --version, --help, build, test, init, notification, publish, bump, release ]
 HelpMessage: ''
 ```
 
@@ -194,7 +221,7 @@ Returned for text-oriented commands such as `nova --help`, `nova version`, and `
 
 ### PSCustomObject
 
-Returned when the selected subcommand returns an object, for example `nova info`.
+Returned when the selected subcommand returns an object, for example `nova info` or `nova notification`.
 
 ### None
 
