@@ -138,6 +138,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
             Test-NovaBuild
 
             $Config.Run.Path | Should -Be ([System.IO.Path]::Join('tests', '*.Tests.ps1'))
+            $Config.Output.RenderMode | Should -Be 'Auto'
             Assert-MockCalled New-Item -Times 1 -ParameterFilter {
                 $ItemType -eq 'Directory' -and $Path -eq ([System.IO.Path]::Join($projectRoot, 'artifacts')) -and $Force
             }

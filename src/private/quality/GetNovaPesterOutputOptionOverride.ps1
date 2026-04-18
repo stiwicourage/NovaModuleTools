@@ -22,7 +22,7 @@ function Get-NovaPesterOutputOptionOverride {
             $OutputRenderMode
         }
         else {
-            'Plaintext'
+            $null
         }
     }
 }

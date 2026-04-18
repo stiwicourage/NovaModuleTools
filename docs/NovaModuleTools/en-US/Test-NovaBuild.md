@@ -66,10 +66,10 @@ Runs the test suite while excluding tests tagged `slow`.
 ### EXAMPLE 4
 
 ```powershell
-PS> Test-NovaBuild -OutputVerbosity Normal -OutputRenderMode Plaintext
+PS> Test-NovaBuild -OutputVerbosity Normal -OutputRenderMode Ansi
 ```
 
-Overrides the console output settings for the current test run.
+Overrides the console output settings for the current test run while keeping color-capable rendering.
 
 ### EXAMPLE 5
 
@@ -167,7 +167,6 @@ ParameterSets:
 DontShow: false
 AcceptedValues:
 - Auto
-- Plaintext
 - Ansi
 HelpMessage: ''
 ```

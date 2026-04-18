@@ -300,13 +300,26 @@ title: Invoke-NovaBuild
             Name = 'output overrides'
             IncludeOutput = $true
             Invoke = {
-                Test-NovaBuild -OutputVerbosity Normal -OutputRenderMode Plaintext
+                Test-NovaBuild -OutputVerbosity Normal -OutputRenderMode Ansi
             }
             Assert = {
                 param($Config)
 
                 $Config.Output.Verbosity | Should -Be 'Normal'
-                $Config.Output.RenderMode | Should -Be 'Plaintext'
+                $Config.Output.RenderMode | Should -Be 'Ansi'
+            }
+        }
+        @{
+            Name = 'verbosity-only override preserves render mode'
+            IncludeOutput = $true
+            Invoke = {
+                Test-NovaBuild -OutputVerbosity Normal
+            }
+            Assert = {
+                param($Config)
+
+                $Config.Output.Verbosity | Should -Be 'Normal'
+                $Config.Output.RenderMode | Should -Be 'Auto'
             }
         }
     ) {
@@ -338,6 +351,12 @@ title: Invoke-NovaBuild
 
             & $TestCase.Assert $cfg
             $cfg.TestResult.OutputPath | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts', 'TestResults.xml'))
+        }
+    }
+
+    It 'Test-NovaBuild rejects the removed Plaintext output render mode' {
+        InModuleScope $script:moduleName {
+            {Test-NovaBuild -OutputRenderMode Plaintext} | Should -Throw '*Cannot validate argument on parameter*OutputRenderMode*'
         }
     }
 
