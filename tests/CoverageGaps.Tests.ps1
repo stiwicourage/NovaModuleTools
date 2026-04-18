@@ -524,12 +524,42 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
     }
 
     It 'Get-NovaCliInstalledVersion returns the currently loaded module version' {
-        $expectedVersion = (Get-Module $script:moduleName -ErrorAction Stop).Version.ToString()
+        $module = Get-Module $script:moduleName -ErrorAction Stop
+        $expectedVersion = $module.Version.ToString()
+        $psData = $module.PrivateData.PSData
+        $prereleaseLabel = if ($psData -is [hashtable]) {
+            $psData['Prerelease']
+        }
+        elseif ($null -ne $psData -and $psData.PSObject.Properties.Name -contains 'Prerelease') {
+            $psData.Prerelease
+        }
+        else {
+            $null
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($prereleaseLabel)) {
+            $expectedVersion = "$expectedVersion-$prereleaseLabel"
+        }
 
         InModuleScope $script:moduleName -Parameters @{ExpectedVersion = $expectedVersion} {
             param($ExpectedVersion)
 
             Get-NovaCliInstalledVersion | Should -Be $ExpectedVersion
+        }
+    }
+
+    It 'Get-NovaCliInstalledVersion appends prerelease metadata from the loaded module when present' {
+        InModuleScope $script:moduleName {
+            $moduleInfo = [pscustomobject]@{
+                Version = [version]'1.11.1'
+                PrivateData = [pscustomobject]@{
+                    PSData = [pscustomobject]@{
+                        Prerelease = 'preview'
+                    }
+                }
+            }
+
+            Get-NovaCliInstalledVersion -Module $moduleInfo | Should -Be '1.11.1-preview'
         }
     }
 

@@ -25,6 +25,30 @@ function ConvertTo-TestNormalizedText {
     return ($Text -replace '\s+', ' ').Trim()
 }
 
+function Get-TestModuleDisplayVersion {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$Module
+    )
+
+    $versionText = $Module.Version.ToString()
+    $prereleaseLabel = $null
+    $psData = $Module.PrivateData.PSData
+
+    if ($psData -is [hashtable]) {
+        $prereleaseLabel = $psData['Prerelease']
+    }
+    elseif ($null -ne $psData -and $psData.PSObject.Properties.Name -contains 'Prerelease') {
+        $prereleaseLabel = $psData.Prerelease
+    }
+
+    if ( [string]::IsNullOrWhiteSpace($prereleaseLabel)) {
+        return $versionText
+    }
+
+    return "$versionText-$prereleaseLabel"
+}
+
 function Get-TestHelpLocaleFromMarkdownFiles {
     [CmdletBinding()]
     param(
