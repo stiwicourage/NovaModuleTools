@@ -34,7 +34,8 @@ function Write-NovaAvailableModuleUpdateWarning {
         $messageLines += @(
             ''
             'To stop prerelease update notifications:'
-            'Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications'
+            'PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications'
+            'nova notification -disable'
             'Stable release notifications remain enabled.'
         )
     }

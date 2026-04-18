@@ -79,7 +79,13 @@ Only newer versions emit a warning.
 PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
 PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
 PS> Get-NovaUpdateNotificationPreference
+PS> nova notification -disable
+PS> nova notification -enable
+PS> nova notification
 ```
+
+Use `nova notification` when you want the CLI-oriented workflow and the `Set-` / `Get-` cmdlets when you want the
+PowerShell function form in scripts.
 
 ### Reload the built module while iterating
 

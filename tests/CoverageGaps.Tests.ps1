@@ -413,6 +413,13 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             Mock Get-NovaProjectInfo {'info-value'} -ParameterFilter {-not $Version}
             Mock Invoke-NovaBuild {'build-value'}
             Mock Test-NovaBuild {'test-value'}
+            Mock Get-NovaUpdateNotificationPreference {[pscustomobject]@{Mode = 'status'}}
+            Mock Set-NovaUpdateNotificationPreference {
+                [pscustomobject]@{
+                    Enabled = $EnablePrereleaseNotifications.IsPresent
+                    Disabled = $DisablePrereleaseNotifications.IsPresent
+                }
+            }
             Mock New-NovaModule {
                 param([string]$Path, [switch]$Example)
                 if ($Example) {
@@ -440,6 +447,9 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
             Invoke-NovaCli -Command init -Arguments @('-Example') | Should -Be 'init-example-default'
             Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '/tmp/demo') | Should -Be 'init-example:/tmp/demo'
             Invoke-NovaCli bump | Should -Be 'bump-value'
+            (Invoke-NovaCli notification).Mode | Should -Be 'status'
+            (Invoke-NovaCli notification -disable).Disabled | Should -BeTrue
+            (Invoke-NovaCli notification -enable).Enabled | Should -BeTrue
             (Invoke-NovaCli release --repository PSGallery --apikey key123).Repository | Should -Be 'PSGallery'
         }
     }
@@ -462,6 +472,21 @@ Describe 'Coverage gaps for scaffold, CLI, release, and helper internals' {
     It 'ConvertFrom-NovaInitCliArgument reports a missing path value' {
         InModuleScope $script:moduleName {
             {ConvertFrom-NovaInitCliArgument -Arguments @('--path')} | Should -Throw 'Missing value for --path'
+        }
+    }
+
+    It 'ConvertFrom-NovaNotificationCliArgument resolves status, enable, and disable actions' {
+        InModuleScope $script:moduleName {
+            (ConvertFrom-NovaNotificationCliArgument).ToString() | Should -Be 'status'
+            (ConvertFrom-NovaNotificationCliArgument -Arguments @('-enable')).ToString() | Should -Be 'enable'
+            (ConvertFrom-NovaNotificationCliArgument -Arguments @('--disable')).ToString() | Should -Be 'disable'
+        }
+    }
+
+    It 'ConvertFrom-NovaNotificationCliArgument rejects unsupported notification usage' {
+        InModuleScope $script:moduleName {
+            {ConvertFrom-NovaNotificationCliArgument -Arguments @('-enable', '-disable')} | Should -Throw "Unsupported 'nova notification' usage*"
+            {ConvertFrom-NovaNotificationCliArgument -Arguments @('--bogus')} | Should -Throw 'Unknown argument: --bogus'
         }
     }
 

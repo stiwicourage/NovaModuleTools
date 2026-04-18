@@ -47,6 +47,18 @@ function Invoke-NovaCli {
             $options = ConvertFrom-NovaCliArgument -Arguments $Arguments
             return Invoke-NovaRelease -PublishOption $options @mutatingCommonParameters
         }
+        'notification' {
+            $notificationAction = ConvertFrom-NovaNotificationCliArgument -Arguments $Arguments
+            if ($notificationAction -eq 'status') {
+                return Get-NovaUpdateNotificationPreference @commonParameters
+            }
+
+            if ($notificationAction -eq 'enable') {
+                return Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications @mutatingCommonParameters
+            }
+
+            return Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications @mutatingCommonParameters
+        }
         '--version' {
             $moduleName = $ExecutionContext.SessionState.Module.Name
             $moduleVersion = Get-NovaCliInstalledVersion

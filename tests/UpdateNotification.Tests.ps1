@@ -1,4 +1,28 @@
+$script:updateNotificationTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'UpdateNotification.TestSupport.ps1')).Path
+$global:updateNotificationTestSupportFunctionNameList = @(
+    'Invoke-TestBuildUpdateNotification'
+    'Invoke-TestNotificationPreferenceToggle'
+    'Assert-TestNotificationPreferenceToggleResult'
+)
+
+. $script:updateNotificationTestSupportPath
+
+foreach ($functionName in $global:updateNotificationTestSupportFunctionNameList) {
+    $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+    Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+}
+
 BeforeAll {
+    $updateNotificationTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'UpdateNotification.TestSupport.ps1')).Path
+    $updateNotificationTestSupportFunctionNameList = $global:updateNotificationTestSupportFunctionNameList
+
+    . $updateNotificationTestSupportPath
+
+    foreach ($functionName in $updateNotificationTestSupportFunctionNameList) {
+        $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+        Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+    }
+
     $here = Split-Path -Parent $PSCommandPath
     $script:repoRoot = Split-Path -Parent $here
     $script:moduleName = (Get-Content -LiteralPath (Join-Path $script:repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
@@ -10,41 +34,6 @@ BeforeAll {
 
     Remove-Module $script:moduleName -ErrorAction SilentlyContinue
     Import-Module $script:distModuleDir -Force
-
-    function Invoke-TestBuildUpdateNotification {
-        param(
-            [bool]$PrereleaseNotificationsEnabled,
-            [object]$LookupResult
-        )
-
-        InModuleScope $script:moduleName -Parameters @{
-            PrereleaseNotificationsEnabled = $PrereleaseNotificationsEnabled
-            LookupResult = $LookupResult
-        } {
-            param($PrereleaseNotificationsEnabled, $LookupResult)
-
-            $script:capturedWarnings = @()
-
-            Mock Read-NovaUpdateNotificationPreference {
-                [pscustomobject]@{PrereleaseNotificationsEnabled = $PrereleaseNotificationsEnabled}
-            }
-            Mock Get-NovaInstalledModuleVersionInfo {
-                [pscustomobject]@{
-                    ModuleName = 'NovaModuleTools'
-                    Version = '1.0.0'
-                    SemanticVersion = [semver]'1.0.0'
-                    IsPrerelease = $false
-                }
-            }
-            Mock Invoke-NovaModuleUpdateLookup {$LookupResult}
-            Mock Write-Warning {$script:capturedWarnings += $Message}
-
-            Invoke-NovaBuildUpdateNotification
-            return [pscustomobject]@{
-                Warnings = @($script:capturedWarnings)
-            }
-        }
-    }
 }
 
 Describe 'Update notification behavior' {
@@ -71,28 +60,15 @@ Describe 'Update notification behavior' {
     }
 
     It 'Set-NovaUpdateNotificationPreference can disable and re-enable prerelease notifications' {
-        $configRoot = Join-Path $TestDrive 'config-toggle'
-        $originalConfigHome = $env:XDG_CONFIG_HOME
-        $originalAppData = $env:APPDATA
+        $result = Invoke-TestNotificationPreferenceToggle -ConfigDirectoryName 'config-toggle'
 
-        try {
-            $env:XDG_CONFIG_HOME = $configRoot
-            $env:APPDATA = $null
+        Assert-TestNotificationPreferenceToggleResult -Result $result
+    }
 
-            InModuleScope $script:moduleName {
-                $disabled = Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications -Confirm:$false
-                $disabled.PrereleaseNotificationsEnabled | Should -BeFalse
-                $disabled.StableReleaseNotificationsEnabled | Should -BeTrue
+    It 'Invoke-NovaCli notification shows, disables, and re-enables prerelease notifications' {
+        $result = Invoke-TestNotificationPreferenceToggle -ConfigDirectoryName 'config-cli-toggle' -UseCli
 
-                $enabled = Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications -Confirm:$false
-                $enabled.PrereleaseNotificationsEnabled | Should -BeTrue
-                $enabled.StableReleaseNotificationsEnabled | Should -BeTrue
-            }
-        }
-        finally {
-            $env:XDG_CONFIG_HOME = $originalConfigHome
-            $env:APPDATA = $originalAppData
-        }
+        Assert-TestNotificationPreferenceToggleResult -Result $result
     }
 
     It 'Invoke-NovaModuleUpdateLookup returns nothing when the lookup exceeds the timeout' {
@@ -145,6 +121,7 @@ throw 'offline'
         $result.Warnings[0] | Should -Match 'newer NovaModuleTools prerelease is available'
         $result.Warnings[0] | Should -Match 'Update-Module NovaModuleTools -AllowPrerelease'
         $result.Warnings[0] | Should -Match 'Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications'
+        $result.Warnings[0] | Should -Match 'nova notification -disable'
     }
 
     It 'Invoke-NovaBuildUpdateNotification stays silent when lookup returns nothing' {

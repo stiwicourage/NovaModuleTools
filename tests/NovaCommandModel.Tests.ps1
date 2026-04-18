@@ -898,6 +898,7 @@ title: Invoke-NovaBuild
             $versionExitCode | Should -Be 0
             $projectVersionExitCode | Should -Be 0
             $helpText | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
+            ($helpText -match 'notification\s+Show or change prerelease build-update notifications') | Should -BeTrue
             $helpText | Should -Match 'version\s+Show the current project name and version from project.json'
             $versionText | Should -Be "$script:moduleName $installedModuleVersion"
             $projectVersionText | Should -Be $expectedProjectVersionText
@@ -1100,6 +1101,7 @@ function Invoke-TestCliVerbose {
 
             $result | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
             $result | Should -Match 'init\s+Create a new Nova module scaffold'
+            (($result -match 'notification\s+Show or change prerelease build-update notifications') -and ($result -match 'nova notification -disable') -and ($result -match 'nova notification -enable')) | Should -BeTrue
             $result | Should -Match 'version\s+Show the current project name and version from project.json'
             $result | Should -Match '--version\s+Show the installed NovaModuleTools module name and version'
             $result | Should -Match 'publish\s+Build, test, and publish the module locally or to a repository'

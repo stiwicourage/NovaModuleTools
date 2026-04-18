@@ -36,6 +36,9 @@ newer prerelease versions of `NovaModuleTools`.
 
 Stable release notifications always remain enabled and cannot be disabled.
 
+If you prefer the Nova CLI surface, use `nova notification -disable` and `nova notification -enable` for the same
+stored preference.
+
 ## EXAMPLES
 
 ### EXAMPLE 1
@@ -53,6 +56,22 @@ PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
 ```
 
 Turns prerelease update notifications back on.
+
+### EXAMPLE 3
+
+```powershell
+nova notification -disable
+```
+
+Uses the Nova CLI entrypoint to disable prerelease update notifications.
+
+### EXAMPLE 4
+
+```powershell
+nova notification -enable
+```
+
+Uses the Nova CLI entrypoint to re-enable prerelease update notifications.
 
 ## PARAMETERS
 
@@ -175,6 +194,8 @@ Returns the current prerelease-notification state, the always-on stable-notifica
 ## NOTES
 
 Use this command together with `Get-NovaUpdateNotificationPreference` when you want to confirm the stored setting.
+
+Use `nova notification` when you want to view the same setting through the CLI surface.
 
 ## RELATED LINKS
 

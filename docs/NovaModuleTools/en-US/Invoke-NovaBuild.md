@@ -46,8 +46,11 @@ notifications are enabled and a newer prerelease is available, the command also 
 This lookup never waits longer than three seconds and stays silent when the gallery cannot be reached.
 
 Stable release notifications always remain enabled. To control prerelease notifications, use
-`Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications` or
-`Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications`.
+`PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications` or
+`PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications`.
+
+For the CLI-oriented workflow, use `nova notification -disable`, `nova notification -enable`, and
+`nova notification`.
 
 If `SetSourcePath` is enabled, the generated `.psm1` includes `# Source:` markers before each source block.
 
@@ -88,6 +91,8 @@ PS> Invoke-NovaBuild
 ```
 
 Builds the current project and keeps stable release notifications enabled while suppressing prerelease update warnings.
+
+The CLI equivalent is `nova notification -disable` before running `nova build`.
 
 ## PARAMETERS
 
