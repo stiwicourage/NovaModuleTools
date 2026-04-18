@@ -1,0 +1,135 @@
+name: Feature request
+description: Suggest an improvement for NovaModuleTools or the nova CLI.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing an idea.
+
+        Please describe the problem and proposed improvement as clearly as you can so we can evaluate it efficiently.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Briefly describe the feature or improvement you want.
+      placeholder: A short summary of the request.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What problem are you trying to solve, or what workflow is currently hard?
+      placeholder: Describe the current pain point, limitation, or missing workflow.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior, command, or workflow you would like to see.
+      placeholder: Explain the improvement you want.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Share any workarounds or alternative solutions you have considered.
+      placeholder: Describe any alternatives, workarounds, or why existing options are not enough.
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected area
+      options:
+        - nova CLI
+        - PowerShell cmdlet
+        - Scaffolding or init flow
+        - Build or test flow
+        - Publish or release flow
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: command
+    attributes:
+      label: Related command or cmdlet
+      description: If relevant, share the command, cmdlet, or workflow this request is about.
+      placeholder: nova init -Example
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example usage
+      description: If helpful, show what the intended command, output, or workflow could look like.
+      render: shell
+
+  - type: textarea
+    id: project-json
+    attributes:
+      label: Relevant `project.json` context
+      description: Include only the settings that matter for this request.
+      render: json
+
+  - type: dropdown
+    id: benefit
+    attributes:
+      label: Expected benefit
+      options:
+        - Better usability
+        - Better maintainability
+        - Better automation or CI/CD
+        - Better documentation
+        - Better compatibility
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: breaking-change-risk
+    attributes:
+      label: Breaking change risk
+      description: Does this request likely change existing behavior?
+      options:
+        - Low
+        - Medium
+        - High
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Current NovaModuleTools version
+      description: Optional, but helpful if the request is tied to a specific version.
+      placeholder: 2.0.0-prerelease4
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add screenshots, examples from similar tools, or anything else that helps explain the request.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submit checklist
+      options:
+        - label: I searched existing issues to avoid creating a duplicate.
+          required: true
+        - label: I explained the problem or use case, not just the desired solution.
+          required: true
+        - label: This is not a bug report or security vulnerability report.
+          required: true
+

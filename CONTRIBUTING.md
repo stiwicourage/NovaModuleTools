@@ -9,6 +9,8 @@ our goals. We want to keep the codebase clean, maintainable, and easy to underst
 If you want to contribute, please work in the same style as the project:
 
 - Prefer the Nova command model and user-facing `nova` workflow over legacy MT naming or mixed command styles.
+- Use the GitHub bug report form for reproducible defects, the feature request form for product/workflow ideas, and
+  `SECURITY.md` instead of a public issue for vulnerability reports.
 - Keep commits small, reviewable, and easy to understand.
     - The size of a pull request is not as important as the clarity of its intent and the ease of reviewing it.
     - A large pull request that is well-organized in smaller commits with clear messages can be easier to review than a
