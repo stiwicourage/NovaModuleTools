@@ -185,6 +185,61 @@ Describe 'Coverage for remaining command and filesystem branches' {
         }
     }
 
+    It 'Test-NovaBuild resolves and invokes the private test result report writer when Pester returns tests' {
+        $cfg = [pscustomobject]@{
+            Run = [pscustomobject]@{
+                Path = $null
+                PassThru = $false
+                Exit = $false
+                Throw = $false
+            }
+            Filter = [pscustomobject]@{
+                Tag = @()
+                ExcludeTag = @()
+            }
+            Output = [pscustomobject]@{
+                Verbosity = 'Detailed'
+                RenderMode = 'Auto'
+            }
+            TestResult = [pscustomobject]@{
+                OutputPath = $null
+            }
+        }
+
+        InModuleScope $script:moduleName -Parameters @{Config = $cfg} {
+            param($Config)
+
+            $script:reportWasWritten = $false
+            $projectRoot = '/tmp/nova-project'
+            $reportWriter = {
+                param($TestResult, $OutputPath, $ReportWriter)
+
+                $script:reportWasWritten = $null -ne $TestResult -and $OutputPath -eq [System.IO.Path]::Join($projectRoot, 'artifacts', 'TestResults.xml')
+            }
+
+            Mock Test-ProjectSchema {}
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    Pester = @{}
+                    BuildRecursiveFolders = $true
+                    TestsDir = 'tests'
+                    ProjectRoot = $projectRoot
+                }
+            }
+            Mock New-PesterConfiguration {$Config}
+            Mock Test-Path {$true}
+            Mock Get-Command {
+                [pscustomobject]@{ScriptBlock = $reportWriter}
+            } -ParameterFilter {$Name -eq 'Write-NovaPesterTestResultArtifact' -and $CommandType -eq 'Function'}
+            Mock Invoke-Pester {[pscustomobject]@{Result = 'Passed'; Tests = @([pscustomobject]@{Result = 'Passed'})}}
+
+            Test-NovaBuild
+
+            $script:reportWasWritten | Should -BeTrue
+            Assert-MockCalled Get-Command -Times 1 -ParameterFilter {$Name -eq 'Write-NovaPesterTestResultArtifact' -and $CommandType -eq 'Function'}
+        }
+    }
+
     It 'Install-NovaCli rejects Windows hosts explicitly' {
         InModuleScope $script:moduleName {
             try {
@@ -300,6 +355,12 @@ Describe 'Coverage for remaining command and filesystem branches' {
             Assert-MockCalled Publish-NovaBuiltModuleToDirectory -Times 1 -ParameterFilter {
                 $ModuleDirectoryPath -eq '/tmp/default-modules'
             }
+        }
+    }
+
+    It 'Invoke-NovaCli throws on an unknown top-level command' {
+        InModuleScope $script:moduleName {
+            {Invoke-NovaCli banana} | Should -Throw 'Unknown command: <banana*'
         }
     }
 }

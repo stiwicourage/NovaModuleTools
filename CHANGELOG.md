@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Always creates the example test structure without prompting to enable tests
 - Add native `-WhatIf` and `-Confirm` support across mutating Nova commands, including routed CLI support for
   `build`, `test`, `bump`, `publish`, and `release`.
+- Add silent post-build NovaModuleTools update notifications for `Invoke-NovaBuild`, with an always-on stable release
+  check and a user-configurable prerelease notification preference.
 
 ### Changed
 

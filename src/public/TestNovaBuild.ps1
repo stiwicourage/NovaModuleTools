@@ -25,15 +25,20 @@ function Test-NovaBuild {
     $pesterConfig.Run.Throw = $true
     $pesterConfig.Filter.Tag = $TagFilter
     $pesterConfig.Filter.ExcludeTag = $ExcludeTagFilter
-    if ( $PSBoundParameters.ContainsKey('OutputVerbosity')) {
-        $pesterConfig.Output.Verbosity = $OutputVerbosity
+    $outputOptionOverrides = Get-NovaPesterOutputOptionOverride -PesterConfig $pesterConfig -BoundParameters $PSBoundParameters -OutputVerbosity $OutputVerbosity -OutputRenderMode $OutputRenderMode
+    if ($null -ne $outputOptionOverrides) {
+        if ($null -ne $outputOptionOverrides.Verbosity) {
+            $pesterConfig.Output.Verbosity = $outputOptionOverrides.Verbosity
+        }
+
+        $pesterConfig.Output.RenderMode = $outputOptionOverrides.RenderMode
     }
 
-    if ( $PSBoundParameters.ContainsKey('OutputRenderMode')) {
-        $pesterConfig.Output.RenderMode = $OutputRenderMode
+    if ($pesterConfig.TestResult.PSObject.Properties.Name -contains 'Enabled') {
+        $pesterConfig.TestResult.Enabled = $false
     }
 
-    $testResultPath = [System.IO.Path]::Join($data.ProjectRoot, 'artifacts', 'TestResults.xml')
+    $testResultPath = Get-NovaPesterTestResultPath -ProjectRoot $data.ProjectRoot
     $testResultDirectory = Split-Path -Parent $testResultPath
 
     if (-not $PSCmdlet.ShouldProcess($testResultPath, 'Run Pester tests and write test results')) {
@@ -44,8 +49,12 @@ function Test-NovaBuild {
         $null = New-Item -ItemType Directory -Path $testResultDirectory -Force
     }
 
+    $testResultArtifactWriter = Get-Command -Name Write-NovaPesterTestResultArtifact -CommandType Function -ErrorAction Stop
+    $testResultReportWriter = Get-Command -Name Write-NovaPesterTestResultReport -CommandType Function -ErrorAction Stop
     $pesterConfig.TestResult.OutputPath = $testResultPath
-    $TestResult = Invoke-Pester -Configuration $pesterConfig
+    $TestResult = Invoke-NovaPesterWithPlainTextOutput -Configuration $pesterConfig
+    & $testResultArtifactWriter.ScriptBlock -TestResult $TestResult -OutputPath $testResultPath -ReportWriter $testResultReportWriter.ScriptBlock
+
     if ($TestResult.Result -ne 'Passed') {
         throw 'Tests failed'
         return $LASTEXITCODE

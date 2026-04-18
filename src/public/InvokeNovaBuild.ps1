@@ -18,4 +18,11 @@ function Invoke-NovaBuild {
     Build-Manifest
     Build-Help
     Copy-ProjectResource
+
+    try {
+        Invoke-NovaBuildUpdateNotification
+    }
+    catch {
+        $null = $_
+    }
 }

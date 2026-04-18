@@ -5,7 +5,7 @@ HelpInfoUri: ''
 Locale: en-US
 Module Guid: 6b9202c8-0353-473b-b73c-afab632125a6
 Module Name: NovaModuleTools
-ms.date: 04/14/2026
+ms.date: 04/18/2026
 PlatyPS schema version: 2024-05-01
 title: NovaModuleTools Module
 ---
@@ -25,6 +25,10 @@ manifest generation, external help generation, resource copying, and Pester-base
 ### `PS> Get-NovaProjectInfo`
 
 Reads `project.json` and returns resolved project metadata and paths.
+
+### `PS> Get-NovaUpdateNotificationPreference`
+
+Shows whether prerelease update notifications are enabled. Stable release notifications always remain enabled.
 
 ### `PS> Install-NovaCli`
 
@@ -53,6 +57,10 @@ Creates a new NovaModuleTools project scaffold through an interactive prompt flo
 ### `PS> Publish-NovaModule`
 
 Builds, tests, and publishes the current project either locally or to a repository.
+
+### `PS> Set-NovaUpdateNotificationPreference`
+
+Enables or disables prerelease update notifications that can appear after a successful build.
 
 ### `PS> Update-NovaModuleVersion`
 
