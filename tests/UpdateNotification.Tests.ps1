@@ -81,10 +81,48 @@ Describe 'Update notification behavior' {
         }
     }
 
+    It 'nova update prints a friendly message in PowerShell when no newer version is available' {
+        InModuleScope $script:moduleName {
+            Mock Update-NovaModuleTool {
+                [pscustomobject]@{
+                    ModuleName = 'NovaModuleTools'
+                    CurrentVersion = '2.0.0-prerelease3'
+                    TargetVersion = $null
+                    PrereleaseNotificationsEnabled = $true
+                    UpdateAvailable = $false
+                    Updated = $false
+                    Cancelled = $false
+                    IsPrereleaseTarget = $false
+                    UsedAllowPrerelease = $false
+                }
+            }
+
+            $result = @(nova update -Confirm:$false)
+
+            $result | Should -HaveCount 2
+            $result[0] | Should -Be "You're up to date!"
+            $result[1] | Should -Be 'NovaModuleTools 2.0.0-prerelease3 is currently the newest version available.'
+            Assert-MockCalled Update-NovaModuleTool -Times 1
+        }
+    }
+
     It 'ConvertFrom-NovaUpdateCliArgument allows no arguments and rejects unsupported usage' {
         InModuleScope $script:moduleName {
             (ConvertFrom-NovaUpdateCliArgument).Count | Should -Be 0
             {ConvertFrom-NovaUpdateCliArgument -Arguments @('--bogus')} | Should -Throw "Unsupported 'nova update' usage*"
+        }
+    }
+
+    It 'Invoke-NovaModuleSelfUpdate promotes Update-Module errors to terminating failures' {
+        InModuleScope $script:moduleName {
+            Mock Update-Module {
+                Write-Error "Module '$Name' was not installed by using Install-Module, so it cannot be updated."
+            }
+
+            {Invoke-NovaModuleSelfUpdate -ModuleName 'NovaModuleTools' -AllowPrerelease} | Should -Throw '*was not installed by using Install-Module*'
+            Assert-MockCalled Update-Module -Times 1 -ParameterFilter {
+                $Name -eq 'NovaModuleTools' -and $AllowPrerelease -and $ErrorAction -eq 'Stop'
+            }
         }
     }
 
@@ -161,6 +199,35 @@ throw 'offline'
         $result.Result.TargetVersion | Should -Be '1.1.0'
         $result.Result.UsedAllowPrerelease | Should -BeFalse
         $result.UpdateInvocation.AllowPrerelease | Should -BeFalse
+    }
+
+    It 'nova update stops on self-update failure instead of returning a success object' {
+        InModuleScope $script:moduleName {
+            Mock Read-NovaUpdateNotificationPreference {
+                [pscustomobject]@{PrereleaseNotificationsEnabled = $true}
+            }
+            Mock Get-NovaInstalledModuleVersionInfo {
+                [pscustomobject]@{
+                    ModuleName = 'NovaModuleTools'
+                    Version = '2.0.0-prerelease2'
+                    SemanticVersion = [semver]'2.0.0-prerelease2'
+                    IsPrerelease = $true
+                }
+            }
+            Mock Invoke-NovaModuleUpdateLookup {
+                [pscustomobject]@{
+                    Stable = $null
+                    Prerelease = [pscustomobject]@{Version = '2.0.0-prerelease3'}
+                }
+            }
+            Mock Confirm-NovaPrereleaseModuleUpdate {$true}
+            Mock Invoke-NovaModuleSelfUpdate {
+                throw "Module 'NovaModuleTools' was not installed by using Install-Module, so it cannot be updated."
+            }
+
+            {nova update -Confirm:$false} | Should -Throw '*was not installed by using Install-Module*'
+            Assert-MockCalled Invoke-NovaModuleSelfUpdate -Times 1
+        }
     }
 
     It 'Update-NovaModuleTool requires explicit confirmation before a prerelease update proceeds' {

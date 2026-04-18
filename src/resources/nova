@@ -1,34 +1,5 @@
 #!/usr/bin/env -S pwsh -File
 
-function Test-NovaCliNoUpdateResult {
-    param(
-        [string]$Command,
-        [object]$Result
-    )
-
-    if ($Command -ne 'update' -or $null -eq $Result) {
-        return $false
-    }
-
-    $propertyNames = @($Result.PSObject.Properties.Name)
-    return ($propertyNames -contains 'UpdateAvailable') -and ($propertyNames -contains 'CurrentVersion') -and -not $Result.UpdateAvailable
-}
-
-function Write-NovaCliCommandResult {
-    param(
-        [string]$Command,
-        [object]$Result
-    )
-
-    if (Test-NovaCliNoUpdateResult -Command $Command -Result $Result) {
-        Write-Output "You're up to date!"
-        Write-Output "$( $Result.ModuleName ) $( $Result.CurrentVersion ) is currently the newest version available."
-        return
-    }
-
-    $Result
-}
-
 $Command = if ($args.Count -gt 0) {
     $args[0]
 }
@@ -95,8 +66,7 @@ elseif ($forwardConfirm) {
 }
 
 try {
-    $result = Invoke-NovaCli @invokeParameters
-    Write-NovaCliCommandResult -Command $Command -Result $result
+    Invoke-NovaCli @invokeParameters
 }
 finally {
     if ($null -eq $originalCliConfirmSetting) {

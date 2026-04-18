@@ -5,9 +5,14 @@ function Invoke-NovaModuleSelfUpdate {
         [switch]$AllowPrerelease
     )
 
-    if ($AllowPrerelease) {
-        return Update-Module $ModuleName -AllowPrerelease
+    $updateParameters = @{
+        Name = $ModuleName
+        ErrorAction = 'Stop'
     }
 
-    return Update-Module $ModuleName
+    if ($AllowPrerelease) {
+        $updateParameters.AllowPrerelease = $true
+    }
+
+    return Update-Module @updateParameters
 }

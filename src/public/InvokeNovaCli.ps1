@@ -37,7 +37,8 @@ function Invoke-NovaCli {
             return Update-NovaModuleVersion @mutatingCommonParameters
         }
         'update' {
-            return Invoke-NovaCliUpdateCommand -Arguments $Arguments -ForwardedParameters $mutatingCommonParameters
+            $result = Invoke-NovaCliUpdateCommand -Arguments $Arguments -ForwardedParameters $mutatingCommonParameters
+            return Format-NovaCliCommandResult -Command $Command -Result $result
         }
         'publish' {
             $options = ConvertFrom-NovaCliArgument -Arguments $Arguments

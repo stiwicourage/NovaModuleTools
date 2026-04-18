@@ -25,6 +25,22 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         }
     }
 
+    It 'Get-LocalModulePathEntryList ignores blank PSModulePath segments' {
+        $originalModulePath = $env:PSModulePath
+        $separator = [IO.Path]::PathSeparator
+
+        try {
+            $env:PSModulePath = "/tmp/modules$separator$separator /tmp/alt-modules "
+
+            InModuleScope $script:moduleName {
+                Get-LocalModulePathEntryList | Should -Be @('/tmp/modules', '/tmp/alt-modules')
+            }
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+    }
+
     It 'Test-ProjectSchema validates the Build schema' {
         InModuleScope $script:moduleName {
             Mock Get-ResourceFilePath {
