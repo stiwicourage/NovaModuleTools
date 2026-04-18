@@ -164,6 +164,7 @@ throw 'offline'
 
         $result.Warnings | Should -HaveCount 1
         $result.Warnings[0] | Should -Match 'newer NovaModuleTools release is available'
+        $result.Warnings[0] | Should -Match 'Release notes: https://www\.novamoduletools\.com/release-notes\.html'
         $result.Warnings[0] | Should -Match 'Update-Module NovaModuleTools'
         $result.Warnings[0] | Should -Match 'nova update'
     }
@@ -176,6 +177,7 @@ throw 'offline'
 
         $result.Warnings | Should -HaveCount 1
         $result.Warnings[0] | Should -Match 'newer NovaModuleTools prerelease is available'
+        $result.Warnings[0] | Should -Match 'Release notes: https://www\.novamoduletools\.com/release-notes\.html'
         $result.Warnings[0] | Should -Match 'Update-Module NovaModuleTools -AllowPrerelease'
         $result.Warnings[0] | Should -Match 'nova update'
         $result.Warnings[0] | Should -Match 'Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications'
@@ -193,6 +195,28 @@ throw 'offline'
         $result.OutputRendering | Should -Be 'Host'
         $result.Warnings | Should -HaveCount 1
         $result.Warnings[0] | Should -Match 'newer NovaModuleTools prerelease is available'
+    }
+
+    It 'Write-NovaAvailableModuleUpdateWarning omits the release-notes line when metadata is unavailable' {
+        InModuleScope $script:moduleName {
+            $script:warningMessages = @()
+
+            Mock Get-NovaModuleReleaseNotesUri {$null}
+            Mock Write-Warning {$script:warningMessages += $Message}
+
+            Write-NovaAvailableModuleUpdateWarning -CurrentVersion '1.0.0' -AvailableVersion '1.1.0'
+
+            $script:warningMessages | Should -HaveCount 1
+            $script:warningMessages[0] -split '\r?\n' | Should -Be @(
+                'A newer NovaModuleTools release is available.'
+                'Current: 1.0.0'
+                'Available: 1.1.0'
+                ''
+                'Update:'
+                'PS> Update-Module NovaModuleTools'
+                'nova update'
+            )
+        }
     }
 
     It 'Update-NovaModuleTool applies a stable update without prerelease confirmation' {
@@ -213,6 +237,54 @@ throw 'offline'
         $result.Result.TargetVersion | Should -Be '1.1.0'
         $result.Result.UsedAllowPrerelease | Should -BeFalse
         $result.UpdateInvocation.AllowPrerelease | Should -BeFalse
+    }
+
+    It 'Update-NovaModuleTool prints the release notes link after a successful self-update' {
+        $result = Invoke-TestNovaSelfUpdate -Options ([pscustomobject]@{
+            PrereleaseNotificationsEnabled = $true
+            LookupResult = [pscustomobject]@{
+                Stable = [pscustomobject]@{Version = '1.1.0'}
+                Prerelease = $null
+            }
+            ConfirmPrerelease = $true
+            ReleaseNotesUri = 'https://www.novamoduletools.com/release-notes.html'
+            UseCli = $false
+        })
+
+        $result.Result.Updated | Should -BeTrue
+        $result.HostMessages | Should -Contain 'Release notes: https://www.novamoduletools.com/release-notes.html'
+    }
+
+    It 'nova update prints the release notes link after a successful self-update' {
+        $result = Invoke-TestNovaSelfUpdate -Options ([pscustomobject]@{
+            PrereleaseNotificationsEnabled = $true
+            LookupResult = [pscustomobject]@{
+                Stable = [pscustomobject]@{Version = '1.1.0'}
+                Prerelease = $null
+            }
+            ConfirmPrerelease = $true
+            ReleaseNotesUri = 'https://www.novamoduletools.com/release-notes.html'
+            UseCli = $true
+        })
+
+        $result.Result.Updated | Should -BeTrue
+        $result.HostMessages | Should -Contain 'Release notes: https://www.novamoduletools.com/release-notes.html'
+    }
+
+    It 'Update-NovaModuleTool skips the release notes link when metadata is unavailable' {
+        $result = Invoke-TestNovaSelfUpdate -Options ([pscustomobject]@{
+            PrereleaseNotificationsEnabled = $true
+            LookupResult = [pscustomobject]@{
+                Stable = [pscustomobject]@{Version = '1.1.0'}
+                Prerelease = $null
+            }
+            ConfirmPrerelease = $true
+            ReleaseNotesUri = $null
+            UseCli = $false
+        })
+
+        $result.Result.Updated | Should -BeTrue
+        $result.HostMessages | Should -HaveCount 0
     }
 
     It 'nova update stops on self-update failure instead of returning a success object' {

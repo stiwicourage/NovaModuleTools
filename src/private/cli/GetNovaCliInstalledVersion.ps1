@@ -5,15 +5,7 @@ function Get-NovaCliInstalledVersion {
     )
 
     $installedVersion = $Module.Version.ToString()
-    $prereleaseLabel = $null
-    $psData = $Module.PrivateData.PSData
-
-    if ($psData -is [hashtable]) {
-        $prereleaseLabel = $psData['Prerelease']
-    }
-    elseif ($null -ne $psData -and $psData.PSObject.Properties.Name -contains 'Prerelease') {
-        $prereleaseLabel = $psData.Prerelease
-    }
+    $prereleaseLabel = Get-NovaModulePsDataValue -Name 'Prerelease' -Module $Module
 
     if ( [string]::IsNullOrWhiteSpace($prereleaseLabel)) {
         return $installedVersion

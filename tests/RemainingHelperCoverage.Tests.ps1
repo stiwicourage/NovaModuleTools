@@ -41,6 +41,54 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         }
     }
 
+    It 'module PSData helpers read release notes from both supported metadata shapes' -ForEach @(
+        @{
+            ModuleInfo = [pscustomobject]@{
+                PrivateData = [pscustomobject]@{
+                    PSData = @{ReleaseNotes = 'https://example.test/release-notes'}
+                }
+            }
+            ExpectedReleaseNotes = 'https://example.test/release-notes'
+            RawExpectedReleaseNotes = 'https://example.test/release-notes'
+        }
+        @{
+            ModuleInfo = [pscustomobject]@{
+                PrivateData = [pscustomobject]@{
+                    PSData = [pscustomobject]@{ReleaseNotes = ' https://example.test/release-notes '}
+                }
+            }
+            ExpectedReleaseNotes = 'https://example.test/release-notes'
+            RawExpectedReleaseNotes = ' https://example.test/release-notes '
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{
+            ModuleInfo = $ModuleInfo
+            ExpectedReleaseNotes = $ExpectedReleaseNotes
+            RawExpectedReleaseNotes = $RawExpectedReleaseNotes
+        } {
+            param($ModuleInfo, $ExpectedReleaseNotes, $RawExpectedReleaseNotes)
+
+            Get-NovaModulePsDataValue -Name 'ReleaseNotes' -Module $ModuleInfo | Should -Be $RawExpectedReleaseNotes
+            Get-NovaModuleReleaseNotesUri -Module $ModuleInfo | Should -Be $ExpectedReleaseNotes
+        }
+    }
+
+    It 'Get-NovaModuleReleaseNotesUri returns nothing when release notes metadata is missing or blank' {
+        InModuleScope $script:moduleName {
+            $missingMetadataModule = [pscustomobject]@{
+                PrivateData = [pscustomobject]@{PSData = [pscustomobject]@{}}
+            }
+            $blankMetadataModule = [pscustomobject]@{
+                PrivateData = [pscustomobject]@{
+                    PSData = @{ReleaseNotes = '   '}
+                }
+            }
+
+            Get-NovaModuleReleaseNotesUri -Module $missingMetadataModule | Should -BeNullOrEmpty
+            Get-NovaModuleReleaseNotesUri -Module $blankMetadataModule | Should -BeNullOrEmpty
+        }
+    }
+
     It 'Test-ProjectSchema validates the Build schema' {
         InModuleScope $script:moduleName {
             Mock Get-ResourceFilePath {

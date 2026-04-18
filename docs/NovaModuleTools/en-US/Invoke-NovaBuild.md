@@ -45,6 +45,10 @@ To update the installed `NovaModuleTools` module itself, use `Update-NovaModuleT
 Use `Set-NovaUpdateNotificationPreference`, `Get-NovaUpdateNotificationPreference`, or the `nova notification`
 commands when you want to control whether prerelease self-updates are eligible.
 
+If `Invoke-NovaBuild` detects that a newer `NovaModuleTools` release or prerelease is available after the build, the
+warning includes the recommended update command together with the release notes link from the installed module
+manifest.
+
 If `SetSourcePath` is enabled, the generated `.psm1` includes `# Source:` markers before each source block.
 
 If `Preamble` is configured, those lines are written at the very top of the generated `.psm1` before the rest of the

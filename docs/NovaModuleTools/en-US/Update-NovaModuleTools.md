@@ -41,6 +41,9 @@ prerelease, the command always asks for explicit confirmation before it proceeds
 
 Stable updates do not require prerelease confirmation.
 
+After a successful update, `Update-NovaModuleTool` and `nova update` print the release notes link from the installed
+module manifest.
+
 Use `nova update` when you want the same behavior through the Nova CLI entrypoint.
 
 ## EXAMPLES
@@ -71,6 +74,8 @@ nova update
 
 Runs the same self-update flow from the Nova CLI. If the selected target is a prerelease, the CLI asks for explicit
 confirmation before running the update.
+
+Successful updates print the release notes link from the installed module manifest.
 
 If no newer version is available, the standalone `nova update` launcher prints `You're up to date!` together with the
 installed `NovaModuleTools` version.

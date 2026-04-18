@@ -4,12 +4,12 @@
 
 Security updates are provided for the latest two stable release lines only.
 
-| Version            | Supported          |
-|--------------------|--------------------|
-| 2.0.x (prerelease) | :x:                |
-| 1.9.x              | :white_check_mark: |
-| 1.8.x              | :white_check_mark: |
-| < 1.8              | :x:                |
+| Version         | Supported          |
+|-----------------|--------------------|
+| 2.0.x (preview) | :x:                |
+| 1.9.x           | :white_check_mark: |
+| 1.8.x           | :white_check_mark: |
+| < 1.8           | :x:                |
 
 ## Reporting a Vulnerability
 

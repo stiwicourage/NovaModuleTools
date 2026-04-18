@@ -314,6 +314,32 @@ Describe 'Coverage for remaining command and filesystem branches' {
         }
     }
 
+    It 'Install-NovaCli prints the release notes link after a successful install' {
+        InModuleScope $script:moduleName {
+            try {
+                Set-Variable -Name IsWindows -Value $false -Force
+                Mock Get-NovaCliInstallDirectory {'/tmp/bin'}
+                Mock Get-NovaCliLauncherPath {'/tmp/source/nova'}
+                Mock Test-Path {$false}
+                Mock Copy-NovaCliLauncher {'/tmp/bin/nova'}
+                Mock Test-NovaCliDirectoryOnPath {$true}
+                Mock Get-NovaModuleReleaseNotesUri {'https://www.novamoduletools.com/release-notes.html'}
+                Mock Write-Host {}
+
+                $result = Install-NovaCli -Force -Confirm:$false
+
+                $result.InstalledPath | Should -Be '/tmp/bin/nova'
+                $result.DirectoryOnPath | Should -BeTrue
+                Assert-MockCalled Write-Host -Times 1 -ParameterFilter {
+                    $Object -eq 'Release notes: https://www.novamoduletools.com/release-notes.html'
+                }
+            }
+            finally {
+                Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
     It 'Publish-NovaBuiltModule uses an explicit local module directory without resolving the default path' {
         InModuleScope $script:moduleName {
             $projectInfo = [pscustomobject]@{

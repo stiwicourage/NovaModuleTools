@@ -170,6 +170,8 @@ target.
 If the resolved target is a prerelease, `nova update` asks for explicit confirmation before calling
 `Update-Module NovaModuleTools -AllowPrerelease`.
 
+Successful updates print the release notes link from the installed module manifest.
+
 If no newer version is available, the standalone launcher prints `You're up to date!` and reports the installed
 `NovaModuleTools` version.
 

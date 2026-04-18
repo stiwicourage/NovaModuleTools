@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/14/2026
+ms.date: 04/18/2026
 PlatyPS schema version: 2024-05-01
 title: Install-NovaCli
 ---
@@ -31,6 +31,8 @@ command directory.
 By default, the launcher is installed to `~/.local/bin/nova` on macOS and Linux. If that directory is not on your
 `PATH`, the command warns so you can update your shell profile.
 
+After a successful install, `Install-NovaCli` also prints the release notes link from the installed module manifest.
+
 This command is currently intended for macOS and Linux. On Windows, use the `nova` alias inside `pwsh` after importing
 NovaModuleTools.
 
@@ -42,7 +44,7 @@ NovaModuleTools.
 PS> Install-NovaCli
 ```
 
-Installs `nova` to `~/.local/bin/nova`.
+Installs `nova` to `~/.local/bin/nova` and prints the release notes link for the installed NovaModuleTools build.
 
 ### EXAMPLE 2
 

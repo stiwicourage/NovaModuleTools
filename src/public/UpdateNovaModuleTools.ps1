@@ -33,5 +33,6 @@ function Update-NovaModuleTool {
 
     $null = Invoke-NovaModuleSelfUpdate -ModuleName $plan.ModuleName -AllowPrerelease:$plan.UsedAllowPrerelease
     $plan.Updated = $true
+    Write-NovaModuleReleaseNotesLink
     return $plan
 }
