@@ -30,6 +30,9 @@ Before making larger changes, read the contributor docs in:
 - [README.md#repository-structure-and-ownership](./README.md#repository-structure-and-ownership)
 - [README.md#cicd-and-release-automation](./README.md#cicd-and-release-automation)
 
+GitHub now prefills pull requests with `.github/pull_request_template.md`.
+Use it to explain intent clearly, record what you validated, and call out any required documentation or changelog work.
+
 **Before opening a pull request, please run the local quality flow from the repository root:**
 
 ```powershell title="run.ps1"
