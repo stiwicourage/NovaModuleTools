@@ -8,10 +8,10 @@ function Write-NovaAvailableModuleUpdateWarning {
 
     $moduleName = 'NovaModuleTools'
     $updateCommand = if ($Prerelease) {
-        "Update-Module $moduleName -AllowPrerelease"
+        "PS> Update-Module $moduleName -AllowPrerelease"
     }
     else {
-        "Update-Module $moduleName"
+        "PS> Update-Module $moduleName"
     }
 
     $heading = if ($Prerelease) {

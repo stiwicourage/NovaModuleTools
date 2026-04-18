@@ -72,6 +72,9 @@ nova update
 Runs the same self-update flow from the Nova CLI. If the selected target is a prerelease, the CLI asks for explicit
 confirmation before running the update.
 
+If no newer version is available, the standalone `nova update` launcher prints `You're up to date!` together with the
+installed `NovaModuleTools` version.
+
 ### EXAMPLE 4
 
 ```powershell

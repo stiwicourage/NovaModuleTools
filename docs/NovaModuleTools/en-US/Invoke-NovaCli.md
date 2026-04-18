@@ -57,7 +57,8 @@ Use `nova --version` to show the installed `NovaModuleTools` version. Those are 
 Use `nova update` to self-update the installed `NovaModuleTools` module. It uses the stored prerelease preference to
 decide whether a prerelease target is eligible. When that preference is disabled, `nova update` only targets stable
 releases. When it is enabled, `nova update` may target a prerelease, but it always asks for explicit confirmation
-before running a prerelease update.
+before running a prerelease update. If no newer version is available, the standalone launcher prints a short
+`You're up to date!` summary that includes the installed version.
 
 For the standalone launcher, `nova bump -Confirm` uses a CLI-friendly confirmation prompt. Declined or suspended choices
 cancel the bump cleanly and return control to the shell without printing a version result.
@@ -168,6 +169,9 @@ target.
 
 If the resolved target is a prerelease, `nova update` asks for explicit confirmation before calling
 `Update-Module NovaModuleTools -AllowPrerelease`.
+
+If no newer version is available, the standalone launcher prints `You're up to date!` and reports the installed
+`NovaModuleTools` version.
 
 ### EXAMPLE 12
 

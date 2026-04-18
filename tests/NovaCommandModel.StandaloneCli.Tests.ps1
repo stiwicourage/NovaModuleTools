@@ -288,6 +288,34 @@ function Invoke-TestCliVerbose {
         }
     }
 
+    It 'standalone nova update prints a friendly message when no newer version is available' {
+        $launcherPath = Join-Path $script:distModuleDir 'resources/nova'
+        $launcher = [scriptblock]::Create((Get-Content -LiteralPath $launcherPath -Raw))
+
+        Mock Import-Module {}
+        Mock Invoke-NovaCli {
+            [pscustomobject]@{
+                ModuleName = 'NovaModuleTools'
+                CurrentVersion = '2.0.0-prerelease2'
+                TargetVersion = $null
+                PrereleaseNotificationsEnabled = $true
+                UpdateAvailable = $false
+                Updated = $false
+                Cancelled = $false
+                IsPrereleaseTarget = $false
+                UsedAllowPrerelease = $false
+            }
+        }
+
+        $result = @(& $launcher update)
+
+        $result | Should -HaveCount 2
+        $result[0] | Should -Be "You're up to date!"
+        $result[1] | Should -Be 'NovaModuleTools 2.0.0-prerelease2 is currently the newest version available.'
+        Assert-MockCalled Import-Module -Times 1 -Scope It
+        Assert-MockCalled Invoke-NovaCli -Times 1 -Scope It -ParameterFilter {$Command -eq 'update' -and $Arguments.Count -eq 0}
+    }
+
     It 'Invoke-NovaCli publish forwards repository options' {
         InModuleScope $script:moduleName {
             Mock Publish-NovaModule {
