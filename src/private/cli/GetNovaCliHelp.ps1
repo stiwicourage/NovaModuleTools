@@ -20,7 +20,7 @@ publish and release
 
 global options
    --help     Show this help message
-   --version  Show the installed NovaModuleTools module name and version
+   --version  Show the installed NovaModuleTools module name and version, including prerelease label when present
    -Verbose   Show verbose output for the routed PowerShell command
    -WhatIf    Preview build, test, bump, publish, and release without changing files
    -Confirm   Request confirmation before mutating routed commands; nova bump cancels cleanly on No/No to All/Suspend

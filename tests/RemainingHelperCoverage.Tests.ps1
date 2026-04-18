@@ -19,6 +19,12 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         }
     }
 
+    It 'Format-NovaCliVersionString keeps prerelease labels in the provided version string' {
+        InModuleScope $script:moduleName {
+            Format-NovaCliVersionString -Name 'NovaModuleTools' -Version '1.11.1-preview' | Should -Be 'NovaModuleTools 1.11.1-preview'
+        }
+    }
+
     It 'Test-ProjectSchema validates the Build schema' {
         InModuleScope $script:moduleName {
             Mock Get-ResourceFilePath {

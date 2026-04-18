@@ -62,7 +62,8 @@ nova --version
 ```
 
 Returns the installed `NovaModuleTools` module version.
-The output format is `NovaModuleTools <Version>`.
+The output format is `NovaModuleTools <Version>` for stable installs and `NovaModuleTools <Version>-<Prerelease>` when
+the installed module manifest includes prerelease metadata.
 
 ### EXAMPLE 2
 

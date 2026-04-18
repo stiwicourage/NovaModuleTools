@@ -850,7 +850,7 @@ title: Invoke-NovaBuild
     It 'Install-NovaCli copies the launcher and the installed command returns CLI help' {
         $targetDirectory = Join-Path $TestDrive 'bin'
         $installedPath = Join-Path $targetDirectory 'nova'
-        $installedModuleVersion = (Get-Module $script:moduleName).Version.ToString()
+        $installedModuleVersion = Get-TestModuleDisplayVersion -Module (Get-Module $script:moduleName)
         $expectedProjectVersionText = "$( $script:projectInfo.ProjectName ) $( $script:projectInfo.Version )"
         $originalModulePath = $env:PSModulePath
         $modulePathSeparator = [string][System.IO.Path]::PathSeparator
@@ -1064,14 +1064,19 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Invoke-NovaCli --version returns the installed NovaModuleTools name and version' {
+    It 'Invoke-NovaCli --version formats stable and prerelease installed versions correctly' {
         InModuleScope $script:moduleName -Parameters @{ModuleName = $script:moduleName} {
             param($ModuleName)
 
-            Mock Get-NovaCliInstalledVersion {'9.9.9'}
+            foreach ($testCase in @(
+                @{InstalledVersion = '9.9.9'; Expected = "$ModuleName 9.9.9"},
+                @{InstalledVersion = '9.9.9-preview'; Expected = "$ModuleName 9.9.9-preview"}
+            )) {
+                Mock Get-NovaCliInstalledVersion {$testCase.InstalledVersion}
 
-            Invoke-NovaCli --version | Should -Be "$ModuleName 9.9.9"
-            Assert-MockCalled Get-NovaCliInstalledVersion -Times 1
+                Invoke-NovaCli --version | Should -Be $testCase.Expected
+                Assert-MockCalled Get-NovaCliInstalledVersion -Times 1 -Scope It
+            }
         }
     }
 
