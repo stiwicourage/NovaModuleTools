@@ -50,6 +50,11 @@ Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
 
 Runs the project's Pester test workflow using settings from `project.json`.
 
+### `PS> Update-NovaModuleTool`
+
+Updates the installed `NovaModuleTools` module by using the same prerelease preference shared with the automatic
+post-build update notifications. The compatibility alias `Update-NovaModuleTools` is also available.
+
 ### `PS> New-NovaModule`
 
 Creates a new NovaModuleTools project scaffold through an interactive prompt flow.

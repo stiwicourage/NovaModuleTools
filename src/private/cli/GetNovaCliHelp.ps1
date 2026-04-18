@@ -13,6 +13,7 @@ work with the current project
    build      Build the module into the dist folder
    test       Run Pester tests for the project
    bump       Update the module version in project.json
+   update     Update the installed NovaModuleTools module using the stored prerelease preference
    notification Show or change prerelease build-update notifications
 
 publish and release
@@ -23,7 +24,7 @@ global options
    --help     Show this help message
    --version  Show the installed NovaModuleTools module name and version, including prerelease label when present
    -Verbose   Show verbose output for the routed PowerShell command
-   -WhatIf    Preview build, test, bump, notification, publish, and release without changing files
+   -WhatIf    Preview build, test, bump, update, notification, publish, and release without changing files
    -Confirm   Request confirmation before mutating routed commands; nova bump cancels cleanly on No/No to All/Suspend
 
 Examples:
@@ -36,6 +37,7 @@ Examples:
    nova build
    nova test
    nova bump -WhatIf
+    nova update
    nova notification
    nova notification -disable
    nova notification -enable
@@ -53,6 +55,10 @@ when you want a scriptable function interface.
 Use 'nova notification' to show the current prerelease notification preference,
 'nova notification -disable' to suppress prerelease build-update warnings,
 and 'nova notification -enable' to turn them back on.
+
+Use 'nova update' to self-update NovaModuleTools. It uses the same stored prerelease
+preference as the automatic build-update notifications. Stable updates proceed normally,
+while prerelease targets require explicit confirmation before the update runs.
 
 Inside PowerShell, 'nova publish -local' also reloads the published module from the
 local install path after a successful publish.

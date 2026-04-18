@@ -34,6 +34,9 @@ PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications [-WhatI
 `Set-NovaUpdateNotificationPreference` manages the user preference that controls whether successful builds warn about
 newer prerelease versions of `NovaModuleTools`.
 
+The same stored preference is also used by `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) and `nova update`
+when they decide whether a prerelease self-update can be selected.
+
 Stable release notifications always remain enabled and cannot be disabled.
 
 If you prefer the Nova CLI surface, use `nova notification -disable` and `nova notification -enable` for the same
@@ -47,7 +50,8 @@ stored preference.
 PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
 ```
 
-Turns off prerelease update notifications for future successful builds.
+Turns off prerelease update notifications for future successful builds and restricts `Update-NovaModuleTool` /
+`nova update` to stable releases only.
 
 ### EXAMPLE 2
 
@@ -55,7 +59,8 @@ Turns off prerelease update notifications for future successful builds.
 PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
 ```
 
-Turns prerelease update notifications back on.
+Turns prerelease update notifications back on, which allows `Update-NovaModuleTool` / `Update-NovaModuleTools` and
+`nova update` to consider a prerelease target again.
 
 ### EXAMPLE 3
 

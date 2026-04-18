@@ -4,13 +4,11 @@ function Invoke-NovaCli {
     param(
         [Parameter(Position = 0)]
         [string]$Command = '--help',
-
         [Parameter(Position = 1, ValueFromRemainingArguments)]
         [string[]]$Arguments
     )
 
-    $commonParameters = Get-NovaCliForwardingParameterSet -BoundParameters $PSBoundParameters
-    $mutatingCommonParameters = Get-NovaCliForwardingParameterSet -BoundParameters $PSBoundParameters -IncludeShouldProcess
+    $commonParameters = Get-NovaCliForwardingParameterSet -BoundParameters $PSBoundParameters; $mutatingCommonParameters = Get-NovaCliForwardingParameterSet -BoundParameters $PSBoundParameters -IncludeShouldProcess
 
     $Arguments = ConvertTo-NovaCliArgumentArray -BoundParameters $PSBoundParameters -Arguments $Arguments
 
@@ -38,6 +36,9 @@ function Invoke-NovaCli {
         }
         'bump' {
             return Update-NovaModuleVersion @mutatingCommonParameters
+        }
+        'update' {
+            return Invoke-NovaCliUpdateCommand -Arguments $Arguments -ForwardedParameters $mutatingCommonParameters
         }
         'publish' {
             $options = ConvertFrom-NovaCliArgument -Arguments $Arguments
