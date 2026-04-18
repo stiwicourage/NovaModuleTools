@@ -52,6 +52,10 @@ Stable release notifications always remain enabled. To control prerelease notifi
 For the CLI-oriented workflow, use `nova notification -disable`, `nova notification -enable`, and
 `nova notification`.
 
+When you decide to apply one of the reported updates, you can either run the suggested `Update-Module` command directly
+or use `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) / `nova update`. The self-update command uses the same
+stored prerelease preference.
+
 If `SetSourcePath` is enabled, the generated `.psm1` includes `# Source:` markers before each source block.
 
 If `Preamble` is configured, those lines are written at the very top of the generated `.psm1` before the rest of the
@@ -93,6 +97,9 @@ PS> Invoke-NovaBuild
 Builds the current project and keeps stable release notifications enabled while suppressing prerelease update warnings.
 
 The CLI equivalent is `nova notification -disable` before running `nova build`.
+
+With prerelease notifications disabled, `Update-NovaModuleTool` / `Update-NovaModuleTools` and `nova update` also stay
+on the stable release channel.
 
 ## PARAMETERS
 

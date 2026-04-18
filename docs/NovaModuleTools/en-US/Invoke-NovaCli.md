@@ -29,13 +29,14 @@ PS> Invoke-NovaCli [[-Command] <string>] [[-Arguments] <string[]>] [-WhatIf] [-C
 `nova` CLI rather than call `Invoke-NovaCli` directly.
 
 It dispatches high-level commands such as `nova info`, `nova version`, `nova --version`, `nova --help`, `nova build`,
-`nova test`, `nova init`, `nova notification`, `nova publish`, `nova bump`, and `nova release` to the matching Nova
-cmdlet.
+`nova test`, `nova init`, `nova update`, `nova notification`, `nova publish`, `nova bump`, and `nova release` to the
+matching Nova cmdlet.
 
 Use `Invoke-NovaCli` when you need a scriptable PowerShell command entrypoint. Use `nova` when you want the
 user-focused CLI experience.
 
-Mutating routed commands (`build`, `test`, `bump`, `notification`, `publish`, and `release`) forward PowerShell
+Mutating routed commands (`build`, `test`, `bump`, `update`, `notification`, `publish`, and `release`) forward
+PowerShell
 `-WhatIf`/`-Confirm` to the underlying cmdlet. That means `nova build -WhatIf` and
 `Invoke-NovaCli -Command build -WhatIf` both preview the build instead of running it.
 
@@ -45,6 +46,11 @@ resolved local install path after the copy succeeds. Preview or cancelled runs d
 Use `nova notification` to show the current prerelease build-update notification preference,
 `nova notification -disable` to stop prerelease warnings after successful builds, and
 `nova notification -enable` to turn those warnings back on. Stable release notifications remain enabled.
+
+Use `nova update` to self-update the installed `NovaModuleTools` module. It uses the same stored prerelease preference
+as the automatic post-build update notifications. When that preference is disabled, `nova update` only targets stable
+releases. When it is enabled, `nova update` may target a prerelease, but it always asks for explicit confirmation
+before running a prerelease update.
 
 For the standalone launcher, `nova bump -Confirm` uses a CLI-friendly confirmation prompt. Declined or suspended choices
 cancel the bump cleanly and return control to the shell without printing a version result.
@@ -139,12 +145,24 @@ Runs the interactive init flow, scaffolds from the packaged example project, and
 ### EXAMPLE 10
 
 ```powershell
+nova update
+```
+
+Updates the installed `NovaModuleTools` module using the same stored prerelease preference as the automatic build-update
+notifications.
+
+If the resolved target is a prerelease, `nova update` asks for explicit confirmation before calling
+`Update-Module NovaModuleTools -AllowPrerelease`.
+
+### EXAMPLE 11
+
+```powershell
 nova notification
 ```
 
 Shows whether prerelease build-update notifications are enabled and where the preference is stored.
 
-### EXAMPLE 11
+### EXAMPLE 12
 
 ```powershell
 nova notification -disable
@@ -152,7 +170,7 @@ nova notification -disable
 
 Disables prerelease build-update notifications while keeping stable release notifications enabled.
 
-### EXAMPLE 12
+### EXAMPLE 13
 
 ```powershell
 PS> Invoke-NovaCli -Command notification -Arguments @('-enable')
@@ -165,7 +183,7 @@ Re-enables prerelease build-update notifications from the routed PowerShell entr
 ### -Command
 
 The command to execute. Supported values: `info`, `version`, `--version`, `--help`, `build`, `test`, `init`,
-`notification`, `publish`, `bump`, `release`.
+`update`, `notification`, `publish`, `bump`, `release`.
 
 ```yaml
 Type: System.String
@@ -180,7 +198,7 @@ ParameterSets:
     ValueFromPipelineByPropertyName: false
     ValueFromRemainingArguments: false
 DontShow: false
-AcceptedValues: [ info, version, --version, --help, build, test, init, notification, publish, bump, release ]
+AcceptedValues: [ info, version, --version, --help, build, test, init, update, notification, publish, bump, release ]
 HelpMessage: ''
 ```
 
@@ -221,7 +239,8 @@ Returned for text-oriented commands such as `nova --help`, `nova version`, and `
 
 ### PSCustomObject
 
-Returned when the selected subcommand returns an object, for example `nova info` or `nova notification`.
+Returned when the selected subcommand returns an object, for example `nova info`, `nova notification`, or
+`nova update`.
 
 ### None
 
@@ -242,5 +261,6 @@ only to mutating subcommands.
 - `Invoke-NovaBuild`
 - `Install-NovaCli`
 - `Test-NovaBuild`
+- `Update-NovaModuleTool`
 - `Invoke-NovaRelease`
 

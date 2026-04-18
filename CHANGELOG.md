@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   check and a user-configurable prerelease notification preference.
     - Supports `Set-NovaUpdateNotificationPreference` / `Get-NovaUpdateNotificationPreference` for PowerShell usage.
     - Supports `nova notification`, `nova notification -disable`, and `nova notification -enable` for CLI usage.
+  - Supports `Update-NovaModuleTool` (with `Update-NovaModuleTools` as a compatibility alias) and `nova update` for
+    self-updating the installed module.
+  - Reuses the same stored prerelease preference for both build notifications and self-update eligibility.
+  - Requires explicit confirmation before a prerelease self-update proceeds.
 
 ### Changed
 

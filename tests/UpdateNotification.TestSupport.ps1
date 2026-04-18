@@ -85,3 +85,59 @@ function Assert-TestNotificationPreferenceToggleResult {
     $Result.Enabled.StableReleaseNotificationsEnabled | Should -BeTrue
 }
 
+function Invoke-TestNovaSelfUpdate {
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Options
+    )
+
+    InModuleScope $script:moduleName -Parameters @{
+        Options = $Options
+    } {
+        param($Options)
+
+        $script:preferenceReadCount = 0
+        $script:prereleaseConfirmationCount = 0
+        $script:updateInvocation = $null
+
+        Mock Read-NovaUpdateNotificationPreference {
+            $script:preferenceReadCount++
+            [pscustomobject]@{PrereleaseNotificationsEnabled = $Options.PrereleaseNotificationsEnabled}
+        }
+        Mock Get-NovaInstalledModuleVersionInfo {
+            [pscustomobject]@{
+                ModuleName = 'NovaModuleTools'
+                Version = '1.0.0'
+                SemanticVersion = [semver]'1.0.0'
+                IsPrerelease = $false
+            }
+        }
+        Mock Invoke-NovaModuleUpdateLookup {$Options.LookupResult}
+        Mock Confirm-NovaPrereleaseModuleUpdate {
+            $script:prereleaseConfirmationCount++
+            return $Options.ConfirmPrerelease
+        }
+        Mock Invoke-NovaModuleSelfUpdate {
+            param([string]$ModuleName, [switch]$AllowPrerelease)
+
+            $script:updateInvocation = [pscustomobject]@{
+                ModuleName = $ModuleName
+                AllowPrerelease = $AllowPrerelease.IsPresent
+            }
+        }
+
+        $result = if ($Options.UseCli) {
+            Invoke-NovaCli update -Confirm:$false
+        }
+        else {
+            Update-NovaModuleTool -Confirm:$false
+        }
+
+        return [pscustomobject]@{
+            Result = $result
+            PreferenceReadCount = $script:preferenceReadCount
+            PrereleaseConfirmationCount = $script:prereleaseConfirmationCount
+            UpdateInvocation = $script:updateInvocation
+        }
+    }
+}
+

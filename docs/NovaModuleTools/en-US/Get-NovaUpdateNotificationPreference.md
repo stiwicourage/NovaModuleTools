@@ -28,6 +28,9 @@ PS> Get-NovaUpdateNotificationPreference [<CommonParameters>]
 `Get-NovaUpdateNotificationPreference` returns the current user preference that controls whether successful builds also
 notify about newer prerelease versions of `NovaModuleTools`.
 
+The same stored preference is also used by `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) and `nova update`
+when they decide whether a prerelease self-update is eligible.
+
 Stable release notifications always remain enabled and cannot be disabled.
 
 If you prefer the Nova CLI surface, run `nova notification` to view the same preference.
@@ -40,7 +43,8 @@ If you prefer the Nova CLI surface, run `nova notification` to view the same pre
 PS> Get-NovaUpdateNotificationPreference
 ```
 
-Shows whether prerelease update notifications are currently enabled and where the preference is stored.
+Shows whether prerelease update notifications are currently enabled, whether stable notifications remain enabled, and
+where the preference is stored.
 
 ### EXAMPLE 2
 
@@ -78,8 +82,13 @@ prerelease notifications.
 Use `PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications` or `nova notification -enable` to turn
 prerelease notifications back on.
 
+When prerelease notifications are enabled again, `Update-NovaModuleTool` / `Update-NovaModuleTools` and `nova update`
+may again select a prerelease target. Prerelease self-updates still require explicit confirmation before the update
+proceeds.
+
 ## RELATED LINKS
 
 - `Invoke-NovaBuild`
 - `Set-NovaUpdateNotificationPreference`
+- `Update-NovaModuleTool`
 

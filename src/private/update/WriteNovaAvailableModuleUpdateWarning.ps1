@@ -28,6 +28,7 @@ function Write-NovaAvailableModuleUpdateWarning {
         ''
         'Update:'
         $updateCommand
+        'nova update'
     )
 
     if ($Prerelease) {

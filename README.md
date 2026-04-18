@@ -79,13 +79,21 @@ Only newer versions emit a warning.
 PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
 PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
 PS> Get-NovaUpdateNotificationPreference
+PS> Update-NovaModuleTool
+PS> Update-NovaModuleTools   # alias
 PS> nova notification -disable
 PS> nova notification -enable
 PS> nova notification
+PS> nova update
 ```
 
 Use `nova notification` when you want the CLI-oriented workflow and the `Set-` / `Get-` cmdlets when you want the
 PowerShell function form in scripts.
+
+`Update-NovaModuleTool` (and its `Update-NovaModuleTools` alias) / `nova update` use the same stored prerelease
+preference as the automatic build notifications. When prerelease notifications are disabled, self-update stays on stable
+releases. When prerelease notifications are enabled, self-update may target a prerelease, but it asks for explicit
+confirmation before proceeding.
 
 ### Reload the built module while iterating
 
