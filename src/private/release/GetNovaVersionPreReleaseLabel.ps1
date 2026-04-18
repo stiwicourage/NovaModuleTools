@@ -16,4 +16,3 @@ function Get-NovaVersionPreReleaseLabel {
 
     return $CurrentVersion.PreReleaseLabel
 }
-

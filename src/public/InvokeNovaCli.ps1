@@ -72,6 +72,3 @@ function Invoke-NovaCli {
         }
     }
 }
-
-
-

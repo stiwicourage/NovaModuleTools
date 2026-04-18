@@ -442,9 +442,3 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
         }
     }
 }
-
-
-
-
-
-

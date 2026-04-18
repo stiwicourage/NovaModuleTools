@@ -37,7 +37,3 @@ function New-TestGitTag {
 
     & git -C $RepositoryPath -c core.hooksPath=/dev/null -c tag.gpgSign=false tag $TagName | Out-Null
 }
-
-
-
-

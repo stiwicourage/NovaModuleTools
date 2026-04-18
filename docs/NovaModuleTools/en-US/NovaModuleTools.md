@@ -70,6 +70,3 @@ Enables or disables prerelease update notifications that can appear after a succ
 ### `PS> Update-NovaModuleVersion`
 
 Updates the project version in `project.json` based on the current git commit history.
-
-
-

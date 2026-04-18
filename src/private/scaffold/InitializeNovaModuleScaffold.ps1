@@ -54,4 +54,3 @@ function Initialize-NovaExampleModuleScaffold {
     New-Item -ItemType Directory -Path $Paths.Project | Out-Null
     Copy-NovaExampleProjectTemplate -DestinationPath $Paths.Project
 }
-

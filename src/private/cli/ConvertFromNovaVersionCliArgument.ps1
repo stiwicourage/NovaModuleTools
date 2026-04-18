@@ -15,4 +15,3 @@ function ConvertFrom-NovaVersionCliArgument {
 
     throw "Unsupported 'nova version' usage. Use 'nova version' or 'nova version -Installed'."
 }
-

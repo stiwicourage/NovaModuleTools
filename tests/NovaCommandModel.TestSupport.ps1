@@ -217,4 +217,3 @@ function Invoke-TestInstalledNovaCommand {
         Pop-Location
     }
 }
-

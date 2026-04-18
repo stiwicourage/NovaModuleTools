@@ -68,4 +68,3 @@ local install path after a successful publish.
 
 Note: 'nova init' is interactive. Use 'nova init -Path <path>' for an explicit destination,
 'nova init -Example' for the packaged example scaffold, and do not use 'nova init -WhatIf'.
-

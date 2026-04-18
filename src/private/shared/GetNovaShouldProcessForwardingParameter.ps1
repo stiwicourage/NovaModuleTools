@@ -11,4 +11,3 @@ function Get-NovaShouldProcessForwardingParameter {
 
     return $forwardingParameter
 }
-

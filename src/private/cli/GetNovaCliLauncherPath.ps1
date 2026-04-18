@@ -27,4 +27,3 @@ function Get-NovaCliLauncherPath {
 
     throw "Nova CLI launcher not found. Checked: $( ($candidateList | ForEach-Object {[System.IO.Path]::GetFullPath($_)}) -join ', ' )"
 }
-

@@ -13,4 +13,3 @@ function Get-NovaInstalledProjectManifestPath {
 
     return Get-NovaPublishedLocalManifestPath -PublishInvocation $publishInvocation
 }
-

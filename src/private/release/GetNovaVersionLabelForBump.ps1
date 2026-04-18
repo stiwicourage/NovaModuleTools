@@ -62,5 +62,3 @@ function Test-GitRepositoryHasCommitsSinceLatestTag {
     $commitCount = & git -C $ProjectRoot rev-list --count "$lastTag..HEAD" 2> $null
     return $LASTEXITCODE -ne 0 -or $commitCount -ne '0'
 }
-
-

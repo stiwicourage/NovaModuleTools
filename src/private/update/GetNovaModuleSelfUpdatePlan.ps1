@@ -17,7 +17,3 @@ function Get-NovaModuleSelfUpdatePlan {
 
     return ConvertTo-NovaModuleSelfUpdatePlan -InstalledModule $InstalledModule -PrereleaseNotificationsEnabled:$PrereleaseNotificationsEnabled
 }
-
-
-
-

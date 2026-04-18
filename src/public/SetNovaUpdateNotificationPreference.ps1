@@ -27,5 +27,3 @@ function Set-NovaUpdateNotificationPreference {
     Write-NovaUpdateNotificationPreference -PrereleaseNotificationsEnabled:$enablePrerelease
     return Get-NovaUpdateNotificationPreference
 }
-
-

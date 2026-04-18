@@ -22,4 +22,3 @@ function Read-ProjectJsonData {
 
     return $jsonData
 }
-

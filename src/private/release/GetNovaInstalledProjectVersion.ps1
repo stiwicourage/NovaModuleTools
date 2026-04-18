@@ -13,4 +13,3 @@ function Get-NovaInstalledProjectVersion {
     $manifest = Test-ModuleManifest -Path $manifestPath -ErrorAction Stop
     return Format-NovaCliVersionString -Name $ProjectInfo.ProjectName -Version $manifest.Version.ToString()
 }
-

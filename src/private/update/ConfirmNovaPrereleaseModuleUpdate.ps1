@@ -9,5 +9,3 @@ function Confirm-NovaPrereleaseModuleUpdate {
     $prompt = Get-NovaPrereleaseModuleUpdateConfirmationPrompt -CurrentVersion $CurrentVersion -TargetVersion $TargetVersion
     return $Cmdlet.ShouldContinue($prompt.Message, $prompt.Caption)
 }
-
-

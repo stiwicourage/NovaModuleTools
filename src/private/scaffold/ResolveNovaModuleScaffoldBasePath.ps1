@@ -14,4 +14,3 @@ function Resolve-NovaModuleScaffoldBasePath {
 
     return [System.IO.Path]::GetFullPath($resolvedPath)
 }
-

@@ -13,6 +13,3 @@ function Invoke-NovaModuleUpdateLookup {
 
     return Invoke-NovaPowerShellScriptWithTimeout -Script $LookupScript -ArgumentList @($ModuleName, $AllowPrereleaseNotifications) -TimeoutMilliseconds $TimeoutMilliseconds
 }
-
-
-

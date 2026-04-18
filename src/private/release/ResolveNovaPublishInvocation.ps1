@@ -30,4 +30,3 @@ function Resolve-NovaPublishInvocation {
         IsLocal = $true
     }
 }
-

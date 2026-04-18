@@ -23,4 +23,3 @@ function Publish-NovaBuiltModuleToDirectory {
 
     Copy-Item -Path $ProjectInfo.OutputModuleDir -Destination $ModuleDirectoryPath -Recurse -ErrorAction Stop
 }
-

@@ -14,5 +14,3 @@ function ConvertTo-NovaCliArgumentArray {
 
     return ,$normalizedArguments.ToArray()
 }
-
-

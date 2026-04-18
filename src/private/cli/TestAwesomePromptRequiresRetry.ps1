@@ -6,4 +6,3 @@ function Test-AwesomePromptRequiresRetry {
 
     return $Ask.Default -eq 'MANDATORY' -and [string]::IsNullOrEmpty($Response.Values)
 }
-

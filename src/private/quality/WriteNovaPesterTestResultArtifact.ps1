@@ -19,5 +19,3 @@ function Write-NovaPesterTestResultArtifact {
 
     & $resolvedReportWriter -TestResult $TestResult -OutputPath $OutputPath
 }
-
-

@@ -14,4 +14,3 @@ function Get-NovaUpdateSettingsFilePath {
 
     return Join-Path $settingsRoot 'settings.json'
 }
-

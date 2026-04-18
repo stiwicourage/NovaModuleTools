@@ -5,5 +5,3 @@ function Get-NovaModuleUpdateLookupScript {
     $lookupScriptPath = Get-ResourceFilePath -FileName 'update/ModuleUpdateLookup.ps1.txt'
     return Get-Content -LiteralPath $lookupScriptPath -Raw -ErrorAction Stop
 }
-
-

@@ -10,4 +10,3 @@ function Read-AwesomeChoicePrompt {
 
     return $options.Label[$response] -replace '&'
 }
-

@@ -17,5 +17,3 @@ function Set-NovaCliExecutablePermission {
         throw "Failed to make nova launcher executable: $Path"
     }
 }
-
-

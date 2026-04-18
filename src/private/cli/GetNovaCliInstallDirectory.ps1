@@ -16,4 +16,3 @@ function Get-NovaCliInstallDirectory {
 
     return [System.IO.Path]::Join($homeDirectory, '.local', 'bin')
 }
-

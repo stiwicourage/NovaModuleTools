@@ -140,4 +140,3 @@ function Invoke-TestNovaSelfUpdate {
         }
     }
 }
-

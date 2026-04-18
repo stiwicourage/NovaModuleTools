@@ -13,4 +13,3 @@ function Invoke-NovaCliVersionCommand {
     $projectInfo = Get-NovaProjectInfo @ForwardedParameters
     return Format-NovaCliVersionString -Name $projectInfo.ProjectName -Version $projectInfo.Version
 }
-

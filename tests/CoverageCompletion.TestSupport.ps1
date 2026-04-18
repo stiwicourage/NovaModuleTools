@@ -41,6 +41,3 @@ function New-TestChoiceHostUi {
 
     return $hostUi
 }
-
-
-

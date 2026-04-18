@@ -10,4 +10,3 @@ function Resolve-NovaLocalPublishPath {
 
     return $ModuleDirectoryPath
 }
-

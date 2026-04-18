@@ -6,4 +6,3 @@ function Get-NovaPesterTestResultPath {
 
     return [System.IO.Path]::Join($ProjectRoot, 'artifacts', 'TestResults.xml')
 }
-

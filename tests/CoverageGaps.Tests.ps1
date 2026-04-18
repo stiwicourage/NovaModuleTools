@@ -1185,11 +1185,3 @@ function Second {
         }
     }
 }
-
-
-
-
-
-
-
-

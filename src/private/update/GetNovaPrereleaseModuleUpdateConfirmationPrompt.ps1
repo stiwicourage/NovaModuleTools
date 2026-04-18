@@ -15,5 +15,3 @@ Continue with the prerelease update?
 "@
     }
 }
-
-

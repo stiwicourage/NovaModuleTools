@@ -63,4 +63,3 @@ else {
     Stable = ConvertTo-VersionInfo -Item $stableItem -Channel 'Stable'
     Prerelease = ConvertTo-VersionInfo -Item $prereleaseItem -Channel 'Prerelease'
 }
-

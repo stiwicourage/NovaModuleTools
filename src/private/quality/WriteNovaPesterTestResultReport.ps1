@@ -32,4 +32,3 @@ function Write-NovaPesterTestResultReport {
 
     Set-Content -LiteralPath $OutputPath -Value $report -Encoding utf8
 }
-

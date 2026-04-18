@@ -11,5 +11,3 @@ function Invoke-NovaModuleSelfUpdate {
 
     return Update-Module $ModuleName
 }
-
-
