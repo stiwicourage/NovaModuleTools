@@ -15,8 +15,10 @@ function Invoke-NovaRelease {
         $publishInvocation = Resolve-NovaPublishInvocation -ProjectInfo $projectInfo -Repository $repository -ModuleDirectoryPath $moduleDirectoryPath -ApiKey $apiKey
 
         Write-NovaLocalWorkflowMode -WorkflowName release -LocalRequested:($PublishOption.ContainsKey('Local') -and $PublishOption.Local)
+        Write-NovaResolvedLocalPublishTarget -PublishInvocation $publishInvocation
 
         $releaseOperation = Get-NovaPublishWorkflowOperation -IsLocal:$publishInvocation.IsLocal -Release
+        $publishParams = Get-NovaResolvedPublishParameterMap -PublishInvocation $publishInvocation -WorkflowParams $workflowParams
 
         $shouldRun = $PSCmdlet.ShouldProcess($publishInvocation.Target, $releaseOperation)
         if (-not $shouldRun -and -not $WhatIfPreference) {
@@ -28,14 +30,6 @@ function Invoke-NovaRelease {
         $versionResult = Update-NovaModuleVersion @workflowParams
         Invoke-NovaBuild @workflowParams
 
-        $publishParams = @{}
-        foreach ($parameterName in $publishInvocation.Parameters.Keys) {
-            $publishParams[$parameterName] = $publishInvocation.Parameters[$parameterName]
-        }
-
-        foreach ($parameterName in $workflowParams.Keys) {
-            $publishParams[$parameterName] = $workflowParams[$parameterName]
-        }
 
         & $publishInvocation.Action @publishParams
 

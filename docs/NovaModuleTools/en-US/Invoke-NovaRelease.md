@@ -31,9 +31,13 @@ PS> Invoke-NovaRelease [[-PublishOption] <hashtable>] [[-Path] <string>] [-WhatI
 2. Run tests (`Test-NovaBuild`)
 3. Bump version (`Update-NovaModuleVersion`)
 4. Build again to include the updated version
-5. Publish via `Publish-NovaBuiltModule`
+5. Publish through the resolved local-directory or repository publish action
 
 The command changes location to `-Path` for execution and always restores the previous location.
+
+When local release mode is selected, the resolved local publish target is previewed consistently with
+`Publish-NovaModule -Local`. Unlike `Publish-NovaModule -Local`, `Invoke-NovaRelease` does not import the published
+module into the current session after publishing; it returns the version result for automation-friendly release flows.
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
 entire release workflow and resolved publish target without building, testing, versioning, or publishing.
@@ -47,6 +51,7 @@ PS> Invoke-NovaRelease -PublishOption @{ Local = $true }
 ```
 
 Runs a local release flow and publishes to the local module path.
+The command returns the version result and does not reload the published module into the current session.
 
 ### EXAMPLE 2
 
@@ -147,6 +152,9 @@ selected release label, and commit count.
 ## NOTES
 
 If build or tests fail, version bump and publish are not completed.
+
+Use `Publish-NovaModule -Local` when you want a successful local publish to reload the published module into the active
+PowerShell session.
 
 `Invoke-NovaRelease` uses `SupportsShouldProcess`, so `Get-Help Invoke-NovaRelease -Full` surfaces native `-WhatIf`
 and `-Confirm` support.

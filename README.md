@@ -83,8 +83,11 @@ If you are testing local publish behavior:
 ```powershell
 PS> Remove-Module NovaModuleTools -ErrorAction SilentlyContinue
 PS> Publish-NovaModule -Local
-PS> Import-Module ./dist/NovaModuleTools -Force
 ```
+
+`Publish-NovaModule -Local` now copies the module to the resolved local module path and reloads that published copy into
+the active PowerShell session. If your repository workflow needs to switch back to the built `dist/` output afterward,
+re-import `./dist/NovaModuleTools` explicitly.
 
 Useful local helper:
 
@@ -302,6 +305,10 @@ The normal repository workflow is:
 2. `Test-NovaBuild`
 3. ScriptAnalyzer via `scripts/build/Invoke-ScriptAnalyzerCI.ps1`
 4. Optional CI helper flow via `scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
+
+When you test local publish behavior during development, remember that `Publish-NovaModule -Local` reloads the
+published module from the local install directory into the current PowerShell session. Re-import `dist/` if your next
+step depends on the built-but-unpublished output instead.
 
 The CI helper flow also produces JUnit and Cobertura artifacts for external systems.
 

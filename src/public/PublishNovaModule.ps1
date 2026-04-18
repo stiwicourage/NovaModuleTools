@@ -19,6 +19,8 @@ function Publish-NovaModule {
     Write-NovaResolvedLocalPublishTarget -PublishInvocation $publishInvocation
 
     $publishOperation = Get-NovaPublishWorkflowOperation -IsLocal:$publishInvocation.IsLocal
+    $localPublishActivation = Get-NovaLocalPublishActivation -PublishInvocation $publishInvocation
+    $publishParams = Get-NovaResolvedPublishParameterMap -PublishInvocation $publishInvocation -WorkflowParams $workflowParams
 
     $shouldRun = $PSCmdlet.ShouldProcess($publishInvocation.Target, $publishOperation)
     if (-not $shouldRun -and -not $WhatIfPreference) {
@@ -28,20 +30,10 @@ function Publish-NovaModule {
     Invoke-NovaBuild @workflowParams
     Test-NovaBuild @workflowParams
 
-    $publishParams = @{}
-    foreach ($parameterName in $publishInvocation.Parameters.Keys) {
-        $publishParams[$parameterName] = $publishInvocation.Parameters[$parameterName]
-    }
-
-    foreach ($parameterName in $workflowParams.Keys) {
-        $publishParams[$parameterName] = $workflowParams[$parameterName]
-    }
-
     & $publishInvocation.Action @publishParams
 
-    if ($shouldRun -and $publishInvocation.IsLocal) {
-        Write-Verbose 'Module copy to local path complete, Refresh session or import module manually'
+    if ($shouldRun -and $localPublishActivation) {
+        $null = & $localPublishActivation.ImportAction -ProjectName $projectInfo.ProjectName -ManifestPath $localPublishActivation.ManifestPath
+        Write-Verbose "Module copy to local path complete and imported from $( $localPublishActivation.ManifestPath )"
     }
 }
-
-
