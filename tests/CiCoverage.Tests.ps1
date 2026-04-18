@@ -194,4 +194,3 @@ Describe 'CodeScene Cobertura remapping helpers' {
         )
     }
 }
-

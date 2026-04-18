@@ -7,4 +7,3 @@ function Get-AwesomeChoiceOptionList {
 
     return [System.Management.Automation.Host.ChoiceDescription[]]@($choiceList)
 }
-

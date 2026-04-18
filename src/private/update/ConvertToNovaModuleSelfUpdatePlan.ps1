@@ -19,6 +19,3 @@ function ConvertTo-NovaModuleSelfUpdatePlan {
         UsedAllowPrerelease = $PrereleaseTarget.IsPresent
     }
 }
-
-
-

@@ -13,4 +13,3 @@ function Get-NovaModuleProjectTemplatePath {
 
     return Get-ResourceFilePath -FileName $fileName
 }
-

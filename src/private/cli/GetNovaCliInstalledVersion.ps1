@@ -21,4 +21,3 @@ function Get-NovaCliInstalledVersion {
 
     return "$installedVersion-$prereleaseLabel"
 }
-

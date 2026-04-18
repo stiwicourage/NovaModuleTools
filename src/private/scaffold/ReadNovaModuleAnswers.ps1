@@ -15,5 +15,3 @@ function Read-NovaModuleAnswerSet {
 
     return $answer
 }
-
-

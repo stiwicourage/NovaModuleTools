@@ -10,4 +10,3 @@ function Get-NovaUpdateNotificationPreference {
         SettingsPath = Get-NovaUpdateSettingsFilePath
     }
 }
-

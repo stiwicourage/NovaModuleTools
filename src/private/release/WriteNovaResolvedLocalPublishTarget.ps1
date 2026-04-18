@@ -10,4 +10,3 @@ function Write-NovaResolvedLocalPublishTarget {
 
     Write-Verbose "Using $( $PublishInvocation.Target ) as path"
 }
-

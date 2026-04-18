@@ -157,5 +157,3 @@ Use `Get-NovaUpdateNotificationPreference`, `Set-NovaUpdateNotificationPreferenc
 - `Get-NovaUpdateNotificationPreference`
 - `Set-NovaUpdateNotificationPreference`
 - `Invoke-NovaBuild`
-
-

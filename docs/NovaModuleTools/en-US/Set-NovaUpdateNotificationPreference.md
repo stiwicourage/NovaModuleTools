@@ -206,4 +206,3 @@ Use `nova notification` when you want to view the same setting through the CLI s
 
 - `Get-NovaUpdateNotificationPreference`
 - `Invoke-NovaBuild`
-

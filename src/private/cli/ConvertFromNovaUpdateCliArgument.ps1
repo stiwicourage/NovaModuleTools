@@ -11,5 +11,3 @@ function ConvertFrom-NovaUpdateCliArgument {
 
     throw "Unsupported 'nova update' usage. Use 'nova update'."
 }
-
-

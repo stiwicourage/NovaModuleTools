@@ -62,5 +62,3 @@ function Get-NovaModuleQuestionSet {
 
     return $questions
 }
-
-

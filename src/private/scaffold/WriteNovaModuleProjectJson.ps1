@@ -24,4 +24,3 @@ function Write-NovaModuleProjectJson {
     Write-Verbose $jsonData
     $jsonData | ConvertTo-Json -Depth 10 | Out-File $ProjectJsonFile
 }
-

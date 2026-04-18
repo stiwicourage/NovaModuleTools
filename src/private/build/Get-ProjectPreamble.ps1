@@ -30,4 +30,3 @@ function Get-ProjectPreamble {
 
     return @($lines)
 }
-

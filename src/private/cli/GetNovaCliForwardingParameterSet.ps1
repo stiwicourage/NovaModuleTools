@@ -22,5 +22,3 @@ function Get-NovaCliForwardingParameterSet {
 
     return $parameters
 }
-
-

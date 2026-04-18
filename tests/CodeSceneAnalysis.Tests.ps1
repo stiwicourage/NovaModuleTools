@@ -76,5 +76,3 @@ function cs-coverage {
         (Get-Content -LiteralPath $uploadLogPath -Raw) | Should -BeLike "upload --format cobertura --metric line-coverage $coveragePath*"
     }
 }
-
-

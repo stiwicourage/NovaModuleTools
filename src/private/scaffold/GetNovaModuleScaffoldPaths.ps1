@@ -19,5 +19,3 @@ function Get-NovaModuleScaffoldLayout {
         ProjectJsonFile = Join-Path -Path $dirProject -ChildPath 'project.json'
     }
 }
-
-

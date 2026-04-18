@@ -12,4 +12,3 @@ function Copy-NovaCliLauncher {
     Set-NovaCliExecutablePermission -Path $TargetPath
     return $TargetPath
 }
-

@@ -11,4 +11,3 @@ function Copy-NovaExampleProjectTemplate {
         Copy-Item -LiteralPath $item.FullName -Destination $DestinationPath -Recurse -Force -ErrorAction Stop
     }
 }
-

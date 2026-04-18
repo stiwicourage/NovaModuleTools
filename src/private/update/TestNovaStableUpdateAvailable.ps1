@@ -7,4 +7,3 @@ function Test-NovaStableUpdateAvailable {
 
     return $null -ne $StableVersion -and $StableVersion -gt $InstalledVersion
 }
-

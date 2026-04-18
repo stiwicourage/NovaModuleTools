@@ -14,4 +14,3 @@ function Get-NovaInstalledModuleVersionInfo {
         IsPrerelease = -not [string]::IsNullOrWhiteSpace($semanticVersion.PreReleaseLabel)
     }
 }
-

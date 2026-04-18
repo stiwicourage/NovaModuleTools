@@ -42,6 +42,3 @@ function Invoke-NovaRelease {
         Pop-Location
     }
 }
-
-
-

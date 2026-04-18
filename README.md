@@ -95,6 +95,18 @@ preference as the automatic build notifications. When prerelease notifications a
 releases. When prerelease notifications are enabled, self-update may target a prerelease, but it asks for explicit
 confirmation before proceeding.
 
+To compare the current project version with what is installed locally for that same module, use:
+
+```powershell
+PS> nova version
+PS> nova version -Installed
+PS> nova --version
+```
+
+- `nova version` shows the version from the current project's `project.json`
+- `nova version -Installed` shows the locally installed version of the current project/module from the local module path
+- `nova --version` shows the installed `NovaModuleTools` version
+
 ### Reload the built module while iterating
 
 Use the built output during development so you validate the same shape CI uses:

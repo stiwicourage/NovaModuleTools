@@ -23,5 +23,3 @@ function Invoke-NovaBuildUpdateNotification {
 
     Write-NovaAvailableModuleUpdateWarning -CurrentVersion $installedModule.Version -AvailableVersion $lookupResult.Prerelease.Version -Prerelease
 }
-
-

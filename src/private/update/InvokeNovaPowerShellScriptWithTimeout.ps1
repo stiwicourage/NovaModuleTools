@@ -36,4 +36,3 @@ function Invoke-NovaPowerShellScriptWithTimeout {
         $powershell.Dispose()
     }
 }
-

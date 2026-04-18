@@ -21,4 +21,3 @@ function Get-NovaPublishWorkflowOperation {
 
     return "$workflowText to $destinationText"
 }
-

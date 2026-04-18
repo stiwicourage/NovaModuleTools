@@ -126,10 +126,3 @@ Describe 'Invoke-NovaBuild Preamble setting' {
         }
     }
 }
-
-
-
-
-
-
-

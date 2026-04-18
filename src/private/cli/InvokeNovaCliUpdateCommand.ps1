@@ -8,5 +8,3 @@ function Invoke-NovaCliUpdateCommand {
     $options = ConvertFrom-NovaUpdateCliArgument -Arguments $Arguments
     return Update-NovaModuleTool @options @ForwardedParameters
 }
-
-

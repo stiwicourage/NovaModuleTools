@@ -10,4 +10,3 @@ function Get-AwesomePromptResult {
 
     return $Response.Values
 }
-

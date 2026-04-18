@@ -363,11 +363,33 @@ Describe 'Coverage for remaining command and filesystem branches' {
             {Invoke-NovaCli banana} | Should -Throw 'Unknown command: <banana*'
         }
     }
+
+    It 'Invoke-NovaCli version -Installed returns the locally installed version for the current project' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {throw 'should not read project metadata'}
+            Mock Get-NovaInstalledProjectVersion {'AzureDevOpsAgentInstaller 1.2.0'}
+
+            Invoke-NovaCli version -Installed | Should -Be 'AzureDevOpsAgentInstaller 1.2.0'
+            Assert-MockCalled Get-NovaInstalledProjectVersion -Times 1
+            Assert-MockCalled Get-NovaProjectInfo -Times 0 -ParameterFilter {-not $Version}
+        }
+    }
+
+    It 'Invoke-NovaCli version and version -Installed can differ until a local publish updates the installed module' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectName = 'AzureDevOpsAgentInstaller'; Version = '1.12.1'}}
+            Mock Get-NovaInstalledProjectVersion {'AzureDevOpsAgentInstaller 1.12.0'}
+
+            (Invoke-NovaCli version) | Should -Be 'AzureDevOpsAgentInstaller 1.12.1'
+            (Invoke-NovaCli version -Installed) | Should -Be 'AzureDevOpsAgentInstaller 1.12.0'
+        }
+    }
+
+    It 'Invoke-NovaCli version -Installed throws a clear error when the current project is not installed locally' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaInstalledProjectVersion {throw "Local module install not found for AzureDevOpsAgentInstaller. Expected manifest at: /tmp/modules/AzureDevOpsAgentInstaller/AzureDevOpsAgentInstaller.psd1. Run 'nova publish -local' first."}
+
+            {Invoke-NovaCli version -Installed} | Should -Throw "Local module install not found for AzureDevOpsAgentInstaller*nova publish -local*"
+        }
+    }
 }
-
-
-
-
-
-
-

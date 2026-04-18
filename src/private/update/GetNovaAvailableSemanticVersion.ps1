@@ -10,4 +10,3 @@ function Get-NovaAvailableSemanticVersion {
 
     return [semver]$VersionInfo.Version
 }
-

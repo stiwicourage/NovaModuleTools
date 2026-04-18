@@ -18,4 +18,3 @@ function Write-NovaUpdateNotificationPreference {
             ConvertTo-Json |
             Set-Content -LiteralPath $settingsPath -Encoding utf8
 }
-

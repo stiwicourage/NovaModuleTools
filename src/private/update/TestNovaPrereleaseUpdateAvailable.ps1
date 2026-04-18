@@ -18,4 +18,3 @@ function Test-NovaPrereleaseUpdateAvailable {
 
     return $null -eq $StableVersion -or $LookupResult.Prerelease.Version -ne $LookupResult.Stable.Version
 }
-

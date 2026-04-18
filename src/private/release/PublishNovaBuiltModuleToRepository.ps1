@@ -31,4 +31,3 @@ function Publish-NovaBuiltModuleToRepository {
 
     Publish-PSResource @publishParams
 }
-

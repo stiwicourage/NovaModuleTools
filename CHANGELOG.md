@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     self-updating the installed module.
   - Reuses the same stored prerelease preference for both build notifications and self-update eligibility.
   - Requires explicit confirmation before a prerelease self-update proceeds.
+- Add `nova version -Installed` so users can compare the locally installed version of the current project/module with
+  the current project version from `project.json`, while keeping `nova --version` dedicated to the installed
+  NovaModuleTools version.
 
 ### Changed
 
@@ -215,4 +218,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-

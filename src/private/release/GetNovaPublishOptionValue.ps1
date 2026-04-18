@@ -11,4 +11,3 @@ function Get-NovaPublishOptionValue {
 
     return $PublishOption[$Name]
 }
-

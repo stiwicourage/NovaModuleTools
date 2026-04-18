@@ -15,4 +15,3 @@ function Read-AwesomeStandardPrompt {
 
     return Get-AwesomePromptResult -Ask $Ask -Response $response
 }
-

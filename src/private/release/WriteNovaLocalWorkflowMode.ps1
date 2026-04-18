@@ -11,4 +11,3 @@ function Write-NovaLocalWorkflowMode {
 
     Write-Verbose "Using local $WorkflowName mode."
 }
-

@@ -7,4 +7,3 @@ function Format-NovaCliVersionString {
 
     return "$Name $Version"
 }
-

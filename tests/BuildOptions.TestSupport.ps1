@@ -447,4 +447,3 @@ function New-TestProjectWithPreamble {
     Set-Content -LiteralPath (Join-Path $root 'src/private/a/PrivateA.ps1') -Value 'function Invoke-PrivateA { "private" }' -Encoding utf8
     return $root
 }
-

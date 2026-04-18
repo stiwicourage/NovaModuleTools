@@ -20,4 +20,3 @@ function Get-NovaVersionUpdatePlan {
         NewVersion = $newVersion
     }
 }
-
