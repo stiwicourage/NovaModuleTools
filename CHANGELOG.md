@@ -45,12 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
-- Fix `nova --version` so prerelease installs include the installed prerelease label in the reported module version.
-- Fix `nova update` / `Update-NovaModuleTool` so failed `Update-Module` runs stop immediately instead of marking the
-  update as successful and printing the returned plan object.
-- Fix `Test-NovaBuild` so Nova test runs keep color-capable Pester output by removing the unsupported `Plaintext`
-  render mode and preserving the configured/default render mode unless `-OutputRenderMode` is explicitly set to
-  `Auto` or `Ansi`.
 
 ### Documentation
 
