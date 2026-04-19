@@ -9,18 +9,20 @@ Describe 'General Module Control' {
     }
 
     It 'Imports the renamed public commands without the old unapproved-verb warning' {
-        Remove-Module -Name $data.ProjectName -ErrorAction SilentlyContinue
+        Get-Module -Name $data.ProjectName -All | Remove-Module -Force -ErrorAction SilentlyContinue
 
+        $module = Import-Module -Name $data.OutputModuleDir -Force -PassThru
         $importOutput = @(Import-Module -Name $data.OutputModuleDir -Force -Verbose 4>&1)
         $importText = $importOutput -join [Environment]::NewLine
+        $exportedCommandNameList = $module.ExportedCommands.Keys
 
         $importText | Should -Not -Match 'include unapproved verbs'
-        Get-Command -Name New-NovaModulePackage -Module $data.ProjectName -ErrorAction Stop | Should -Not -BeNullOrEmpty
-        Get-Command -Name Deploy-NovaPackage -Module $data.ProjectName -ErrorAction Stop | Should -Not -BeNullOrEmpty
-        Get-Command -Name Initialize-NovaModule -Module $data.ProjectName -ErrorAction Stop | Should -Not -BeNullOrEmpty
-        {Get-Command -Name Pack-NovaModule -Module $data.ProjectName -ErrorAction Stop} | Should -Throw
-        {Get-Command -Name Merge-NovaModule -Module $data.ProjectName -ErrorAction Stop} | Should -Throw
-        {Get-Command -Name Upload-NovaPackage -Module $data.ProjectName -ErrorAction Stop} | Should -Throw
-        {Get-Command -Name New-NovaModule -Module $data.ProjectName -ErrorAction Stop} | Should -Throw
+        $exportedCommandNameList | Should -Contain 'New-NovaModulePackage'
+        $exportedCommandNameList | Should -Contain 'Deploy-NovaPackage'
+        $exportedCommandNameList | Should -Contain 'Initialize-NovaModule'
+        $exportedCommandNameList | Should -Not -Contain 'Pack-NovaModule'
+        $exportedCommandNameList | Should -Not -Contain 'Merge-NovaModule'
+        $exportedCommandNameList | Should -Not -Contain 'Upload-NovaPackage'
+        $exportedCommandNameList | Should -Not -Contain 'New-NovaModule'
     }
 }
