@@ -39,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Package output now supports `Package.Types` with case-insensitive `NuGet`, `Zip`, `.nupkg`, and `.zip` values.
     - Omitting `Package.Types` still defaults packaging to a `.nupkg` artifact.
     - Selecting both `NuGet` and `Zip` creates both package formats in the configured output directory.
+  - Setting `Package.Latest` to `true` also creates a companion `*.latest.*` artifact for each selected package type
+    while keeping the normal versioned file.
     - Package output now uses `Package.OutputDirectory.Path` with `Package.OutputDirectory.Clean` defaulting to `true`.
   - Add `Upload-NovaPackage` and `nova upload` for raw HTTP package uploads that stay separate from PowerShell
     repository publishing.

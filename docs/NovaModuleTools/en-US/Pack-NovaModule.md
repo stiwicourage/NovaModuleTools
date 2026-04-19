@@ -34,11 +34,17 @@ optional `Package` section in `project.json`.
 Use this `project.json` shape when you want to control package types and the package output directory:
 
 ```json
-"Package": {
-"Types": ["NuGet", "Zip"],
-  "OutputDirectory": {
-	"Path": "artifacts/packages",
-	"Clean": true
+{
+  "Package": {
+    "Types": [
+      "NuGet",
+      "Zip"
+    ],
+    "Latest": true,
+    "OutputDirectory": {
+      "Path": "artifacts/packages",
+      "Clean": true
+    }
   }
 }
 ```
@@ -47,6 +53,9 @@ Use this `project.json` shape when you want to control package types and the pac
 `.nupkg` file.
 
 Supported `Package.Types` values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
+
+`Package.Latest` is optional and defaults to `false`. When set to `true`, `Pack-NovaModule` also writes a companion
+`*.latest.*` artifact for each selected package type while keeping the normal versioned file.
 
 `Package.OutputDirectory.Clean` defaults to `true`, which deletes the configured package output directory before a new
 package is created. Set it to `false` when you want to keep existing files in that directory.
@@ -85,12 +94,21 @@ package output directory.
 ### EXAMPLE 4
 
 ```powershell
+PS> Pack-NovaModule
+```
+
+When `Package.Latest` is `true`, the command keeps the normal versioned package file and also writes a companion latest
+file such as `NovaModuleTools.latest.nupkg`.
+
+### EXAMPLE 5
+
+```powershell
 PS> Pack-NovaModule -WhatIf
 ```
 
 Previews the build, test, and package workflow without writing a package artifact.
 
-### EXAMPLE 5
+### EXAMPLE 6
 
 ```powershell
 PS> Pack-NovaModule -Confirm

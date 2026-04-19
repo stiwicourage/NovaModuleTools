@@ -397,6 +397,29 @@ Locale: en-US
         Assert-TestNovaZipPackageArtifactContent -PackagePath $result[1].PackagePath
     }
 
+    It 'New-NovaPackageArtifacts also creates latest-named artifacts when Package.Latest is true' {
+        $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive 'latest-package-project')
+
+        $result = InModuleScope $script:moduleName -Parameters @{
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip') -Latest $true)
+        } {
+            param($ProjectInfo)
+
+            $packageMetadataList = @(Get-NovaPackageMetadataList -ProjectInfo $ProjectInfo)
+            @(New-NovaPackageArtifacts -ProjectInfo $ProjectInfo -PackageMetadataList $packageMetadataList)
+        }
+
+        $result.Type | Should -Be @('NuGet', 'NuGet', 'Zip', 'Zip')
+        $result.Latest | Should -Be @($false, $true, $false, $true)
+        $result.PackageFileName | Should -Be @(
+            'PackageProject.2.3.4.nupkg',
+            'PackageProject.latest.nupkg',
+            'PackageProject.2.3.4.zip',
+            'PackageProject.latest.zip'
+        )
+        @($result.PackagePath | ForEach-Object {Test-Path -LiteralPath $_}) | Should -Be @($true, $true, $true, $true)
+    }
+
     It 'New-NovaPackageArtifact omits schema-optional manifest URI elements when they are not provided' {
         $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive 'package-project-without-optional-manifest-metadata')
         $packagePath = InModuleScope $script:moduleName -Parameters @{

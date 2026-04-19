@@ -48,6 +48,9 @@ artifacts. By default it writes a `.nupkg` to `artifacts/packages/`, and you can
 Use `Package.Types` in `project.json` when you want to switch from the default `NuGet` output to `Zip`, or when you
 want both formats. Supported values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
 
+Set `Package.Latest` to `true` when you also want `nova pack` to create companion latest-named package artifacts such
+as `NovaModuleTools.latest.nupkg` next to the normal versioned files.
+
 Use `nova upload` when you want to push existing package artifacts from the configured package output directory to a raw
 HTTP endpoint. It can upload all matching artifacts for the configured package types, including versioned and `latest`
 files, and it resolves the upload target from `-url`, `Package.RepositoryUrl`, or `Package.Repositories`.

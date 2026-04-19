@@ -3,7 +3,8 @@ function Get-NovaPackageMetadata {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
-        [string]$PackageType
+        [string]$PackageType,
+        [switch]$Latest
     )
 
     $manifest = $ProjectInfo.Manifest
@@ -29,7 +30,7 @@ function Get-NovaPackageMetadata {
     $packageId = "$( $ProjectInfo.Package.Id )".Trim()
     $authors = Get-NovaPackageAuthorList -AuthorValue $ProjectInfo.Package.Authors
     $tags = @(@(Get-NovaManifestValue -Manifest $manifest -Name 'Tags') | Where-Object {-not [string]::IsNullOrWhiteSpace("$_")})
-    $packageFileName = Get-NovaPackageFileName -ProjectInfo $ProjectInfo -PackageId $packageId -PackageType $packageType
+    $packageFileName = Get-NovaPackageFileName -ProjectInfo $ProjectInfo -PackageId $packageId -PackageType $packageType -Latest:$Latest
     $outputDirectory = Get-NovaPackageOutputDirectory -ProjectInfo $ProjectInfo
     $cleanOutputDirectory = [bool]$ProjectInfo.Package.OutputDirectory.Clean
     $contentRoot = if ($packageType -eq 'Zip') {
@@ -41,6 +42,7 @@ function Get-NovaPackageMetadata {
 
     return [pscustomobject]@{
         Type = $packageType
+        Latest = [bool]$Latest
         Id = $packageId
         Version = "$( $ProjectInfo.Version )".Trim()
         Authors = $authors

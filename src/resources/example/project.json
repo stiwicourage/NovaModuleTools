@@ -29,6 +29,7 @@
       "NuGet",
       "Zip"
     ],
+    "Latest": true,
     "OutputDirectory": {
       "Path": "artifacts/packages",
       "Clean": true

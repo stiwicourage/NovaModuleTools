@@ -75,6 +75,9 @@
               "pattern": "^(?:[Nn][Uu][Gg][Ee][Tt]|[Zz][Ii][Pp]|\\.[Nn][Uu][Pp][Kk][Gg]|\\.[Zz][Ii][Pp])$"
             }
           },
+          "Latest": {
+            "type": "boolean"
+          },
           "OutputDirectory": {
             "anyOf": [
               {
