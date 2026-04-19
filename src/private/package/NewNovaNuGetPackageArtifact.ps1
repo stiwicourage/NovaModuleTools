@@ -1,5 +1,5 @@
 function New-NovaNuGetPackageArtifact {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Pack-NovaModule performs the user-facing ShouldProcess confirmation before calling this internal writer.')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Merge-NovaModule performs the user-facing ShouldProcess confirmation before calling this internal writer.')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
@@ -22,4 +22,3 @@ function New-NovaNuGetPackageArtifact {
         }
     }
 }
-

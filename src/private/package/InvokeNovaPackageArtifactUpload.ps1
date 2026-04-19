@@ -1,5 +1,5 @@
 function Invoke-NovaPackageArtifactUpload {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Upload-NovaPackage performs the user-facing ShouldProcess confirmation before calling this internal helper.')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Deploy-NovaPackage performs the user-facing ShouldProcess confirmation before calling this internal helper.')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][pscustomobject]$UploadArtifact
@@ -39,4 +39,3 @@ function Invoke-NovaPackageArtifactUpload {
         StatusCode = Get-NovaPackageUploadStatusCode -Response $response
     }
 }
-

@@ -46,11 +46,11 @@ Routes the `nova` CLI experience through a single PowerShell command entrypoint.
 
 Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
 
-### `PS> Pack-NovaModule`
+### `PS> Merge-NovaModule`
 
 Builds, tests, and packages the current project as one or more configured package artifacts.
 
-### `PS> Upload-NovaPackage`
+### `PS> Deploy-NovaPackage`
 
 Uploads generated package artifacts to a raw HTTP endpoint by using generic package upload settings.
 
@@ -63,7 +63,7 @@ Runs the project's Pester test workflow using settings from `project.json`.
 Updates the installed `NovaModuleTools` module by using the stored prerelease preference that also controls whether
 prerelease self-updates are eligible. The compatibility alias `Update-NovaModuleTools` is also available.
 
-### `PS> New-NovaModule`
+### `PS> Initialize-NovaModule`
 
 Creates a new NovaModuleTools project scaffold through an interactive prompt flow.
 

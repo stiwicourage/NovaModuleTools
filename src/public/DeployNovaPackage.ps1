@@ -1,5 +1,4 @@
-function Upload-NovaPackage {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '', Justification = 'Upload is the intentional public command name for raw package delivery in the Nova command model.')]
+function Deploy-NovaPackage {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [string[]]$PackagePath,
@@ -30,3 +29,4 @@ function Upload-NovaPackage {
         return $uploadResultList
     }
 }
+

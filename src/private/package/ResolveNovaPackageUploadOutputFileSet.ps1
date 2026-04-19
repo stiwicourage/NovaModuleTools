@@ -15,7 +15,7 @@ function Resolve-NovaPackageUploadOutputFileSet {
     )
 
     if ($matchingFileList.Count -eq 0) {
-        throw "Package file not found for package type '$PackageType' in '$OutputDirectory'. Expected pattern: $searchPattern. Run Pack-NovaModule first or provide -PackagePath."
+        throw "Package file not found for package type '$PackageType' in '$OutputDirectory'. Expected pattern: $searchPattern. Run Merge-NovaModule first or provide -PackagePath."
     }
 
     return @(
@@ -28,4 +28,3 @@ function Resolve-NovaPackageUploadOutputFileSet {
     }
     )
 }
-

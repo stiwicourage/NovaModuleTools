@@ -135,7 +135,7 @@
                 <h2>Project and scaffold commands</h2>
                 <div class="command-card-grid">
                     <article class="command-card">
-                        <h3><code>New-NovaModule</code> / <code>nova init</code></h3>
+                        <h3><code>Initialize-NovaModule</code> / <code>nova init</code></h3>
                         <p>Create a new project scaffold. Use <code>-Example</code> when you want a complete working
                             sample instead of the minimal starter layout.</p>
                         <ul class="plain-list">
@@ -145,7 +145,7 @@
                                 positional paths are intentionally rejected
                             </li>
                         </ul>
-                        <pre><code>New-NovaModule -Path ~/Work
+                        <pre><code>Initialize-NovaModule -Path ~/Work
 nova init -Example -Path ~/Work</code></pre>
                         <p><a class="text-link" href="./getting-started.html">See the scaffold tutorial</a></p>
                     </article>
@@ -215,7 +215,7 @@ nova test -WhatIf</code></pre>
                 <h2>Packaging and delivery commands</h2>
                 <div class="command-card-grid">
                     <article class="command-card">
-                        <h3><code>Pack-NovaModule</code> / <code>nova pack</code></h3>
+                        <h3><code>Merge-NovaModule</code> / <code>nova merge</code></h3>
                         <p>Build, test, and package the module. By default it creates a <code>.nupkg</code> in <code>artifacts/packages/</code>.
                             Use <code>Package.Types</code> and related settings to customize the output.</p>
                         <ul class="plain-list">
@@ -224,13 +224,13 @@ nova test -WhatIf</code></pre>
                                 <code>Package.OutputDirectory</code></li>
                             <li><strong>Output:</strong> one object per generated artifact</li>
                         </ul>
-                        <pre><code>Pack-NovaModule
-nova pack</code></pre>
+                        <pre><code>Merge-NovaModule
+nova merge</code></pre>
                         <p><a class="text-link" href="./packaging-and-delivery.html#pack">See packaging details</a></p>
                     </article>
 
                     <article class="command-card">
-                        <h3><code>Upload-NovaPackage</code> / <code>nova upload</code></h3>
+                        <h3><code>Deploy-NovaPackage</code> / <code>nova deploy</code></h3>
                         <p>Upload existing package artifacts to a raw HTTP endpoint. This command does not build, test,
                             or package anything first.</p>
                         <ul class="plain-list">
@@ -244,8 +244,8 @@ nova pack</code></pre>
                                 <code>latest</code> artifact it resolves
                             </li>
                         </ul>
-                        <pre><code>Upload-NovaPackage -Repository LocalNexus
-nova upload -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN</code></pre>
+                        <pre><code>Deploy-NovaPackage -Repository LocalNexus
+nova deploy -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN</code></pre>
                         <p><a class="text-link" href="./packaging-and-delivery.html#upload">See raw upload details</a>
                         </p>
                     </article>

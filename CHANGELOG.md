@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   from zsh or bash.
 - Add optional `Preamble` support in `project.json` to write module-level setup lines at the top of generated `.psm1`
   files.
-- Add `New-NovaModule -Example` and `nova init -Example` to scaffold a full working project from the packaged example
+- Add `Initialize-NovaModule -Example` and `nova init -Example` to scaffold a full working project from the packaged
+  example
   resources.
     - Runs the normal init flow
     - Applies the metadata entered during init to the generated `project.json`
@@ -33,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `nova version -Installed` so users can compare the locally installed version of the current project/module with
   the current project version from `project.json`, while keeping `nova --version` dedicated to the installed
   NovaModuleTools version.
-- Add `Pack-NovaModule` and `nova pack` so projects can build, test, and package the built module output as a `.nupkg`
+- Add `Merge-NovaModule` and `nova merge` so projects can build, test, and package the built module output as a `.nupkg`
   artifact by using generic metadata from `project.json`, including repositories whose test runs reload or remove
   `NovaModuleTools` before the final package step.
     - Package output now supports `Package.Types` with case-insensitive `NuGet`, `Zip`, `.nupkg`, and `.zip` values.
@@ -42,19 +43,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Setting `Package.Latest` to `true` also creates a companion `*.latest.*` artifact for each selected package type
     while keeping the normal versioned file.
     - Package output now uses `Package.OutputDirectory.Path` with `Package.OutputDirectory.Clean` defaulting to `true`.
-  - Add `Upload-NovaPackage` and `nova upload` for raw HTTP package uploads that stay separate from PowerShell
+  - Add `Deploy-NovaPackage` and `nova deploy` for raw HTTP package uploads that stay separate from PowerShell
     repository publishing.
       - Package upload resolves `-Url`, `Package.RepositoryUrl`, or named `Package.Repositories` targets and can merge
     generic headers/auth settings.
   - Package upload now discovers all matching artifacts for the selected package types, including versioned and
     `latest` files in the configured package output directory.
-    - `nova pack` and `Pack-NovaModule` no longer depend on a separate `Package.Enabled` switch.
+      - `nova merge` and `Merge-NovaModule` no longer depend on a separate `Package.Enabled` switch.
 
 ### Changed
 
 - Change the project to a Nova command model, replacing the previous mixed MT/Nova workflow.
     - All public commands are now Nova commands, and the `nova` CLI/Powershell alias is the primary entry point for all
       operations.
+- **BREAKING CHANGE**: Rename the public Nova packaging, raw deployment, and scaffold cmdlets to approved verbs.
+    - `Pack-NovaModule` → `Merge-NovaModule`
+    - `Upload-NovaPackage` → `Deploy-NovaPackage`
+    - `New-NovaModule` → `Initialize-NovaModule`
+    - CLI users must now use `nova merge` and `nova deploy`; `nova init` is unchanged.
+    - No compatibility aliases are exported for the retired cmdlet names or CLI subcommands.
 - Change `CopyResourcesToModuleRoot` to the canonical project setting name while keeping the default value `false`.
 - Change `Publish-NovaModule -Local` and `nova publish -local` so a successful local publish also reloads the published
   module from the local install path into the active PowerShell session.
@@ -63,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
-- Fix `Pack-NovaModule` and `nova pack` so schema-optional `Manifest` metadata such as `ProjectUri`, `ReleaseNotes`,
+- Fix `Merge-NovaModule` and `nova merge` so schema-optional `Manifest` metadata such as `ProjectUri`, `ReleaseNotes`,
   `LicenseUri`, and `Tags` are omitted cleanly instead of causing packaging failures when they are not present.
 
 ### Documentation
@@ -96,7 +103,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nova command model and CLI entrypoint:
     - New root command: `nova`
     - New public commands: `Get-NovaProjectInfo`, `Invoke-NovaBuild`, `Invoke-NovaCli`, `Invoke-NovaRelease`,
-      `New-NovaModule`, `Publish-NovaModule`, `Test-NovaBuild`, `Update-NovaModuleVersion`
+      `Initialize-NovaModule`, `Publish-NovaModule`, `Test-NovaBuild`, `Update-NovaModuleVersion`
 - Release orchestration helpers for command routing, version label detection from commits, and publish flow support.
 - New test coverage in `tests/NovaCommandModel.Tests.ps1` for Nova command routing and release flow behavior.
 - New GitHub workflow: Dependency Review (`.github/workflows/dependency-review.yml`).
@@ -140,7 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Added support for classes directory inside src
-- New-NovaModule generates classes directory during fresh project
+- Initialize-NovaModule generates classes directory during fresh project
 - `classes` directory should include `.ps1` files which contain enums and classes
 
 ### Fixed

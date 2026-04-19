@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
     <title>NovaModuleTools — Package, upload, publish, and release PowerShell modules</title>
-    <meta content="Learn when to use Pack-NovaModule, Upload-NovaPackage, Publish-NovaModule, and Invoke-NovaRelease, with examples for package creation, raw upload, PowerShell repository publish, and release orchestration."
+    <meta content="Learn when to use Merge-NovaModule, Deploy-NovaPackage, Publish-NovaModule, and Invoke-NovaRelease, with examples for package creation, raw upload, PowerShell repository publish, and release orchestration."
           name="description">
     <meta content="index,follow,max-image-preview:large" name="robots">
     <meta content="#0b1020" name="theme-color">
@@ -98,7 +98,7 @@
                         </thead>
                         <tbody>
                         <tr>
-                            <td><code>Pack-NovaModule</code> / <code>nova pack</code></td>
+                            <td><code>Merge-NovaModule</code> / <code>nova merge</code></td>
                             <td>Builds, tests, and creates package artifacts such as <code>.nupkg</code> and
                                 <code>.zip</code>.
                             </td>
@@ -106,7 +106,7 @@
                             <td>You need artifacts in <code>artifacts/packages/</code>.</td>
                         </tr>
                         <tr>
-                            <td><code>Upload-NovaPackage</code> / <code>nova upload</code></td>
+                            <td><code>Deploy-NovaPackage</code> / <code>nova deploy</code></td>
                             <td>Uploads existing artifacts to a raw HTTP endpoint.</td>
                             <td>Does not build, test, or create the package first.</td>
                             <td>You already have artifacts and need to push them to Nexus, Artifactory, or another raw
@@ -122,7 +122,7 @@
                         <tr>
                             <td><code>Invoke-NovaRelease</code> / <code>nova release</code></td>
                             <td>Builds, tests, bumps the version, rebuilds, and then publishes.</td>
-                            <td>Does not replace <code>Pack-NovaModule</code> or raw upload as a generic artifact
+                            <td>Does not replace <code>Merge-NovaModule</code> or raw upload as a generic artifact
                                 workflow.
                             </td>
                             <td>You want one orchestrated release command instead of separate steps.</td>
@@ -132,7 +132,7 @@
                 </div>
                 <div class="notice notice--warning">
                     <strong>Most confusion comes from this difference:</strong>
-                    <p><code>Pack-NovaModule</code> creates files. <code>Upload-NovaPackage</code> sends those files to
+                    <p><code>Merge-NovaModule</code> creates files. <code>Deploy-NovaPackage</code> sends those files to
                         a raw endpoint. <code>Publish-NovaModule</code> publishes the module itself to a PowerShell
                         repository. <code>Invoke-NovaRelease</code> coordinates versioning plus publishing.</p>
                 </div>
@@ -140,7 +140,8 @@
 
             <section class="content-section" id="pack">
                 <h2>Create package artifacts</h2>
-                <p>Use <code>Pack-NovaModule</code> or <code>nova pack</code> when you want a package artifact generated
+                <p>Use <code>Merge-NovaModule</code> or <code>nova merge</code> when you want a package artifact
+                    generated
                     from the built module output.</p>
                 <h3>What happens</h3>
                 <ol class="plain-list plain-list--ordered">
@@ -151,8 +152,8 @@
                     </li>
                 </ol>
                 <h3>Common examples</h3>
-                <pre><code>Pack-NovaModule
-nova pack</code></pre>
+                <pre><code>Merge-NovaModule
+nova merge</code></pre>
                 <p>This creates a <code>.nupkg</code> by default when <code>Package.Types</code> is omitted.</p>
                 <pre><code>{
   "Package": {
@@ -190,23 +191,23 @@ MyModule.latest.zip</code></pre>
 
             <section class="content-section" id="upload">
                 <h2>Upload package artifacts to a raw endpoint</h2>
-                <p>Use <code>Upload-NovaPackage</code> or <code>nova upload</code> when you already have package files
+                <p>Use <code>Deploy-NovaPackage</code> or <code>nova deploy</code> when you already have package files
                     and you need to push them to a raw HTTP endpoint.</p>
                 <div class="notice">
                     <strong>Upload works on existing files only.</strong>
-                    <p>If you have not run <code>Pack-NovaModule</code> yet, upload has nothing to send unless you
+                    <p>If you have not run <code>Merge-NovaModule</code> yet, upload has nothing to send unless you
                         explicitly point it at existing package files with <code>-PackagePath</code>.</p>
                 </div>
                 <h3>Common ways to target artifacts</h3>
-                <pre><code>Upload-NovaPackage -Repository LocalNexus
-nova upload -repository LocalNexus</code></pre>
+                <pre><code>Deploy-NovaPackage -Repository LocalNexus
+nova deploy -repository LocalNexus</code></pre>
                 <p>Use a named repository from <code>Package.Repositories</code>.</p>
-                <pre><code>Upload-NovaPackage -Url 'https://packages.example/raw/' -Token $env:NOVA_PACKAGE_TOKEN
-nova upload -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN</code></pre>
+                <pre><code>Deploy-NovaPackage -Url 'https://packages.example/raw/' -Token $env:NOVA_PACKAGE_TOKEN
+nova deploy -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN</code></pre>
                 <p>Use a direct URL when CI or a one-off script already knows the endpoint.</p>
-                <pre><code>Upload-NovaPackage -PackageType Zip -Repository LocalNexus</code></pre>
+                <pre><code>Deploy-NovaPackage -PackageType Zip -Repository LocalNexus</code></pre>
                 <p>Filter to only one package type.</p>
-                <pre><code>Upload-NovaPackage -PackagePath @(
+                <pre><code>Deploy-NovaPackage -PackagePath @(
   'artifacts/packages/MyModule.2.0.0.zip',
   'artifacts/packages/MyModule.latest.zip'
 ) -Url 'https://packages.example/raw/releases/'</code></pre>

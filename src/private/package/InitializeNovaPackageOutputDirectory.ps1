@@ -1,5 +1,5 @@
 function Initialize-NovaPackageOutputDirectory {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Pack-NovaModule performs the user-facing ShouldProcess confirmation before calling this internal preparation helper.')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Merge-NovaModule performs the user-facing ShouldProcess confirmation before calling this internal preparation helper.')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
@@ -19,4 +19,3 @@ function Initialize-NovaPackageOutputDirectory {
         $null = New-Item -ItemType Directory -Path $PackageMetadata.OutputDirectory -Force
     }
 }
-

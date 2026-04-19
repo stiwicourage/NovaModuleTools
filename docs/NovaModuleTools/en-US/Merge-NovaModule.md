@@ -6,10 +6,10 @@ Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 04/19/2026
 PlatyPS schema version: 2024-05-01
-title: Pack-NovaModule
+title: Merge-NovaModule
 ---
 
-# Pack-NovaModule
+# Merge-NovaModule
 
 ## SYNOPSIS
 
@@ -20,12 +20,12 @@ Builds, tests, and packages the current project as one or more configured packag
 ### __AllParameterSets
 
 ```powershell
-PS> Pack-NovaModule [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Merge-NovaModule [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-`Pack-NovaModule` runs the normal NovaModuleTools build and test flow, then packages the built module output from
+`Merge-NovaModule` runs the normal NovaModuleTools build and test flow, then packages the built module output from
 `dist/<ProjectName>/` into the package formats requested by `Package.Types`.
 
 The package is written to `artifacts/packages/` by default. You can override generic package metadata through the
@@ -49,12 +49,12 @@ Use this `project.json` shape when you want to control package types and the pac
 }
 ```
 
-`Package.Types` is optional. When it is missing, empty, or null, `Pack-NovaModule` defaults to `NuGet` and creates a
+`Package.Types` is optional. When it is missing, empty, or null, `Merge-NovaModule` defaults to `NuGet` and creates a
 `.nupkg` file.
 
 Supported `Package.Types` values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
 
-`Package.Latest` is optional and defaults to `false`. When set to `true`, `Pack-NovaModule` also writes a companion
+`Package.Latest` is optional and defaults to `false`. When set to `true`, `Merge-NovaModule` also writes a companion
 `*.latest.*` artifact for each selected package type while keeping the normal versioned file.
 
 `Package.OutputDirectory.Clean` defaults to `true`, which deletes the configured package output directory before a new
@@ -68,7 +68,7 @@ PowerShell Gallery.
 ### EXAMPLE 1
 
 ```powershell
-PS> Pack-NovaModule
+PS> Merge-NovaModule
 ```
 
 Builds the project, runs `Test-NovaBuild`, cleans `artifacts/packages/` by default, and writes a new `.nupkg` there
@@ -77,7 +77,7 @@ when `Package.Types` is omitted or resolves to `NuGet`.
 ### EXAMPLE 2
 
 ```powershell
-PS> nova pack
+PS> nova merge
 ```
 
 Runs the same packaging workflow through the `nova` CLI.
@@ -85,7 +85,7 @@ Runs the same packaging workflow through the `nova` CLI.
 ### EXAMPLE 3
 
 ```powershell
-PS> Pack-NovaModule
+PS> Merge-NovaModule
 ```
 
 When `Package.Types` is `@('NuGet', 'Zip')`, the command writes both `*.nupkg` and `*.zip` artifacts to the configured
@@ -94,7 +94,7 @@ package output directory.
 ### EXAMPLE 4
 
 ```powershell
-PS> Pack-NovaModule
+PS> Merge-NovaModule
 ```
 
 When `Package.Latest` is `true`, the command keeps the normal versioned package file and also writes a companion latest
@@ -103,7 +103,7 @@ file such as `NovaModuleTools.latest.nupkg`.
 ### EXAMPLE 5
 
 ```powershell
-PS> Pack-NovaModule -WhatIf
+PS> Merge-NovaModule -WhatIf
 ```
 
 Previews the build, test, and package workflow without writing a package artifact.
@@ -111,7 +111,7 @@ Previews the build, test, and package workflow without writing a package artifac
 ### EXAMPLE 6
 
 ```powershell
-PS> Pack-NovaModule -Confirm
+PS> Merge-NovaModule -Confirm
 ```
 
 Prompts before the package artifact is created.
@@ -196,10 +196,10 @@ Package metadata reuses values from `project.json` when possible, including:
 - `Manifest.LicenseUri`
 
 `Manifest.Tags`, `Manifest.ProjectUri`, `Manifest.ReleaseNotes`, and `Manifest.LicenseUri` are optional. When they are
-missing, `Pack-NovaModule` omits the matching package metadata fields instead of treating them as required.
+missing, `Merge-NovaModule` omits the matching package metadata fields instead of treating them as required.
 
 Use the top-level `Package` section only for generic packaging overrides such as package type selection, output
-directory, or package file name. `Pack-NovaModule` always allows packaging when you invoke it; there is no separate
+directory, or package file name. `Merge-NovaModule` always allows packaging when you invoke it; there is no separate
 `Package.Enabled` switch.
 
 ## RELATED LINKS

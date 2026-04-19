@@ -12,6 +12,10 @@ function Invoke-NovaCli {
 
     $Arguments = ConvertTo-NovaCliArgumentArray -BoundParameters $PSBoundParameters -Arguments $Arguments
 
+    if (Test-NovaCliHelpRequest -Arguments $Arguments) {
+        return Get-NovaCliCommandHelp -Command $Command
+    }
+
     switch ($Command) {
         'info' {
             return Get-NovaProjectInfo @commonParameters
@@ -25,19 +29,14 @@ function Invoke-NovaCli {
         'test' {
             return Test-NovaBuild @mutatingCommonParameters
         }
-        'pack' {
-            return Pack-NovaModule @mutatingCommonParameters
+        'merge' {
+            return Merge-NovaModule @mutatingCommonParameters
         }
-        'upload' {
-            return Invoke-NovaCliUploadCommand -Arguments $Arguments -ForwardedParameters $mutatingCommonParameters
+        'deploy' {
+            return Invoke-NovaCliDeployCommand -Arguments $Arguments -ForwardedParameters $mutatingCommonParameters
         }
         'init' {
-            if ($WhatIfPreference) {
-                throw "The 'nova init' CLI command does not support -WhatIf. Run 'nova init' or 'nova init -Path <path>' without -WhatIf."
-            }
-
-            $options = ConvertFrom-NovaInitCliArgument -Arguments $Arguments
-            return New-NovaModule @options @mutatingCommonParameters
+            return Invoke-NovaCliInitCommand -Arguments $Arguments -ForwardedParameters $mutatingCommonParameters -WhatIfEnabled:$WhatIfPreference
         }
         'bump' {
             return Update-NovaModuleVersion @mutatingCommonParameters

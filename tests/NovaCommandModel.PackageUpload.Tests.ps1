@@ -55,7 +55,7 @@ BeforeAll {
 }
 
 Describe 'Nova command model - package upload behavior' {
-    It 'Upload-NovaPackage uploads the specified package file to the specified raw URL' {
+    It 'Deploy-NovaPackage uploads the specified package file to the specified raw URL' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'explicit-upload')
         $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
 
@@ -68,7 +68,7 @@ Describe 'Nova command model - package upload behavior' {
             Mock Get-NovaProjectInfo {$ProjectInfo}
             Mock Invoke-WebRequest {[pscustomobject]@{StatusCode = 201}}
 
-            $result = @(Upload-NovaPackage -PackagePath $PackagePath -Url 'https://packages.example/raw/')
+            $result = @(Deploy-NovaPackage -PackagePath $PackagePath -Url 'https://packages.example/raw/')
 
             $result.Count | Should -Be 1
             $result[0].UploadUrl | Should -Be 'https://packages.example/raw/PackageProject.2.3.4.zip'
@@ -81,7 +81,7 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
-    It 'Upload-NovaPackage resolves the default package file from the package output directory when not explicitly provided' {
+    It 'Deploy-NovaPackage resolves the default package file from the package output directory when not explicitly provided' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'default-upload-file')
         $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
 
@@ -94,14 +94,14 @@ Describe 'Nova command model - package upload behavior' {
             Mock Get-NovaProjectInfo {$ProjectInfo}
             Mock Invoke-WebRequest {[pscustomobject]@{StatusCode = 200}}
 
-            $result = @(Upload-NovaPackage -Url 'https://packages.example/raw/')
+            $result = @(Deploy-NovaPackage -Url 'https://packages.example/raw/')
 
             $result.PackagePath | Should -Be @($PackagePath)
             Assert-MockCalled Invoke-WebRequest -Times 1 -ParameterFilter {$InFile -eq $PackagePath}
         }
     }
 
-    It 'Upload-NovaPackage resolves the target URL from project package repository settings when not explicitly provided' {
+    It 'Deploy-NovaPackage resolves the target URL from project package repository settings when not explicitly provided' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'repository-upload-url')
         $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
         $repositoryList = @(
@@ -120,7 +120,7 @@ Describe 'Nova command model - package upload behavior' {
             Mock Get-NovaProjectInfo {$ProjectInfo}
             Mock Invoke-WebRequest {[pscustomobject]@{StatusCode = 200}}
 
-            $result = @(Upload-NovaPackage -Repository 'localnexus')
+            $result = @(Deploy-NovaPackage -Repository 'localnexus')
 
             $result[0].UploadUrl | Should -Be 'https://packages.example/raw/com/acme/PackageProject.2.3.4.zip'
             Assert-MockCalled Invoke-WebRequest -Times 1 -ParameterFilter {
@@ -130,7 +130,7 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
-    It 'Upload-NovaPackage handles the current package model when multiple artifacts may exist' {
+    It 'Deploy-NovaPackage handles the current package model when multiple artifacts may exist' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'multi-artifact-upload')
         $expectedPackagePathList = @(
             New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.nupkg'
@@ -148,7 +148,7 @@ Describe 'Nova command model - package upload behavior' {
             Mock Get-NovaProjectInfo {$ProjectInfo}
             Mock Invoke-WebRequest {[pscustomobject]@{StatusCode = 200}}
 
-            $result = @(Upload-NovaPackage -Url 'https://packages.example/raw/')
+            $result = @(Deploy-NovaPackage -Url 'https://packages.example/raw/')
 
             $result.Count | Should -Be 4
             @($result.PackagePath | Sort-Object) | Should -Be @($ExpectedPackagePathList | Sort-Object)
@@ -157,7 +157,7 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
-    It 'Upload-NovaPackage fails with a clear message when the package file is missing' {
+    It 'Deploy-NovaPackage fails with a clear message when the package file is missing' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'missing-package-file')
 
         InModuleScope $script:moduleName -Parameters @{
@@ -167,11 +167,11 @@ Describe 'Nova command model - package upload behavior' {
 
             Mock Get-NovaProjectInfo {$ProjectInfo}
 
-            {Upload-NovaPackage -PackagePath (Join-Path $ProjectInfo.ProjectRoot 'missing.zip') -Url 'https://packages.example/raw/'} | Should -Throw 'Package file not found:*'
+            {Deploy-NovaPackage -PackagePath (Join-Path $ProjectInfo.ProjectRoot 'missing.zip') -Url 'https://packages.example/raw/'} | Should -Throw 'Package file not found:*'
         }
     }
 
-    It 'Upload-NovaPackage fails with a clear message when <Name>' -ForEach @(
+    It 'Deploy-NovaPackage fails with a clear message when <Name>' -ForEach @(
         @{
             Name = 'the upload target URL is missing'
             ProjectRootName = 'missing-upload-url'
@@ -179,7 +179,7 @@ Describe 'Nova command model - package upload behavior' {
             Invoke = {
                 param($PackagePath)
 
-                Upload-NovaPackage -PackagePath $PackagePath
+                Deploy-NovaPackage -PackagePath $PackagePath
             }
         }
         @{
@@ -189,7 +189,7 @@ Describe 'Nova command model - package upload behavior' {
             Invoke = {
                 param($PackagePath)
 
-                Upload-NovaPackage -PackagePath $PackagePath -PackageType NuGet -Url 'https://packages.example/raw/'
+                Deploy-NovaPackage -PackagePath $PackagePath -PackageType NuGet -Url 'https://packages.example/raw/'
             }
         }
     ) {
@@ -210,7 +210,7 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
-    It 'Upload-NovaPackage includes expected headers and auth when configured' {
+    It 'Deploy-NovaPackage includes expected headers and auth when configured' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'upload-headers-and-auth')
         $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
         $repositoryList = @(
@@ -236,7 +236,7 @@ Describe 'Nova command model - package upload behavior' {
                 Mock Get-NovaProjectInfo {$ProjectInfo}
                 Mock Invoke-WebRequest {[pscustomobject]@{StatusCode = 200}}
 
-                $result = @(Upload-NovaPackage -Repository RawRepo)
+                $result = @(Deploy-NovaPackage -Repository RawRepo)
 
                 $result.Count | Should -Be 1
                 Assert-MockCalled Invoke-WebRequest -Times 1 -ParameterFilter {
@@ -251,7 +251,7 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
-    It 'Upload-NovaPackage supports WhatIf and does not upload when previewing' {
+    It 'Deploy-NovaPackage supports WhatIf and does not upload when previewing' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'upload-whatif')
         $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
 
@@ -264,14 +264,14 @@ Describe 'Nova command model - package upload behavior' {
             Mock Get-NovaProjectInfo {$ProjectInfo}
             Mock Invoke-WebRequest {throw 'should not upload during WhatIf'}
 
-            $result = Upload-NovaPackage -PackagePath $PackagePath -Url 'https://packages.example/raw/' -WhatIf
+            $result = Deploy-NovaPackage -PackagePath $PackagePath -Url 'https://packages.example/raw/' -WhatIf
 
             $result | Should -BeNullOrEmpty
             Assert-MockCalled Invoke-WebRequest -Times 0
         }
     }
 
-    It 'Publish-NovaModule repository behavior remains unchanged and does not route through Upload-NovaPackage' {
+    It 'Publish-NovaModule repository behavior remains unchanged and does not route through Deploy-NovaPackage' {
         InModuleScope $script:moduleName {
             $publishAction = {
                 param($ProjectInfo, $Repository, $ApiKey)
@@ -306,13 +306,12 @@ Describe 'Nova command model - package upload behavior' {
             Mock Invoke-NovaBuild {}
             Mock Test-NovaBuild {}
             Mock Publish-NovaBuiltModuleToRepository {}
-            Mock Upload-NovaPackage {throw 'should not upload'}
+            Mock Deploy-NovaPackage {throw 'should not upload'}
 
             {Publish-NovaModule -Repository PSGallery -ApiKey key123 -Confirm:$false} | Should -Not -Throw
 
             Assert-MockCalled Publish-NovaBuiltModuleToRepository -Times 1 -ParameterFilter {$Repository -eq 'PSGallery' -and $ApiKey -eq 'key123'}
-            Assert-MockCalled Upload-NovaPackage -Times 0
+            Assert-MockCalled Deploy-NovaPackage -Times 0
         }
     }
 }
-

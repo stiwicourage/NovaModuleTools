@@ -318,7 +318,7 @@ Describe 'Coverage gaps for scaffold internals' {
         }
     }
 
-    It 'New-NovaModule creates a scaffolded project when confirmed' {
+    It 'Initialize-NovaModule creates a scaffolded project when confirmed' {
         InModuleScope $script:moduleName {
             $answer = @{
                 ProjectName = 'NovaScaffold'
@@ -333,7 +333,7 @@ Describe 'Coverage gaps for scaffold internals' {
             Mock Write-Message {}
             Mock New-InitiateGitRepo {}
 
-            New-NovaModule -Path $TestDrive -Confirm:$false
+            Initialize-NovaModule -Path $TestDrive -Confirm:$false
 
             $projectRoot = Join-Path $TestDrive 'NovaScaffold'
             Test-Path -LiteralPath (Join-Path $projectRoot 'project.json') | Should -BeTrue
@@ -342,7 +342,7 @@ Describe 'Coverage gaps for scaffold internals' {
         }
     }
 
-    It 'New-NovaModule -Example creates the packaged example scaffold without asking about Pester' {
+    It 'Initialize-NovaModule -Example creates the packaged example scaffold without asking about Pester' {
         InModuleScope $script:moduleName {
             $answer = @{
                 ProjectName = 'NovaExampleScaffold'
@@ -356,7 +356,7 @@ Describe 'Coverage gaps for scaffold internals' {
             Mock Write-Message {}
             Mock New-InitiateGitRepo {}
 
-            New-NovaModule -Path $TestDrive -Example -Confirm:$false
+            Initialize-NovaModule -Path $TestDrive -Example -Confirm:$false
 
             $projectRoot = Join-Path $TestDrive 'NovaExampleScaffold'
             $project = Get-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Raw | ConvertFrom-Json -AsHashtable
@@ -376,7 +376,7 @@ Describe 'Coverage gaps for scaffold internals' {
         }
     }
 
-    It 'New-NovaModule reports invalid paths and skips initialization on WhatIf' {
+    It 'Initialize-NovaModule reports invalid paths and skips initialization on WhatIf' {
         InModuleScope $script:moduleName {
             Mock Test-Path {$false}
             Mock Get-NovaModuleQuestionSet {@{ProjectName = @{}}}
@@ -390,7 +390,7 @@ Describe 'Coverage gaps for scaffold internals' {
             Mock Initialize-NovaModuleScaffold {}
             Mock Write-NovaModuleProjectJson {}
 
-            {New-NovaModule -Path '/tmp/does-not-exist' -WhatIf} | Should -Throw 'Not a valid path*'
+            {Initialize-NovaModule -Path '/tmp/does-not-exist' -WhatIf} | Should -Throw 'Not a valid path*'
 
             Assert-MockCalled Initialize-NovaModuleScaffold -Times 0
             Assert-MockCalled Write-NovaModuleProjectJson -Times 0

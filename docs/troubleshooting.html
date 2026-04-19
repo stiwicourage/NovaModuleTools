@@ -180,11 +180,11 @@ nova --help</code></pre>
 
             <section class="content-section" id="upload-target">
                 <h2>Upload target URL is missing</h2>
-                <p><strong>Likely cause:</strong> you ran <code>Upload-NovaPackage</code> without <code>-Url</code> and
+                <p><strong>Likely cause:</strong> you ran <code>Deploy-NovaPackage</code> without <code>-Url</code> and
                     without package or repository upload settings that resolve to a target URL.</p>
                 <p><strong>Fix:</strong> either pass <code>-Url</code> directly or configure
                     <code>Package.RepositoryUrl</code> or <code>Package.Repositories[].Url</code>.</p>
-                <pre><code>Upload-NovaPackage -Url 'https://packages.example/raw/'
+                <pre><code>Deploy-NovaPackage -Url 'https://packages.example/raw/'
 
 # or in project.json
 {
@@ -236,12 +236,12 @@ nova --help</code></pre>
 
             <section class="content-section" id="wrong-command">
                 <h2>I expected publish, but I only created a package</h2>
-                <p><strong>Likely cause:</strong> you used <code>Pack-NovaModule</code> when you actually wanted <code>Upload-NovaPackage</code>,
+                <p><strong>Likely cause:</strong> you used <code>Merge-NovaModule</code> when you actually wanted <code>Deploy-NovaPackage</code>,
                     <code>Publish-NovaModule</code>, or <code>Invoke-NovaRelease</code>.</p>
                 <p><strong>Fix:</strong> choose the command based on the outcome you need:</p>
                 <ul class="plain-list">
-                    <li><strong>package file only:</strong> <code>Pack-NovaModule</code></li>
-                    <li><strong>raw HTTP upload:</strong> <code>Upload-NovaPackage</code></li>
+                    <li><strong>package file only:</strong> <code>Merge-NovaModule</code></li>
+                    <li><strong>raw HTTP upload:</strong> <code>Deploy-NovaPackage</code></li>
                     <li><strong>PowerShell repository publish:</strong> <code>Publish-NovaModule</code></li>
                     <li><strong>version bump + publish orchestration:</strong> <code>Invoke-NovaRelease</code></li>
                 </ul>
