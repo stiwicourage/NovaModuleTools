@@ -50,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
+- Fix `Pack-NovaModule` and `nova pack` so schema-optional `Manifest` metadata such as `ProjectUri`, `ReleaseNotes`,
+  `LicenseUri`, and `Tags` are omitted cleanly instead of causing packaging failures when they are not present.
 
 ### Documentation
 

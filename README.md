@@ -184,6 +184,9 @@ PS> nova pack
 
 The package command runs the normal build and test flow, then writes the generated package to
 `artifacts/packages/` by default by using the generic `Package` section in `project.json` when present.
+When `Manifest.Tags`, `Manifest.ProjectUri`, `Manifest.ReleaseNotes`, or `Manifest.LicenseUri` are present, Nova
+copies them into the generated package metadata; when they are omitted, packaging still succeeds and the matching
+package metadata fields are simply left out.
 
 Use this `project.json` shape when you want to control the package output directory:
 

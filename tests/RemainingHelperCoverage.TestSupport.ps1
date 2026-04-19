@@ -61,29 +61,36 @@ function Initialize-TestNovaPackageProjectLayout {
 function Get-TestNovaPackageProjectInfo {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][string]$ProjectRoot,
-        [Parameter(Mandatory)][string]$OutputModuleDir,
-        [Parameter(Mandatory)][string]$PackageOutputDir,
-        [Parameter(Mandatory)][bool]$CleanOutputDirectory
+        [Parameter(Mandatory)][pscustomobject]$Layout,
+        [Parameter(Mandatory)][bool]$CleanOutputDirectory,
+        [switch]$OmitOptionalManifestMetadata
     )
+
+    $manifest = [ordered]@{
+        Author = 'Author One'
+        Tags = @('Nova', 'Packaging')
+        ProjectUri = 'https://example.test/project'
+        ReleaseNotes = 'https://example.test/release-notes'
+        LicenseUri = 'https://example.test/license'
+    }
+    if ($OmitOptionalManifestMetadata) {
+        $null = $manifest.Remove('Tags')
+        $null = $manifest.Remove('ProjectUri')
+        $null = $manifest.Remove('ReleaseNotes')
+        $null = $manifest.Remove('LicenseUri')
+    }
 
     return [pscustomobject]@{
         ProjectName = 'PackageProject'
         Version = '2.3.4'
-        ProjectRoot = $ProjectRoot
-        OutputModuleDir = $OutputModuleDir
+        ProjectRoot = $Layout.ProjectRoot
+        OutputModuleDir = $Layout.OutputModuleDir
         Description = 'Package project description'
-        Manifest = [ordered]@{
-            Author = 'Author One'
-            Tags = @('Nova', 'Packaging')
-            ProjectUri = 'https://example.test/project'
-            ReleaseNotes = 'https://example.test/release-notes'
-            LicenseUri = 'https://example.test/license'
-        }
+        Manifest = $manifest
         Package = [ordered]@{
             Id = 'PackageProject'
             OutputDirectory = [ordered]@{
-                Path = $PackageOutputDir
+                Path = $Layout.PackageOutputDir
                 Clean = $CleanOutputDirectory
             }
             PackageFileName = 'PackageProject.2.3.4.nupkg'

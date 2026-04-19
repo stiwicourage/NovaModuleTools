@@ -287,7 +287,7 @@ Locale: en-US
         $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive 'package-project')
 
         $packagePath = InModuleScope $script:moduleName -Parameters @{
-            ProjectInfo = (Get-TestNovaPackageProjectInfo -ProjectRoot $layout.ProjectRoot -OutputModuleDir $layout.OutputModuleDir -PackageOutputDir $layout.PackageOutputDir -CleanOutputDirectory $true)
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true)
         } {
             param($ProjectInfo)
             $packageMetadata = Get-NovaPackageMetadata -ProjectInfo $projectInfo
@@ -311,7 +311,7 @@ Locale: en-US
         'stale' | Set-Content -LiteralPath $staleFilePath -Encoding utf8
 
         InModuleScope $script:moduleName -Parameters @{
-            ProjectInfo = (Get-TestNovaPackageProjectInfo -ProjectRoot $layout.ProjectRoot -OutputModuleDir $layout.OutputModuleDir -PackageOutputDir $layout.PackageOutputDir -CleanOutputDirectory $_.CleanOutputDirectory)
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $_.CleanOutputDirectory)
         } {
             param($ProjectInfo)
 
@@ -320,5 +320,22 @@ Locale: en-US
         }
 
         Test-Path -LiteralPath $staleFilePath | Should -Be $_.ExpectedStaleFile
+    }
+
+    It 'New-NovaPackageArtifact omits schema-optional manifest URI elements when they are not provided' {
+        $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive 'package-project-without-optional-manifest-metadata')
+        $packagePath = InModuleScope $script:moduleName -Parameters @{
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true -OmitOptionalManifestMetadata)
+        } {
+            param($ProjectInfo)
+
+            $packageMetadata = Get-NovaPackageMetadata -ProjectInfo $ProjectInfo
+            (New-NovaPackageNuspecXml -PackageMetadata $packageMetadata)
+        }
+
+        $packagePath | Should -Not -Match '<projectUrl>'
+        $packagePath | Should -Not -Match '<releaseNotes>'
+        $packagePath | Should -Not -Match '<licenseUrl>'
+        $packagePath | Should -Not -Match '<tags>'
     }
 }

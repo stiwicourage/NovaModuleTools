@@ -160,6 +160,9 @@ Package metadata reuses values from `project.json` when possible, including:
 - `Manifest.ReleaseNotes`
 - `Manifest.LicenseUri`
 
+`Manifest.Tags`, `Manifest.ProjectUri`, `Manifest.ReleaseNotes`, and `Manifest.LicenseUri` are optional. When they are
+missing, `Pack-NovaModule` omits the matching package metadata fields instead of treating them as required.
+
 Use the top-level `Package` section only for generic packaging overrides such as output directory or package file name.
 `Pack-NovaModule` always allows packaging when you invoke it; there is no separate `Package.Enabled` switch.
 

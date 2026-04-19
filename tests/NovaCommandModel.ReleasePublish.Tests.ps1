@@ -477,6 +477,37 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
+    It 'Get-NovaPackageMetadata keeps schema-optional manifest fields empty when they are omitted' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'PackageProject'
+                Version = '2.3.4'
+                ProjectRoot = '/tmp/project'
+                Description = 'Top-level description'
+                Manifest = [ordered]@{
+                    Author = 'Author One'
+                }
+                Package = [ordered]@{
+                    Id = 'PackageProject'
+                    OutputDirectory = [ordered]@{
+                        Path = '/tmp/project/artifacts/packages'
+                        Clean = $true
+                    }
+                    PackageFileName = 'PackageProject.2.3.4.nupkg'
+                    Authors = 'Author One'
+                    Description = 'Top-level description'
+                }
+            }
+
+            $result = Get-NovaPackageMetadata -ProjectInfo $projectInfo
+
+            $result.Tags | Should -Be @()
+            $result.ProjectUrl | Should -Be ''
+            $result.ReleaseNotes | Should -Be ''
+            $result.LicenseUrl | Should -Be ''
+        }
+    }
+
     It 'Pack-NovaModule fails with a clear message when package metadata is missing' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {
