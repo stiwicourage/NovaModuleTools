@@ -73,6 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   usage, license, and release notes pages.
 - Refresh public `Get-Help` content and examples for the Nova commands, including CLI usage and preview/confirmation
   scenarios.
+- Refresh `.github/pull_request_template.md` so pull requests now call out the current Nova workflows, CI/release
+  validation paths, documentation split, and example-project follow-up expectations.
 
 ### Removed
 
