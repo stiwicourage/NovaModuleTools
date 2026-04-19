@@ -75,7 +75,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Improve page spacing, card padding, code-block separation, and responsive layout density so the documentation is
       easier to scan and less visually cramped.
 - Change the public docs header navigation from a dense link row to a menu button so readers can choose pages from a
-  simpler page picker across the site.
+  simpler page picker across the site while keeping the License page available from legal/footer links instead of the
+  primary menu.
 - Refresh public `Get-Help` content and examples for the Nova commands, including CLI usage and preview/confirmation
   scenarios.
 - Refresh `.github/pull_request_template.md` so pull requests now call out the current Nova workflows, CI/release
