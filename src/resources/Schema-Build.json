@@ -96,6 +96,9 @@
           "PackageFileName": {
             "type": "string"
           },
+          "FileNamePattern": {
+            "type": "string"
+          },
           "Authors": {
             "anyOf": [
               {
@@ -111,6 +114,79 @@
           },
           "Description": {
             "type": "string"
+          },
+          "RawRepositoryUrl": {
+            "type": "string"
+          },
+          "UploadPath": {
+            "type": "string"
+          },
+          "Headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "Auth": {
+            "type": "object",
+            "properties": {
+              "HeaderName": {
+                "type": "string"
+              },
+              "Scheme": {
+                "type": "string"
+              },
+              "Token": {
+                "type": "string"
+              },
+              "TokenEnvironmentVariable": {
+                "type": "string"
+              }
+            }
+          },
+          "Repositories": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "Name": {
+                  "type": "string"
+                },
+                "Url": {
+                  "type": "string"
+                },
+                "UploadPath": {
+                  "type": "string"
+                },
+                "Headers": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "Auth": {
+                  "type": "object",
+                  "properties": {
+                    "HeaderName": {
+                      "type": "string"
+                    },
+                    "Scheme": {
+                      "type": "string"
+                    },
+                    "Token": {
+                      "type": "string"
+                    },
+                    "TokenEnvironmentVariable": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "required": [
+                "Name",
+                "Url"
+              ]
+            }
           }
         }
         }

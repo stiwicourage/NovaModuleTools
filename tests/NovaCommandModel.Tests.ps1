@@ -128,9 +128,66 @@ Describe 'Nova command model - project, help, and build behavior' {
             $projectInfo.Package.Types | Should -Be @('NuGet')
             $projectInfo.Package.OutputDirectory.Path | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts/packages'))
             $projectInfo.Package.OutputDirectory.Clean | Should -BeTrue
+            $projectInfo.Package.FileNamePattern | Should -Be 'DefaultPackageProject*'
             $projectInfo.Package.PackageFileName | Should -Be 'DefaultPackageProject.0.0.1.nupkg'
             $projectInfo.Package.Authors | Should -Be 'Test Author'
             $projectInfo.Package.Description | Should -Be 'Default package option test'
+            $projectInfo.Package.Repositories | Should -Be @()
+            $projectInfo.Package.Headers.Count | Should -Be 0
+            $projectInfo.Package.Auth.Count | Should -Be 0
+        }
+    }
+
+    It 'Get-NovaProjectInfo preserves optional generic package upload settings' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'package-upload-settings'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            $projectJson = ([ordered]@{
+                ProjectName = 'PackageUploadProject'
+                Description = 'Package upload settings test'
+                Version = '0.0.6'
+                Manifest = [ordered]@{
+                    Author = 'Test Author'
+                    PowerShellHostVersion = '7.4'
+                    GUID = '99999999-9999-9999-9999-999999999999'
+                }
+                Package = [ordered]@{
+                    Types = @('Zip')
+                    RawRepositoryUrl = 'https://packages.example/raw/'
+                    UploadPath = 'releases/latest'
+                    FileNamePattern = 'PackageUploadProject*'
+                    Headers = [ordered]@{
+                        'X-Trace-Id' = 'trace-123'
+                    }
+                    Auth = [ordered]@{
+                        HeaderName = 'X-Api-Key'
+                        TokenEnvironmentVariable = 'PACKAGE_UPLOAD_TOKEN'
+                    }
+                    Repositories = @(
+                        [ordered]@{
+                            Name = 'LocalNexus'
+                            Url = 'https://packages.example/raw/local/'
+                            UploadPath = 'modules'
+                        }
+                    )
+                }
+            } | ConvertTo-Json -Depth 6)
+
+            Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
+
+            $projectInfo = Get-NovaProjectInfo -Path $projectRoot
+
+            $projectInfo.Package.Types | Should -Be @('Zip')
+            $projectInfo.Package.RawRepositoryUrl | Should -Be 'https://packages.example/raw/'
+            $projectInfo.Package.UploadPath | Should -Be 'releases/latest'
+            $projectInfo.Package.FileNamePattern | Should -Be 'PackageUploadProject*'
+            $projectInfo.Package.Headers['X-Trace-Id'] | Should -Be 'trace-123'
+            $projectInfo.Package.Auth.HeaderName | Should -Be 'X-Api-Key'
+            $projectInfo.Package.Auth.TokenEnvironmentVariable | Should -Be 'PACKAGE_UPLOAD_TOKEN'
+            $projectInfo.Package.Repositories.Count | Should -Be 1
+            $projectInfo.Package.Repositories[0].Name | Should -Be 'LocalNexus'
+            $projectInfo.Package.Repositories[0].Url | Should -Be 'https://packages.example/raw/local/'
+            $projectInfo.Package.Repositories[0].UploadPath | Should -Be 'modules'
         }
     }
 
@@ -318,6 +375,7 @@ Describe 'Nova command model - project, help, and build behavior' {
         foreach ($commandName in @(
             'Invoke-NovaBuild',
             'Pack-NovaModule',
+            'Upload-NovaPackage',
             'Test-NovaBuild',
             'Publish-NovaModule',
             'Invoke-NovaRelease',

@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Runs the normal init flow
     - Applies the metadata entered during init to the generated `project.json`
     - Always creates the example test structure without prompting to enable tests
+  - The packaged example `project.json` now keeps the current project, manifest, package, and raw-upload settings
+    visible in one place so users can see the full supported configuration surface
 - Add native `-WhatIf` and `-Confirm` support across mutating Nova commands, including routed CLI support for
   `build`, `test`, `bump`, `publish`, and `release`.
 - Add `Update-NovaModuleTool` (with `Update-NovaModuleTools` as a compatibility alias) and `nova update` for
@@ -38,6 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Omitting `Package.Types` still defaults packaging to a `.nupkg` artifact.
     - Selecting both `NuGet` and `Zip` creates both package formats in the configured output directory.
     - Package output now uses `Package.OutputDirectory.Path` with `Package.OutputDirectory.Clean` defaulting to `true`.
+  - Add `Upload-NovaPackage` and `nova upload` for raw HTTP package uploads that stay separate from PowerShell
+    repository publishing.
+  - Package upload resolves `-Url`, `Package.RawRepositoryUrl`, or named `Package.Repositories` targets and can merge
+    generic headers/auth settings.
+  - Package upload now discovers all matching artifacts for the selected package types, including versioned and
+    `latest` files in the configured package output directory.
     - `nova pack` and `Pack-NovaModule` no longer depend on a separate `Package.Enabled` switch.
 
 ### Changed

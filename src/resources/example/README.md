@@ -8,14 +8,18 @@ It is meant to help a new user understand the smallest useful setup that can:
 - include a private helper
 - include a resource file
 - run Pester tests against the built module
+- show the full `project.json` configuration surface in one place
 
 ## What is in this example?
 
 - `project.json` – the NovaModuleTools project definition
     - includes a `Preamble` example that is written at the top of the built `.psm1`
-  - includes a `Package` example so new users can see where generic package settings belong
-  - intentionally keeps common top-level settings visible, including `CopyResourcesToModuleRoot`, so new users can
-    see the available configuration keys in one place
+  - includes all current top-level project settings, including `CopyResourcesToModuleRoot`, `BuildRecursiveFolders`,
+    `SetSourcePath`, and `FailOnDuplicateFunctionNames`
+  - includes optional manifest metadata such as `ProjectUri`, `ReleaseNotes`, and `LicenseUri`
+  - includes a complete `Package` example so new users can see where package metadata and generic raw upload settings
+    belong
+  - includes named `Package.Repositories` examples for `Upload-NovaPackage` / `nova upload`
 - `src/public/Get-ExampleGreeting.ps1` – a public function exported from the built module
 - `src/private/Get-ExampleConfiguration.ps1` – a private helper used by the public function
 - `src/resources/greeting-config.json` – a resource file bundled into the built module
@@ -71,8 +75,25 @@ After `Pack-NovaModule`, the package artifact is written to:
 src/resources/example/artifacts/packages/
 ```
 
-The example project sets `Package.Types` to `NuGet`, so the generated file is a `.nupkg` by default. Change
-`Package.Types` to `['Zip']` when you only want a `.zip`, or `['NuGet', 'Zip']` when you want both package formats.
+The example project sets `Package.Types` to `['NuGet', 'Zip']`, so packing generates both a `.nupkg` and a `.zip` in
+the package output directory.
+
+The example `project.json` also shows how to configure raw package upload settings such as:
+
+- `Package.RawRepositoryUrl`
+- `Package.UploadPath`
+- `Package.Headers`
+- `Package.Auth`
+- `Package.Repositories`
+
+That means you can inspect the example configuration and then adapt it for either:
+
+```powershell
+PS> Upload-NovaPackage -Repository ExampleRaw
+PS> nova upload -repository ExampleRaw
+```
+
+For real projects, prefer environment-variable-backed tokens over committing literal secrets in source control.
 
 You can then import it and call:
 
@@ -95,6 +116,7 @@ This example is intentionally small, but it demonstrates the most important Nova
 - how public and private functions are combined into one module
 - how resource files are copied and used at runtime
 - how tests should import the built module from `dist/`
+- where the current package, packaging, and raw-upload configuration keys live in `project.json`
 
 If you want a new project scaffold, use `New-NovaModule` (`nova init`). If you want a concrete project you can inspect,
 run, or copy through `nova init -Example`, use this example folder.

@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
-    <title>NovaModuleTools — PowerShell module build, test, package, bump, and release workflows</title>
-    <meta content="Follow the normal NovaModuleTools workflow for scaffolding, building, testing, packaging, versioning, and releasing a PowerShell module."
+    <title>NovaModuleTools — PowerShell module build, test, package, upload, bump, and release workflows</title>
+    <meta content="Follow the normal NovaModuleTools workflow for scaffolding, building, testing, packaging, uploading, versioning, and releasing a PowerShell module."
           name="description">
     <meta content="index,follow,max-image-preview:large" name="robots">
     <meta content="#0b1020" name="theme-color">
@@ -12,16 +12,16 @@
     <link href="./assets/icon.png" rel="icon" type="image/png">
     <link href="./assets/icon.png" rel="apple-touch-icon">
     <meta content="article" property="og:type">
-    <meta content="NovaModuleTools — PowerShell module build, test, package, bump, and release workflows"
+    <meta content="NovaModuleTools — PowerShell module build, test, package, upload, bump, and release workflows"
           property="og:title">
-    <meta content="Learn the standard NovaModuleTools workflow for scaffolding, building, testing, packaging, versioning, and releasing a PowerShell module."
+    <meta content="Learn the standard NovaModuleTools workflow for scaffolding, building, testing, packaging, uploading, versioning, and releasing a PowerShell module."
           property="og:description">
     <meta content="https://www.novamoduletools.com/core-workflows.html" property="og:url">
     <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
     <meta content="summary" name="twitter:card">
-    <meta content="NovaModuleTools — PowerShell module build, test, package, bump, and release workflows"
+    <meta content="NovaModuleTools — PowerShell module build, test, package, upload, bump, and release workflows"
           name="twitter:title">
-    <meta content="Learn the standard NovaModuleTools workflow for scaffolding, building, testing, packaging, versioning, and releasing a PowerShell module."
+    <meta content="Learn the standard NovaModuleTools workflow for scaffolding, building, testing, packaging, uploading, versioning, and releasing a PowerShell module."
           name="twitter:description">
     <link href="./assets/site.css" rel="stylesheet">
     <script type="application/ld+json">
@@ -29,7 +29,7 @@
             "@context": "https://schema.org",
             "@type": "TechArticle",
             "headline": "NovaModuleTools Core Workflows",
-            "description": "Build, test, package, bump, and release PowerShell modules with NovaModuleTools.",
+            "description": "Build, test, package, upload, bump, and release PowerShell modules with NovaModuleTools.",
             "url": "https://www.novamoduletools.com/core-workflows.html"
         }
     </script>
@@ -54,7 +54,7 @@
 <main class="page-shell">
     <section class="guide-hero">
         <p class="eyebrow">Core workflows</p>
-        <h1>Use NovaModuleTools as a repeatable scaffold → build → test → pack → bump → release flow</h1>
+        <h1>Use NovaModuleTools as a repeatable scaffold → build → test → pack → upload → bump → release flow</h1>
         <p class="lead">This guide explains the normal command sequence for day-to-day PowerShell module work.</p>
     </section>
 
@@ -66,6 +66,7 @@
                 <li><a href="#build">Build</a></li>
                 <li><a href="#test">Test</a></li>
                 <li><a href="#pack">Pack</a></li>
+                <li><a href="#upload">Upload</a></li>
                 <li><a href="#bump">Version bump</a></li>
                 <li><a href="#release">Release</a></li>
             </ul>
@@ -111,6 +112,20 @@ nova init -Example</code></pre>
                     <code>Package.OutputDirectory.Path</code> for the target folder and
                     <code>Package.OutputDirectory.Clean</code> when you want to keep or clear existing package files
                     before a new package is created.</p>
+            </section>
+
+            <section class="content-section" id="upload">
+                <h2>Upload generated package artifacts</h2>
+                <pre><code>nova upload -repository LocalNexus
+nova upload -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN</code></pre>
+                <p><code>nova upload</code> pushes existing package artifacts from the configured package output
+                    directory to
+                    a raw HTTP endpoint. It does not rebuild, retest, or recreate the package first.</p>
+                <p>Use <code>-repository</code> when the destination is defined under <code>Package.Repositories</code>
+                    in
+                    <code>project.json</code>, or use <code>-url</code> for direct CI/CD uploads. When multiple matching
+                    package files exist for the selected type, Nova uploads all of them, including versioned and
+                    <code>latest</code> artifacts.</p>
             </section>
 
             <section class="content-section" id="bump">

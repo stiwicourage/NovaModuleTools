@@ -82,6 +82,8 @@ Describe 'Nova command model - standalone CLI behavior' {
             ($helpText -match 'notification\s+Show or change prerelease self-update eligibility') | Should -BeTrue
             $helpText | Should -Match 'version\s+Show the current project version, or use -Installed for the locally installed project module version'
             $helpText | Should -Match 'pack\s+Build, test, and package the module as configured package artifact\(s\)'
+            $helpText | Should -Match 'nova upload -repository LocalNexus'
+            $helpText | Should -Not -Match 'nova upload package'
             $versionText | Should -Be "$script:moduleName $installedModuleVersion"
             $projectVersionText | Should -Be $expectedProjectVersionText
         }
@@ -286,6 +288,7 @@ function Invoke-TestCliVerbose {
             $result | Should -Match 'nova version -Installed'
             $result | Should -Match '--version\s+Show the installed NovaModuleTools module name and version'
             $result | Should -Match 'pack\s+Build, test, and package the module as configured package artifact\(s\)'
+            $result | Should -Match 'upload\s+Upload generated package artifact\(s\) to a raw HTTP endpoint'
             $result | Should -Match 'publish\s+Build, test, and publish the module locally or to a repository'
         }
     }
@@ -305,15 +308,51 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Invoke-NovaCli pack forwards WhatIf to Pack-NovaModule' {
-        InModuleScope $script:moduleName {
-            Mock Pack-NovaModule {
+    It 'Invoke-NovaCli <CommandName> forwards WhatIf to the routed command' -ForEach @(
+        @{
+            CommandName = 'pack'
+            RoutedCommand = 'Pack-NovaModule'
+            Arguments = @()
+        }
+        @{
+            CommandName = 'upload'
+            RoutedCommand = 'Upload-NovaPackage'
+            Arguments = @('--url', 'https://packages.example/raw/')
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            Mock $TestCase.RoutedCommand {
                 [pscustomobject]@{WhatIfSeen = $WhatIfPreference}
             }
 
-            $result = Invoke-NovaCli pack -WhatIf
+            $result = Invoke-NovaCli $TestCase.CommandName @($TestCase.Arguments) -WhatIf
 
             $result.WhatIfSeen | Should -BeTrue
+        }
+    }
+
+    It 'Invoke-NovaCli upload routes to Upload-NovaPackage' {
+        InModuleScope $script:moduleName {
+            Mock Upload-NovaPackage {
+                [pscustomobject]@{
+                    Repository = $Repository
+                    Url = $Url
+                    PackageType = $PackageType
+                }
+            }
+
+            $result = Invoke-NovaCli upload --repository LocalRaw --type zip
+
+            $result.Repository | Should -Be 'LocalRaw'
+            $result.PackageType | Should -Be @('zip')
+        }
+    }
+
+    It 'Invoke-NovaCli upload rejects the removed package subcommand token' {
+        InModuleScope $script:moduleName {
+            {Invoke-NovaCli upload package --repository LocalRaw} | Should -Throw 'Unknown argument: package'
         }
     }
 

@@ -28,6 +28,9 @@ function Invoke-NovaCli {
         'pack' {
             return Pack-NovaModule @mutatingCommonParameters
         }
+        'upload' {
+            return Invoke-NovaCliUploadCommand -Arguments $Arguments -ForwardedParameters $mutatingCommonParameters
+        }
         'init' {
             if ($WhatIfPreference) {
                 throw "The 'nova init' CLI command does not support -WhatIf. Run 'nova init' or 'nova init -Path <path>' without -WhatIf."
