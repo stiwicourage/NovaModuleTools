@@ -1,5 +1,5 @@
 function New-NovaPackageArtifact {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Pack-NovaModule performs the user-facing ShouldProcess confirmation before calling this internal helper.')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'New-NovaModulePackage performs the user-facing ShouldProcess confirmation before calling this internal helper.')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
@@ -35,4 +35,3 @@ function New-NovaPackageArtifact {
         SourceModuleDirectory = $ProjectInfo.OutputModuleDir
     }
 }
-

@@ -1,5 +1,4 @@
-function Pack-NovaModule {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '', Justification = 'Pack is the required public workflow verb and matches the nova pack CLI command.')]
+function New-NovaModulePackage {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param()
 
@@ -32,7 +31,7 @@ function Pack-NovaModule {
         return New-NovaPackageArtifacts -ProjectInfo $projectInfo -PackageMetadataList $packageMetadataList
     }
 
-    $packagingModule = Import-Module $moduleContext.Path -Force -DisableNameChecking -PassThru
+    $packagingModule = Import-Module $moduleContext.Path -Force -PassThru
     $packageCreation = {
         param($ProjectInfo, $PackageMetadataList)
 
@@ -41,4 +40,6 @@ function Pack-NovaModule {
 
     return & $packagingModule $packageCreation $projectInfo $packageMetadataList
 }
+
+
 

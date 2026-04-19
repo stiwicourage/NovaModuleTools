@@ -6,10 +6,10 @@ Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 04/14/2026
 PlatyPS schema version: 2024-05-01
-title: New-NovaModule
+title: Initialize-NovaModule
 ---
 
-# New-NovaModule
+# Initialize-NovaModule
 
 ## SYNOPSIS
 
@@ -20,12 +20,12 @@ Creates a new NovaModuleTools project scaffold through an interactive prompt flo
 ### __AllParameterSets
 
 ```powershell
-PS> New-NovaModule [-Path <string>] [-Example] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Initialize-NovaModule [-Path <string>] [-Example] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-`New-NovaModule` creates a new project folder, the standard `src/` layout, and a starter `project.json` file.
+`Initialize-NovaModule` creates a new project folder, the standard `src/` layout, and a starter `project.json` file.
 
 The command collects project details interactively, including the module name, description, version, author, minimum
 PowerShell version, Git initialization, and, for the standard scaffold, optional basic Pester support.
@@ -49,7 +49,7 @@ initializing Git.
 ### EXAMPLE 1
 
 ```powershell
-PS> New-NovaModule -Path ~/Work
+PS> Initialize-NovaModule -Path ~/Work
 ```
 
 Starts the interactive scaffold flow and creates the new module under `~/Work`.
@@ -57,7 +57,7 @@ Starts the interactive scaffold flow and creates the new module under `~/Work`.
 ### EXAMPLE 2
 
 ```powershell
-PS> New-NovaModule -Path ~/Work -WhatIf
+PS> Initialize-NovaModule -Path ~/Work -WhatIf
 ```
 
 Shows what would be created without writing the scaffold.
@@ -65,7 +65,7 @@ Shows what would be created without writing the scaffold.
 ### EXAMPLE 3
 
 ```powershell
-PS> New-NovaModule -Example -Path ~/Work
+PS> Initialize-NovaModule -Example -Path ~/Work
 ```
 
 Creates a new project under `~/Work` from the packaged example template and applies the answers from the interactive
@@ -148,7 +148,8 @@ Generated projects start with NovaModuleTools defaults for recursive discovery, 
 validation. The packaged example scaffold keeps its bundled example source and tests, while still updating prompt-driven
 metadata such as project name, description, version, author, and PowerShell host version.
 
-`New-NovaModule` uses `SupportsShouldProcess`, so `Get-Help New-NovaModule -Full` surfaces native `-WhatIf` and
+`Initialize-NovaModule` uses `SupportsShouldProcess`, so `Get-Help Initialize-NovaModule -Full` surfaces native
+`-WhatIf` and
 `-Confirm` support.
 
 ## RELATED LINKS

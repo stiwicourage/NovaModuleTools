@@ -1,4 +1,4 @@
-function ConvertFrom-NovaUploadCliArgument {
+function ConvertFrom-NovaDeployCliArgument {
     [CmdletBinding()]
     param(
         [string[]]$Arguments
@@ -49,4 +49,5 @@ function ConvertFrom-NovaUploadCliArgument {
 
     return $options
 }
+
 

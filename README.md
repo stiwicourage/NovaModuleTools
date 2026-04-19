@@ -178,8 +178,8 @@ Use the explicit packaging workflow when you want a package artifact for a Nova 
 PowerShell repository:
 
 ```powershell
-PS> Pack-NovaModule
-PS> nova pack
+PS> New-NovaModulePackage
+PS> nova package
 ```
 
 The package command runs the normal build and test flow, then writes the generated package artifacts to
@@ -218,9 +218,9 @@ Use the upload workflow when a Nova project must push existing package artifacts
 PowerShell repository:
 
 ```powershell
-PS> Upload-NovaPackage -Repository LocalNexus
-PS> nova upload -repository LocalNexus
-PS> nova upload -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN
+PS> Deploy-NovaPackage -Repository LocalNexus
+PS> nova deploy -repository LocalNexus
+PS> nova deploy -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN
 ```
 
 Use this `project.json` shape when you want Nova to resolve upload targets from named repositories:
@@ -243,8 +243,8 @@ Use this `project.json` shape when you want Nova to resolve upload targets from 
 }
 ```
 
-- `Upload-NovaPackage` uploads existing package files only; it does not build, test, or create packages.
-- `nova upload` is the CLI entrypoint for the same raw upload workflow.
+- `Deploy-NovaPackage` uploads existing package files only; it does not build, test, or create packages.
+- `nova deploy` is the CLI entrypoint for the same raw upload workflow.
 - `-Url` overrides repository or package-level upload settings and is the simplest CI/CD path.
 - When `-PackagePath` is omitted, Nova resolves package files from `Package.OutputDirectory.Path`.
 - When multiple matching files exist for a selected package type, Nova uploads all of them, including versioned and
@@ -258,7 +258,7 @@ Use this `project.json` shape when you want Nova to resolve upload targets from 
 Run ScriptAnalyzer with the repository helper:
 
 ```powershell
-PS> & ./scripts/build/Invoke-ScriptAnalyzerCI.ps1
+PS> ./scripts/build/Invoke-ScriptAnalyzerCI.ps1
 ```
 
 This writes findings to `artifacts/scriptanalyzer.txt`.
@@ -266,7 +266,7 @@ This writes findings to `artifacts/scriptanalyzer.txt`.
 For CI-parity coverage and report generation, use:
 
 ```powershell
-PS> & ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1
+PS> ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1
 ```
 
 That flow builds the module, runs ScriptAnalyzer, runs the normal test workflow, and emits CI-friendly reports such as:
@@ -330,7 +330,7 @@ Public cmdlets that make up the NovaModuleTools API surface, for example:
 
 - `Invoke-NovaBuild`
 - `Test-NovaBuild`
-- `New-NovaModule`
+- `Initialize-NovaModule`
 - `Update-NovaModuleVersion`
 
 #### `src/private/`

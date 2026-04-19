@@ -1,5 +1,5 @@
 function Clear-NovaPackageOutputDirectory {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Pack-NovaModule performs the user-facing ShouldProcess confirmation before calling this internal cleanup helper.')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'New-NovaModulePackage performs the user-facing ShouldProcess confirmation before calling this internal cleanup helper.')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
@@ -11,4 +11,3 @@ function Clear-NovaPackageOutputDirectory {
         Remove-Item -LiteralPath $OutputDirectory -Recurse -Force
     }
 }
-

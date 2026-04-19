@@ -105,7 +105,8 @@
                 <div class="notice">
                     <strong>Default behavior matters.</strong>
                     <p>You only need to add settings when you want to override the default workflow. For example, if you
-                        never add a <code>Package</code> section, <code>Pack-NovaModule</code> still works and defaults
+                        never add a <code>Package</code> section, <code>New-NovaModulePackage</code> still works and
+                        defaults
                         to a single <code>.nupkg</code> written to <code>artifacts/packages/</code>.</p>
                 </div>
                 <div class="notice notice--warning">
@@ -352,9 +353,11 @@
                 <h2><code>Package</code> settings</h2>
                 <p>The <code>Package</code> section controls two related but different concerns:</p>
                 <ul class="plain-list">
-                    <li><strong>package creation</strong> via <code>Pack-NovaModule</code> / <code>nova pack</code></li>
-                    <li><strong>raw HTTP artifact upload</strong> via <code>Upload-NovaPackage</code> / <code>nova
-                        upload</code></li>
+                    <li><strong>package creation</strong> via <code>New-NovaModulePackage</code> / <code>nova
+                        package</code>
+                    </li>
+                    <li><strong>raw HTTP artifact upload</strong> via <code>Deploy-NovaPackage</code> / <code>nova
+                        deploy</code></li>
                 </ul>
                 <div class="notice">
                     <strong>Keep these concepts separate.</strong>
@@ -401,7 +404,7 @@
                             <td><code>OutputDirectory.Path</code></td>
                             <td><code>artifacts/packages</code></td>
                             <td>Where packages are written.</td>
-                            <td>This is also the default discovery location for <code>Upload-NovaPackage</code>.</td>
+                            <td>This is also the default discovery location for <code>Deploy-NovaPackage</code>.</td>
                         </tr>
                         <tr>
                             <td><code>OutputDirectory.Clean</code></td>

@@ -1,4 +1,4 @@
-function New-NovaModule {
+function Initialize-NovaModule {
     [CmdletBinding(PositionalBinding = $false, SupportsShouldProcess = $true)]
     param (
         [string]$Path = (Get-Location).Path,
@@ -19,3 +19,4 @@ function New-NovaModule {
 
     'Module {0} scaffolding complete' -f $answerSet.ProjectName | Write-Message -color Green
 }
+

@@ -45,7 +45,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                     Disabled = $DisablePrereleaseNotifications.IsPresent
                 }
             }
-            Mock New-NovaModule {
+            Mock Initialize-NovaModule {
                 param([string]$Path, [switch]$Example)
                 if ($Example) {
                     if ( $PSBoundParameters.ContainsKey('Path')) {
@@ -319,5 +319,3 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 }
-
-

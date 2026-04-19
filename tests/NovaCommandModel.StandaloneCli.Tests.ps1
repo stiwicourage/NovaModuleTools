@@ -81,9 +81,9 @@ Describe 'Nova command model - standalone CLI behavior' {
             $helpText | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
             ($helpText -match 'notification\s+Show or change prerelease self-update eligibility') | Should -BeTrue
             $helpText | Should -Match 'version\s+Show the current project version, or use -Installed for the locally installed project module version'
-            $helpText | Should -Match 'pack\s+Build, test, and package the module as configured package artifact\(s\)'
-            $helpText | Should -Match 'nova upload -repository LocalNexus'
-            $helpText | Should -Not -Match 'nova upload package'
+            $helpText | Should -Match 'package\s+Build, test, and package the module as configured package artifact\(s\)'
+            $helpText | Should -Match 'nova deploy -repository LocalNexus'
+            $helpText | Should -Not -Match 'nova deploy package'
             $versionText | Should -Be "$script:moduleName $installedModuleVersion"
             $projectVersionText | Should -Be $expectedProjectVersionText
         }
@@ -287,21 +287,35 @@ function Invoke-TestCliVerbose {
             $result | Should -Match 'version\s+Show the current project version, or use -Installed for the locally installed project module version'
             $result | Should -Match 'nova version -Installed'
             $result | Should -Match '--version\s+Show the installed NovaModuleTools module name and version'
-            $result | Should -Match 'pack\s+Build, test, and package the module as configured package artifact\(s\)'
-            $result | Should -Match 'upload\s+Upload generated package artifact\(s\) to a raw HTTP endpoint'
+            $result | Should -Match 'package\s+Build, test, and package the module as configured package artifact\(s\)'
+            $result | Should -Match 'deploy\s+Upload generated package artifact\(s\) to a raw HTTP endpoint'
             $result | Should -Match 'publish\s+Build, test, and publish the module locally or to a repository'
         }
     }
 
-    It 'Invoke-NovaCli pack routes to Pack-NovaModule' {
+    It 'Invoke-NovaCli <CommandName> --help returns routed command help' -ForEach @(
+        @{CommandName = 'package'; ExpectedPattern = 'New-NovaModulePackage'},
+        @{CommandName = 'deploy'; ExpectedPattern = 'Deploy-NovaPackage'},
+        @{CommandName = 'init'; ExpectedPattern = 'Initialize-NovaModule'}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            $result = Invoke-NovaCli -Command $TestCase.CommandName -Arguments @('--help') | Out-String
+
+            $result | Should -Match $TestCase.ExpectedPattern
+        }
+    }
+
+    It 'Invoke-NovaCli package routes to New-NovaModulePackage' {
         InModuleScope $script:moduleName {
-            Mock Pack-NovaModule {
+            Mock New-NovaModulePackage {
                 @(
                     [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
                 )
             }
 
-            $result = @(Invoke-NovaCli pack)
+            $result = @(Invoke-NovaCli package)
 
             $result.Type | Should -Be @('NuGet')
             $result.PackagePath | Should -Be @('/tmp/artifacts/packages/NovaModuleTools.1.2.3.nupkg')
@@ -310,13 +324,13 @@ function Invoke-TestCliVerbose {
 
     It 'Invoke-NovaCli <CommandName> forwards WhatIf to the routed command' -ForEach @(
         @{
-            CommandName = 'pack'
-            RoutedCommand = 'Pack-NovaModule'
+            CommandName = 'package'
+            RoutedCommand = 'New-NovaModulePackage'
             Arguments = @()
         }
         @{
-            CommandName = 'upload'
-            RoutedCommand = 'Upload-NovaPackage'
+            CommandName = 'deploy'
+            RoutedCommand = 'Deploy-NovaPackage'
             Arguments = @('--url', 'https://packages.example/raw/')
         }
     ) {
@@ -333,9 +347,9 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Invoke-NovaCli upload routes to Upload-NovaPackage' {
+    It 'Invoke-NovaCli deploy routes to Deploy-NovaPackage' {
         InModuleScope $script:moduleName {
-            Mock Upload-NovaPackage {
+            Mock Deploy-NovaPackage {
                 [pscustomobject]@{
                     Repository = $Repository
                     Url = $Url
@@ -343,16 +357,16 @@ function Invoke-TestCliVerbose {
                 }
             }
 
-            $result = Invoke-NovaCli upload --repository LocalRaw --type zip
+            $result = Invoke-NovaCli deploy --repository LocalRaw --type zip
 
             $result.Repository | Should -Be 'LocalRaw'
             $result.PackageType | Should -Be @('zip')
         }
     }
 
-    It 'Invoke-NovaCli upload rejects the removed package subcommand token' {
+    It 'Invoke-NovaCli deploy rejects the removed package subcommand token' {
         InModuleScope $script:moduleName {
-            {Invoke-NovaCli upload package --repository LocalRaw} | Should -Throw 'Unknown argument: package'
+            {Invoke-NovaCli deploy package --repository LocalRaw} | Should -Throw 'Unknown argument: package'
         }
     }
 
@@ -414,9 +428,3 @@ function Invoke-TestCliVerbose {
         }
     }
 }
-
-
-
-
-
-

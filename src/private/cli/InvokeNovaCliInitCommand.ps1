@@ -1,0 +1,16 @@
+function Invoke-NovaCliInitCommand {
+    [CmdletBinding()]
+    param(
+        [string[]]$Arguments,
+        [Parameter(Mandatory)][hashtable]$ForwardedParameters,
+        [switch]$WhatIfEnabled
+    )
+
+    if ($WhatIfEnabled) {
+        throw "The 'nova init' CLI command does not support -WhatIf. Run 'nova init' or 'nova init -Path <path>' without -WhatIf."
+    }
+
+    $options = ConvertFrom-NovaInitCliArgument -Arguments $Arguments
+    return Initialize-NovaModule @options @ForwardedParameters
+}
+

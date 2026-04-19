@@ -1,5 +1,5 @@
 function Invoke-NovaPackageArchiveCreation {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Pack-NovaModule performs the user-facing ShouldProcess confirmation before calling internal archive creation helpers.')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'New-NovaModulePackage performs the user-facing ShouldProcess confirmation before calling internal archive creation helpers.')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$PackagePath,
@@ -17,4 +17,3 @@ function Invoke-NovaPackageArchiveCreation {
         $fileStream.Dispose()
     }
 }
-
