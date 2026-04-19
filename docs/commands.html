@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>NovaModuleTools — Command reference for PowerShell cmdlets and the nova CLI</title>
+    <meta content="Reference for NovaModuleTools commands, including PowerShell cmdlets, nova CLI equivalents, common parameters, and when to use each workflow."
+          name="description">
+    <meta content="index,follow,max-image-preview:large" name="robots">
+    <meta content="#0b1020" name="theme-color">
+    <link href="https://www.novamoduletools.com/commands.html" rel="canonical">
+    <link href="./assets/icon.png" rel="icon" type="image/png">
+    <link href="./assets/icon.png" rel="apple-touch-icon">
+    <meta content="article" property="og:type">
+    <meta content="NovaModuleTools — Command reference for PowerShell cmdlets and the nova CLI" property="og:title">
+    <meta content="Use this reference to choose the right NovaModuleTools command, understand CLI equivalents, and find the key parameters for each workflow."
+          property="og:description">
+    <meta content="https://www.novamoduletools.com/commands.html" property="og:url">
+    <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
+    <meta content="summary" name="twitter:card">
+    <meta content="NovaModuleTools — Command reference for PowerShell cmdlets and the nova CLI" name="twitter:title">
+    <meta content="Use this reference to choose the right NovaModuleTools command, understand CLI equivalents, and find the key parameters for each workflow."
+          name="twitter:description">
+    <link href="./assets/site.css" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            "headline": "NovaModuleTools command reference",
+            "description": "Reference for NovaModuleTools PowerShell cmdlets and nova CLI commands.",
+            "url": "https://www.novamoduletools.com/commands.html"
+        }
+    </script>
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">
+            <img alt="" class="site-brand__icon" src="./assets/icon.png">
+            <span class="site-brand__text">NovaModuleTools</span>
+        </a>
+        <nav aria-label="Primary" class="site-nav">
+            <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+            <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+            <a class="site-nav__link" href="./project-json-reference.html">project.json</a>
+            <a class="site-nav__link site-nav__link--active" href="./commands.html">Commands</a>
+            <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
+            <a class="site-nav__link" href="./versioning-and-updates.html">Versioning &amp; Updates</a>
+            <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+            <a class="site-nav__link" href="./advanced.html">Concepts</a>
+        </nav>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="guide-hero">
+        <p class="eyebrow">Reference</p>
+        <h1>Use the right command the first time</h1>
+        <p class="lead">NovaModuleTools exposes every major workflow as a PowerShell cmdlet and, in most cases, a
+            matching <code>nova</code> command. Use this page to choose the right entrypoint, understand the key
+            parameters, and jump to deeper task guides.</p>
+    </section>
+
+    <section class="content-grid">
+        <aside class="toc-card">
+            <h2>On this page</h2>
+            <ul class="toc-list">
+                <li><a href="#choose-surface">Choose cmdlet vs CLI</a></li>
+                <li><a href="#project-and-scaffold">Project and scaffold commands</a></li>
+                <li><a href="#build-and-test">Build and test commands</a></li>
+                <li><a href="#packaging-and-delivery">Packaging and delivery commands</a></li>
+                <li><a href="#versioning-and-release">Versioning and release commands</a></li>
+                <li><a href="#update-and-preferences">Update and preference commands</a></li>
+            </ul>
+        </aside>
+
+        <div class="guide-content">
+            <section class="content-section" id="choose-surface">
+                <h2>Choose cmdlet vs CLI</h2>
+                <p>Use PowerShell cmdlets when you want scriptable functions, structured output, or direct parameter
+                    names. Use <code>nova</code> when you want a command-line experience that feels consistent across
+                    day-to-day workflows.</p>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Use case</th>
+                            <th>Best entrypoint</th>
+                            <th>Why</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Interactive local development inside <code>pwsh</code></td>
+                            <td><code>nova</code> alias or cmdlets</td>
+                            <td>After you import the module, both are available in the same session.</td>
+                        </tr>
+                        <tr>
+                            <td>Shell use on macOS/Linux</td>
+                            <td><code>nova</code> launcher</td>
+                            <td>Install it once with <code>Install-NovaCli</code> so you can run Nova from zsh or bash.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Reusable scripts and automation</td>
+                            <td>PowerShell cmdlets</td>
+                            <td>Cmdlets are easier to compose and return richer objects in PowerShell.</td>
+                        </tr>
+                        <tr>
+                            <td>Quick manual tasks</td>
+                            <td><code>nova</code></td>
+                            <td>The command names mirror the main workflow: <code>init → build → test → pack → upload →
+                                publish → release</code>.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="tiny-note">Important: <code>nova</code> inside PowerShell is an alias for
+                    <code>Invoke-NovaCli</code>. On macOS/Linux you can also install the standalone launcher with <code>Install-NovaCli</code>.
+                </p>
+            </section>
+
+            <section class="content-section" id="project-and-scaffold">
+                <h2>Project and scaffold commands</h2>
+                <div class="command-card-grid">
+                    <article class="command-card">
+                        <h3><code>New-NovaModule</code> / <code>nova init</code></h3>
+                        <p>Create a new project scaffold. Use <code>-Example</code> when you want a complete working
+                            sample instead of the minimal starter layout.</p>
+                        <ul class="plain-list">
+                            <li><strong>Best for:</strong> creating a new project</li>
+                            <li><strong>Key parameters:</strong> <code>-Path</code>, <code>-Example</code></li>
+                            <li><strong>Important CLI caveat:</strong> use <code>nova init -Path ~/Work</code>;
+                                positional paths are intentionally rejected
+                            </li>
+                        </ul>
+                        <pre><code>New-NovaModule -Path ~/Work
+nova init -Example -Path ~/Work</code></pre>
+                        <p><a class="text-link" href="./getting-started.html">See the scaffold tutorial</a></p>
+                    </article>
+
+                    <article class="command-card">
+                        <h3><code>Get-NovaProjectInfo</code> / <code>nova info</code></h3>
+                        <p>Read the current <code>project.json</code> and return resolved project metadata, defaults,
+                            and important paths such as <code>dist/</code> and <code>tests/</code>.</p>
+                        <ul class="plain-list">
+                            <li><strong>Best for:</strong> scripts, troubleshooting, and understanding resolved paths
+                            </li>
+                            <li><strong>Key parameters:</strong> <code>-Path</code>, <code>-Version</code></li>
+                            <li><strong>Output:</strong> a project object, or just the version string when you use
+                                <code>-Version</code></li>
+                        </ul>
+                        <pre><code>Get-NovaProjectInfo
+Get-NovaProjectInfo -Version
+nova info</code></pre>
+                        <p><a class="text-link" href="./project-json-reference.html">See project.json behavior</a></p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="content-section" id="build-and-test">
+                <h2>Build and test commands</h2>
+                <div class="command-card-grid">
+                    <article class="command-card">
+                        <h3><code>Invoke-NovaBuild</code> / <code>nova build</code></h3>
+                        <p>Build the current project into <code>dist/&lt;ProjectName&gt;</code>, generate the manifest,
+                            generate external help, and copy project resources.</p>
+                        <ul class="plain-list">
+                            <li><strong>Best for:</strong> producing the real module you intend to import, test,
+                                package, or publish
+                            </li>
+                            <li><strong>Key switches:</strong> <code>-WhatIf</code>, <code>-Confirm</code></li>
+                            <li><strong>Notable behavior:</strong> respects <code>SetSourcePath</code>,
+                                <code>Preamble</code>, and duplicate function validation
+                            </li>
+                        </ul>
+                        <pre><code>Invoke-NovaBuild
+nova build -WhatIf</code></pre>
+                        <p><a class="text-link" href="./core-workflows.html#build">See the build workflow</a></p>
+                    </article>
+
+                    <article class="command-card">
+                        <h3><code>Test-NovaBuild</code> / <code>nova test</code></h3>
+                        <p>Run Pester against the current project configuration and write test results to <code>artifacts/TestResults.xml</code>.
+                        </p>
+                        <ul class="plain-list">
+                            <li><strong>Best for:</strong> validating the project test suite from the normal Nova
+                                workflow
+                            </li>
+                            <li><strong>Key parameters:</strong> <code>-TagFilter</code>, <code>-ExcludeTagFilter</code>,
+                                <code>-OutputVerbosity</code>, <code>-OutputRenderMode</code></li>
+                            <li><strong>Notable behavior:</strong> uses <code>BuildRecursiveFolders</code> to decide
+                                nested test discovery
+                            </li>
+                        </ul>
+                        <pre><code>Test-NovaBuild -TagFilter unit,fast
+nova test -WhatIf</code></pre>
+                        <p><a class="text-link" href="./core-workflows.html#test">See the test workflow</a></p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="content-section" id="packaging-and-delivery">
+                <h2>Packaging and delivery commands</h2>
+                <div class="command-card-grid">
+                    <article class="command-card">
+                        <h3><code>Pack-NovaModule</code> / <code>nova pack</code></h3>
+                        <p>Build, test, and package the module. By default it creates a <code>.nupkg</code> in <code>artifacts/packages/</code>.
+                            Use <code>Package.Types</code> and related settings to customize the output.</p>
+                        <ul class="plain-list">
+                            <li><strong>Best for:</strong> creating package artifacts from the built module output</li>
+                            <li><strong>Key settings:</strong> <code>Package.Types</code>, <code>Package.Latest</code>,
+                                <code>Package.OutputDirectory</code></li>
+                            <li><strong>Output:</strong> one object per generated artifact</li>
+                        </ul>
+                        <pre><code>Pack-NovaModule
+nova pack</code></pre>
+                        <p><a class="text-link" href="./packaging-and-delivery.html#pack">See packaging details</a></p>
+                    </article>
+
+                    <article class="command-card">
+                        <h3><code>Upload-NovaPackage</code> / <code>nova upload</code></h3>
+                        <p>Upload existing package artifacts to a raw HTTP endpoint. This command does not build, test,
+                            or package anything first.</p>
+                        <ul class="plain-list">
+                            <li><strong>Best for:</strong> raw package repositories such as Nexus or Artifactory style
+                                endpoints
+                            </li>
+                            <li><strong>Key parameters:</strong> <code>-PackagePath</code>, <code>-PackageType</code>,
+                                <code>-Url</code>, <code>-Repository</code>, dynamic parameters for headers and auth
+                            </li>
+                            <li><strong>Notable behavior:</strong> uploads every matching versioned and
+                                <code>latest</code> artifact it resolves
+                            </li>
+                        </ul>
+                        <pre><code>Upload-NovaPackage -Repository LocalNexus
+nova upload -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN</code></pre>
+                        <p><a class="text-link" href="./packaging-and-delivery.html#upload">See raw upload details</a>
+                        </p>
+                    </article>
+
+                    <article class="command-card">
+                        <h3><code>Publish-NovaModule</code> / <code>nova publish</code></h3>
+                        <p>Build, test, and publish the module either locally or to a registered PowerShell
+                            repository.</p>
+                        <ul class="plain-list">
+                            <li><strong>Best for:</strong> PowerShell repository publishing or validating a local
+                                publish/install cycle
+                            </li>
+                            <li><strong>Key parameters:</strong> <code>-Local</code>, <code>-Repository</code>, <code>-ModuleDirectoryPath</code>,
+                                <code>-ApiKey</code></li>
+                            <li><strong>Notable behavior:</strong> local publish reloads the published module into the
+                                current PowerShell session
+                            </li>
+                        </ul>
+                        <pre><code>Publish-NovaModule -Local
+nova publish -repository PSGallery -apikey $env:PSGALLERY_API</code></pre>
+                        <p><a class="text-link" href="./packaging-and-delivery.html#publish">See publish details</a></p>
+                    </article>
+
+                    <article class="command-card">
+                        <h3><code>Invoke-NovaRelease</code> / <code>nova release</code></h3>
+                        <p>Run the full release flow: build, test, bump version, build again, and then publish.</p>
+                        <ul class="plain-list">
+                            <li><strong>Best for:</strong> an orchestrated release command when you want one workflow
+                                instead of separate steps
+                            </li>
+                            <li><strong>Key parameters:</strong> <code>-PublishOption</code>, <code>-Path</code></li>
+                            <li><strong>Important difference:</strong> local release does not reload the published
+                                module into the session after publishing
+                            </li>
+                        </ul>
+                        <pre><code>Invoke-NovaRelease -PublishOption @{ Local = $true }
+nova release -repository PSGallery -apikey $env:PSGALLERY_API</code></pre>
+                        <p><a class="text-link" href="./packaging-and-delivery.html#release">See release details</a></p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="content-section" id="versioning-and-release">
+                <h2>Versioning and release commands</h2>
+                <div class="command-card-grid">
+                    <article class="command-card">
+                        <h3><code>Update-NovaModuleVersion</code> / <code>nova bump</code></h3>
+                        <p>Read Git history, choose the semantic version label, and update <code>project.json</code>.
+                        </p>
+                        <ul class="plain-list">
+                            <li><strong>Best for:</strong> Git-driven semantic version updates</li>
+                            <li><strong>Key parameter:</strong> <code>-Path</code></li>
+                            <li><strong>Notable behavior:</strong> falls back to a patch bump when the folder is not a
+                                Git repository, but throws when the repository exists and has no commits yet
+                            </li>
+                        </ul>
+                        <pre><code>Update-NovaModuleVersion -WhatIf
+nova bump -Confirm</code></pre>
+                        <p><a class="text-link" href="./versioning-and-updates.html#bump">See versioning rules</a></p>
+                    </article>
+
+                    <article class="command-card">
+                        <h3><code>nova version</code>, <code>nova version -Installed</code>, and <code>nova
+                            --version</code></h3>
+                        <p>These commands answer different questions, so use the one that matches your intent.</p>
+                        <ul class="plain-list">
+                            <li><strong><code>nova version</code>:</strong> current project version from <code>project.json</code>
+                            </li>
+                            <li><strong><code>nova version -Installed</code>:</strong> locally installed version of the
+                                current project/module
+                            </li>
+                            <li><strong><code>nova --version</code>:</strong> installed NovaModuleTools version</li>
+                        </ul>
+                        <pre><code>nova version
+nova version -Installed
+nova --version</code></pre>
+                        <p><a class="text-link" href="./versioning-and-updates.html#version-views">See version view
+                            differences</a></p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="content-section" id="update-and-preferences">
+                <h2>Update and preference commands</h2>
+                <div class="command-card-grid">
+                    <article class="command-card">
+                        <h3><code>Update-NovaModuleTool</code> / <code>Update-NovaModuleTools</code> / <code>nova
+                            update</code></h3>
+                        <p>Self-update the installed NovaModuleTools module by using the stored prerelease
+                            preference.</p>
+                        <ul class="plain-list">
+                            <li><strong>Best for:</strong> keeping NovaModuleTools itself up to date</li>
+                            <li><strong>Key behavior:</strong> stable updates are always eligible; prerelease targets
+                                depend on your stored preference and require explicit confirmation
+                            </li>
+                            <li><strong>Output:</strong> plan/result information, plus a release notes link after
+                                success
+                            </li>
+                        </ul>
+                        <pre><code>Update-NovaModuleTool
+nova update</code></pre>
+                        <p><a class="text-link" href="./versioning-and-updates.html#self-update">See self-update
+                            behavior</a></p>
+                    </article>
+
+                    <article class="command-card">
+                        <h3><code>Get-NovaUpdateNotificationPreference</code>, <code>Set-NovaUpdateNotificationPreference</code>,
+                            and <code>nova notification</code></h3>
+                        <p>Inspect or change whether prerelease self-updates are eligible.</p>
+                        <ul class="plain-list">
+                            <li><strong>Best for:</strong> keeping production systems on stable releases, or opting into
+                                prerelease self-update targets on purpose
+                            </li>
+                            <li><strong>Key commands:</strong> <code>nova notification</code>, <code>nova notification
+                                -disable</code>, <code>nova notification -enable</code></li>
+                            <li><strong>Output:</strong> a preference object with the stored state and settings path
+                            </li>
+                        </ul>
+                        <pre><code>Get-NovaUpdateNotificationPreference
+Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
+nova notification -enable</code></pre>
+                        <p><a class="text-link" href="./versioning-and-updates.html#notification-preferences">See update
+                            preference guidance</a></p>
+                    </article>
+                </div>
+            </section>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="footer__inner">
+        <h2>Need the next layer of detail?</h2>
+        <p>Use the workflow pages when you want step-by-step guidance, or jump straight to the configuration reference
+            when you are tuning a real project.</p>
+        <div class="hero__actions">
+            <a class="button button--primary" href="./project-json-reference.html">Open project.json Reference</a>
+            <a class="button button--secondary" href="./packaging-and-delivery.html">Compare packaging, upload, publish,
+                and release</a>
+        </div>
+        <p class="footer__legal">Also available: <a class="legal-link" href="./working-with-modules.html">Working with
+            Modules</a>, <a class="legal-link" href="./release-notes.html">Release Notes</a>, and the <a
+                class="legal-link" href="./license.html">MIT License</a>.</p>
+    </div>
+</footer>
+</body>
+</html>
+

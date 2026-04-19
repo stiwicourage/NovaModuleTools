@@ -69,8 +69,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 
 - Split documentation into contributor-focused repository docs and task-oriented GitHub Pages user guides.
-- Add and expand the public site with getting started, core workflows, working with modules, troubleshooting, advanced
-  usage, license, and release notes pages.
+- Expand the public site into a fuller developer end-user manual with rewritten getting started, core workflows, working
+  with modules, troubleshooting, concepts, release notes, and license pages plus new reference-style pages for
+  commands, `project.json`, packaging/delivery, and versioning/update behavior.
 - Refresh public `Get-Help` content and examples for the Nova commands, including CLI usage and preview/confirmation
   scenarios.
 - Refresh `.github/pull_request_template.md` so pull requests now call out the current Nova workflows, CI/release

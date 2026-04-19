@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>NovaModuleTools — project.json reference and configuration guide</title>
+    <meta content="Complete reference for NovaModuleTools project.json settings, including top-level build settings, manifest metadata, package settings, raw upload configuration, and Pester options."
+          name="description">
+    <meta content="index,follow,max-image-preview:large" name="robots">
+    <meta content="#0b1020" name="theme-color">
+    <link href="https://www.novamoduletools.com/project-json-reference.html" rel="canonical">
+    <link href="./assets/icon.png" rel="icon" type="image/png">
+    <link href="./assets/icon.png" rel="apple-touch-icon">
+    <meta content="article" property="og:type">
+    <meta content="NovaModuleTools — project.json reference and configuration guide" property="og:title">
+    <meta content="Use this page as the source of truth for NovaModuleTools project.json settings, defaults, examples, and workflow effects."
+          property="og:description">
+    <meta content="https://www.novamoduletools.com/project-json-reference.html" property="og:url">
+    <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
+    <meta content="summary" name="twitter:card">
+    <meta content="NovaModuleTools — project.json reference and configuration guide" name="twitter:title">
+    <meta content="Use this page as the source of truth for NovaModuleTools project.json settings, defaults, examples, and workflow effects."
+          name="twitter:description">
+    <link href="./assets/site.css" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            "headline": "NovaModuleTools project.json reference",
+            "description": "Reference for NovaModuleTools project.json configuration.",
+            "url": "https://www.novamoduletools.com/project-json-reference.html"
+        }
+    </script>
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">
+            <img alt="" class="site-brand__icon" src="./assets/icon.png">
+            <span class="site-brand__text">NovaModuleTools</span>
+        </a>
+        <nav aria-label="Primary" class="site-nav">
+            <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+            <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+            <a class="site-nav__link site-nav__link--active" href="./project-json-reference.html">project.json</a>
+            <a class="site-nav__link" href="./commands.html">Commands</a>
+            <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
+            <a class="site-nav__link" href="./versioning-and-updates.html">Versioning &amp; Updates</a>
+            <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+            <a class="site-nav__link" href="./advanced.html">Concepts</a>
+        </nav>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="guide-hero">
+        <p class="eyebrow">Reference</p>
+        <h1>Understand every setting in <code>project.json</code></h1>
+        <p class="lead">NovaModuleTools reads <code>project.json</code> to decide how your project is scaffolded, built,
+            tested, packaged, uploaded, published, and released. Use this page to understand what each setting does,
+            what the defaults are, and when you should override them.</p>
+    </section>
+
+    <section class="content-grid">
+        <aside class="toc-card">
+            <h2>On this page</h2>
+            <ul class="toc-list">
+                <li><a href="#reading-order">How to read this file</a></li>
+                <li><a href="#example">Complete example</a></li>
+                <li><a href="#top-level">Top-level project settings</a></li>
+                <li><a href="#manifest">Manifest settings</a></li>
+                <li><a href="#package">Package settings</a></li>
+                <li><a href="#pester">Pester settings</a></li>
+                <li><a href="#recipes">Common recipes</a></li>
+            </ul>
+        </aside>
+
+        <div class="guide-content">
+            <section class="content-section" id="reading-order">
+                <h2>How to read this file</h2>
+                <p>Think of <code>project.json</code> in layers:</p>
+                <ol class="plain-list plain-list--ordered">
+                    <li><strong>Top-level project settings</strong> control the build shape, source markers, resource
+                        copying, and duplicate-function validation.
+                    </li>
+                    <li><strong><code>Manifest</code></strong> controls metadata for the generated PowerShell module
+                        manifest and package metadata reuse.
+                    </li>
+                    <li><strong><code>Package</code></strong> controls package creation and optional raw HTTP upload
+                        defaults.
+                    </li>
+                    <li><strong><code>Pester</code></strong> controls the test run configuration used by <code>Test-NovaBuild</code>.
+                    </li>
+                </ol>
+                <div class="notice">
+                    <strong>Default behavior matters.</strong>
+                    <p>You only need to add settings when you want to override the default workflow. For example, if you
+                        never add a <code>Package</code> section, <code>Pack-NovaModule</code> still works and defaults
+                        to a single <code>.nupkg</code> written to <code>artifacts/packages/</code>.</p>
+                </div>
+                <div class="notice notice--warning">
+                    <strong>Important compatibility note.</strong>
+                    <p>The runtime and shipped examples currently use some manifest and Pester fields more broadly than
+                        the JSON schema files explicitly enumerate. In practice, the current product and examples use
+                        <code>Manifest.ReleaseNotes</code>, <code>Manifest.LicenseUri</code>,
+                        <code>Manifest.IconUri</code>, and <code>Pester.TestResult.OutputFormat</code>. The reference
+                        below documents the live behavior that the product uses today and calls out those schema gaps
+                        where they matter.</p>
+                </div>
+            </section>
+
+            <section class="content-section" id="example">
+                <h2>Complete example</h2>
+                <p>The packaged example project is the best real-world reference because it shows the current full
+                    configuration surface in one place.</p>
+                <pre><code>{
+  "ProjectName": "NovaExampleModule",
+  "Description": "A working example project that demonstrates how to build, test, package, and upload a small module with NovaModuleTools.",
+  "Version": "0.1.0",
+  "CopyResourcesToModuleRoot": false,
+  "BuildRecursiveFolders": true,
+  "SetSourcePath": true,
+  "FailOnDuplicateFunctionNames": true,
+  "Preamble": [
+    "Set-StrictMode -Version Latest",
+    "$ErrorActionPreference = 'Stop'"
+  ],
+  "Manifest": {
+    "Author": "NovaModuleTools",
+    "PowerShellHostVersion": "7.4",
+    "GUID": "b3b4ca64-a274-4768-872d-2b3c8bc12a39",
+    "Tags": ["Example", "NovaModuleTools", "PowerShell"],
+    "ProjectUri": "https://www.novamoduletools.com/",
+    "ReleaseNotes": "https://www.novamoduletools.com/release-notes.html",
+    "LicenseUri": "https://www.novamoduletools.com/license.html"
+  },
+  "Package": {
+    "Id": "NovaExampleModule",
+    "Types": ["NuGet", "Zip"],
+    "Latest": true,
+    "OutputDirectory": {
+      "Path": "artifacts/packages",
+      "Clean": true
+    },
+    "PackageFileName": "NovaExampleModule.0.1.0",
+    "FileNamePattern": "NovaExampleModule*",
+    "Authors": ["NovaModuleTools", "Example Maintainer"],
+    "Description": "Example package metadata and raw upload configuration for NovaExampleModule.",
+    "RepositoryUrl": "https://packages.example.test/raw/novamodule/",
+    "UploadPath": "stable/latest",
+    "Headers": {
+      "X-Client-Id": "nova-example"
+    },
+    "Auth": {
+      "HeaderName": "Authorization",
+      "Scheme": "Bearer",
+      "TokenEnvironmentVariable": "NOVA_EXAMPLE_PACKAGE_TOKEN"
+    },
+    "Repositories": [
+      {
+        "Name": "ExampleRaw",
+        "Url": "https://packages.example.test/raw/novamodule/"
+      }
+    ]
+  },
+  "Pester": {
+    "TestResult": {
+      "Enabled": true,
+      "OutputFormat": "NUnitXml"
+    },
+    "Output": {
+      "Verbosity": "Detailed"
+    }
+  }
+}</code></pre>
+                <p><a class="text-link" href="./working-with-modules.html#example-project">See how to use the packaged
+                    example as a learning project</a></p>
+            </section>
+
+            <section class="content-section" id="top-level">
+                <h2>Top-level project settings</h2>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Purpose</th>
+                            <th>Default</th>
+                            <th>Workflow effect</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><code>ProjectName</code></td>
+                            <td>Name of the module and the output folder under <code>dist/</code>.</td>
+                            <td>Required</td>
+                            <td>Determines manifest name, module name, and many generated paths.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Description</code></td>
+                            <td>Human-readable project description.</td>
+                            <td>Required</td>
+                            <td>Feeds manifest and package metadata when you do not override them later.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Version</code></td>
+                            <td>Current semantic version stored for the project.</td>
+                            <td>Required</td>
+                            <td>Used in package names, manifest metadata, <code>nova version</code>, and release flows.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>CopyResourcesToModuleRoot</code></td>
+                            <td>Controls where resources are copied in the built module.</td>
+                            <td><code>false</code></td>
+                            <td>When <code>false</code>, resources stay in a <code>resources/</code> folder. When <code>true</code>,
+                                they are copied into the module root.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>BuildRecursiveFolders</code></td>
+                            <td>Controls recursive discovery for classes, private helpers, and tests.</td>
+                            <td><code>true</code></td>
+                            <td>Affects how nested source files and nested tests are discovered.</td>
+                        </tr>
+                        <tr>
+                            <td><code>SetSourcePath</code></td>
+                            <td>Controls <code># Source:</code> markers in the generated <code>.psm1</code>.</td>
+                            <td><code>true</code></td>
+                            <td>Makes parser and runtime errors easier to map back to source files.</td>
+                        </tr>
+                        <tr>
+                            <td><code>FailOnDuplicateFunctionNames</code></td>
+                            <td>Fails the build when duplicate top-level function names are emitted.</td>
+                            <td><code>true</code></td>
+                            <td>Protects the generated module from ambiguous exports and hidden overwrites.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Preamble</code></td>
+                            <td>Optional lines written at the top of the generated <code>.psm1</code>.</td>
+                            <td>Empty array</td>
+                            <td>Useful for <code>Set-StrictMode</code>, <code>$ErrorActionPreference</code>, or other
+                                module-wide setup lines.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Examples</h3>
+                <pre><code>{
+  "CopyResourcesToModuleRoot": true,
+  "BuildRecursiveFolders": false,
+  "SetSourcePath": true,
+  "FailOnDuplicateFunctionNames": true,
+  "Preamble": [
+    "Set-StrictMode -Version Latest",
+    "$ErrorActionPreference = 'Stop'"
+  ]
+}</code></pre>
+                <p>Use this pattern when you want strict runtime defaults, top-level-only test discovery, and resources
+                    copied directly to the module root.</p>
+            </section>
+
+            <section class="content-section" id="manifest">
+                <h2><code>Manifest</code> settings</h2>
+                <p>These settings feed the generated PowerShell module manifest and, in several cases, package
+                    metadata.</p>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Required</th>
+                            <th>What it does</th>
+                            <th>Notes</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><code>Author</code></td>
+                            <td>Yes</td>
+                            <td>Sets the manifest author and the default package author when
+                                <code>Package.Authors</code> is omitted.
+                            </td>
+                            <td>Use a single author string; package logic can later expand into arrays.</td>
+                        </tr>
+                        <tr>
+                            <td><code>PowerShellHostVersion</code></td>
+                            <td>Yes</td>
+                            <td>Defines the minimum PowerShell version expected by the generated module.</td>
+                            <td>Users see this in the manifest and module compatibility expectations.</td>
+                        </tr>
+                        <tr>
+                            <td><code>GUID</code></td>
+                            <td>Yes</td>
+                            <td>Sets the manifest GUID.</td>
+                            <td>Generate a new GUID for each distinct module.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Tags</code></td>
+                            <td>No</td>
+                            <td>Adds manifest tags and is reused by package metadata when present.</td>
+                            <td>Optional in practice and safe to omit.</td>
+                        </tr>
+                        <tr>
+                            <td><code>ProjectUri</code></td>
+                            <td>No</td>
+                            <td>Publishes a project URL in the manifest and package metadata.</td>
+                            <td>Explicitly described in the current build schema.</td>
+                        </tr>
+                        <tr>
+                            <td><code>ReleaseNotes</code></td>
+                            <td>No</td>
+                            <td>Publishes a release notes link for packaging and user-facing metadata.</td>
+                            <td>Used by the current product and examples even though the build schema does not enumerate
+                                it separately yet.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>LicenseUri</code></td>
+                            <td>No</td>
+                            <td>Publishes a license URL for packaging and manifest metadata.</td>
+                            <td>Used in practice and shown in the packaged example.</td>
+                        </tr>
+                        <tr>
+                            <td><code>IconUri</code></td>
+                            <td>No</td>
+                            <td>Publishes an icon URL in the manifest.</td>
+                            <td>Used by the repository project itself and worth keeping stable when you publish
+                                publicly.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="tiny-note">If <code>Tags</code>, <code>ProjectUri</code>, <code>ReleaseNotes</code>, or <code>LicenseUri</code>
+                    are omitted, packaging still succeeds. The corresponding package metadata fields are simply left
+                    out.</p>
+            </section>
+
+            <section class="content-section" id="package">
+                <h2><code>Package</code> settings</h2>
+                <p>The <code>Package</code> section controls two related but different concerns:</p>
+                <ul class="plain-list">
+                    <li><strong>package creation</strong> via <code>Pack-NovaModule</code> / <code>nova pack</code></li>
+                    <li><strong>raw HTTP artifact upload</strong> via <code>Upload-NovaPackage</code> / <code>nova
+                        upload</code></li>
+                </ul>
+                <div class="notice">
+                    <strong>Keep these concepts separate.</strong>
+                    <p><code>Package.Types</code>, <code>Package.Latest</code>, and <code>OutputDirectory</code> decide
+                        what gets created. <code>RepositoryUrl</code>, <code>Headers</code>, <code>Auth</code>, and
+                        <code>Repositories</code> decide how existing artifacts are uploaded later.</p>
+                </div>
+
+                <h3>Package creation settings</h3>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Default</th>
+                            <th>What it controls</th>
+                            <th>Gotchas</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><code>Id</code></td>
+                            <td><code>ProjectName</code></td>
+                            <td>The package identifier and default naming base.</td>
+                            <td>Override this only when the package identity should differ from the module name.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Types</code></td>
+                            <td><code>["NuGet"]</code></td>
+                            <td>Which package formats to create.</td>
+                            <td>Supported values are <code>NuGet</code>, <code>Zip</code>, <code>.nupkg</code>, and
+                                <code>.zip</code>, and matching is case-insensitive.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>Latest</code></td>
+                            <td><code>false</code></td>
+                            <td>Whether to create companion <code>latest</code> artifacts for each selected type.</td>
+                            <td>When <code>true</code>, Nova keeps the normal versioned artifact and adds a second file
+                                such as <code>MyModule.latest.nupkg</code>.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>OutputDirectory.Path</code></td>
+                            <td><code>artifacts/packages</code></td>
+                            <td>Where packages are written.</td>
+                            <td>This is also the default discovery location for <code>Upload-NovaPackage</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>OutputDirectory.Clean</code></td>
+                            <td><code>true</code></td>
+                            <td>Whether to clear the output directory before packaging.</td>
+                            <td>Set it to <code>false</code> only when you intentionally want to retain older files.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>PackageFileName</code></td>
+                            <td><code>&lt;Id&gt;.&lt;Version&gt;.nupkg</code></td>
+                            <td>Base file name used for package generation.</td>
+                            <td>Nova normalizes the extension per package type and swaps the version suffix for <code>latest</code>
+                                when needed.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>FileNamePattern</code></td>
+                            <td><code>&lt;Id&gt;*</code> in practice</td>
+                            <td>Pattern used to discover matching package files for upload.</td>
+                            <td>Keep it wide enough to include both versioned and <code>latest</code> artifacts when you
+                                use <code>Package.Latest</code>.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>Authors</code></td>
+                            <td>Derived from <code>Manifest.Author</code></td>
+                            <td>Package author metadata.</td>
+                            <td>Can be a single string or an array of strings.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Description</code></td>
+                            <td>Derived from top-level <code>Description</code></td>
+                            <td>Package description metadata.</td>
+                            <td>Use this when the package description should differ from the module description.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Raw upload settings</h3>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>What it does</th>
+                            <th>Notes</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><code>RepositoryUrl</code></td>
+                            <td>Canonical package-level raw upload base URL.</td>
+                            <td>Use this when you only need one default upload target.</td>
+                        </tr>
+                        <tr>
+                            <td><code>RawRepositoryUrl</code></td>
+                            <td>Legacy compatibility alias.</td>
+                            <td>If present, it still maps into <code>RepositoryUrl</code> when the canonical setting is
+                                missing.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>UploadPath</code></td>
+                            <td>Optional extra path segment appended before the file name during upload.</td>
+                            <td>Useful for folder-style raw repositories such as <code>stable/latest</code> or <code>preview</code>.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>Headers</code></td>
+                            <td>Generic additional HTTP headers.</td>
+                            <td>Merged with repository-specific headers and dynamic parameter headers when you invoke
+                                upload.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>Auth.HeaderName</code></td>
+                            <td>Name of the authentication header to emit.</td>
+                            <td>Examples: <code>Authorization</code>, <code>X-Api-Key</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Auth.Scheme</code></td>
+                            <td>Optional scheme prefix for the auth header value.</td>
+                            <td>Examples: <code>Bearer</code>, <code>Basic</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Auth.Token</code></td>
+                            <td>Literal token value.</td>
+                            <td>Good for local testing only. Prefer environment variables for real secrets.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Auth.TokenEnvironmentVariable</code></td>
+                            <td>Name of the environment variable that stores the token value.</td>
+                            <td>This should be the variable name, not the secret itself.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Repositories</code></td>
+                            <td>Named upload targets with optional overrides.</td>
+                            <td>Each repository needs <code>Name</code> and <code>Url</code>, then can add <code>UploadPath</code>,
+                                <code>Headers</code>, and <code>Auth</code>.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Authentication examples</h3>
+                <pre><code>{
+  "Package": {
+    "RepositoryUrl": "https://packages.example/raw/",
+    "Auth": {
+      "HeaderName": "Authorization",
+      "Scheme": "Bearer",
+      "TokenEnvironmentVariable": "NOVA_PACKAGE_TOKEN"
+    }
+  }
+}</code></pre>
+                <p>Use this for bearer-token-style endpoints.</p>
+                <pre><code>{
+  "Package": {
+    "Repositories": [
+      {
+        "Name": "RawRepo",
+        "Url": "https://packages.example/raw/",
+        "Auth": {
+          "HeaderName": "X-Api-Key",
+          "TokenEnvironmentVariable": "NOVA_PACKAGE_API_KEY"
+        }
+      }
+    ]
+  }
+}</code></pre>
+                <p>Use this for custom API-key headers.</p>
+                <pre><code>{
+  "Package": {
+    "Repositories": [
+      {
+        "Name": "LocalNexus",
+        "Url": "http://localhost:8081/repository/raw/modules/",
+        "Auth": {
+          "HeaderName": "Authorization",
+          "Scheme": "Basic",
+          "TokenEnvironmentVariable": "NOVA_NEXUS_BASIC_AUTH"
+        }
+      }
+    ]
+  }
+}</code></pre>
+                <p>Use this generic model for Basic auth when the endpoint expects a pre-encoded token value. In that
+                    case, the environment variable should hold the Base64 value for <code>username:password</code>, not
+                    the raw username or password.</p>
+            </section>
+
+            <section class="content-section" id="pester">
+                <h2><code>Pester</code> settings</h2>
+                <p>NovaModuleTools passes your <code>Pester</code> settings into the test run configuration used by
+                    <code>Test-NovaBuild</code>.</p>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Current usage</th>
+                            <th>Default/Example</th>
+                            <th>Where you see it</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><code>Pester.TestResult.Enabled</code></td>
+                            <td>Controls whether test results are configured for output.</td>
+                            <td><code>true</code> in the project template and packaged example</td>
+                            <td>Influences the generated test result artifact behavior.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Pester.TestResult.OutputFormat</code></td>
+                            <td>Passed through by the current project template and examples.</td>
+                            <td><code>NUnitXml</code></td>
+                            <td>Determines the result format written to <code>artifacts/TestResults.xml</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Pester.Output.Verbosity</code></td>
+                            <td>Controls Pester console verbosity.</td>
+                            <td><code>Detailed</code> in the current project template</td>
+                            <td>Affects what you see during <code>Test-NovaBuild</code> and <code>nova test</code>.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="tiny-note">At runtime, <code>Test-NovaBuild</code> also lets you override verbosity and render
+                    mode temporarily with <code>-OutputVerbosity</code> and <code>-OutputRenderMode</code>.</p>
+            </section>
+
+            <section class="content-section" id="recipes">
+                <h2>Common recipes</h2>
+                <h3>Minimal module project</h3>
+                <pre><code>{
+  "ProjectName": "MyModule",
+  "Description": "My module",
+  "Version": "0.1.0",
+  "Manifest": {
+    "Author": "You",
+    "PowerShellHostVersion": "7.4",
+    "GUID": "00000000-0000-0000-0000-000000000000"
+  }
+}</code></pre>
+                <p>Use this when you want the smallest workable Nova project with default build, test, and packaging
+                    behavior.</p>
+
+                <h3>Create both NuGet and Zip artifacts, plus latest aliases</h3>
+                <pre><code>{
+  "Package": {
+    "Types": ["NuGet", "Zip"],
+    "Latest": true,
+    "OutputDirectory": {
+      "Path": "artifacts/packages",
+      "Clean": true
+    }
+  }
+}</code></pre>
+                <p>This creates four files when both package types are selected: versioned and <code>latest</code>
+                    variants for each format.</p>
+
+                <h3>Use named raw repositories with shared defaults</h3>
+                <pre><code>{
+  "Package": {
+    "RepositoryUrl": "https://packages.example/raw/default/",
+    "Headers": {
+      "X-Client": "my-module"
+    },
+    "Auth": {
+      "HeaderName": "Authorization",
+      "Scheme": "Bearer",
+      "TokenEnvironmentVariable": "NOVA_PACKAGE_TOKEN"
+    },
+    "Repositories": [
+      {
+        "Name": "Stable",
+        "Url": "https://packages.example/raw/stable/"
+      },
+      {
+        "Name": "Preview",
+        "Url": "https://packages.example/raw/preview/",
+        "UploadPath": "nightly"
+      }
+    ]
+  }
+}</code></pre>
+                <p>Use package-level values for the shared default behavior, then override only the repository-specific
+                    parts that need to change.</p>
+            </section>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="footer__inner">
+        <h2>Ready to apply these settings?</h2>
+        <p>Use the packaged example when you want a live project that demonstrates the current configuration surface, or
+            move to the delivery guides when you are ready to package and publish.</p>
+        <div class="hero__actions">
+            <a class="button button--primary" href="./working-with-modules.html">Open the example project guide</a>
+            <a class="button button--secondary" href="./packaging-and-delivery.html">Open packaging and delivery
+                workflows</a>
+        </div>
+        <p class="footer__legal">Also available: <a class="legal-link" href="./commands.html">Command Reference</a>, <a
+                class="legal-link" href="./release-notes.html">Release Notes</a>, and the <a class="legal-link"
+                                                                                             href="./license.html">MIT
+            License</a>.</p>
+    </div>
+</footer>
+</body>
+</html>
+
