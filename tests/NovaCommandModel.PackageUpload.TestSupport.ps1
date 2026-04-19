@@ -69,6 +69,7 @@ function New-TestNovaPackageUploadProjectInfo {
             Repositories = @(Get-TestNovaPackageUploadOptionValue -Options $Options -Name 'Repositories' -DefaultValue @())
             Headers = [ordered]@{} + (Get-TestNovaPackageUploadOptionValue -Options $Options -Name 'Headers' -DefaultValue ([ordered]@{}))
             Auth = [ordered]@{} + (Get-TestNovaPackageUploadOptionValue -Options $Options -Name 'Auth' -DefaultValue ([ordered]@{}))
+            RepositoryUrl = (Get-TestNovaPackageUploadOptionValue -Options $Options -Name 'RepositoryUrl')
             RawRepositoryUrl = (Get-TestNovaPackageUploadOptionValue -Options $Options -Name 'RawRepositoryUrl')
             UploadPath = (Get-TestNovaPackageUploadOptionValue -Options $Options -Name 'UploadPath')
         }

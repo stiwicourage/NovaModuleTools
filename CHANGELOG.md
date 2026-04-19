@@ -42,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Package output now uses `Package.OutputDirectory.Path` with `Package.OutputDirectory.Clean` defaulting to `true`.
   - Add `Upload-NovaPackage` and `nova upload` for raw HTTP package uploads that stay separate from PowerShell
     repository publishing.
-  - Package upload resolves `-Url`, `Package.RawRepositoryUrl`, or named `Package.Repositories` targets and can merge
+      - Package upload resolves `-Url`, `Package.RepositoryUrl`, or named `Package.Repositories` targets and can merge
     generic headers/auth settings.
   - Package upload now discovers all matching artifacts for the selected package types, including versioned and
     `latest` files in the configured package output directory.

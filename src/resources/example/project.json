@@ -40,7 +40,7 @@
       "Example Maintainer"
     ],
     "Description": "Example package metadata and raw upload configuration for NovaExampleModule.",
-    "RawRepositoryUrl": "https://packages.example.test/raw/novamodule/",
+    "RepositoryUrl": "https://packages.example.test/raw/novamodule/",
     "UploadPath": "stable/latest",
     "Headers": {
       "X-Client-Id": "nova-example",

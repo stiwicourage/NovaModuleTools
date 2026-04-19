@@ -153,7 +153,7 @@ Describe 'Nova command model - project, help, and build behavior' {
                 }
                 Package = [ordered]@{
                     Types = @('Zip')
-                    RawRepositoryUrl = 'https://packages.example/raw/'
+                    RepositoryUrl = 'https://packages.example/raw/'
                     UploadPath = 'releases/latest'
                     FileNamePattern = 'PackageUploadProject*'
                     Headers = [ordered]@{
@@ -178,7 +178,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $projectInfo = Get-NovaProjectInfo -Path $projectRoot
 
             $projectInfo.Package.Types | Should -Be @('Zip')
-            $projectInfo.Package.RawRepositoryUrl | Should -Be 'https://packages.example/raw/'
+            $projectInfo.Package.RepositoryUrl | Should -Be 'https://packages.example/raw/'
             $projectInfo.Package.UploadPath | Should -Be 'releases/latest'
             $projectInfo.Package.FileNamePattern | Should -Be 'PackageUploadProject*'
             $projectInfo.Package.Headers['X-Trace-Id'] | Should -Be 'trace-123'
@@ -188,6 +188,34 @@ Describe 'Nova command model - project, help, and build behavior' {
             $projectInfo.Package.Repositories[0].Name | Should -Be 'LocalNexus'
             $projectInfo.Package.Repositories[0].Url | Should -Be 'https://packages.example/raw/local/'
             $projectInfo.Package.Repositories[0].UploadPath | Should -Be 'modules'
+        }
+    }
+
+    It 'Get-NovaProjectInfo maps the legacy Package.RawRepositoryUrl to Package.RepositoryUrl' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'legacy-package-upload-url'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            $projectJson = ([ordered]@{
+                ProjectName = 'LegacyUploadProject'
+                Description = 'Legacy upload url settings test'
+                Version = '0.0.7'
+                Manifest = [ordered]@{
+                    Author = 'Legacy Author'
+                    PowerShellHostVersion = '7.4'
+                    GUID = '10101010-1010-1010-1010-101010101010'
+                }
+                Package = [ordered]@{
+                    Types = @('Zip')
+                    RawRepositoryUrl = 'https://packages.example/legacy-raw/'
+                }
+            } | ConvertTo-Json -Depth 6)
+
+            Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
+
+            $projectInfo = Get-NovaProjectInfo -Path $projectRoot
+
+            $projectInfo.Package.RepositoryUrl | Should -Be 'https://packages.example/legacy-raw/'
+            $projectInfo.Package.RawRepositoryUrl | Should -Be 'https://packages.example/legacy-raw/'
         }
     }
 

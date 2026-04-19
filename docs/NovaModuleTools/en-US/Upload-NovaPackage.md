@@ -37,7 +37,7 @@ includes versioned and `latest` variants such as `NovaModuleTools.2.0.0-preview6
 
 Use `-Url` when CI/CD or an ad-hoc script should upload directly to a raw endpoint. Use `-Repository` when you want the
 command to resolve the upload target from `Package.Repositories` in `project.json`. Generic package-level defaults such
-as `Package.RawRepositoryUrl`, `Package.UploadPath`, `Package.Headers`, and `Package.Auth` are also supported.
+as `Package.RepositoryUrl`, `Package.UploadPath`, `Package.Headers`, and `Package.Auth` are also supported.
 
 This command is intentionally separate from `Publish-NovaModule`. `Upload-NovaPackage` performs raw HTTP artifact
 uploads, while `Publish-NovaModule` remains focused on PowerShell repository publishing.

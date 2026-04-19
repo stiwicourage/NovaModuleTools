@@ -115,6 +115,9 @@
           "Description": {
             "type": "string"
           },
+          "RepositoryUrl": {
+            "type": "string"
+          },
           "RawRepositoryUrl": {
             "type": "string"
           },

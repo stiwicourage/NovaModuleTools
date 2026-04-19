@@ -50,7 +50,7 @@ want both formats. Supported values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, an
 
 Use `nova upload` when you want to push existing package artifacts from the configured package output directory to a raw
 HTTP endpoint. It can upload all matching artifacts for the configured package types, including versioned and `latest`
-files, and it resolves the upload target from `-url`, `Package.RawRepositoryUrl`, or `Package.Repositories`.
+files, and it resolves the upload target from `-url`, `Package.RepositoryUrl`, or `Package.Repositories`.
 
 For local publish inside an imported PowerShell session, `nova publish -local` now reloads the published module from the
 resolved local install path after the copy succeeds. Preview or cancelled runs do not import anything.

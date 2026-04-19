@@ -242,7 +242,7 @@ Use this `project.json` shape when you want Nova to resolve upload targets from 
 - When `-PackagePath` is omitted, Nova resolves package files from `Package.OutputDirectory.Path`.
 - When multiple matching files exist for a selected package type, Nova uploads all of them, including versioned and
   `latest` variants.
-- `Package.Headers`, `Package.Auth`, `Package.RawRepositoryUrl`, and repository-specific overrides remain generic so the
+- `Package.Headers`, `Package.Auth`, `Package.RepositoryUrl`, and repository-specific overrides remain generic so the
   workflow works with raw endpoints such as Nexus or Artifactory without turning `Publish-NovaModule` into a vendor-
   specific upload command.
 

@@ -80,7 +80,7 @@ the package output directory.
 
 The example `project.json` also shows how to configure raw package upload settings such as:
 
-- `Package.RawRepositoryUrl`
+- `Package.RepositoryUrl`
 - `Package.UploadPath`
 - `Package.Headers`
 - `Package.Auth`
