@@ -124,12 +124,39 @@ Describe 'Nova command model - project, help, and build behavior' {
 
             $projectInfo = Get-NovaProjectInfo -Path $projectRoot
 
-            $projectInfo.Package.Enabled | Should -BeTrue
             $projectInfo.Package.Id | Should -Be 'DefaultPackageProject'
-            $projectInfo.Package.OutputDirectory | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts/packages'))
+            $projectInfo.Package.OutputDirectory.Path | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts/packages'))
+            $projectInfo.Package.OutputDirectory.Clean | Should -BeTrue
             $projectInfo.Package.PackageFileName | Should -Be 'DefaultPackageProject.0.0.1.nupkg'
             $projectInfo.Package.Authors | Should -Be 'Test Author'
             $projectInfo.Package.Description | Should -Be 'Default package option test'
+        }
+    }
+
+    It 'Get-NovaProjectInfo normalizes the legacy Package.OutputDirectory string to the new object shape' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'legacy-package-output-directory'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            $projectJson = ([ordered]@{
+                ProjectName = 'LegacyPackageProject'
+                Description = 'Legacy package option test'
+                Version = '0.0.2'
+                Manifest = [ordered]@{
+                    Author = 'Legacy Author'
+                    PowerShellHostVersion = '7.4'
+                    GUID = '55555555-5555-5555-5555-555555555555'
+                }
+                Package = [ordered]@{
+                    OutputDirectory = 'custom/packages'
+                }
+            } | ConvertTo-Json -Depth 5)
+
+            Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
+
+            $projectInfo = Get-NovaProjectInfo -Path $projectRoot
+
+            $projectInfo.Package.OutputDirectory.Path | Should -Be ([System.IO.Path]::Join($projectRoot, 'custom/packages'))
+            $projectInfo.Package.OutputDirectory.Clean | Should -BeTrue
         }
     }
 

@@ -5,11 +5,7 @@ function Assert-NovaPackageMetadata {
         [Parameter(Mandatory)][pscustomobject]$PackageMetadata
     )
 
-    if (-not $PackageMetadata.Enabled) {
-        throw 'Package.Enabled is false in project.json. Enable packaging before running Pack-NovaModule.'
-    }
-
-    foreach ($requiredField in @('Id', 'Version', 'Description', 'PackagePath')) {
+    foreach ($requiredField in @('Id', 'Version', 'Description', 'OutputDirectory', 'PackageFileName', 'PackagePath')) {
         if ( [string]::IsNullOrWhiteSpace($PackageMetadata.$requiredField)) {
             throw "Missing package metadata value: $requiredField"
         }

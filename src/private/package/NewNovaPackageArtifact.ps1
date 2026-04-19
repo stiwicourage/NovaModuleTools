@@ -11,9 +11,7 @@ function New-NovaPackageArtifact {
     $corePropertiesPath = "package/services/metadata/core-properties/$([System.Guid]::NewGuid().ToString('N') ).psmdcp"
     $nuspecFileName = "$( $PackageMetadata.Id ).nuspec"
 
-    if (-not (Test-Path -LiteralPath $PackageMetadata.OutputDirectory)) {
-        $null = New-Item -ItemType Directory -Path $PackageMetadata.OutputDirectory -Force
-    }
+    Initialize-NovaPackageOutputDirectory -ProjectInfo $ProjectInfo -PackageMetadata $PackageMetadata
 
     Remove-Item -LiteralPath $PackageMetadata.PackagePath -Force -ErrorAction SilentlyContinue
     $fileStream = [System.IO.File]::Open($PackageMetadata.PackagePath, [System.IO.FileMode]::CreateNew)

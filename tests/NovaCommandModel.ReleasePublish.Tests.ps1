@@ -317,9 +317,11 @@ Describe 'Nova command model - release and publish behavior' {
                         LicenseUri = 'https://example.test/license'
                     }
                     Package = [ordered]@{
-                        Enabled = $true
                         Id = 'NovaModuleTools'
-                        OutputDirectory = '/tmp/project/artifacts/packages'
+                        OutputDirectory = [ordered]@{
+                            Path = '/tmp/project/artifacts/packages'
+                            Clean = $true
+                        }
                         PackageFileName = 'NovaModuleTools.1.2.3.nupkg'
                         Authors = 'Test Author'
                         Description = 'Package test'
@@ -359,9 +361,11 @@ Describe 'Nova command model - release and publish behavior' {
                         LicenseUri = 'https://example.test/license'
                     }
                     Package = [ordered]@{
-                        Enabled = $true
                         Id = 'NovaModuleTools'
-                        OutputDirectory = '/tmp/project/artifacts/packages'
+                        OutputDirectory = [ordered]@{
+                            Path = '/tmp/project/artifacts/packages'
+                            Clean = $true
+                        }
                         PackageFileName = 'NovaModuleTools.1.2.3.nupkg'
                         Authors = 'Test Author'
                         Description = 'Package test'
@@ -408,9 +412,11 @@ Describe 'Nova command model - release and publish behavior' {
                         LicenseUri = ''
                     }
                     Package = [ordered]@{
-                        Enabled = $true
                         Id = 'NovaModuleTools'
-                        OutputDirectory = '/tmp/project/artifacts/packages'
+                        OutputDirectory = [ordered]@{
+                            Path = '/tmp/project/artifacts/packages'
+                            Clean = $true
+                        }
                         PackageFileName = 'NovaModuleTools.1.2.3.nupkg'
                         Authors = 'Test Author'
                         Description = 'Package test'
@@ -444,9 +450,11 @@ Describe 'Nova command model - release and publish behavior' {
                     LicenseUri = 'https://example.test/license'
                 }
                 Package = [ordered]@{
-                    Enabled = $true
                     Id = 'PackageProject'
-                    OutputDirectory = '/tmp/project/artifacts/packages'
+                    OutputDirectory = [ordered]@{
+                        Path = '/tmp/project/artifacts/packages'
+                        Clean = $true
+                    }
                     PackageFileName = 'PackageProject.2.3.4.nupkg'
                     Authors = 'Author One'
                     Description = 'Top-level description'
@@ -464,6 +472,7 @@ Describe 'Nova command model - release and publish behavior' {
             $result.ReleaseNotes | Should -Be 'https://example.test/release-notes'
             $result.LicenseUrl | Should -Be 'https://example.test/license'
             $result.OutputDirectory | Should -Be '/tmp/project/artifacts/packages'
+            $result.CleanOutputDirectory | Should -BeTrue
             $result.PackagePath | Should -Be '/tmp/project/artifacts/packages/PackageProject.2.3.4.nupkg'
         }
     }
@@ -485,9 +494,11 @@ Describe 'Nova command model - release and publish behavior' {
                         LicenseUri = ''
                     }
                     Package = [ordered]@{
-                        Enabled = $true
                         Id = 'NovaModuleTools'
-                        OutputDirectory = '/tmp/project/artifacts/packages'
+                        OutputDirectory = [ordered]@{
+                            Path = '/tmp/project/artifacts/packages'
+                            Clean = $true
+                        }
                         PackageFileName = 'NovaModuleTools.1.2.3.nupkg'
                         Authors = @()
                         Description = 'Package test'

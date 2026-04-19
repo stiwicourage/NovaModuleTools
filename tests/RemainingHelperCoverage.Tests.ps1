@@ -1,6 +1,8 @@
 $script:remainingHelperCoverageTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'RemainingHelperCoverage.TestSupport.ps1')).Path
 $global:remainingHelperCoverageTestSupportFunctionNameList = @(
-    'Assert-TestNovaPackageArtifactContent'
+    'Assert-TestNovaPackageArtifactContent',
+    'Initialize-TestNovaPackageProjectLayout',
+    'Get-TestNovaPackageProjectInfo'
 )
 
 . $script:remainingHelperCoverageTestSupportPath
@@ -12,7 +14,11 @@ foreach ($functionName in $global:remainingHelperCoverageTestSupportFunctionName
 
 BeforeAll {
     $remainingHelperCoverageTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'RemainingHelperCoverage.TestSupport.ps1')).Path
-    $remainingHelperCoverageTestSupportFunctionNameList = @('Assert-TestNovaPackageArtifactContent')
+    $remainingHelperCoverageTestSupportFunctionNameList = @(
+        'Assert-TestNovaPackageArtifactContent',
+        'Initialize-TestNovaPackageProjectLayout',
+        'Get-TestNovaPackageProjectInfo'
+    )
 
     . $remainingHelperCoverageTestSupportPath
 
@@ -278,50 +284,12 @@ Locale: en-US
     }
 
     It 'New-NovaPackageArtifact writes a NuGet-compatible package structure with project metadata and built files' {
-        $projectRoot = Join-Path $TestDrive 'package-project'
-        $outputModuleDir = Join-Path $projectRoot 'dist/PackageProject'
-        $packageOutputDir = Join-Path $projectRoot 'artifacts/packages'
-        $manifestPath = Join-Path $outputModuleDir 'PackageProject.psd1'
-        $modulePath = Join-Path $outputModuleDir 'PackageProject.psm1'
-        $resourceDir = Join-Path $outputModuleDir 'resources'
-        $resourcePath = Join-Path $resourceDir 'nova'
-        $packagePath = $null
-
-        New-Item -ItemType Directory -Path $resourceDir -Force | Out-Null
-        '@{}' | Set-Content -LiteralPath $manifestPath -Encoding utf8
-        'function Get-TestPackage { }' | Set-Content -LiteralPath $modulePath -Encoding utf8
-        '#!/usr/bin/env pwsh' | Set-Content -LiteralPath $resourcePath -Encoding utf8
+        $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive 'package-project')
 
         $packagePath = InModuleScope $script:moduleName -Parameters @{
-            ProjectRoot = $projectRoot
-            OutputModuleDir = $outputModuleDir
-            PackageOutputDir = $packageOutputDir
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -ProjectRoot $layout.ProjectRoot -OutputModuleDir $layout.OutputModuleDir -PackageOutputDir $layout.PackageOutputDir -CleanOutputDirectory $true)
         } {
-            param($ProjectRoot, $OutputModuleDir, $PackageOutputDir)
-
-            $projectInfo = [pscustomobject]@{
-                ProjectName = 'PackageProject'
-                Version = '2.3.4'
-                ProjectRoot = $ProjectRoot
-                OutputModuleDir = $OutputModuleDir
-                Description = 'Package project description'
-                Manifest = [ordered]@{
-                    Author = 'Author One'
-                    Tags = @('Nova', 'Packaging')
-                    ProjectUri = 'https://example.test/project'
-                    ReleaseNotes = 'https://example.test/release-notes'
-                    LicenseUri = 'https://example.test/license'
-                }
-                Package = [ordered]@{
-                    Enabled = $true
-                    Id = 'PackageProject'
-                    OutputDirectory = $PackageOutputDir
-                    PackageFileName = 'PackageProject.2.3.4.nupkg'
-                    Authors = @('Author One', 'Author Two')
-                    Description = 'Package project description'
-                }
-            }
-
+            param($ProjectInfo)
             $packageMetadata = Get-NovaPackageMetadata -ProjectInfo $projectInfo
             $result = New-NovaPackageArtifact -ProjectInfo $projectInfo -PackageMetadata $packageMetadata
 
@@ -331,5 +299,26 @@ Locale: en-US
 
         $packagePath | Should -Not -BeNullOrEmpty
         Assert-TestNovaPackageArtifactContent -PackagePath $packagePath
+    }
+
+    It 'New-NovaPackageArtifact honors Package.OutputDirectory.Clean when stale package files exist' -ForEach @(
+        @{Name = 'clean output directory'; CleanOutputDirectory = $true; ExpectedStaleFile = $false}
+        @{Name = 'preserve output directory'; CleanOutputDirectory = $false; ExpectedStaleFile = $true}
+    ) {
+        $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive $_.Name.Replace(' ', '-'))
+        $staleFilePath = Join-Path $layout.PackageOutputDir 'stale.txt'
+        New-Item -ItemType Directory -Path $layout.PackageOutputDir -Force | Out-Null
+        'stale' | Set-Content -LiteralPath $staleFilePath -Encoding utf8
+
+        InModuleScope $script:moduleName -Parameters @{
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -ProjectRoot $layout.ProjectRoot -OutputModuleDir $layout.OutputModuleDir -PackageOutputDir $layout.PackageOutputDir -CleanOutputDirectory $_.CleanOutputDirectory)
+        } {
+            param($ProjectInfo)
+
+            $packageMetadata = Get-NovaPackageMetadata -ProjectInfo $ProjectInfo
+            $null = New-NovaPackageArtifact -ProjectInfo $ProjectInfo -PackageMetadata $packageMetadata
+        }
+
+        Test-Path -LiteralPath $staleFilePath | Should -Be $_.ExpectedStaleFile
     }
 }

@@ -65,14 +65,26 @@
       "Package": {
         "type": "object",
         "properties": {
-          "Enabled": {
-            "type": "boolean"
-          },
           "Id": {
             "type": "string"
           },
           "OutputDirectory": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "Path": {
+                    "type": "string"
+                  },
+                  "Clean": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            ]
           },
           "PackageFileName": {
             "type": "string"

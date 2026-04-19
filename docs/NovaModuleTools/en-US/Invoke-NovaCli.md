@@ -41,8 +41,8 @@ PowerShell
 `-WhatIf`/`-Confirm` to the underlying cmdlet. That means `nova build -WhatIf` and
 `Invoke-NovaCli -Command build -WhatIf` both preview the build instead of running it.
 
-Use `nova pack` when you want to build, test, and package the current project into a `.nupkg` artifact under
-`artifacts/packages/`.
+Use `nova pack` when you want to build, test, and package the current project into a `.nupkg` artifact. By default it
+writes to `artifacts/packages/`, and you can override that with `Package.OutputDirectory.Path` in `project.json`.
 
 For local publish inside an imported PowerShell session, `nova publish -local` now reloads the published module from the
 resolved local install path after the copy succeeds. Preview or cancelled runs do not import anything.

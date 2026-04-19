@@ -153,8 +153,10 @@ function Write-TestNovaCliProjectJson {
     "ProjectUri": ""
   },
   "Package": {
-    "Enabled": true,
-    "OutputDirectory": "artifacts/packages"
+    "OutputDirectory": {
+      "Path": "artifacts/packages",
+      "Clean": true
+    }
   },
   "Pester": {
     "TestResult": {

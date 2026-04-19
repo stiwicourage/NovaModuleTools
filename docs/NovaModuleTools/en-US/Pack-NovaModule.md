@@ -31,6 +31,20 @@ PS> Pack-NovaModule [-WhatIf] [-Confirm] [<CommonParameters>]
 The package is written to `artifacts/packages/` by default. You can override generic package metadata through the
 optional `Package` section in `project.json`.
 
+Use this `project.json` shape when you want to control the package output directory:
+
+```json
+"Package": {
+  "OutputDirectory": {
+	"Path": "artifacts/packages",
+	"Clean": true
+  }
+}
+```
+
+`Package.OutputDirectory.Clean` defaults to `true`, which deletes the configured package output directory before a new
+package is created. Set it to `false` when you want to keep existing files in that directory.
+
 This command is intended for NovaModuleTools user projects that need a deployable package artifact without publishing to
 PowerShell Gallery.
 
@@ -42,7 +56,7 @@ PowerShell Gallery.
 PS> Pack-NovaModule
 ```
 
-Builds the project, runs `Test-NovaBuild`, and writes a `.nupkg` to `artifacts/packages/`.
+Builds the project, runs `Test-NovaBuild`, cleans `artifacts/packages/` by default, and writes a new `.nupkg` there.
 
 ### EXAMPLE 2
 
@@ -147,6 +161,7 @@ Package metadata reuses values from `project.json` when possible, including:
 - `Manifest.LicenseUri`
 
 Use the top-level `Package` section only for generic packaging overrides such as output directory or package file name.
+`Pack-NovaModule` always allows packaging when you invoke it; there is no separate `Package.Enabled` switch.
 
 ## RELATED LINKS
 

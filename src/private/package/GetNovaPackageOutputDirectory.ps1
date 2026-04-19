@@ -4,7 +4,13 @@ function Get-NovaPackageOutputDirectory {
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo
     )
 
-    $outputDirectory = "$( $ProjectInfo.Package.OutputDirectory )".Trim()
+    $outputDirectory = if ($ProjectInfo.Package.OutputDirectory -is [string]) {
+        "$( $ProjectInfo.Package.OutputDirectory )".Trim()
+    }
+    else {
+        "$( $ProjectInfo.Package.OutputDirectory.Path )".Trim()
+    }
+
     if ( [System.IO.Path]::IsPathRooted($outputDirectory)) {
         return $outputDirectory
     }

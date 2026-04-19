@@ -32,8 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the current project version from `project.json`, while keeping `nova --version` dedicated to the installed
   NovaModuleTools version.
 - Add `Pack-NovaModule` and `nova pack` so projects can build, test, and package the built module output as a `.nupkg`
-  artifact under `artifacts/packages/` by using generic metadata from `project.json`, including repositories whose test
-  runs reload or remove `NovaModuleTools` before the final package step.
+  artifact by using generic metadata from `project.json`, including repositories whose test runs reload or remove
+  `NovaModuleTools` before the final package step.
+    - Package output now uses `Package.OutputDirectory.Path` with `Package.OutputDirectory.Clean` defaulting to `true`.
+    - `nova pack` and `Pack-NovaModule` no longer depend on a separate `Package.Enabled` switch.
 
 ### Changed
 

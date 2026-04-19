@@ -10,9 +10,9 @@ function Get-NovaPackageMetadata {
     $tags = @($ProjectInfo.Manifest.Tags | Where-Object {-not [string]::IsNullOrWhiteSpace("$_")})
     $packageFileName = Get-NovaPackageFileName -ProjectInfo $ProjectInfo -PackageId $packageId
     $outputDirectory = Get-NovaPackageOutputDirectory -ProjectInfo $ProjectInfo
+    $cleanOutputDirectory = [bool]$ProjectInfo.Package.OutputDirectory.Clean
 
     return [pscustomobject]@{
-        Enabled = [bool]$ProjectInfo.Package.Enabled
         Id = $packageId
         Version = "$( $ProjectInfo.Version )".Trim()
         Authors = $authors
@@ -23,6 +23,7 @@ function Get-NovaPackageMetadata {
         LicenseUrl = "$( $ProjectInfo.Manifest.LicenseUri )".Trim()
         PackageFileName = $packageFileName
         OutputDirectory = $outputDirectory
+        CleanOutputDirectory = $cleanOutputDirectory
         PackagePath = [System.IO.Path]::Join($outputDirectory, $packageFileName)
         ContentRoot = "content/$( $ProjectInfo.ProjectName )"
     }

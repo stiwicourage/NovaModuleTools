@@ -183,7 +183,22 @@ PS> nova pack
 ```
 
 The package command runs the normal build and test flow, then writes the generated package to
-`artifacts/packages/` by using the generic `Package` section in `project.json` when present.
+`artifacts/packages/` by default by using the generic `Package` section in `project.json` when present.
+
+Use this `project.json` shape when you want to control the package output directory:
+
+```json
+"Package": {
+  "OutputDirectory": {
+    "Path": "artifacts/packages",
+    "Clean": true
+  }
+}
+```
+
+- `Path` selects where the `.nupkg` is written.
+- `Clean` defaults to `true` and removes that output directory before a new package is created.
+- Set `Clean` to `false` when you want to keep existing files in the package output directory.
 
 ### Run code quality checks
 
