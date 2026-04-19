@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/14/2026
+ms.date: 04/19/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-NovaCli
 ---
@@ -41,8 +41,12 @@ PowerShell
 `-WhatIf`/`-Confirm` to the underlying cmdlet. That means `nova build -WhatIf` and
 `Invoke-NovaCli -Command build -WhatIf` both preview the build instead of running it.
 
-Use `nova pack` when you want to build, test, and package the current project into a `.nupkg` artifact. By default it
-writes to `artifacts/packages/`, and you can override that with `Package.OutputDirectory.Path` in `project.json`.
+Use `nova pack` when you want to build, test, and package the current project into one or more configured package
+artifacts. By default it writes a `.nupkg` to `artifacts/packages/`, and you can override that with
+`Package.OutputDirectory.Path` in `project.json`.
+
+Use `Package.Types` in `project.json` when you want to switch from the default `NuGet` output to `Zip`, or when you
+want both formats. Supported values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
 
 For local publish inside an imported PowerShell session, `nova publish -local` now reloads the published module from the
 resolved local install path after the copy succeeds. Preview or cancelled runs do not import anything.
@@ -118,7 +122,8 @@ Builds the module using `Invoke-NovaBuild`.
 nova pack
 ```
 
-Builds, tests, and packages the current project as a `.nupkg` artifact.
+Builds, tests, and packages the current project by using the configured `Package.Types` values. When `Package.Types` is
+omitted, `nova pack` creates a `.nupkg` by default.
 
 ### EXAMPLE 6
 

@@ -101,10 +101,13 @@ nova init -Example</code></pre>
             <section class="content-section" id="pack">
                 <h2>Create a package artifact</h2>
                 <pre><code>nova pack</code></pre>
-                <p><code>nova pack</code> runs the normal build and test flow, then writes a <code>.nupkg</code>
-                    artifact to <code>artifacts/packages/</code> by default.</p>
+                <p><code>nova pack</code> runs the normal build and test flow, then writes package artifacts to
+                    <code>artifacts/packages/</code> by default. When <code>Package.Types</code> is omitted, it creates
+                    a
+                    <code>.nupkg</code>.</p>
                 <p>Use the optional <code>Package</code> section in <code>project.json</code> when you want to override
-                    the package ID, output directory, or other generic package metadata. Use
+                    the package ID, package types, output directory, or other generic package metadata. Use
+                    <code>Package.Types</code> for <code>NuGet</code>, <code>Zip</code>, or both, and use
                     <code>Package.OutputDirectory.Path</code> for the target folder and
                     <code>Package.OutputDirectory.Clean</code> when you want to keep or clear existing package files
                     before a new package is created.</p>

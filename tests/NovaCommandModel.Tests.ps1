@@ -125,6 +125,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $projectInfo = Get-NovaProjectInfo -Path $projectRoot
 
             $projectInfo.Package.Id | Should -Be 'DefaultPackageProject'
+            $projectInfo.Package.Types | Should -Be @('NuGet')
             $projectInfo.Package.OutputDirectory.Path | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts/packages'))
             $projectInfo.Package.OutputDirectory.Clean | Should -BeTrue
             $projectInfo.Package.PackageFileName | Should -Be 'DefaultPackageProject.0.0.1.nupkg'
@@ -155,8 +156,71 @@ Describe 'Nova command model - project, help, and build behavior' {
 
             $projectInfo = Get-NovaProjectInfo -Path $projectRoot
 
+            $projectInfo.Package.Types | Should -Be @('NuGet')
             $projectInfo.Package.OutputDirectory.Path | Should -Be ([System.IO.Path]::Join($projectRoot, 'custom/packages'))
             $projectInfo.Package.OutputDirectory.Clean | Should -BeTrue
+        }
+    }
+
+    It 'Get-NovaProjectInfo resolves Package.Types scenarios correctly' -ForEach @(
+        @{
+            Name = 'defaults empty arrays to NuGet'
+            ProjectRootName = 'empty-package-types'
+            ProjectName = 'EmptyTypesProject'
+            Description = 'Empty package types test'
+            Version = '0.0.3'
+            Guid = '66666666-6666-6666-6666-666666666666'
+            Types = @()
+            ExpectedTypes = @('NuGet')
+        }
+        @{
+            Name = 'normalizes aliases, casing, and duplicates'
+            ProjectRootName = 'normalized-package-types'
+            ProjectName = 'NormalizedTypesProject'
+            Description = 'Normalized package types test'
+            Version = '0.0.4'
+            Guid = '77777777-7777-7777-7777-777777777777'
+            Types = @('zip', '.NUPKG', 'NuGet', '.zip')
+            ExpectedTypes = @('Zip', 'NuGet')
+        }
+        @{
+            Name = 'rejects unsupported values'
+            ProjectRootName = 'invalid-package-types'
+            ProjectName = 'InvalidTypesProject'
+            Description = 'Invalid package types test'
+            Version = '0.0.5'
+            Guid = '88888888-8888-8888-8888-888888888888'
+            Types = @('Tar')
+            ErrorMessage = 'Unsupported Package.Types value: Tar*'
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            $projectRoot = Join-Path $TestDrive $TestCase.ProjectRootName
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            $projectJson = ([ordered]@{
+                ProjectName = $TestCase.ProjectName
+                Description = $TestCase.Description
+                Version = $TestCase.Version
+                Manifest = [ordered]@{
+                    Author = 'Test Author'
+                    PowerShellHostVersion = '7.4'
+                    GUID = $TestCase.Guid
+                }
+                Package = [ordered]@{
+                    Types = $TestCase.Types
+                }
+            } | ConvertTo-Json -Depth 5)
+
+            Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
+
+            if ( $TestCase.ContainsKey('ErrorMessage')) {
+                {Get-NovaProjectInfo -Path $projectRoot} | Should -Throw $TestCase.ErrorMessage
+                return
+            }
+
+            (Get-NovaProjectInfo -Path $projectRoot).Package.Types | Should -Be $TestCase.ExpectedTypes
         }
     }
 

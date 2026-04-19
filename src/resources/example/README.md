@@ -71,6 +71,9 @@ After `Pack-NovaModule`, the package artifact is written to:
 src/resources/example/artifacts/packages/
 ```
 
+The example project sets `Package.Types` to `NuGet`, so the generated file is a `.nupkg` by default. Change
+`Package.Types` to `['Zip']` when you only want a `.zip`, or `['NuGet', 'Zip']` when you want both package formats.
+
 You can then import it and call:
 
 ```powershell

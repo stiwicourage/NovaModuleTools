@@ -81,7 +81,7 @@ Describe 'Nova command model - standalone CLI behavior' {
             $helpText | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
             ($helpText -match 'notification\s+Show or change prerelease self-update eligibility') | Should -BeTrue
             $helpText | Should -Match 'version\s+Show the current project version, or use -Installed for the locally installed project module version'
-            $helpText | Should -Match 'pack\s+Build, test, and package the module as a \.nupkg artifact'
+            $helpText | Should -Match 'pack\s+Build, test, and package the module as configured package artifact\(s\)'
             $versionText | Should -Be "$script:moduleName $installedModuleVersion"
             $projectVersionText | Should -Be $expectedProjectVersionText
         }
@@ -285,7 +285,7 @@ function Invoke-TestCliVerbose {
             $result | Should -Match 'version\s+Show the current project version, or use -Installed for the locally installed project module version'
             $result | Should -Match 'nova version -Installed'
             $result | Should -Match '--version\s+Show the installed NovaModuleTools module name and version'
-            $result | Should -Match 'pack\s+Build, test, and package the module as a \.nupkg artifact'
+            $result | Should -Match 'pack\s+Build, test, and package the module as configured package artifact\(s\)'
             $result | Should -Match 'publish\s+Build, test, and publish the module locally or to a repository'
         }
     }
@@ -293,12 +293,15 @@ function Invoke-TestCliVerbose {
     It 'Invoke-NovaCli pack routes to Pack-NovaModule' {
         InModuleScope $script:moduleName {
             Mock Pack-NovaModule {
-                [pscustomobject]@{PackagePath = '/tmp/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                @(
+                    [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                )
             }
 
-            $result = Invoke-NovaCli pack
+            $result = @(Invoke-NovaCli pack)
 
-            $result.PackagePath | Should -Be '/tmp/artifacts/packages/NovaModuleTools.1.2.3.nupkg'
+            $result.Type | Should -Be @('NuGet')
+            $result.PackagePath | Should -Be @('/tmp/artifacts/packages/NovaModuleTools.1.2.3.nupkg')
         }
     }
 

@@ -68,6 +68,13 @@
           "Id": {
             "type": "string"
           },
+          "Types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(?:[Nn][Uu][Gg][Ee][Tt]|[Zz][Ii][Pp]|\\.[Nn][Uu][Pp][Kk][Gg]|\\.[Zz][Ii][Pp])$"
+            }
+          },
           "OutputDirectory": {
             "anyOf": [
               {

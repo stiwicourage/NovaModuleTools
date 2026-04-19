@@ -5,7 +5,7 @@ function Assert-NovaPackageMetadata {
         [Parameter(Mandatory)][pscustomobject]$PackageMetadata
     )
 
-    foreach ($requiredField in @('Id', 'Version', 'Description', 'OutputDirectory', 'PackageFileName', 'PackagePath')) {
+    foreach ($requiredField in @('Type', 'Id', 'Version', 'Description', 'OutputDirectory', 'PackageFileName', 'PackagePath')) {
         if ( [string]::IsNullOrWhiteSpace($PackageMetadata.$requiredField)) {
             throw "Missing package metadata value: $requiredField"
         }

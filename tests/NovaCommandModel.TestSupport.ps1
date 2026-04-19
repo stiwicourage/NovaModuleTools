@@ -153,6 +153,9 @@ function Write-TestNovaCliProjectJson {
     "ProjectUri": ""
   },
   "Package": {
+    "Types": [
+      "NuGet"
+    ],
     "OutputDirectory": {
       "Path": "artifacts/packages",
       "Clean": true

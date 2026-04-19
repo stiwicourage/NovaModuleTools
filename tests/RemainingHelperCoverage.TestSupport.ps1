@@ -37,6 +37,27 @@ function Assert-TestNovaPackageArtifactContent {
     }
 }
 
+function Assert-TestNovaZipPackageArtifactContent {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$PackagePath
+    )
+
+    $archive = [System.IO.Compression.ZipFile]::OpenRead($PackagePath)
+    try {
+        $entryNames = @($archive.Entries | ForEach-Object FullName)
+        $entryNames | Should -Contain 'PackageProject/PackageProject.psd1'
+        $entryNames | Should -Contain 'PackageProject/PackageProject.psm1'
+        $entryNames | Should -Contain 'PackageProject/resources/nova'
+        $entryNames | Should -Not -Contain 'PackageProject.nuspec'
+        $entryNames | Should -Not -Contain '_rels/.rels'
+        $entryNames | Should -Not -Contain '[Content_Types].xml'
+    }
+    finally {
+        $archive.Dispose()
+    }
+}
+
 function Initialize-TestNovaPackageProjectLayout {
     [CmdletBinding()]
     param(
@@ -63,6 +84,7 @@ function Get-TestNovaPackageProjectInfo {
     param(
         [Parameter(Mandatory)][pscustomobject]$Layout,
         [Parameter(Mandatory)][bool]$CleanOutputDirectory,
+        [string[]]$PackageTypes = @('NuGet'),
         [switch]$OmitOptionalManifestMetadata
     )
 
@@ -89,6 +111,7 @@ function Get-TestNovaPackageProjectInfo {
         Manifest = $manifest
         Package = [ordered]@{
             Id = 'PackageProject'
+            Types = @($PackageTypes)
             OutputDirectory = [ordered]@{
                 Path = $Layout.PackageOutputDir
                 Clean = $CleanOutputDirectory

@@ -22,6 +22,9 @@
     "ProjectUri": "https://www.novamoduletools.com/"
   },
   "Package": {
+    "Types": [
+      "NuGet"
+    ],
     "OutputDirectory": {
       "Path": "artifacts/packages",
       "Clean": true

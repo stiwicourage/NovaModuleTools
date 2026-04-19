@@ -6,28 +6,39 @@ function Pack-NovaModule {
     $moduleContext = $ExecutionContext.SessionState.Module
     $workflowParams = Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference
     $projectInfo = Get-NovaProjectInfo
-    $packageMetadata = Get-NovaPackageMetadata -ProjectInfo $projectInfo
-    Assert-NovaPackageMetadata -PackageMetadata $packageMetadata
+    $packageMetadataList = @(Get-NovaPackageMetadataList -ProjectInfo $projectInfo)
+    foreach ($packageMetadata in $packageMetadataList) {
+        Assert-NovaPackageMetadata -PackageMetadata $packageMetadata
+    }
 
     Invoke-NovaBuild @workflowParams
     Test-NovaBuild @workflowParams
 
-    if (-not $PSCmdlet.ShouldProcess($packageMetadata.PackagePath, 'Create NuGet package from built module output')) {
+    $packagePathList = @($packageMetadataList.PackagePath)
+    $packageTarget = $packagePathList -join ', '
+    $packageAction = if ($packageMetadataList.Count -eq 1) {
+        "Create $( $packageMetadataList[0].Type ) package from built module output"
+    }
+    else {
+        'Create package artifacts from built module output'
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($packageTarget, $packageAction)) {
         return
     }
 
-    $packageHelper = Get-Command -Name New-NovaPackageArtifact -CommandType Function -ErrorAction SilentlyContinue
+    $packageHelper = Get-Command -Name New-NovaPackageArtifacts -CommandType Function -ErrorAction SilentlyContinue
     if ($null -ne $packageHelper) {
-        return New-NovaPackageArtifact -ProjectInfo $projectInfo -PackageMetadata $packageMetadata
+        return New-NovaPackageArtifacts -ProjectInfo $projectInfo -PackageMetadataList $packageMetadataList
     }
 
     $packagingModule = Import-Module $moduleContext.Path -Force -DisableNameChecking -PassThru
     $packageCreation = {
-        param($ProjectInfo, $PackageMetadata)
+        param($ProjectInfo, $PackageMetadataList)
 
-        New-NovaPackageArtifact -ProjectInfo $ProjectInfo -PackageMetadata $PackageMetadata
+        New-NovaPackageArtifacts -ProjectInfo $ProjectInfo -PackageMetadataList $PackageMetadataList
     }
 
-    return & $packagingModule $packageCreation $projectInfo $packageMetadata
+    return & $packagingModule $packageCreation $projectInfo $packageMetadataList
 }
 

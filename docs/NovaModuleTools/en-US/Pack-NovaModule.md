@@ -13,7 +13,7 @@ title: Pack-NovaModule
 
 ## SYNOPSIS
 
-Builds, tests, and packages the current project as a `.nupkg` artifact.
+Builds, tests, and packages the current project as one or more configured package artifacts.
 
 ## SYNTAX
 
@@ -26,21 +26,27 @@ PS> Pack-NovaModule [-WhatIf] [-Confirm] [<CommonParameters>]
 ## DESCRIPTION
 
 `Pack-NovaModule` runs the normal NovaModuleTools build and test flow, then packages the built module output from
-`dist/<ProjectName>/` into a NuGet-compatible `.nupkg` artifact.
+`dist/<ProjectName>/` into the package formats requested by `Package.Types`.
 
 The package is written to `artifacts/packages/` by default. You can override generic package metadata through the
 optional `Package` section in `project.json`.
 
-Use this `project.json` shape when you want to control the package output directory:
+Use this `project.json` shape when you want to control package types and the package output directory:
 
 ```json
 "Package": {
+"Types": ["NuGet", "Zip"],
   "OutputDirectory": {
 	"Path": "artifacts/packages",
 	"Clean": true
   }
 }
 ```
+
+`Package.Types` is optional. When it is missing, empty, or null, `Pack-NovaModule` defaults to `NuGet` and creates a
+`.nupkg` file.
+
+Supported `Package.Types` values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
 
 `Package.OutputDirectory.Clean` defaults to `true`, which deletes the configured package output directory before a new
 package is created. Set it to `false` when you want to keep existing files in that directory.
@@ -56,7 +62,8 @@ PowerShell Gallery.
 PS> Pack-NovaModule
 ```
 
-Builds the project, runs `Test-NovaBuild`, cleans `artifacts/packages/` by default, and writes a new `.nupkg` there.
+Builds the project, runs `Test-NovaBuild`, cleans `artifacts/packages/` by default, and writes a new `.nupkg` there
+when `Package.Types` is omitted or resolves to `NuGet`.
 
 ### EXAMPLE 2
 
@@ -69,12 +76,21 @@ Runs the same packaging workflow through the `nova` CLI.
 ### EXAMPLE 3
 
 ```powershell
+PS> Pack-NovaModule
+```
+
+When `Package.Types` is `@('NuGet', 'Zip')`, the command writes both `*.nupkg` and `*.zip` artifacts to the configured
+package output directory.
+
+### EXAMPLE 4
+
+```powershell
 PS> Pack-NovaModule -WhatIf
 ```
 
 Previews the build, test, and package workflow without writing a package artifact.
 
-### EXAMPLE 4
+### EXAMPLE 5
 
 ```powershell
 PS> Pack-NovaModule -Confirm
@@ -145,7 +161,8 @@ You can't pipe objects to this cmdlet.
 
 ### System.Management.Automation.PSCustomObject
 
-Returns package metadata that includes the generated package path, output directory, and source module directory.
+Returns one artifact metadata object per generated package, including the package type, generated package path, output
+directory, and source module directory.
 
 ## NOTES
 
@@ -163,8 +180,9 @@ Package metadata reuses values from `project.json` when possible, including:
 `Manifest.Tags`, `Manifest.ProjectUri`, `Manifest.ReleaseNotes`, and `Manifest.LicenseUri` are optional. When they are
 missing, `Pack-NovaModule` omits the matching package metadata fields instead of treating them as required.
 
-Use the top-level `Package` section only for generic packaging overrides such as output directory or package file name.
-`Pack-NovaModule` always allows packaging when you invoke it; there is no separate `Package.Enabled` switch.
+Use the top-level `Package` section only for generic packaging overrides such as package type selection, output
+directory, or package file name. `Pack-NovaModule` always allows packaging when you invoke it; there is no separate
+`Package.Enabled` switch.
 
 ## RELATED LINKS
 

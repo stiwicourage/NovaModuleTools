@@ -25,8 +25,12 @@
     "LicenseUri": "https://www.novamoduletools.com/license.html"
   },
   "Package": {
+    "Types": [
+      "NuGet"
+    ],
     "OutputDirectory": {
-      "Path": "artifacts/packages"
+      "Path": "artifacts/packages",
+      "Clean": true
     }
   },
   "Pester": {

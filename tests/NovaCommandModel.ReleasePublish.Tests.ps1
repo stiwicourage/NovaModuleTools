@@ -298,7 +298,7 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
-    It 'Pack-NovaModule runs build, test, and package creation in order' {
+    It 'Pack-NovaModule runs build, test, and package creation in order for all requested package types' {
         InModuleScope $script:moduleName {
             $script:steps = @()
 
@@ -318,6 +318,7 @@ Describe 'Nova command model - release and publish behavior' {
                     }
                     Package = [ordered]@{
                         Id = 'NovaModuleTools'
+                        Types = @('NuGet', 'Zip')
                         OutputDirectory = [ordered]@{
                             Path = '/tmp/project/artifacts/packages'
                             Clean = $true
@@ -330,15 +331,22 @@ Describe 'Nova command model - release and publish behavior' {
             }
             Mock Invoke-NovaBuild {$script:steps += 'build'}
             Mock Test-NovaBuild {$script:steps += 'test'}
-            Mock New-NovaPackageArtifact {
+            Mock New-NovaPackageArtifacts {
                 $script:steps += 'pack'
-                [pscustomobject]@{PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                @(
+                    [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                    [pscustomobject]@{Type = 'Zip'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.zip'}
+                )
             }
 
-            $result = Pack-NovaModule
+            $result = @(Pack-NovaModule)
 
             $script:steps -join ',' | Should -Be 'build,test,pack'
-            $result.PackagePath | Should -Be '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'
+            $result.Type | Should -Be @('NuGet', 'Zip')
+            $result.PackagePath | Should -Be @(
+                '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg',
+                '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.zip'
+            )
         }
     }
 
@@ -362,6 +370,7 @@ Describe 'Nova command model - release and publish behavior' {
                     }
                     Package = [ordered]@{
                         Id = 'NovaModuleTools'
+                        Types = @('NuGet', 'Zip')
                         OutputDirectory = [ordered]@{
                             Path = '/tmp/project/artifacts/packages'
                             Clean = $true
@@ -376,19 +385,22 @@ Describe 'Nova command model - release and publish behavior' {
             Mock Test-NovaBuild {$script:steps += 'test'}
             Mock Get-Command {
                 $null
-            } -ParameterFilter {$Name -eq 'New-NovaPackageArtifact' -and $CommandType -eq 'Function'}
+            } -ParameterFilter {$Name -eq 'New-NovaPackageArtifacts' -and $CommandType -eq 'Function'}
             Mock Import-Module {
                 $ExecutionContext.SessionState.Module
             } -ParameterFilter {$Name -eq $ExecutionContext.SessionState.Module.Path -and $PassThru}
-            Mock New-NovaPackageArtifact {
+            Mock New-NovaPackageArtifacts {
                 $script:steps += 'pack'
-                [pscustomobject]@{PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                @(
+                    [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                    [pscustomobject]@{Type = 'Zip'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.zip'}
+                )
             }
 
-            $result = Pack-NovaModule
+            $result = @(Pack-NovaModule)
 
             $script:steps -join ',' | Should -Be 'build,test,pack'
-            $result.PackagePath | Should -Be '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'
+            $result.Type | Should -Be @('NuGet', 'Zip')
             Assert-MockCalled Import-Module -Times 1 -ParameterFilter {$Name -eq $ExecutionContext.SessionState.Module.Path -and $PassThru}
         }
     }
@@ -425,13 +437,13 @@ Describe 'Nova command model - release and publish behavior' {
             }
             Mock Invoke-NovaBuild {$script:steps += "build:$WhatIfPreference"}
             Mock Test-NovaBuild {$script:steps += "test:$WhatIfPreference"}
-            Mock New-NovaPackageArtifact {$script:steps += 'pack'}
+            Mock New-NovaPackageArtifacts {$script:steps += 'pack'}
 
             $result = Pack-NovaModule -WhatIf
 
             $result | Should -BeNullOrEmpty
             $script:steps -join ',' | Should -Be 'build:True,test:True'
-            Assert-MockCalled New-NovaPackageArtifact -Times 0
+            Assert-MockCalled New-NovaPackageArtifacts -Times 0
         }
     }
 
@@ -451,6 +463,7 @@ Describe 'Nova command model - release and publish behavior' {
                 }
                 Package = [ordered]@{
                     Id = 'PackageProject'
+                    Types = @('NuGet')
                     OutputDirectory = [ordered]@{
                         Path = '/tmp/project/artifacts/packages'
                         Clean = $true
@@ -463,6 +476,7 @@ Describe 'Nova command model - release and publish behavior' {
 
             $result = Get-NovaPackageMetadata -ProjectInfo $projectInfo
 
+            $result.Type | Should -Be 'NuGet'
             $result.Id | Should -Be 'PackageProject'
             $result.Version | Should -Be '2.3.4'
             $result.Authors | Should -Be @('Author One')
@@ -474,6 +488,41 @@ Describe 'Nova command model - release and publish behavior' {
             $result.OutputDirectory | Should -Be '/tmp/project/artifacts/packages'
             $result.CleanOutputDirectory | Should -BeTrue
             $result.PackagePath | Should -Be '/tmp/project/artifacts/packages/PackageProject.2.3.4.nupkg'
+        }
+    }
+
+    It 'Get-NovaPackageMetadataList returns one metadata object per requested package type' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'PackageProject'
+                Version = '2.3.4'
+                ProjectRoot = '/tmp/project'
+                Description = 'Top-level description'
+                Manifest = [ordered]@{
+                    Author = 'Author One'
+                    Tags = @('Nova', 'Packaging')
+                }
+                Package = [ordered]@{
+                    Id = 'PackageProject'
+                    Types = @('NuGet', 'Zip')
+                    OutputDirectory = [ordered]@{
+                        Path = '/tmp/project/artifacts/packages'
+                        Clean = $true
+                    }
+                    PackageFileName = 'PackageProject.2.3.4.nupkg'
+                    Authors = 'Author One'
+                    Description = 'Top-level description'
+                }
+            }
+
+            $result = @(Get-NovaPackageMetadataList -ProjectInfo $projectInfo)
+
+            $result.Type | Should -Be @('NuGet', 'Zip')
+            $result.PackageFileName | Should -Be @('PackageProject.2.3.4.nupkg', 'PackageProject.2.3.4.zip')
+            $result.PackagePath | Should -Be @(
+                '/tmp/project/artifacts/packages/PackageProject.2.3.4.nupkg',
+                '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip'
+            )
         }
     }
 
@@ -489,6 +538,7 @@ Describe 'Nova command model - release and publish behavior' {
                 }
                 Package = [ordered]@{
                     Id = 'PackageProject'
+                    Types = @('NuGet')
                     OutputDirectory = [ordered]@{
                         Path = '/tmp/project/artifacts/packages'
                         Clean = $true

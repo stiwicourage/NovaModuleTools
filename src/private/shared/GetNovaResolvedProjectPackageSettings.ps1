@@ -8,6 +8,7 @@ function Get-NovaResolvedProjectPackageSettings {
     )
 
     $packageSettings = Get-NovaProjectPackageSettingsTable -ProjectData $ProjectData
+    $packageSettings['Types'] = @(Get-NovaResolvedProjectPackageTypeList -PackageSettings $packageSettings)
     $packageSettings['OutputDirectory'] = Get-NovaResolvedProjectPackageOutputDirectorySettings -PackageSettings $packageSettings -ProjectRoot $ProjectRoot
     Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'Id' -Value $ProjectData['ProjectName'] -TreatWhitespaceAsMissing
 

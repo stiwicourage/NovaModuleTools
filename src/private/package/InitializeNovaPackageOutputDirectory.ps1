@@ -3,8 +3,13 @@ function Initialize-NovaPackageOutputDirectory {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
-        [Parameter(Mandatory)][pscustomobject]$PackageMetadata
+        [Alias('PackageMetadata')][Parameter(Mandatory)][object[]]$PackageMetadataList
     )
+
+    $packageMetadata = @($PackageMetadataList)[0]
+    if ($null -eq $packageMetadata) {
+        throw 'Package metadata list cannot be empty.'
+    }
 
     if ($PackageMetadata.CleanOutputDirectory) {
         Clear-NovaPackageOutputDirectory -ProjectInfo $ProjectInfo -OutputDirectory $PackageMetadata.OutputDirectory
