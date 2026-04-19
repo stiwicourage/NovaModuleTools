@@ -14,8 +14,8 @@ title: NovaModuleTools Module
 
 ## Description
 
-NovaModuleTools helps you scaffold, build, test, version, and publish PowerShell modules with a consistent project
-layout and a repeatable workflow.
+NovaModuleTools helps you scaffold, build, test, package, version, and publish PowerShell modules with a consistent
+project layout and a repeatable workflow.
 
 Use the module when you want a structured path from source files under `src/` to a built module under `dist/`, including
 manifest generation, external help generation, resource copying, and Pester-based validation.
@@ -45,6 +45,10 @@ Routes the `nova` CLI experience through a single PowerShell command entrypoint.
 ### `PS> Invoke-NovaRelease`
 
 Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
+
+### `PS> Pack-NovaModule`
+
+Builds, tests, and packages the current project as a `.nupkg` artifact.
 
 ### `PS> Test-NovaBuild`
 

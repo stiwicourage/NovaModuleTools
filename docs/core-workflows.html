@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
-    <title>NovaModuleTools — PowerShell module build, test, bump, and release workflows</title>
-    <meta content="Follow the normal NovaModuleTools workflow for scaffolding, building, testing, versioning, and releasing a PowerShell module."
+    <title>NovaModuleTools — PowerShell module build, test, package, bump, and release workflows</title>
+    <meta content="Follow the normal NovaModuleTools workflow for scaffolding, building, testing, packaging, versioning, and releasing a PowerShell module."
           name="description">
     <meta content="index,follow,max-image-preview:large" name="robots">
     <meta content="#0b1020" name="theme-color">
@@ -12,14 +12,16 @@
     <link href="./assets/icon.png" rel="icon" type="image/png">
     <link href="./assets/icon.png" rel="apple-touch-icon">
     <meta content="article" property="og:type">
-    <meta content="NovaModuleTools — PowerShell module build, test, bump, and release workflows" property="og:title">
-    <meta content="Learn the standard NovaModuleTools workflow for scaffolding, building, testing, versioning, and releasing a PowerShell module."
+    <meta content="NovaModuleTools — PowerShell module build, test, package, bump, and release workflows"
+          property="og:title">
+    <meta content="Learn the standard NovaModuleTools workflow for scaffolding, building, testing, packaging, versioning, and releasing a PowerShell module."
           property="og:description">
     <meta content="https://www.novamoduletools.com/core-workflows.html" property="og:url">
     <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
     <meta content="summary" name="twitter:card">
-    <meta content="NovaModuleTools — PowerShell module build, test, bump, and release workflows" name="twitter:title">
-    <meta content="Learn the standard NovaModuleTools workflow for scaffolding, building, testing, versioning, and releasing a PowerShell module."
+    <meta content="NovaModuleTools — PowerShell module build, test, package, bump, and release workflows"
+          name="twitter:title">
+    <meta content="Learn the standard NovaModuleTools workflow for scaffolding, building, testing, packaging, versioning, and releasing a PowerShell module."
           name="twitter:description">
     <link href="./assets/site.css" rel="stylesheet">
     <script type="application/ld+json">
@@ -27,7 +29,7 @@
             "@context": "https://schema.org",
             "@type": "TechArticle",
             "headline": "NovaModuleTools Core Workflows",
-            "description": "Build, test, bump, and release PowerShell modules with NovaModuleTools.",
+            "description": "Build, test, package, bump, and release PowerShell modules with NovaModuleTools.",
             "url": "https://www.novamoduletools.com/core-workflows.html"
         }
     </script>
@@ -52,7 +54,7 @@
 <main class="page-shell">
     <section class="guide-hero">
         <p class="eyebrow">Core workflows</p>
-        <h1>Use NovaModuleTools as a repeatable scaffold → build → test → bump → release flow</h1>
+        <h1>Use NovaModuleTools as a repeatable scaffold → build → test → pack → bump → release flow</h1>
         <p class="lead">This guide explains the normal command sequence for day-to-day PowerShell module work.</p>
     </section>
 
@@ -63,6 +65,7 @@
                 <li><a href="#scaffold">Scaffold</a></li>
                 <li><a href="#build">Build</a></li>
                 <li><a href="#test">Test</a></li>
+                <li><a href="#pack">Pack</a></li>
                 <li><a href="#bump">Version bump</a></li>
                 <li><a href="#release">Release</a></li>
             </ul>
@@ -93,6 +96,21 @@ nova init -Example</code></pre>
                     under <code>artifacts/TestResults.xml</code>.</p>
                 <p>If your project uses nested test folders, discovery follows the <code>BuildRecursiveFolders</code>
                     setting in <code>project.json</code>.</p>
+            </section>
+
+            <section class="content-section" id="pack">
+                <h2>Create a package artifact</h2>
+                <pre><code>nova pack</code></pre>
+                <p><code>nova pack</code> runs the normal build and test flow, then writes package artifacts to
+                    <code>artifacts/packages/</code> by default. When <code>Package.Types</code> is omitted, it creates
+                    a
+                    <code>.nupkg</code>.</p>
+                <p>Use the optional <code>Package</code> section in <code>project.json</code> when you want to override
+                    the package ID, package types, output directory, or other generic package metadata. Use
+                    <code>Package.Types</code> for <code>NuGet</code>, <code>Zip</code>, or both, and use
+                    <code>Package.OutputDirectory.Path</code> for the target folder and
+                    <code>Package.OutputDirectory.Clean</code> when you want to keep or clear existing package files
+                    before a new package is created.</p>
             </section>
 
             <section class="content-section" id="bump">

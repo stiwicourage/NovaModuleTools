@@ -61,6 +61,58 @@
                 "PowerShellHostVersion",
                 "GUID"
             ]
+        },
+      "Package": {
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": "string"
+          },
+          "Types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(?:[Nn][Uu][Gg][Ee][Tt]|[Zz][Ii][Pp]|\\.[Nn][Uu][Pp][Kk][Gg]|\\.[Zz][Ii][Pp])$"
+            }
+          },
+          "OutputDirectory": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "Path": {
+                    "type": "string"
+                  },
+                  "Clean": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            ]
+          },
+          "PackageFileName": {
+            "type": "string"
+          },
+          "Authors": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "Description": {
+            "type": "string"
+          }
+        }
         }
     },
     "required": [

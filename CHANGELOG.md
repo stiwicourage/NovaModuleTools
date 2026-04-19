@@ -31,6 +31,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `nova version -Installed` so users can compare the locally installed version of the current project/module with
   the current project version from `project.json`, while keeping `nova --version` dedicated to the installed
   NovaModuleTools version.
+- Add `Pack-NovaModule` and `nova pack` so projects can build, test, and package the built module output as a `.nupkg`
+  artifact by using generic metadata from `project.json`, including repositories whose test runs reload or remove
+  `NovaModuleTools` before the final package step.
+    - Package output now supports `Package.Types` with case-insensitive `NuGet`, `Zip`, `.nupkg`, and `.zip` values.
+    - Omitting `Package.Types` still defaults packaging to a `.nupkg` artifact.
+    - Selecting both `NuGet` and `Zip` creates both package formats in the configured output directory.
+    - Package output now uses `Package.OutputDirectory.Path` with `Package.OutputDirectory.Clean` defaulting to `true`.
+    - `nova pack` and `Pack-NovaModule` no longer depend on a separate `Package.Enabled` switch.
 
 ### Changed
 
@@ -45,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
+- Fix `Pack-NovaModule` and `nova pack` so schema-optional `Manifest` metadata such as `ProjectUri`, `ReleaseNotes`,
+  `LicenseUri`, and `Tags` are omitted cleanly instead of causing packaging failures when they are not present.
 
 ### Documentation
 

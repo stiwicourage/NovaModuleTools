@@ -25,6 +25,9 @@ function Invoke-NovaCli {
         'test' {
             return Test-NovaBuild @mutatingCommonParameters
         }
+        'pack' {
+            return Pack-NovaModule @mutatingCommonParameters
+        }
         'init' {
             if ($WhatIfPreference) {
                 throw "The 'nova init' CLI command does not support -WhatIf. Run 'nova init' or 'nova init -Path <path>' without -WhatIf."
@@ -49,16 +52,7 @@ function Invoke-NovaCli {
             return Invoke-NovaRelease -PublishOption $options @mutatingCommonParameters
         }
         'notification' {
-            $notificationAction = ConvertFrom-NovaNotificationCliArgument -Arguments $Arguments
-            if ($notificationAction -eq 'status') {
-                return Get-NovaUpdateNotificationPreference @commonParameters
-            }
-
-            if ($notificationAction -eq 'enable') {
-                return Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications @mutatingCommonParameters
-            }
-
-            return Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications @mutatingCommonParameters
+            return Invoke-NovaCliNotificationCommand -Arguments $Arguments -CommonParameters $commonParameters -MutatingCommonParameters $mutatingCommonParameters
         }
         '--version' {
             $moduleName = $ExecutionContext.SessionState.Module.Name

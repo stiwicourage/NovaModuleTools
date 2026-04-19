@@ -172,6 +172,41 @@ Notes:
 - it writes NUnit XML to `artifacts/TestResults.xml`
 - it respects `BuildRecursiveFolders` when discovering tests
 
+### Create a package artifact
+
+Use the explicit packaging workflow when you want a package artifact for a Nova project without publishing to a
+PowerShell repository:
+
+```powershell
+PS> Pack-NovaModule
+PS> nova pack
+```
+
+The package command runs the normal build and test flow, then writes the generated package artifacts to
+`artifacts/packages/` by default by using the generic `Package` section in `project.json` when present.
+When `Manifest.Tags`, `Manifest.ProjectUri`, `Manifest.ReleaseNotes`, or `Manifest.LicenseUri` are present, Nova
+copies them into the generated package metadata; when they are omitted, packaging still succeeds and the matching
+package metadata fields are simply left out.
+
+Use this `project.json` shape when you want to control the package types and output directory:
+
+```json
+"Package": {
+"Types": ["NuGet", "Zip"],
+  "OutputDirectory": {
+    "Path": "artifacts/packages",
+    "Clean": true
+  }
+}
+```
+
+- `Types` is optional. When it is missing, empty, or null, Nova defaults to `NuGet` and creates a `.nupkg`.
+- Supported `Types` values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
+- Use `Types = ["Zip"]` when you only want a `.zip`, or `Types = ["NuGet", "Zip"]` when you want both files.
+- `Path` selects where the package artifact(s) are written.
+- `Clean` defaults to `true` and removes that output directory before a new package is created.
+- Set `Clean` to `false` when you want to keep existing files in the package output directory.
+
 ### Run code quality checks
 
 Run ScriptAnalyzer with the repository helper:

@@ -105,6 +105,125 @@ Describe 'Nova command model - project, help, and build behavior' {
         }
     }
 
+    It 'Get-NovaProjectInfo exposes Package defaults when omitted' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'default-package-option'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            $projectJson = ([ordered]@{
+                ProjectName = 'DefaultPackageProject'
+                Description = 'Default package option test'
+                Version = '0.0.1'
+                Manifest = [ordered]@{
+                    Author = 'Test Author'
+                    PowerShellHostVersion = '7.4'
+                    GUID = '44444444-4444-4444-4444-444444444444'
+                }
+            } | ConvertTo-Json -Depth 5)
+
+            Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
+
+            $projectInfo = Get-NovaProjectInfo -Path $projectRoot
+
+            $projectInfo.Package.Id | Should -Be 'DefaultPackageProject'
+            $projectInfo.Package.Types | Should -Be @('NuGet')
+            $projectInfo.Package.OutputDirectory.Path | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts/packages'))
+            $projectInfo.Package.OutputDirectory.Clean | Should -BeTrue
+            $projectInfo.Package.PackageFileName | Should -Be 'DefaultPackageProject.0.0.1.nupkg'
+            $projectInfo.Package.Authors | Should -Be 'Test Author'
+            $projectInfo.Package.Description | Should -Be 'Default package option test'
+        }
+    }
+
+    It 'Get-NovaProjectInfo normalizes the legacy Package.OutputDirectory string to the new object shape' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'legacy-package-output-directory'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            $projectJson = ([ordered]@{
+                ProjectName = 'LegacyPackageProject'
+                Description = 'Legacy package option test'
+                Version = '0.0.2'
+                Manifest = [ordered]@{
+                    Author = 'Legacy Author'
+                    PowerShellHostVersion = '7.4'
+                    GUID = '55555555-5555-5555-5555-555555555555'
+                }
+                Package = [ordered]@{
+                    OutputDirectory = 'custom/packages'
+                }
+            } | ConvertTo-Json -Depth 5)
+
+            Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
+
+            $projectInfo = Get-NovaProjectInfo -Path $projectRoot
+
+            $projectInfo.Package.Types | Should -Be @('NuGet')
+            $projectInfo.Package.OutputDirectory.Path | Should -Be ([System.IO.Path]::Join($projectRoot, 'custom/packages'))
+            $projectInfo.Package.OutputDirectory.Clean | Should -BeTrue
+        }
+    }
+
+    It 'Get-NovaProjectInfo resolves Package.Types scenarios correctly' -ForEach @(
+        @{
+            Name = 'defaults empty arrays to NuGet'
+            ProjectRootName = 'empty-package-types'
+            ProjectName = 'EmptyTypesProject'
+            Description = 'Empty package types test'
+            Version = '0.0.3'
+            Guid = '66666666-6666-6666-6666-666666666666'
+            Types = @()
+            ExpectedTypes = @('NuGet')
+        }
+        @{
+            Name = 'normalizes aliases, casing, and duplicates'
+            ProjectRootName = 'normalized-package-types'
+            ProjectName = 'NormalizedTypesProject'
+            Description = 'Normalized package types test'
+            Version = '0.0.4'
+            Guid = '77777777-7777-7777-7777-777777777777'
+            Types = @('zip', '.NUPKG', 'NuGet', '.zip')
+            ExpectedTypes = @('Zip', 'NuGet')
+        }
+        @{
+            Name = 'rejects unsupported values'
+            ProjectRootName = 'invalid-package-types'
+            ProjectName = 'InvalidTypesProject'
+            Description = 'Invalid package types test'
+            Version = '0.0.5'
+            Guid = '88888888-8888-8888-8888-888888888888'
+            Types = @('Tar')
+            ErrorMessage = 'Unsupported Package.Types value: Tar*'
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            $projectRoot = Join-Path $TestDrive $TestCase.ProjectRootName
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            $projectJson = ([ordered]@{
+                ProjectName = $TestCase.ProjectName
+                Description = $TestCase.Description
+                Version = $TestCase.Version
+                Manifest = [ordered]@{
+                    Author = 'Test Author'
+                    PowerShellHostVersion = '7.4'
+                    GUID = $TestCase.Guid
+                }
+                Package = [ordered]@{
+                    Types = $TestCase.Types
+                }
+            } | ConvertTo-Json -Depth 5)
+
+            Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
+
+            if ( $TestCase.ContainsKey('ErrorMessage')) {
+                {Get-NovaProjectInfo -Path $projectRoot} | Should -Throw $TestCase.ErrorMessage
+                return
+            }
+
+            (Get-NovaProjectInfo -Path $projectRoot).Package.Types | Should -Be $TestCase.ExpectedTypes
+        }
+    }
+
     It 'build output includes the generated external help file' {
         Test-Path -LiteralPath $script:helpXmlPath | Should -BeTrue
     }
@@ -198,6 +317,7 @@ Describe 'Nova command model - project, help, and build behavior' {
     It 'Get-Help surfaces native WhatIf and Confirm support for mutating public commands' {
         foreach ($commandName in @(
             'Invoke-NovaBuild',
+            'Pack-NovaModule',
             'Test-NovaBuild',
             'Publish-NovaModule',
             'Invoke-NovaRelease',
@@ -222,11 +342,13 @@ Describe 'Nova command model - project, help, and build behavior' {
             Mock Build-Manifest {}
             Mock Build-Help {}
             Mock Copy-ProjectResource {}
+            Mock New-NovaPackageArtifact {}
             Mock Invoke-NovaBuildUpdateNotification {}
 
             Invoke-NovaBuild
 
             Assert-MockCalled Build-Module -Times 1
+            Assert-MockCalled New-NovaPackageArtifact -Times 0
             Assert-MockCalled Invoke-NovaBuildUpdateNotification -Times 1
         }
     }

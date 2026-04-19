@@ -1,4 +1,34 @@
+$script:remainingHelperCoverageTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'RemainingHelperCoverage.TestSupport.ps1')).Path
+$global:remainingHelperCoverageTestSupportFunctionNameList = @(
+    'Assert-TestNovaPackageArtifactContent',
+    'Assert-TestNovaZipPackageArtifactContent',
+    'Initialize-TestNovaPackageProjectLayout',
+    'Get-TestNovaPackageProjectInfo'
+)
+
+. $script:remainingHelperCoverageTestSupportPath
+
+foreach ($functionName in $global:remainingHelperCoverageTestSupportFunctionNameList) {
+    $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+    Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+}
+
 BeforeAll {
+    $remainingHelperCoverageTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'RemainingHelperCoverage.TestSupport.ps1')).Path
+    $remainingHelperCoverageTestSupportFunctionNameList = @(
+        'Assert-TestNovaPackageArtifactContent',
+        'Assert-TestNovaZipPackageArtifactContent',
+        'Initialize-TestNovaPackageProjectLayout',
+        'Get-TestNovaPackageProjectInfo'
+    )
+
+    . $remainingHelperCoverageTestSupportPath
+
+    foreach ($functionName in $remainingHelperCoverageTestSupportFunctionNameList) {
+        $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+        Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+    }
+
     $here = Split-Path -Parent $PSCommandPath
     $script:repoRoot = Split-Path -Parent $here
     $script:moduleName = (Get-Content -LiteralPath (Join-Path $script:repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
@@ -112,6 +142,45 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
             Assert-MockCalled Test-Json -Times 1 -ParameterFilter {
                 $Path -eq 'project.json' -and $Schema -eq '{"title":"build"}'
             }
+        }
+    }
+
+    It 'Test-ProjectSchema accepts Package.Types aliases case-insensitively and rejects unsupported values' -ForEach @(
+        @{Name = 'accepts mixed-case aliases'; Types = @('.NuPkg', 'ZIP'); Expected = $true; Throws = $false; ErrorMessage = $null}
+        @{Name = 'rejects unsupported type'; Types = @('Tar'); Expected = $null; Throws = $true; ErrorMessage = '*The JSON is not valid with the schema*'}
+    ) {
+        $projectRoot = Join-Path $TestDrive $_.Name.Replace(' ', '-')
+        New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+        $projectJson = ([ordered]@{
+            ProjectName = 'SchemaTypesProject'
+            Description = 'Schema package types test'
+            Version = '0.0.1'
+            Manifest = [ordered]@{
+                Author = 'Test Author'
+                PowerShellHostVersion = '7.4'
+                GUID = '99999999-9999-9999-9999-999999999999'
+            }
+            Package = [ordered]@{
+                Types = $_.Types
+            }
+        } | ConvertTo-Json -Depth 5)
+        Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
+
+        Push-Location $projectRoot
+        try {
+            InModuleScope $script:moduleName -Parameters @{Expected = $_.Expected; Throws = $_.Throws; ErrorMessage = $_.ErrorMessage} {
+                param($Expected, $Throws, $ErrorMessage)
+
+                if ($Throws) {
+                    {Test-ProjectSchema -Schema Build} | Should -Throw $ErrorMessage
+                    return
+                }
+
+                Test-ProjectSchema -Schema Build | Should -Be $Expected
+            }
+        }
+        finally {
+            Pop-Location
         }
     }
 
@@ -246,5 +315,102 @@ Locale: en-US
 
             {Get-NovaHelpLocale -HelpMarkdownFiles $helpFiles} | Should -Throw 'Multiple help locales found in docs metadata*'
         }
+    }
+
+    It 'Get-NovaPackageAuthorList normalizes string and array author values' {
+        InModuleScope $script:moduleName {
+            Get-NovaPackageAuthorList -AuthorValue 'Author One' | Should -Be @('Author One')
+            Get-NovaPackageAuthorList -AuthorValue @('Author One', ' Author Two ', 'Author One') | Should -Be @('Author One', 'Author Two')
+        }
+    }
+
+    It 'New-NovaPackageArtifact writes the expected package structure for <ExpectedType>' -ForEach @(
+        @{ProjectRootName = 'package-project'; PackageTypes = @('NuGet'); RequestedPackageType = 'NuGet'; ExpectedType = 'NuGet'}
+        @{ProjectRootName = 'zip-package-project'; PackageTypes = @('Zip'); RequestedPackageType = 'Zip'; ExpectedType = 'Zip'}
+    ) {
+        $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive $_.ProjectRootName)
+
+        $packagePath = InModuleScope $script:moduleName -Parameters @{
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true -PackageTypes $_.PackageTypes)
+            RequestedPackageType = $_.RequestedPackageType
+            ExpectedType = $_.ExpectedType
+        } {
+            param($ProjectInfo, $RequestedPackageType, $ExpectedType)
+
+            $packageMetadata = Get-NovaPackageMetadata -ProjectInfo $ProjectInfo -PackageType $RequestedPackageType
+            $result = New-NovaPackageArtifact -ProjectInfo $ProjectInfo -PackageMetadata $packageMetadata
+
+            $result.Type | Should -Be $ExpectedType
+            Test-Path -LiteralPath $result.PackagePath | Should -BeTrue
+            $result.PackagePath
+        }
+
+        $packagePath | Should -Not -BeNullOrEmpty
+        if ($_.ExpectedType -eq 'Zip') {
+            Assert-TestNovaZipPackageArtifactContent -PackagePath $packagePath
+            return
+        }
+
+        Assert-TestNovaPackageArtifactContent -PackagePath $packagePath
+    }
+
+    It 'New-NovaPackageArtifact honors Package.OutputDirectory.Clean when stale package files exist' -ForEach @(
+        @{Name = 'clean output directory'; CleanOutputDirectory = $true; ExpectedStaleFile = $false}
+        @{Name = 'preserve output directory'; CleanOutputDirectory = $false; ExpectedStaleFile = $true}
+    ) {
+        $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive $_.Name.Replace(' ', '-'))
+        $staleFilePath = Join-Path $layout.PackageOutputDir 'stale.txt'
+        New-Item -ItemType Directory -Path $layout.PackageOutputDir -Force | Out-Null
+        'stale' | Set-Content -LiteralPath $staleFilePath -Encoding utf8
+
+        InModuleScope $script:moduleName -Parameters @{
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $_.CleanOutputDirectory)
+        } {
+            param($ProjectInfo)
+
+            $packageMetadata = Get-NovaPackageMetadata -ProjectInfo $ProjectInfo
+            $null = New-NovaPackageArtifact -ProjectInfo $ProjectInfo -PackageMetadata $packageMetadata
+        }
+
+        Test-Path -LiteralPath $staleFilePath | Should -Be $_.ExpectedStaleFile
+    }
+
+    It 'New-NovaPackageArtifacts creates both configured package types after a single output-directory initialization' {
+        $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive 'multi-package-project')
+        $staleFilePath = Join-Path $layout.PackageOutputDir 'stale.txt'
+        New-Item -ItemType Directory -Path $layout.PackageOutputDir -Force | Out-Null
+        'stale' | Set-Content -LiteralPath $staleFilePath -Encoding utf8
+
+        $result = InModuleScope $script:moduleName -Parameters @{
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip'))
+        } {
+            param($ProjectInfo)
+
+            $packageMetadataList = @(Get-NovaPackageMetadataList -ProjectInfo $ProjectInfo)
+            @(New-NovaPackageArtifacts -ProjectInfo $ProjectInfo -PackageMetadataList $packageMetadataList)
+        }
+
+        $result.Type | Should -Be @('NuGet', 'Zip')
+        $result.PackageFileName | Should -Be @('PackageProject.2.3.4.nupkg', 'PackageProject.2.3.4.zip')
+        Test-Path -LiteralPath $staleFilePath | Should -BeFalse
+        Assert-TestNovaPackageArtifactContent -PackagePath $result[0].PackagePath
+        Assert-TestNovaZipPackageArtifactContent -PackagePath $result[1].PackagePath
+    }
+
+    It 'New-NovaPackageArtifact omits schema-optional manifest URI elements when they are not provided' {
+        $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive 'package-project-without-optional-manifest-metadata')
+        $packagePath = InModuleScope $script:moduleName -Parameters @{
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true -OmitOptionalManifestMetadata)
+        } {
+            param($ProjectInfo)
+
+            $packageMetadata = Get-NovaPackageMetadata -ProjectInfo $ProjectInfo
+            (New-NovaPackageNuspecXml -PackageMetadata $packageMetadata)
+        }
+
+        $packagePath | Should -Not -Match '<projectUrl>'
+        $packagePath | Should -Not -Match '<releaseNotes>'
+        $packagePath | Should -Not -Match '<licenseUrl>'
+        $packagePath | Should -Not -Match '<tags>'
     }
 }

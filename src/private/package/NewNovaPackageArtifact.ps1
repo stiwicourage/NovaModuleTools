@@ -1,0 +1,37 @@
+function New-NovaPackageArtifact {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Pack-NovaModule performs the user-facing ShouldProcess confirmation before calling this internal helper.')]
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
+        [Parameter(Mandatory)][pscustomobject]$PackageMetadata,
+        [switch]$OutputDirectoryReady
+    )
+
+    Assert-NovaPackageMetadata -PackageMetadata $PackageMetadata
+    if (-not $OutputDirectoryReady) {
+        Initialize-NovaPackageOutputDirectory -ProjectInfo $ProjectInfo -PackageMetadata $PackageMetadata
+    }
+
+    switch ($PackageMetadata.Type) {
+        'NuGet' {
+            New-NovaNuGetPackageArtifact -ProjectInfo $ProjectInfo -PackageMetadata $PackageMetadata
+        }
+        'Zip' {
+            New-NovaZipPackageArtifact -ProjectInfo $ProjectInfo -PackageMetadata $PackageMetadata
+        }
+        default {
+            throw "Unsupported package type: $( $PackageMetadata.Type )"
+        }
+    }
+
+    return [pscustomobject]@{
+        Type = $PackageMetadata.Type
+        Id = $PackageMetadata.Id
+        Version = $PackageMetadata.Version
+        PackageFileName = $PackageMetadata.PackageFileName
+        PackagePath = $PackageMetadata.PackagePath
+        OutputDirectory = $PackageMetadata.OutputDirectory
+        SourceModuleDirectory = $ProjectInfo.OutputModuleDir
+    }
+}
+
