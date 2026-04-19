@@ -13,15 +13,27 @@
         <loc>https://www.novamoduletools.com/working-with-modules.html</loc>
     </url>
     <url>
-        <loc>https://www.novamoduletools.com/troubleshooting.html</loc>
-    </url>
-    <url>
         <loc>https://www.novamoduletools.com/advanced.html</loc>
     </url>
     <url>
-        <loc>https://www.novamoduletools.com/license.html</loc>
+        <loc>https://www.novamoduletools.com/project-json-reference.html</loc>
+    </url>
+    <url>
+        <loc>https://www.novamoduletools.com/commands.html</loc>
+    </url>
+    <url>
+        <loc>https://www.novamoduletools.com/packaging-and-delivery.html</loc>
+    </url>
+    <url>
+        <loc>https://www.novamoduletools.com/versioning-and-updates.html</loc>
+    </url>
+    <url>
+        <loc>https://www.novamoduletools.com/troubleshooting.html</loc>
     </url>
     <url>
         <loc>https://www.novamoduletools.com/release-notes.html</loc>
+    </url>
+    <url>
+        <loc>https://www.novamoduletools.com/license.html</loc>
     </url>
 </urlset>

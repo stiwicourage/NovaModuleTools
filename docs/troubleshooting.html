@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
-    <title>NovaModuleTools — Troubleshooting PowerShell module workflow issues</title>
-    <meta content="Fix common NovaModuleTools issues around PowerShell module scaffolding, building, testing, module reloads, and version bumps."
+    <title>NovaModuleTools — Troubleshooting common workflow, package, and update problems</title>
+    <meta content="Fix common NovaModuleTools problems such as project.json lookup failures, init path mistakes, reload issues, missing test results, upload target errors, raw auth confusion, and choosing the wrong delivery command."
           name="description">
     <meta content="index,follow,max-image-preview:large" name="robots">
     <meta content="#0b1020" name="theme-color">
@@ -12,14 +12,15 @@
     <link href="./assets/icon.png" rel="icon" type="image/png">
     <link href="./assets/icon.png" rel="apple-touch-icon">
     <meta content="article" property="og:type">
-    <meta content="NovaModuleTools — Troubleshooting PowerShell module workflow issues" property="og:title">
-    <meta content="Resolve common NovaModuleTools problems around PowerShell module scaffolding, build, test, reload, and version bump workflows."
+    <meta content="NovaModuleTools — Troubleshooting common workflow, package, and update problems" property="og:title">
+    <meta content="Resolve common NovaModuleTools issues around paths, build/test flow, reload behavior, raw package upload, and version/update workflows."
           property="og:description">
     <meta content="https://www.novamoduletools.com/troubleshooting.html" property="og:url">
     <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
     <meta content="summary" name="twitter:card">
-    <meta content="NovaModuleTools — Troubleshooting PowerShell module workflow issues" name="twitter:title">
-    <meta content="Resolve common NovaModuleTools problems around PowerShell module scaffolding, build, test, reload, and version bump workflows."
+    <meta content="NovaModuleTools — Troubleshooting common workflow, package, and update problems"
+          name="twitter:title">
+    <meta content="Resolve common NovaModuleTools issues around paths, build/test flow, reload behavior, raw package upload, and version/update workflows."
           name="twitter:description">
     <link href="./assets/site.css" rel="stylesheet">
     <script type="application/ld+json">
@@ -27,7 +28,7 @@
             "@context": "https://schema.org",
             "@type": "TechArticle",
             "headline": "NovaModuleTools troubleshooting",
-            "description": "Resolve common PowerShell module workflow problems in NovaModuleTools.",
+            "description": "Troubleshoot common NovaModuleTools workflow issues.",
             "url": "https://www.novamoduletools.com/troubleshooting.html"
         }
     </script>
@@ -39,81 +40,231 @@
             <img alt="" class="site-brand__icon" src="./assets/icon.png">
             <span class="site-brand__text">NovaModuleTools</span>
         </a>
-        <nav aria-label="Primary" class="site-nav">
-            <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
-            <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
-            <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
-            <a class="site-nav__link site-nav__link--active" href="./troubleshooting.html">Troubleshooting</a>
-            <a class="site-nav__link" href="./advanced.html">Advanced</a>
-        </nav>
+        <details class="site-menu">
+            <summary class="site-menu__button">
+                <span class="site-menu__button-label">Menu</span>
+                <span class="site-menu__current">Troubleshooting</span>
+            </summary>
+            <nav aria-label="Primary" class="site-menu__panel">
+                <a class="site-nav__link" href="./index.html">Home</a>
+                <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+                <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+                <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
+                <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
+                <a class="site-nav__link" href="./commands.html">Command Reference</a>
+                <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
+                <a class="site-nav__link" href="./versioning-and-updates.html">Versioning &amp; Updates</a>
+                <a aria-current="page" class="site-nav__link site-nav__link--active" href="./troubleshooting.html">Troubleshooting</a>
+                <a class="site-nav__link" href="./advanced.html">Concepts</a>
+                <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
+            </nav>
+        </details>
     </div>
 </header>
 
 <main class="page-shell">
     <section class="guide-hero">
         <p class="eyebrow">Troubleshooting</p>
-        <h1>Common NovaModuleTools problems and how to get unstuck</h1>
-        <p class="lead">These are the issues users most often hit while scaffolding, building, testing, and versioning a
-            PowerShell module project.</p>
+        <h1>Fix the problem you can see, not the one you guess</h1>
+        <p class="lead">Use this page when the workflow outcome is confusing. Each section starts from a symptom,
+            explains the likely cause, shows the fix, and tells you what success should look like.</p>
     </section>
 
-    <section class="guide-content guide-content--single">
-        <section class="content-section">
-            <h2><code>nova init some/path</code> does not work</h2>
-            <p>Path input is explicit. Use:</p>
-            <pre><code>nova init -Path ~/Work</code></pre>
-            <p>or, for the full working example:</p>
-            <pre><code>nova init -Example -Path ~/Work</code></pre>
-        </section>
+    <section class="content-grid">
+        <aside class="toc-card">
+            <h2>On this page</h2>
+            <ul class="toc-list">
+                <li><a href="#project-json-not-found">project.json not found</a></li>
+                <li><a href="#nova-init-path">nova init some/path does not work</a></li>
+                <li><a href="#bump-no-commits">nova bump says the repository has no commits yet</a></li>
+                <li><a href="#reload-stale">the module does not reload after build</a></li>
+                <li><a href="#test-results">tests ran but I cannot find the results</a></li>
+                <li><a href="#psm1-errors">build errors point into the generated .psm1</a></li>
+                <li><a href="#install-cli-windows">Install-NovaCli says it is for macOS/Linux only</a></li>
+                <li><a href="#upload-target">upload target URL is missing</a></li>
+                <li><a href="#upload-auth">raw upload auth does not work</a></li>
+                <li><a href="#latest-artifacts">package output contains both versioned and latest artifacts</a></li>
+                <li><a href="#wrong-command">I expected publish, but I only created a package</a></li>
+            </ul>
+        </aside>
 
-        <section class="content-section">
-            <h2><code>nova bump</code> says the repository has no commits yet</h2>
-            <p><code>nova bump</code> chooses the version label from Git history. If the repository exists but has no
-                commits yet, create the first commit and run the command again.</p>
-            <pre><code>git add .
+        <div class="guide-content">
+            <section class="content-section" id="project-json-not-found">
+                <h2><code>project.json</code> not found</h2>
+                <p><strong>Likely cause:</strong> you are not running the command from a Nova project root, or the path
+                    you supplied does not point at a folder that contains <code>project.json</code>.</p>
+                <p><strong>Fix:</strong></p>
+                <pre><code>Set-Location ~/Work/&lt;YourProjectName&gt;
+Get-NovaProjectInfo</code></pre>
+                <p>If you are targeting a different location explicitly, use:</p>
+                <pre><code>Get-NovaProjectInfo -Path ~/Work/&lt;YourProjectName&gt;</code></pre>
+                <p><strong>Success looks like:</strong> <code>Get-NovaProjectInfo</code> returns a project object
+                    instead of throwing <code>Not a project folder. project.json not found</code>.</p>
+                <p><a class="text-link" href="./project-json-reference.html">See the project.json reference</a></p>
+            </section>
+
+            <section class="content-section" id="nova-init-path">
+                <h2><code>nova init some/path</code> does not work</h2>
+                <p><strong>Likely cause:</strong> positional paths are intentionally rejected by the CLI.</p>
+                <p><strong>Fix:</strong></p>
+                <pre><code>nova init -Path some/path
+nova init -Example -Path some/path</code></pre>
+                <p><strong>Success looks like:</strong> Nova accepts the command, prompts for project details, and
+                    creates the new scaffold under the specified parent directory.</p>
+                <p><a class="text-link" href="./getting-started.html#scaffold-example">See the scaffold quickstart</a>
+                </p>
+            </section>
+
+            <section class="content-section" id="bump-no-commits">
+                <h2><code>nova bump</code> says the repository has no commits yet</h2>
+                <p><strong>Likely cause:</strong> the current folder is a Git repository, but it has not recorded its
+                    first commit yet.</p>
+                <p><strong>Fix:</strong></p>
+                <pre><code>git add .
 git commit -m "feat: initial project scaffold"
 nova bump -WhatIf</code></pre>
-        </section>
+                <p><strong>Success looks like:</strong> <code>nova bump -WhatIf</code> shows a planned semantic version
+                    update instead of throwing the “repository has no commits yet” error.</p>
+                <p><a class="text-link" href="./versioning-and-updates.html#bump">See version bump rules</a></p>
+            </section>
 
-        <section class="content-section">
-            <h2>The module does not seem to reload after I rebuild</h2>
-            <p>PowerShell may still have the previous version loaded in memory. Remove the module first, then rebuild
-                and import again:</p>
-            <pre><code>$project = Get-NovaProjectInfo
+            <section class="content-section" id="reload-stale">
+                <h2>The module does not reload after build</h2>
+                <p><strong>Likely cause:</strong> PowerShell still has the older module loaded in memory.</p>
+                <p><strong>Fix:</strong></p>
+                <pre><code>$project = Get-NovaProjectInfo
 Remove-Module $project.ProjectName -ErrorAction SilentlyContinue
 nova build
 Import-Module $project.OutputModuleDir -Force</code></pre>
-        </section>
+                <p><strong>Success looks like:</strong> the imported module reflects your latest source changes.</p>
+                <p><a class="text-link" href="./working-with-modules.html#reload">See the reload guide</a></p>
+            </section>
 
-        <section class="content-section">
-            <h2>Tests fail but I cannot see where the results went</h2>
-            <p>The normal Nova test workflow writes XML results to:</p>
-            <pre><code>artifacts/TestResults.xml</code></pre>
-            <p>If you run Pester directly instead of through <code>nova test</code> / <code>Test-NovaBuild</code>, you
-                may get different output behavior.</p>
-        </section>
+            <section class="content-section" id="test-results">
+                <h2>Tests ran but I cannot find the results</h2>
+                <p><strong>Likely cause:</strong> you expected test output in a different location, or you ran Pester
+                    directly instead of through Nova.</p>
+                <p><strong>Fix:</strong> use the Nova workflow and check:</p>
+                <pre><code>artifacts/TestResults.xml</code></pre>
+                <p><strong>Success looks like:</strong> the file exists after a successful <code>Test-NovaBuild</code>
+                    or <code>nova test</code> run.</p>
+                <p><a class="text-link" href="./core-workflows.html#test">See the test workflow</a></p>
+            </section>
 
-        <section class="content-section">
-            <h2>Build errors point at the generated <code>.psm1</code> file</h2>
-            <p>Enable or keep <code>SetSourcePath</code> in <code>project.json</code>. NovaModuleTools will add <code>#
-                Source:</code> markers to the generated module so you can map errors back to the original files under
-                <code>src/</code>.</p>
-        </section>
+            <section class="content-section" id="psm1-errors">
+                <h2>Build errors point into the generated <code>.psm1</code></h2>
+                <p><strong>Likely cause:</strong> the generated module is showing you the combined output, but you need
+                    to map the error back to source files.</p>
+                <p><strong>Fix:</strong> keep <code>SetSourcePath</code> enabled in <code>project.json</code>.</p>
+                <pre><code>{
+  "SetSourcePath": true
+}</code></pre>
+                <p><strong>Success looks like:</strong> the generated module contains <code># Source:</code> markers
+                    that point back to the originating files under <code>src/</code>.</p>
+                <p><a class="text-link" href="./project-json-reference.html#top-level">See top-level build settings</a>
+                </p>
+            </section>
 
-        <section class="content-section">
-            <h2>I want the normal command flow after fixing an issue</h2>
-            <p>Go back to <a class="text-link" href="./core-workflows.html">Core Workflows</a> for the standard build,
-                test, bump, and release sequence, or use <a class="text-link" href="./working-with-modules.html">Working
-                    with Modules</a> if you need import and reload steps.</p>
-        </section>
+            <section class="content-section" id="install-cli-windows">
+                <h2><code>Install-NovaCli</code> says it is for macOS/Linux only</h2>
+                <p><strong>Likely cause:</strong> that is the current intended behavior. The standalone launcher is for
+                    macOS/Linux shell use.</p>
+                <p><strong>Fix:</strong> on Windows, import the module and use the <code>nova</code> alias inside
+                    PowerShell instead.</p>
+                <pre><code>Import-Module NovaModuleTools
+nova --help</code></pre>
+                <p><strong>Success looks like:</strong> you can run Nova commands from PowerShell on Windows without
+                    installing the standalone launcher.</p>
+                <p><a class="text-link" href="./getting-started.html#entrypoints">See entrypoint guidance</a></p>
+            </section>
+
+            <section class="content-section" id="upload-target">
+                <h2>Upload target URL is missing</h2>
+                <p><strong>Likely cause:</strong> you ran <code>Upload-NovaPackage</code> without <code>-Url</code> and
+                    without package or repository upload settings that resolve to a target URL.</p>
+                <p><strong>Fix:</strong> either pass <code>-Url</code> directly or configure
+                    <code>Package.RepositoryUrl</code> or <code>Package.Repositories[].Url</code>.</p>
+                <pre><code>Upload-NovaPackage -Url 'https://packages.example/raw/'
+
+# or in project.json
+{
+  "Package": {
+    "RepositoryUrl": "https://packages.example/raw/"
+  }
+}</code></pre>
+                <p><strong>Success looks like:</strong> upload resolves a concrete destination URL and starts sending
+                    matching artifacts.</p>
+                <p><a class="text-link" href="./packaging-and-delivery.html#upload">See upload target resolution</a></p>
+            </section>
+
+            <section class="content-section" id="upload-auth">
+                <h2>Raw upload auth does not work</h2>
+                <p><strong>Likely cause:</strong> the header name, scheme, token value, or environment-variable usage
+                    does not match what the raw endpoint expects.</p>
+                <p><strong>Fix checklist:</strong></p>
+                <ul class="plain-list">
+                    <li>Make sure <code>TokenEnvironmentVariable</code> contains the variable name, not the secret value
+                        itself.
+                    </li>
+                    <li>For bearer auth, use <code>HeaderName = "Authorization"</code> and <code>Scheme =
+                        "Bearer"</code>.
+                    </li>
+                    <li>For custom API keys, use the exact header name the server expects.</li>
+                    <li>For Basic auth, put the Base64-encoded <code>username:password</code> value in the environment
+                        variable and use <code>Scheme = "Basic"</code>.
+                    </li>
+                </ul>
+                <p><strong>Success looks like:</strong> the raw endpoint accepts the request and upload returns result
+                    objects with HTTP status codes instead of authentication failures.</p>
+                <p><a class="text-link" href="./project-json-reference.html#package">See package auth settings</a></p>
+            </section>
+
+            <section class="content-section" id="latest-artifacts">
+                <h2>Package output contains both versioned and <code>latest</code> artifacts</h2>
+                <p><strong>Likely cause:</strong> <code>Package.Latest</code> is enabled.</p>
+                <p><strong>Fix:</strong> if you only want versioned files, remove the setting or set it to
+                    <code>false</code>.</p>
+                <pre><code>{
+  "Package": {
+    "Latest": false
+  }
+}</code></pre>
+                <p><strong>Success looks like:</strong> the next package run creates only the normal versioned
+                    artifacts.</p>
+                <p><a class="text-link" href="./packaging-and-delivery.html#pack">See package output behavior</a></p>
+            </section>
+
+            <section class="content-section" id="wrong-command">
+                <h2>I expected publish, but I only created a package</h2>
+                <p><strong>Likely cause:</strong> you used <code>Pack-NovaModule</code> when you actually wanted <code>Upload-NovaPackage</code>,
+                    <code>Publish-NovaModule</code>, or <code>Invoke-NovaRelease</code>.</p>
+                <p><strong>Fix:</strong> choose the command based on the outcome you need:</p>
+                <ul class="plain-list">
+                    <li><strong>package file only:</strong> <code>Pack-NovaModule</code></li>
+                    <li><strong>raw HTTP upload:</strong> <code>Upload-NovaPackage</code></li>
+                    <li><strong>PowerShell repository publish:</strong> <code>Publish-NovaModule</code></li>
+                    <li><strong>version bump + publish orchestration:</strong> <code>Invoke-NovaRelease</code></li>
+                </ul>
+                <p><strong>Success looks like:</strong> the workflow result matches the actual destination you intended.
+                </p>
+                <p><a class="text-link" href="./packaging-and-delivery.html#choose-command">See the delivery command
+                    comparison</a></p>
+            </section>
+        </div>
     </section>
 </main>
 
 <footer class="footer">
     <div class="footer__inner">
-        <p class="footer__legal">NovaModuleTools is distributed under the <a class="legal-link" href="./license.html">MIT
-            License</a> and publishes <a class="legal-link" href="./release-notes.html">Release Notes</a> on this
-            site.</p>
+        <h2>If the symptom is clear, the fix is usually short</h2>
+        <p>Most Nova issues come down to working in the wrong folder, using the wrong command for the job, or forgetting
+            that the built module in <code>dist/</code> is the thing you should validate.</p>
+        <div class="hero__actions">
+            <a class="button button--primary" href="./commands.html">Open Command Reference</a>
+            <a class="button button--secondary" href="./core-workflows.html">Open Core Workflows</a>
+        </div>
+        <p class="footer__legal">Also available: <a class="legal-link" href="./release-notes.html">Release Notes</a> and
+            the <a class="legal-link" href="./license.html">MIT License</a>.</p>
     </div>
 </footer>
 </body>

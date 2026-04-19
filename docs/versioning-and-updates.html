@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>NovaModuleTools — Versioning, self-update, and notification preferences</title>
+    <meta content="Learn how NovaModuleTools handles semantic version bumps, version display commands, self-update workflows, prerelease eligibility, and notification preferences."
+          name="description">
+    <meta content="index,follow,max-image-preview:large" name="robots">
+    <meta content="#0b1020" name="theme-color">
+    <link href="https://www.novamoduletools.com/versioning-and-updates.html" rel="canonical">
+    <link href="./assets/icon.png" rel="icon" type="image/png">
+    <link href="./assets/icon.png" rel="apple-touch-icon">
+    <meta content="article" property="og:type">
+    <meta content="NovaModuleTools — Versioning, self-update, and notification preferences" property="og:title">
+    <meta content="Use this guide to understand nova bump, version display commands, self-update behavior, and stable versus prerelease update eligibility."
+          property="og:description">
+    <meta content="https://www.novamoduletools.com/versioning-and-updates.html" property="og:url">
+    <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
+    <meta content="summary" name="twitter:card">
+    <meta content="NovaModuleTools — Versioning, self-update, and notification preferences" name="twitter:title">
+    <meta content="Use this guide to understand nova bump, version display commands, self-update behavior, and stable versus prerelease update eligibility."
+          name="twitter:description">
+    <link href="./assets/site.css" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            "headline": "NovaModuleTools versioning and updates guide",
+            "description": "How to bump versions and self-update NovaModuleTools.",
+            "url": "https://www.novamoduletools.com/versioning-and-updates.html"
+        }
+    </script>
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">
+            <img alt="" class="site-brand__icon" src="./assets/icon.png">
+            <span class="site-brand__text">NovaModuleTools</span>
+        </a>
+        <details class="site-menu">
+            <summary class="site-menu__button">
+                <span class="site-menu__button-label">Menu</span>
+                <span class="site-menu__current">Versioning &amp; Updates</span>
+            </summary>
+            <nav aria-label="Primary" class="site-menu__panel">
+                <a class="site-nav__link" href="./index.html">Home</a>
+                <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+                <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+                <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
+                <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
+                <a class="site-nav__link" href="./commands.html">Command Reference</a>
+                <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
+                <a aria-current="page" class="site-nav__link site-nav__link--active"
+                   href="./versioning-and-updates.html">Versioning &amp; Updates</a>
+                <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+                <a class="site-nav__link" href="./advanced.html">Concepts</a>
+                <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
+            </nav>
+        </details>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="guide-hero">
+        <p class="eyebrow">How-to Guides</p>
+        <h1>Version your project intentionally and keep Nova up to date</h1>
+        <p class="lead">NovaModuleTools separates project versioning from self-updating the tool itself. This page
+            explains which command answers which question, how version bumps are chosen from Git history, and how stable
+            versus prerelease self-update eligibility works.</p>
+    </section>
+
+    <section class="content-grid">
+        <aside class="toc-card">
+            <h2>On this page</h2>
+            <ul class="toc-list">
+                <li><a href="#version-views">Choose the right version command</a></li>
+                <li><a href="#bump">Bump project versions</a></li>
+                <li><a href="#self-update">Self-update NovaModuleTools</a></li>
+                <li><a href="#notification-preferences">Manage prerelease eligibility</a></li>
+            </ul>
+        </aside>
+
+        <div class="guide-content">
+            <section class="content-section" id="version-views">
+                <h2>Choose the right version command</h2>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>What it shows</th>
+                            <th>When to use it</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><code>Get-NovaProjectInfo -Version</code> or <code>nova version</code></td>
+                            <td>The current version stored in the active project's <code>project.json</code>.</td>
+                            <td>Use this when you want to know what your project will build and publish as.</td>
+                        </tr>
+                        <tr>
+                            <td><code>nova version -Installed</code></td>
+                            <td>The version installed locally for the current project/module from the module path.</td>
+                            <td>Use this when you want to compare the installed copy against the current working
+                                project.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>nova --version</code></td>
+                            <td>The installed NovaModuleTools version.</td>
+                            <td>Use this when you are troubleshooting Nova itself or checking whether the tool needs an
+                                update.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pre><code>nova version
+nova version -Installed
+nova --version</code></pre>
+            </section>
+
+            <section class="content-section" id="bump">
+                <h2>Bump project versions</h2>
+                <p>Use <code>Update-NovaModuleVersion</code> or <code>nova bump</code> when you want Nova to choose the
+                    next semantic version based on Git history.</p>
+                <h3>How Nova chooses the bump label</h3>
+                <ul class="plain-list">
+                    <li><strong>Major</strong> for breaking changes</li>
+                    <li><strong>Minor</strong> for <code>feat:</code> commits</li>
+                    <li><strong>Patch</strong> for <code>fix:</code> commits and all other cases</li>
+                </ul>
+                <p>When Git tags exist, Nova uses commits since the latest tag. When the folder is not a Git repository,
+                    Nova falls back to a patch bump. When the repository exists but has no commits yet, Nova stops with
+                    a clear error.</p>
+                <pre><code>Update-NovaModuleVersion -WhatIf
+nova bump -WhatIf
+nova bump -Confirm</code></pre>
+                <div class="notice notice--warning">
+                    <strong>Empty repository rule.</strong>
+                    <p>If your Git repository exists but has no commits yet, Nova throws: <code>Cannot bump version
+                        because the repository has no commits yet. Create an initial commit first.</code></p>
+                </div>
+                <p>The standalone launcher uses a CLI-friendly confirmation flow for <code>nova bump -Confirm</code>. If
+                    you decline, Nova exits cleanly without writing a new version.</p>
+            </section>
+
+            <section class="content-section" id="self-update">
+                <h2>Self-update NovaModuleTools</h2>
+                <p>Use <code>Update-NovaModuleTool</code>, its compatibility alias <code>Update-NovaModuleTools</code>,
+                    or <code>nova update</code> to update the installed NovaModuleTools module itself.</p>
+                <h3>What self-update does</h3>
+                <ol class="plain-list plain-list--ordered">
+                    <li>Read the stored prerelease preference.</li>
+                    <li>Resolve the best eligible update candidate from PowerShell Gallery.</li>
+                    <li>Apply the update if one is available.</li>
+                    <li>Print the release notes link after a successful update.</li>
+                </ol>
+                <pre><code>Update-NovaModuleTool
+nova update</code></pre>
+                <p>If no newer version is available, <code>nova update</code> prints a friendly “You're up to date!”
+                    message together with the installed NovaModuleTools version.</p>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>State</th>
+                            <th>What happens</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Stable update available</td>
+                            <td>Nova can apply it normally without prerelease-specific confirmation.</td>
+                        </tr>
+                        <tr>
+                            <td>Only prerelease update available and prerelease eligibility is enabled</td>
+                            <td>Nova may target the prerelease, but it always asks for explicit confirmation before
+                                updating.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Prerelease eligibility disabled</td>
+                            <td>Nova ignores prerelease targets and stays on stable-only updates.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="content-section" id="notification-preferences">
+                <h2>Manage prerelease eligibility</h2>
+                <p>The update preference commands do not update the module by themselves. They only control whether
+                    prerelease self-update targets are eligible when you later run the update command.</p>
+                <pre><code>Get-NovaUpdateNotificationPreference
+Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
+Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
+nova notification
+nova notification -disable
+nova notification -enable</code></pre>
+                <h3>Recommended choices</h3>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>If you are…</th>
+                            <th>Recommended setting</th>
+                            <th>Why</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>using Nova on a stable-only workstation or CI runner</td>
+                            <td>Disable prerelease notifications</td>
+                            <td>You avoid prerelease self-update targets entirely.</td>
+                        </tr>
+                        <tr>
+                            <td>testing new Nova features early</td>
+                            <td>Enable prerelease notifications</td>
+                            <td>You allow prerelease targets, but still get an explicit confirmation prompt before they
+                                run.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><code>Get-NovaUpdateNotificationPreference</code> and <code>nova notification</code> return the
+                    current state and the settings path so you can confirm exactly what the stored preference is.</p>
+            </section>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="footer__inner">
+        <h2>Need release guidance next?</h2>
+        <p>Once your versioning rules are clear, move to the packaging and delivery guides so you can decide whether the
+            next step is package creation, repository publish, or a full release run.</p>
+        <div class="hero__actions">
+            <a class="button button--primary" href="./packaging-and-delivery.html">Open Packaging &amp; Delivery</a>
+            <a class="button button--secondary" href="./troubleshooting.html">Open Troubleshooting</a>
+        </div>
+        <p class="footer__legal">Also available: <a class="legal-link" href="./commands.html">Command Reference</a>, <a
+                class="legal-link" href="./release-notes.html">Release Notes</a>, and the <a class="legal-link"
+                                                                                             href="./license.html">MIT
+            License</a>.</p>
+    </div>
+</footer>
+</body>
+</html>
