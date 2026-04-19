@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `nova version -Installed` so users can compare the locally installed version of the current project/module with
   the current project version from `project.json`, while keeping `nova --version` dedicated to the installed
   NovaModuleTools version.
+- Add `Pack-NovaModule` and `nova pack` so projects can build, test, and package the built module output as a `.nupkg`
+  artifact under `artifacts/packages/` by using generic metadata from `project.json`, including repositories whose test
+  runs reload or remove `NovaModuleTools` before the final package step.
 
 ### Changed
 

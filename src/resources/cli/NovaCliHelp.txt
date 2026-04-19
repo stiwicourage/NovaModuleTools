@@ -10,6 +10,7 @@ work with the current project
    version    Show the current project version, or use -Installed for the locally installed project module version
    build      Build the module into the dist folder
    test       Run Pester tests for the project
+   pack       Build, test, and package the module as a .nupkg artifact
    bump       Update the module version in project.json
    update     Update the installed NovaModuleTools module using the stored prerelease preference
    notification Show or change prerelease self-update eligibility
@@ -35,6 +36,7 @@ Examples:
    nova version -Installed
    nova build
    nova test
+   nova pack
    nova bump -WhatIf
    nova update
    nova notification

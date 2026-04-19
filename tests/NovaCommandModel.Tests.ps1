@@ -105,6 +105,34 @@ Describe 'Nova command model - project, help, and build behavior' {
         }
     }
 
+    It 'Get-NovaProjectInfo exposes Package defaults when omitted' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'default-package-option'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            $projectJson = ([ordered]@{
+                ProjectName = 'DefaultPackageProject'
+                Description = 'Default package option test'
+                Version = '0.0.1'
+                Manifest = [ordered]@{
+                    Author = 'Test Author'
+                    PowerShellHostVersion = '7.4'
+                    GUID = '44444444-4444-4444-4444-444444444444'
+                }
+            } | ConvertTo-Json -Depth 5)
+
+            Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
+
+            $projectInfo = Get-NovaProjectInfo -Path $projectRoot
+
+            $projectInfo.Package.Enabled | Should -BeTrue
+            $projectInfo.Package.Id | Should -Be 'DefaultPackageProject'
+            $projectInfo.Package.OutputDirectory | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts/packages'))
+            $projectInfo.Package.PackageFileName | Should -Be 'DefaultPackageProject.0.0.1.nupkg'
+            $projectInfo.Package.Authors | Should -Be 'Test Author'
+            $projectInfo.Package.Description | Should -Be 'Default package option test'
+        }
+    }
+
     It 'build output includes the generated external help file' {
         Test-Path -LiteralPath $script:helpXmlPath | Should -BeTrue
     }
@@ -198,6 +226,7 @@ Describe 'Nova command model - project, help, and build behavior' {
     It 'Get-Help surfaces native WhatIf and Confirm support for mutating public commands' {
         foreach ($commandName in @(
             'Invoke-NovaBuild',
+            'Pack-NovaModule',
             'Test-NovaBuild',
             'Publish-NovaModule',
             'Invoke-NovaRelease',
@@ -222,11 +251,13 @@ Describe 'Nova command model - project, help, and build behavior' {
             Mock Build-Manifest {}
             Mock Build-Help {}
             Mock Copy-ProjectResource {}
+            Mock New-NovaPackageArtifact {}
             Mock Invoke-NovaBuildUpdateNotification {}
 
             Invoke-NovaBuild
 
             Assert-MockCalled Build-Module -Times 1
+            Assert-MockCalled New-NovaPackageArtifact -Times 0
             Assert-MockCalled Invoke-NovaBuildUpdateNotification -Times 1
         }
     }

@@ -29,16 +29,20 @@ PS> Invoke-NovaCli [[-Command] <string>] [[-Arguments] <string[]>] [-WhatIf] [-C
 `nova` CLI rather than call `Invoke-NovaCli` directly.
 
 It dispatches high-level commands such as `nova info`, `nova version`, `nova --version`, `nova --help`, `nova build`,
-`nova test`, `nova init`, `nova update`, `nova notification`, `nova publish`, `nova bump`, and `nova release` to the
-matching Nova cmdlet.
+`nova test`, `nova pack`, `nova init`, `nova update`, `nova notification`, `nova publish`, `nova bump`, and
+`nova release`
+to the matching Nova cmdlet.
 
 Use `Invoke-NovaCli` when you need a scriptable PowerShell command entrypoint. Use `nova` when you want the
 user-focused CLI experience.
 
-Mutating routed commands (`build`, `test`, `bump`, `update`, `notification`, `publish`, and `release`) forward
+Mutating routed commands (`build`, `test`, `pack`, `bump`, `update`, `notification`, `publish`, and `release`) forward
 PowerShell
 `-WhatIf`/`-Confirm` to the underlying cmdlet. That means `nova build -WhatIf` and
 `Invoke-NovaCli -Command build -WhatIf` both preview the build instead of running it.
+
+Use `nova pack` when you want to build, test, and package the current project into a `.nupkg` artifact under
+`artifacts/packages/`.
 
 For local publish inside an imported PowerShell session, `nova publish -local` now reloads the published module from the
 resolved local install path after the copy succeeds. Preview or cancelled runs do not import anything.
@@ -111,6 +115,14 @@ Builds the module using `Invoke-NovaBuild`.
 ### EXAMPLE 5
 
 ```powershell
+nova pack
+```
+
+Builds, tests, and packages the current project as a `.nupkg` artifact.
+
+### EXAMPLE 6
+
+```powershell
 nova publish --repository PSGallery --apikey $env:PSGALLERY_API
 ```
 
@@ -118,7 +130,7 @@ Parses CLI arguments and publishes using `Publish-NovaModule`.
 
 When routed inside PowerShell with `-local`, the published module is reloaded from the local install path.
 
-### EXAMPLE 6
+### EXAMPLE 7
 
 ```powershell
 nova --help
@@ -126,7 +138,7 @@ nova --help
 
 Displays the built-in Nova CLI help text.
 
-### EXAMPLE 7
+### EXAMPLE 8
 
 ```powershell
 PS> Invoke-NovaCli -Command build
@@ -134,7 +146,7 @@ PS> Invoke-NovaCli -Command build
 
 Shows the equivalent scripted PowerShell form behind `nova build`.
 
-### EXAMPLE 8
+### EXAMPLE 9
 
 ```powershell
 PS> Invoke-NovaCli -Command publish -Arguments @('-local') -WhatIf
@@ -142,7 +154,7 @@ PS> Invoke-NovaCli -Command publish -Arguments @('-local') -WhatIf
 
 Previews the routed local publish flow without rebuilding, testing, or copying the module.
 
-### EXAMPLE 9
+### EXAMPLE 10
 
 ```powershell
 PS> Invoke-NovaCli -Command init -Arguments @('-Path', '~/Work')
@@ -150,7 +162,7 @@ PS> Invoke-NovaCli -Command init -Arguments @('-Path', '~/Work')
 
 Runs the interactive init flow and creates the project under `~/Work`.
 
-### EXAMPLE 10
+### EXAMPLE 11
 
 ```powershell
 PS> Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '~/Work')
@@ -158,7 +170,7 @@ PS> Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '~/Work')
 
 Runs the interactive init flow, scaffolds from the packaged example project, and creates the project under `~/Work`.
 
-### EXAMPLE 11
+### EXAMPLE 12
 
 ```powershell
 nova update
@@ -175,7 +187,7 @@ Successful updates print the release notes link from the installed module manife
 If no newer version is available, the standalone launcher prints `You're up to date!` and reports the installed
 `NovaModuleTools` version.
 
-### EXAMPLE 12
+### EXAMPLE 13
 
 ```powershell
 nova notification
@@ -183,7 +195,7 @@ nova notification
 
 Shows whether prerelease self-updates are enabled and where the preference is stored.
 
-### EXAMPLE 13
+### EXAMPLE 14
 
 ```powershell
 nova notification -disable
@@ -191,7 +203,7 @@ nova notification -disable
 
 Disables prerelease self-update targets so `nova update` stays on stable releases.
 
-### EXAMPLE 14
+### EXAMPLE 15
 
 ```powershell
 PS> Invoke-NovaCli -Command notification -Arguments @('-enable')
@@ -203,7 +215,7 @@ Re-enables prerelease self-update targets from the routed PowerShell entrypoint.
 
 ### -Command
 
-The command to execute. Supported values: `info`, `version`, `--version`, `--help`, `build`, `test`, `init`,
+The command to execute. Supported values: `info`, `version`, `--version`, `--help`, `build`, `test`, `pack`, `init`,
 `update`, `notification`, `publish`, `bump`, `release`.
 
 ```yaml

@@ -1,7 +1,7 @@
 {
   "ProjectName": "NovaModuleTools",
   "Description": "NovaModuleTools is an enterprise-focused evolution of ModuleTools, designed for large-scale PowerShell projects with a strong emphasis on structure, maintainability, and automated CI/CD pipelines.",
-  "Version": "2.0.0-preview5",
+  "Version": "2.0.0-preview6",
   "Preamble": [
     "Set-StrictMode -Version Latest",
     "$ErrorActionPreference = 'Stop'"
@@ -23,6 +23,10 @@
     "ReleaseNotes": "https://www.novamoduletools.com/release-notes.html",
     "IconUri": "https://www.novamoduletools.com/assets/icon.png",
     "LicenseUri": "https://www.novamoduletools.com/license.html"
+  },
+  "Package": {
+    "Enabled": false,
+    "OutputDirectory": "artifacts/packages"
   },
   "Pester": {
     "TestResult": {

@@ -1,4 +1,26 @@
+$script:remainingHelperCoverageTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'RemainingHelperCoverage.TestSupport.ps1')).Path
+$global:remainingHelperCoverageTestSupportFunctionNameList = @(
+    'Assert-TestNovaPackageArtifactContent'
+)
+
+. $script:remainingHelperCoverageTestSupportPath
+
+foreach ($functionName in $global:remainingHelperCoverageTestSupportFunctionNameList) {
+    $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+    Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+}
+
 BeforeAll {
+    $remainingHelperCoverageTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'RemainingHelperCoverage.TestSupport.ps1')).Path
+    $remainingHelperCoverageTestSupportFunctionNameList = @('Assert-TestNovaPackageArtifactContent')
+
+    . $remainingHelperCoverageTestSupportPath
+
+    foreach ($functionName in $remainingHelperCoverageTestSupportFunctionNameList) {
+        $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+        Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+    }
+
     $here = Split-Path -Parent $PSCommandPath
     $script:repoRoot = Split-Path -Parent $here
     $script:moduleName = (Get-Content -LiteralPath (Join-Path $script:repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
@@ -246,5 +268,68 @@ Locale: en-US
 
             {Get-NovaHelpLocale -HelpMarkdownFiles $helpFiles} | Should -Throw 'Multiple help locales found in docs metadata*'
         }
+    }
+
+    It 'Get-NovaPackageAuthorList normalizes string and array author values' {
+        InModuleScope $script:moduleName {
+            Get-NovaPackageAuthorList -AuthorValue 'Author One' | Should -Be @('Author One')
+            Get-NovaPackageAuthorList -AuthorValue @('Author One', ' Author Two ', 'Author One') | Should -Be @('Author One', 'Author Two')
+        }
+    }
+
+    It 'New-NovaPackageArtifact writes a NuGet-compatible package structure with project metadata and built files' {
+        $projectRoot = Join-Path $TestDrive 'package-project'
+        $outputModuleDir = Join-Path $projectRoot 'dist/PackageProject'
+        $packageOutputDir = Join-Path $projectRoot 'artifacts/packages'
+        $manifestPath = Join-Path $outputModuleDir 'PackageProject.psd1'
+        $modulePath = Join-Path $outputModuleDir 'PackageProject.psm1'
+        $resourceDir = Join-Path $outputModuleDir 'resources'
+        $resourcePath = Join-Path $resourceDir 'nova'
+        $packagePath = $null
+
+        New-Item -ItemType Directory -Path $resourceDir -Force | Out-Null
+        '@{}' | Set-Content -LiteralPath $manifestPath -Encoding utf8
+        'function Get-TestPackage { }' | Set-Content -LiteralPath $modulePath -Encoding utf8
+        '#!/usr/bin/env pwsh' | Set-Content -LiteralPath $resourcePath -Encoding utf8
+
+        $packagePath = InModuleScope $script:moduleName -Parameters @{
+            ProjectRoot = $projectRoot
+            OutputModuleDir = $outputModuleDir
+            PackageOutputDir = $packageOutputDir
+        } {
+            param($ProjectRoot, $OutputModuleDir, $PackageOutputDir)
+
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'PackageProject'
+                Version = '2.3.4'
+                ProjectRoot = $ProjectRoot
+                OutputModuleDir = $OutputModuleDir
+                Description = 'Package project description'
+                Manifest = [ordered]@{
+                    Author = 'Author One'
+                    Tags = @('Nova', 'Packaging')
+                    ProjectUri = 'https://example.test/project'
+                    ReleaseNotes = 'https://example.test/release-notes'
+                    LicenseUri = 'https://example.test/license'
+                }
+                Package = [ordered]@{
+                    Enabled = $true
+                    Id = 'PackageProject'
+                    OutputDirectory = $PackageOutputDir
+                    PackageFileName = 'PackageProject.2.3.4.nupkg'
+                    Authors = @('Author One', 'Author Two')
+                    Description = 'Package project description'
+                }
+            }
+
+            $packageMetadata = Get-NovaPackageMetadata -ProjectInfo $projectInfo
+            $result = New-NovaPackageArtifact -ProjectInfo $projectInfo -PackageMetadata $packageMetadata
+
+            Test-Path -LiteralPath $result.PackagePath | Should -BeTrue
+            $result.PackagePath
+        }
+
+        $packagePath | Should -Not -BeNullOrEmpty
+        Assert-TestNovaPackageArtifactContent -PackagePath $packagePath
     }
 }

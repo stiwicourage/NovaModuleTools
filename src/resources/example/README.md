@@ -13,6 +13,7 @@ It is meant to help a new user understand the smallest useful setup that can:
 
 - `project.json` – the NovaModuleTools project definition
     - includes a `Preamble` example that is written at the top of the built `.psm1`
+  - includes a `Package` example so new users can see where generic package settings belong
   - intentionally keeps common top-level settings visible, including `CopyResourcesToModuleRoot`, so new users can
     see the available configuration keys in one place
 - `src/public/Get-ExampleGreeting.ps1` – a public function exported from the built module
@@ -34,6 +35,7 @@ PS> Import-Module ./dist/NovaModuleTools -Force
 PS> Set-Location ./src/resources/example
 PS> Invoke-NovaBuild
 PS> Test-NovaBuild
+PS> Pack-NovaModule
 PS> $project = Get-NovaProjectInfo
 PS> Import-Module $project.OutputModuleDir -Force
 PS> Get-ExampleGreeting
@@ -49,6 +51,7 @@ PS> $module = Get-Module NovaModuleTools -ListAvailable | Select-Object -First 1
 PS> Set-Location (Join-Path $module.ModuleBase 'resources/example')
 PS> Invoke-NovaBuild
 PS> Test-NovaBuild
+PS> Pack-NovaModule
 PS> $project = Get-NovaProjectInfo
 PS> Import-Module $project.OutputModuleDir -Force
 PS> Get-ExampleGreeting
@@ -60,6 +63,12 @@ After `Invoke-NovaBuild`, the built module is written to:
 
 ```text
 src/resources/example/dist/<ProjectName>
+```
+
+After `Pack-NovaModule`, the package artifact is written to:
+
+```text
+src/resources/example/artifacts/packages/
 ```
 
 You can then import it and call:

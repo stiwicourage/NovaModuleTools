@@ -21,6 +21,10 @@
     ],
     "ProjectUri": "https://www.novamoduletools.com/"
   },
+  "Package": {
+    "Enabled": true,
+    "OutputDirectory": "artifacts/packages"
+  },
   "Pester": {
     "TestResult": {
       "Enabled": true,

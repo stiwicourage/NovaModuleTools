@@ -61,6 +61,39 @@
                 "PowerShellHostVersion",
                 "GUID"
             ]
+        },
+      "Package": {
+        "type": "object",
+        "properties": {
+          "Enabled": {
+            "type": "boolean"
+          },
+          "Id": {
+            "type": "string"
+          },
+          "OutputDirectory": {
+            "type": "string"
+          },
+          "PackageFileName": {
+            "type": "string"
+          },
+          "Authors": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "Description": {
+            "type": "string"
+          }
+        }
         }
     },
     "required": [

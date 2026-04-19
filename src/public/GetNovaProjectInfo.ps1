@@ -14,6 +14,10 @@ function Get-NovaProjectInfo {
 
     $jsonData = Read-ProjectJsonData -ProjectJsonPath $projectJson
 
+    if ($Version) {
+        return $jsonData.Version
+    }
+
     $Out = @{}
     $Out['ProjectJSON'] = $ProjectJson
 
@@ -42,6 +46,9 @@ function Get-NovaProjectInfo {
     $Out.ProjectJson = $projectJson
     $Out.PSTypeName = 'MTProjectInfo'
     $ProjectName = $jsonData.ProjectName
+    $manifestSettings = Get-NovaResolvedProjectManifestSettings -ProjectData $Out
+    $Out['Manifest'] = $manifestSettings
+    $Out['Package'] = Get-NovaResolvedProjectPackageSettings -ProjectData $Out -ManifestSettings $manifestSettings -ProjectRoot $ProjectRoot
 
     ## Folders
     $Out['ProjectRoot'] = $ProjectRoot
@@ -56,10 +63,5 @@ function Get-NovaProjectInfo {
     $Out['ModuleFilePSM1'] = [System.IO.Path]::Join($Out.OutputModuleDir, "$ProjectName.psm1")
     $Out['ManifestFilePSD1'] = [System.IO.Path]::Join($Out.OutputModuleDir, "$ProjectName.psd1")
 
-    $projectInfo = [pscustomobject]$out
-    if ($Version) {
-        return $projectInfo.Version
-    }
-
-    return $projectInfo
+    return [pscustomobject]$out
 }

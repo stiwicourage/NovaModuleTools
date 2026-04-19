@@ -41,7 +41,7 @@ foreach ($argument in $Arguments) {
 
 $Arguments = @($remainingArguments)
 
-Import-Module NovaModuleTools -Force
+Import-Module NovaModuleTools -Force -DisableNameChecking
 
 $invokeParameters = @{
     Command = $Command

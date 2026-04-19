@@ -172,6 +172,19 @@ Notes:
 - it writes NUnit XML to `artifacts/TestResults.xml`
 - it respects `BuildRecursiveFolders` when discovering tests
 
+### Create a package artifact
+
+Use the explicit packaging workflow when you want a `.nupkg` artifact for a Nova project without publishing to a
+PowerShell repository:
+
+```powershell
+PS> Pack-NovaModule
+PS> nova pack
+```
+
+The package command runs the normal build and test flow, then writes the generated package to
+`artifacts/packages/` by using the generic `Package` section in `project.json` when present.
+
 ### Run code quality checks
 
 Run ScriptAnalyzer with the repository helper:

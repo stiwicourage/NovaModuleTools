@@ -298,6 +298,211 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
+    It 'Pack-NovaModule runs build, test, and package creation in order' {
+        InModuleScope $script:moduleName {
+            $script:steps = @()
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    Version = '1.2.3'
+                    ProjectRoot = '/tmp/project'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                    Description = 'Package test'
+                    Manifest = [ordered]@{
+                        Author = 'Test Author'
+                        Tags = @('Nova', 'PowerShell')
+                        ProjectUri = 'https://example.test/project'
+                        ReleaseNotes = 'https://example.test/release-notes'
+                        LicenseUri = 'https://example.test/license'
+                    }
+                    Package = [ordered]@{
+                        Enabled = $true
+                        Id = 'NovaModuleTools'
+                        OutputDirectory = '/tmp/project/artifacts/packages'
+                        PackageFileName = 'NovaModuleTools.1.2.3.nupkg'
+                        Authors = 'Test Author'
+                        Description = 'Package test'
+                    }
+                }
+            }
+            Mock Invoke-NovaBuild {$script:steps += 'build'}
+            Mock Test-NovaBuild {$script:steps += 'test'}
+            Mock New-NovaPackageArtifact {
+                $script:steps += 'pack'
+                [pscustomobject]@{PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+            }
+
+            $result = Pack-NovaModule
+
+            $script:steps -join ',' | Should -Be 'build,test,pack'
+            $result.PackagePath | Should -Be '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'
+        }
+    }
+
+    It 'Pack-NovaModule reimports the current module when package helpers were unloaded during tests' {
+        InModuleScope $script:moduleName {
+            $script:steps = @()
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    Version = '1.2.3'
+                    ProjectRoot = '/tmp/project'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                    Description = 'Package test'
+                    Manifest = [ordered]@{
+                        Author = 'Test Author'
+                        Tags = @('Nova', 'PowerShell')
+                        ProjectUri = 'https://example.test/project'
+                        ReleaseNotes = 'https://example.test/release-notes'
+                        LicenseUri = 'https://example.test/license'
+                    }
+                    Package = [ordered]@{
+                        Enabled = $true
+                        Id = 'NovaModuleTools'
+                        OutputDirectory = '/tmp/project/artifacts/packages'
+                        PackageFileName = 'NovaModuleTools.1.2.3.nupkg'
+                        Authors = 'Test Author'
+                        Description = 'Package test'
+                    }
+                }
+            }
+            Mock Invoke-NovaBuild {$script:steps += 'build'}
+            Mock Test-NovaBuild {$script:steps += 'test'}
+            Mock Get-Command {
+                $null
+            } -ParameterFilter {$Name -eq 'New-NovaPackageArtifact' -and $CommandType -eq 'Function'}
+            Mock Import-Module {
+                $ExecutionContext.SessionState.Module
+            } -ParameterFilter {$Name -eq $ExecutionContext.SessionState.Module.Path -and $PassThru}
+            Mock New-NovaPackageArtifact {
+                $script:steps += 'pack'
+                [pscustomobject]@{PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+            }
+
+            $result = Pack-NovaModule
+
+            $script:steps -join ',' | Should -Be 'build,test,pack'
+            $result.PackagePath | Should -Be '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'
+            Assert-MockCalled Import-Module -Times 1 -ParameterFilter {$Name -eq $ExecutionContext.SessionState.Module.Path -and $PassThru}
+        }
+    }
+
+    It 'Pack-NovaModule -WhatIf forwards preview mode through build and test without creating a package' {
+        InModuleScope $script:moduleName {
+            $script:steps = @()
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    Version = '1.2.3'
+                    ProjectRoot = '/tmp/project'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                    Description = 'Package test'
+                    Manifest = [ordered]@{
+                        Author = 'Test Author'
+                        Tags = @()
+                        ProjectUri = ''
+                        ReleaseNotes = ''
+                        LicenseUri = ''
+                    }
+                    Package = [ordered]@{
+                        Enabled = $true
+                        Id = 'NovaModuleTools'
+                        OutputDirectory = '/tmp/project/artifacts/packages'
+                        PackageFileName = 'NovaModuleTools.1.2.3.nupkg'
+                        Authors = 'Test Author'
+                        Description = 'Package test'
+                    }
+                }
+            }
+            Mock Invoke-NovaBuild {$script:steps += "build:$WhatIfPreference"}
+            Mock Test-NovaBuild {$script:steps += "test:$WhatIfPreference"}
+            Mock New-NovaPackageArtifact {$script:steps += 'pack'}
+
+            $result = Pack-NovaModule -WhatIf
+
+            $result | Should -BeNullOrEmpty
+            $script:steps -join ',' | Should -Be 'build:True,test:True'
+            Assert-MockCalled New-NovaPackageArtifact -Times 0
+        }
+    }
+
+    It 'Get-NovaPackageMetadata reuses project.json and Manifest metadata by default' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'PackageProject'
+                Version = '2.3.4'
+                ProjectRoot = '/tmp/project'
+                Description = 'Top-level description'
+                Manifest = [ordered]@{
+                    Author = 'Author One'
+                    Tags = @('Nova', 'Packaging')
+                    ProjectUri = 'https://example.test/project'
+                    ReleaseNotes = 'https://example.test/release-notes'
+                    LicenseUri = 'https://example.test/license'
+                }
+                Package = [ordered]@{
+                    Enabled = $true
+                    Id = 'PackageProject'
+                    OutputDirectory = '/tmp/project/artifacts/packages'
+                    PackageFileName = 'PackageProject.2.3.4.nupkg'
+                    Authors = 'Author One'
+                    Description = 'Top-level description'
+                }
+            }
+
+            $result = Get-NovaPackageMetadata -ProjectInfo $projectInfo
+
+            $result.Id | Should -Be 'PackageProject'
+            $result.Version | Should -Be '2.3.4'
+            $result.Authors | Should -Be @('Author One')
+            $result.Description | Should -Be 'Top-level description'
+            $result.Tags | Should -Be @('Nova', 'Packaging')
+            $result.ProjectUrl | Should -Be 'https://example.test/project'
+            $result.ReleaseNotes | Should -Be 'https://example.test/release-notes'
+            $result.LicenseUrl | Should -Be 'https://example.test/license'
+            $result.OutputDirectory | Should -Be '/tmp/project/artifacts/packages'
+            $result.PackagePath | Should -Be '/tmp/project/artifacts/packages/PackageProject.2.3.4.nupkg'
+        }
+    }
+
+    It 'Pack-NovaModule fails with a clear message when package metadata is missing' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    Version = '1.2.3'
+                    ProjectRoot = '/tmp/project'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                    Description = 'Package test'
+                    Manifest = [ordered]@{
+                        Author = ''
+                        Tags = @()
+                        ProjectUri = ''
+                        ReleaseNotes = ''
+                        LicenseUri = ''
+                    }
+                    Package = [ordered]@{
+                        Enabled = $true
+                        Id = 'NovaModuleTools'
+                        OutputDirectory = '/tmp/project/artifacts/packages'
+                        PackageFileName = 'NovaModuleTools.1.2.3.nupkg'
+                        Authors = @()
+                        Description = 'Package test'
+                    }
+                }
+            }
+            Mock Invoke-NovaBuild {throw 'should not build'}
+            Mock Test-NovaBuild {throw 'should not test'}
+
+            {Pack-NovaModule} | Should -Throw 'Missing package metadata value: Authors'
+            Assert-MockCalled Invoke-NovaBuild -Times 0
+            Assert-MockCalled Test-NovaBuild -Times 0
+        }
+    }
+
     It 'Get-ResourceFilePath prefers project src resources during build' {
         InModuleScope $script:moduleName {
             $expected = [System.IO.Path]::GetFullPath('/tmp/project/src/resources/Schema-Build.json')
