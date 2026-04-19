@@ -1,4 +1,4 @@
-function Merge-NovaModule {
+function New-NovaModulePackage {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param()
 
@@ -40,5 +40,6 @@ function Merge-NovaModule {
 
     return & $packagingModule $packageCreation $projectInfo $packageMetadataList
 }
+
 
 

@@ -1,5 +1,5 @@
 function New-NovaPackageArtifacts {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Merge-NovaModule performs the user-facing ShouldProcess confirmation before calling this internal helper.')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'New-NovaModulePackage performs the user-facing ShouldProcess confirmation before calling this internal helper.')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Package artifacts is the established domain term for the requested collection.')]
     [CmdletBinding()]
     param(

@@ -34,7 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `nova version -Installed` so users can compare the locally installed version of the current project/module with
   the current project version from `project.json`, while keeping `nova --version` dedicated to the installed
   NovaModuleTools version.
-- Add `Merge-NovaModule` and `nova merge` so projects can build, test, and package the built module output as a `.nupkg`
+- Add `New-NovaModulePackage` and `nova package` so projects can build, test, and package the built module output as a
+  `.nupkg`
   artifact by using generic metadata from `project.json`, including repositories whose test runs reload or remove
   `NovaModuleTools` before the final package step.
     - Package output now supports `Package.Types` with case-insensitive `NuGet`, `Zip`, `.nupkg`, and `.zip` values.
@@ -49,7 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     generic headers/auth settings.
   - Package upload now discovers all matching artifacts for the selected package types, including versioned and
     `latest` files in the configured package output directory.
-      - `nova merge` and `Merge-NovaModule` no longer depend on a separate `Package.Enabled` switch.
+      - `nova package` and `New-NovaModulePackage` no longer depend on a separate `Package.Enabled` switch.
 
 ### Changed
 
@@ -57,10 +58,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - All public commands are now Nova commands, and the `nova` CLI/Powershell alias is the primary entry point for all
       operations.
 - **BREAKING CHANGE**: Rename the public Nova packaging, raw deployment, and scaffold cmdlets to approved verbs.
-    - `Pack-NovaModule` → `Merge-NovaModule`
+    - `Pack-NovaModule` → `New-NovaModulePackage`
     - `Upload-NovaPackage` → `Deploy-NovaPackage`
     - `New-NovaModule` → `Initialize-NovaModule`
-    - CLI users must now use `nova merge` and `nova deploy`; `nova init` is unchanged.
+    - CLI users must now use `nova package` and `nova deploy`; `nova init` is unchanged.
     - No compatibility aliases are exported for the retired cmdlet names or CLI subcommands.
 - Change `CopyResourcesToModuleRoot` to the canonical project setting name while keeping the default value `false`.
 - Change `Publish-NovaModule -Local` and `nova publish -local` so a successful local publish also reloads the published
@@ -70,7 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
-- Fix `Merge-NovaModule` and `nova merge` so schema-optional `Manifest` metadata such as `ProjectUri`, `ReleaseNotes`,
+- Fix `New-NovaModulePackage` and `nova package` so schema-optional `Manifest` metadata such as `ProjectUri`,
+  `ReleaseNotes`,
   `LicenseUri`, and `Tags` are omitted cleanly instead of causing packaging failures when they are not present.
 
 ### Documentation

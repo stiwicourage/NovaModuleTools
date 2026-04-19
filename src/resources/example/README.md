@@ -39,7 +39,7 @@ PS> Import-Module ./dist/NovaModuleTools -Force
 PS> Set-Location ./src/resources/example
 PS> Invoke-NovaBuild
 PS> Test-NovaBuild
-PS> Merge-NovaModule
+PS> New-NovaModulePackage
 PS> $project = Get-NovaProjectInfo
 PS> Import-Module $project.OutputModuleDir -Force
 PS> Get-ExampleGreeting
@@ -55,7 +55,7 @@ PS> $module = Get-Module NovaModuleTools -ListAvailable | Select-Object -First 1
 PS> Set-Location (Join-Path $module.ModuleBase 'resources/example')
 PS> Invoke-NovaBuild
 PS> Test-NovaBuild
-PS> Merge-NovaModule
+PS> New-NovaModulePackage
 PS> $project = Get-NovaProjectInfo
 PS> Import-Module $project.OutputModuleDir -Force
 PS> Get-ExampleGreeting
@@ -69,7 +69,7 @@ After `Invoke-NovaBuild`, the built module is written to:
 src/resources/example/dist/<ProjectName>
 ```
 
-After `Merge-NovaModule`, the package artifact is written to:
+After `New-NovaModulePackage`, the package artifact is written to:
 
 ```text
 src/resources/example/artifacts/packages/

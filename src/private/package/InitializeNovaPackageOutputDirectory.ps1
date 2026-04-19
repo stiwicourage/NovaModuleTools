@@ -1,5 +1,5 @@
 function Initialize-NovaPackageOutputDirectory {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Merge-NovaModule performs the user-facing ShouldProcess confirmation before calling this internal preparation helper.')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'New-NovaModulePackage performs the user-facing ShouldProcess confirmation before calling this internal preparation helper.')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,

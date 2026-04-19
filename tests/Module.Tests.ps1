@@ -15,10 +15,11 @@ Describe 'General Module Control' {
         $importText = $importOutput -join [Environment]::NewLine
 
         $importText | Should -Not -Match 'include unapproved verbs'
-        Get-Command -Name Merge-NovaModule -Module $data.ProjectName -ErrorAction Stop | Should -Not -BeNullOrEmpty
+        Get-Command -Name New-NovaModulePackage -Module $data.ProjectName -ErrorAction Stop | Should -Not -BeNullOrEmpty
         Get-Command -Name Deploy-NovaPackage -Module $data.ProjectName -ErrorAction Stop | Should -Not -BeNullOrEmpty
         Get-Command -Name Initialize-NovaModule -Module $data.ProjectName -ErrorAction Stop | Should -Not -BeNullOrEmpty
         {Get-Command -Name Pack-NovaModule -Module $data.ProjectName -ErrorAction Stop} | Should -Throw
+        {Get-Command -Name Merge-NovaModule -Module $data.ProjectName -ErrorAction Stop} | Should -Throw
         {Get-Command -Name Upload-NovaPackage -Module $data.ProjectName -ErrorAction Stop} | Should -Throw
         {Get-Command -Name New-NovaModule -Module $data.ProjectName -ErrorAction Stop} | Should -Throw
     }

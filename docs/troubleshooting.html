@@ -236,11 +236,12 @@ nova --help</code></pre>
 
             <section class="content-section" id="wrong-command">
                 <h2>I expected publish, but I only created a package</h2>
-                <p><strong>Likely cause:</strong> you used <code>Merge-NovaModule</code> when you actually wanted <code>Deploy-NovaPackage</code>,
+                <p><strong>Likely cause:</strong> you used <code>New-NovaModulePackage</code> when you actually wanted
+                    <code>Deploy-NovaPackage</code>,
                     <code>Publish-NovaModule</code>, or <code>Invoke-NovaRelease</code>.</p>
                 <p><strong>Fix:</strong> choose the command based on the outcome you need:</p>
                 <ul class="plain-list">
-                    <li><strong>package file only:</strong> <code>Merge-NovaModule</code></li>
+                    <li><strong>package file only:</strong> <code>New-NovaModulePackage</code></li>
                     <li><strong>raw HTTP upload:</strong> <code>Deploy-NovaPackage</code></li>
                     <li><strong>PowerShell repository publish:</strong> <code>Publish-NovaModule</code></li>
                     <li><strong>version bump + publish orchestration:</strong> <code>Invoke-NovaRelease</code></li>

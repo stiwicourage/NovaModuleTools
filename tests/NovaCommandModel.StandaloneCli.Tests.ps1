@@ -81,7 +81,7 @@ Describe 'Nova command model - standalone CLI behavior' {
             $helpText | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
             ($helpText -match 'notification\s+Show or change prerelease self-update eligibility') | Should -BeTrue
             $helpText | Should -Match 'version\s+Show the current project version, or use -Installed for the locally installed project module version'
-            $helpText | Should -Match 'merge\s+Build, test, and package the module as configured package artifact\(s\)'
+            $helpText | Should -Match 'package\s+Build, test, and package the module as configured package artifact\(s\)'
             $helpText | Should -Match 'nova deploy -repository LocalNexus'
             $helpText | Should -Not -Match 'nova deploy package'
             $versionText | Should -Be "$script:moduleName $installedModuleVersion"
@@ -287,14 +287,14 @@ function Invoke-TestCliVerbose {
             $result | Should -Match 'version\s+Show the current project version, or use -Installed for the locally installed project module version'
             $result | Should -Match 'nova version -Installed'
             $result | Should -Match '--version\s+Show the installed NovaModuleTools module name and version'
-            $result | Should -Match 'merge\s+Build, test, and package the module as configured package artifact\(s\)'
+            $result | Should -Match 'package\s+Build, test, and package the module as configured package artifact\(s\)'
             $result | Should -Match 'deploy\s+Upload generated package artifact\(s\) to a raw HTTP endpoint'
             $result | Should -Match 'publish\s+Build, test, and publish the module locally or to a repository'
         }
     }
 
     It 'Invoke-NovaCli <CommandName> --help returns routed command help' -ForEach @(
-        @{CommandName = 'merge'; ExpectedPattern = 'Merge-NovaModule'},
+        @{CommandName = 'package'; ExpectedPattern = 'New-NovaModulePackage'},
         @{CommandName = 'deploy'; ExpectedPattern = 'Deploy-NovaPackage'},
         @{CommandName = 'init'; ExpectedPattern = 'Initialize-NovaModule'}
     ) {
@@ -307,15 +307,15 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Invoke-NovaCli merge routes to Merge-NovaModule' {
+    It 'Invoke-NovaCli package routes to New-NovaModulePackage' {
         InModuleScope $script:moduleName {
-            Mock Merge-NovaModule {
+            Mock New-NovaModulePackage {
                 @(
                     [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
                 )
             }
 
-            $result = @(Invoke-NovaCli merge)
+            $result = @(Invoke-NovaCli package)
 
             $result.Type | Should -Be @('NuGet')
             $result.PackagePath | Should -Be @('/tmp/artifacts/packages/NovaModuleTools.1.2.3.nupkg')
@@ -324,8 +324,8 @@ function Invoke-TestCliVerbose {
 
     It 'Invoke-NovaCli <CommandName> forwards WhatIf to the routed command' -ForEach @(
         @{
-            CommandName = 'merge'
-            RoutedCommand = 'Merge-NovaModule'
+            CommandName = 'package'
+            RoutedCommand = 'New-NovaModulePackage'
             Arguments = @()
         }
         @{

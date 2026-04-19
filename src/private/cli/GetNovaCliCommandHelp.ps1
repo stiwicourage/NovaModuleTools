@@ -26,8 +26,8 @@ function Get-NovaCliCommandHelp {
         'test' {
             'Test-NovaBuild'
         }
-        'merge' {
-            'Merge-NovaModule'
+        'package' {
+            'New-NovaModulePackage'
         }
         'deploy' {
             'Deploy-NovaPackage'

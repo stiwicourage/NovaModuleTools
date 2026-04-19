@@ -29,29 +29,29 @@ PS> Invoke-NovaCli [[-Command] <string>] [[-Arguments] <string[]>] [-WhatIf] [-C
 `nova` CLI rather than call `Invoke-NovaCli` directly.
 
 It dispatches high-level commands such as `nova info`, `nova version`, `nova --version`, `nova --help`, `nova build`,
-`nova test`, `nova merge`, `nova deploy`, `nova init`, `nova update`, `nova notification`, `nova publish`,
+`nova test`, `nova package`, `nova deploy`, `nova init`, `nova update`, `nova notification`, `nova publish`,
 `nova bump`, and `nova release`
 to the matching Nova cmdlet.
 
 Use `Invoke-NovaCli` when you need a scriptable PowerShell command entrypoint. Use `nova` when you want the
 user-focused CLI experience.
 
-Use `nova <command> --help` when you want the routed PowerShell help for a specific command such as `nova merge`,
+Use `nova <command> --help` when you want the routed PowerShell help for a specific command such as `nova package`,
 `nova deploy`, or `nova init`.
 
-Mutating routed commands (`build`, `test`, `merge`, `deploy`, `bump`, `update`, `notification`, `publish`, and
+Mutating routed commands (`build`, `test`, `package`, `deploy`, `bump`, `update`, `notification`, `publish`, and
 `release`) forward PowerShell
 `-WhatIf`/`-Confirm` to the underlying cmdlet. That means `nova build -WhatIf` and
 `Invoke-NovaCli -Command build -WhatIf` both preview the build instead of running it.
 
-Use `nova merge` when you want to build, test, and package the current project into one or more configured package
+Use `nova package` when you want to build, test, and package the current project into one or more configured package
 artifacts. By default it writes a `.nupkg` to `artifacts/packages/`, and you can override that with
 `Package.OutputDirectory.Path` in `project.json`.
 
 Use `Package.Types` in `project.json` when you want to switch from the default `NuGet` output to `Zip`, or when you
 want both formats. Supported values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
 
-Set `Package.Latest` to `true` when you also want `nova merge` to create companion latest-named package artifacts such
+Set `Package.Latest` to `true` when you also want `nova package` to create companion latest-named package artifacts such
 as `NovaModuleTools.latest.nupkg` next to the normal versioned files.
 
 Use `nova deploy` when you want to push existing package artifacts from the configured package output directory to a raw
@@ -104,10 +104,10 @@ the installed module manifest includes prerelease metadata.
 ### EXAMPLE 2
 
 ```powershell
-PS> nova merge --help
+PS> nova package --help
 ```
 
-Shows the full help for `Merge-NovaModule` through the CLI.
+Shows the full help for `New-NovaModulePackage` through the CLI.
 
 ### EXAMPLE 14
 
@@ -153,11 +153,11 @@ Builds the module using `Invoke-NovaBuild`.
 ### EXAMPLE 5
 
 ```powershell
-nova merge
+nova package
 ```
 
 Builds, tests, and packages the current project by using the configured `Package.Types` values. When `Package.Types` is
-omitted, `nova merge` creates a `.nupkg` by default.
+omitted, `nova package` creates a `.nupkg` by default.
 
 ### EXAMPLE 6
 
@@ -270,7 +270,8 @@ Re-enables prerelease self-update targets from the routed PowerShell entrypoint.
 
 ### -Command
 
-The command to execute. Supported values: `info`, `version`, `--version`, `--help`, `build`, `test`, `merge`, `deploy`,
+The command to execute. Supported values: `info`, `version`, `--version`, `--help`, `build`, `test`, `package`,
+`deploy`,
 `init`, `update`, `notification`, `publish`, `bump`, `release`.
 
 ```yaml
@@ -286,7 +287,7 @@ ParameterSets:
     ValueFromPipelineByPropertyName: false
     ValueFromRemainingArguments: false
 DontShow: false
-AcceptedValues: [ info, version, --version, --help, build, test, merge, deploy, init, update, notification, publish, bump, release ]
+AcceptedValues: [ info, version, --version, --help, build, test, package, deploy, init, update, notification, publish, bump, release ]
 HelpMessage: ''
 ```
 

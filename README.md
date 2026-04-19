@@ -178,8 +178,8 @@ Use the explicit packaging workflow when you want a package artifact for a Nova 
 PowerShell repository:
 
 ```powershell
-PS> Merge-NovaModule
-PS> nova merge
+PS> New-NovaModulePackage
+PS> nova package
 ```
 
 The package command runs the normal build and test flow, then writes the generated package artifacts to
@@ -258,7 +258,7 @@ Use this `project.json` shape when you want Nova to resolve upload targets from 
 Run ScriptAnalyzer with the repository helper:
 
 ```powershell
-PS> & ./scripts/build/Invoke-ScriptAnalyzerCI.ps1
+PS> ./scripts/build/Invoke-ScriptAnalyzerCI.ps1
 ```
 
 This writes findings to `artifacts/scriptanalyzer.txt`.
@@ -266,7 +266,7 @@ This writes findings to `artifacts/scriptanalyzer.txt`.
 For CI-parity coverage and report generation, use:
 
 ```powershell
-PS> & ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1
+PS> ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1
 ```
 
 That flow builds the module, runs ScriptAnalyzer, runs the normal test workflow, and emits CI-friendly reports such as:

@@ -405,7 +405,7 @@ Describe 'Nova command model - project, help, and build behavior' {
     It 'Get-Help surfaces native WhatIf and Confirm support for mutating public commands' {
         foreach ($commandName in @(
             'Invoke-NovaBuild',
-            'Merge-NovaModule',
+            'New-NovaModulePackage',
             'Deploy-NovaPackage',
             'Test-NovaBuild',
             'Publish-NovaModule',

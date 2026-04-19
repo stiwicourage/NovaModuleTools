@@ -46,7 +46,7 @@ Routes the `nova` CLI experience through a single PowerShell command entrypoint.
 
 Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
 
-### `PS> Merge-NovaModule`
+### `PS> New-NovaModulePackage`
 
 Builds, tests, and packages the current project as one or more configured package artifacts.
 

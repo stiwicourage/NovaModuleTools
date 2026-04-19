@@ -29,8 +29,8 @@ function Invoke-NovaCli {
         'test' {
             return Test-NovaBuild @mutatingCommonParameters
         }
-        'merge' {
-            return Merge-NovaModule @mutatingCommonParameters
+        'package' {
+            return New-NovaModulePackage @mutatingCommonParameters
         }
         'deploy' {
             return Invoke-NovaCliDeployCommand -Arguments $Arguments -ForwardedParameters $mutatingCommonParameters

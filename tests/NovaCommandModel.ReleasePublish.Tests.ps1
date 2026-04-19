@@ -298,7 +298,7 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
-    It 'Merge-NovaModule runs build, test, and package creation in order for all requested package types' {
+    It 'New-NovaModulePackage runs build, test, and package creation in order for all requested package types' {
         InModuleScope $script:moduleName {
             $script:steps = @()
 
@@ -339,7 +339,7 @@ Describe 'Nova command model - release and publish behavior' {
                 )
             }
 
-            $result = @(Merge-NovaModule)
+            $result = @(New-NovaModulePackage)
 
             $script:steps -join ',' | Should -Be 'build,test,pack'
             $result.Type | Should -Be @('NuGet', 'Zip')
@@ -350,7 +350,7 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
-    It 'Merge-NovaModule reimports the current module when package helpers were unloaded during tests' {
+    It 'New-NovaModulePackage reimports the current module when package helpers were unloaded during tests' {
         InModuleScope $script:moduleName {
             $script:steps = @()
 
@@ -397,7 +397,7 @@ Describe 'Nova command model - release and publish behavior' {
                 )
             }
 
-            $result = @(Merge-NovaModule)
+            $result = @(New-NovaModulePackage)
 
             $script:steps -join ',' | Should -Be 'build,test,pack'
             $result.Type | Should -Be @('NuGet', 'Zip')
@@ -405,7 +405,7 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
-    It 'Merge-NovaModule -WhatIf forwards preview mode through build and test without creating a package' {
+    It 'New-NovaModulePackage -WhatIf forwards preview mode through build and test without creating a package' {
         InModuleScope $script:moduleName {
             $script:steps = @()
 
@@ -439,7 +439,7 @@ Describe 'Nova command model - release and publish behavior' {
             Mock Test-NovaBuild {$script:steps += "test:$WhatIfPreference"}
             Mock New-NovaPackageArtifacts {$script:steps += 'pack'}
 
-            $result = Merge-NovaModule -WhatIf
+            $result = New-NovaModulePackage -WhatIf
 
             $result | Should -BeNullOrEmpty
             $script:steps -join ',' | Should -Be 'build:True,test:True'
@@ -602,7 +602,7 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
-    It 'Merge-NovaModule fails with a clear message when package metadata is missing' {
+    It 'New-NovaModulePackage fails with a clear message when package metadata is missing' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {
                 [pscustomobject]@{
@@ -633,7 +633,7 @@ Describe 'Nova command model - release and publish behavior' {
             Mock Invoke-NovaBuild {throw 'should not build'}
             Mock Test-NovaBuild {throw 'should not test'}
 
-            {Merge-NovaModule} | Should -Throw 'Missing package metadata value: Authors'
+            {New-NovaModulePackage} | Should -Throw 'Missing package metadata value: Authors'
             Assert-MockCalled Invoke-NovaBuild -Times 0
             Assert-MockCalled Test-NovaBuild -Times 0
         }

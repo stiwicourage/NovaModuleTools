@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
     <title>NovaModuleTools — Package, upload, publish, and release PowerShell modules</title>
-    <meta content="Learn when to use Merge-NovaModule, Deploy-NovaPackage, Publish-NovaModule, and Invoke-NovaRelease, with examples for package creation, raw upload, PowerShell repository publish, and release orchestration."
+    <meta content="Learn when to use New-NovaModulePackage, Deploy-NovaPackage, Publish-NovaModule, and Invoke-NovaRelease, with examples for package creation, raw upload, PowerShell repository publish, and release orchestration."
           name="description">
     <meta content="index,follow,max-image-preview:large" name="robots">
     <meta content="#0b1020" name="theme-color">
@@ -98,7 +98,7 @@
                         </thead>
                         <tbody>
                         <tr>
-                            <td><code>Merge-NovaModule</code> / <code>nova merge</code></td>
+                            <td><code>New-NovaModulePackage</code> / <code>nova package</code></td>
                             <td>Builds, tests, and creates package artifacts such as <code>.nupkg</code> and
                                 <code>.zip</code>.
                             </td>
@@ -122,7 +122,7 @@
                         <tr>
                             <td><code>Invoke-NovaRelease</code> / <code>nova release</code></td>
                             <td>Builds, tests, bumps the version, rebuilds, and then publishes.</td>
-                            <td>Does not replace <code>Merge-NovaModule</code> or raw upload as a generic artifact
+                            <td>Does not replace <code>New-NovaModulePackage</code> or raw upload as a generic artifact
                                 workflow.
                             </td>
                             <td>You want one orchestrated release command instead of separate steps.</td>
@@ -132,7 +132,8 @@
                 </div>
                 <div class="notice notice--warning">
                     <strong>Most confusion comes from this difference:</strong>
-                    <p><code>Merge-NovaModule</code> creates files. <code>Deploy-NovaPackage</code> sends those files to
+                    <p><code>New-NovaModulePackage</code> creates files. <code>Deploy-NovaPackage</code> sends those
+                        files to
                         a raw endpoint. <code>Publish-NovaModule</code> publishes the module itself to a PowerShell
                         repository. <code>Invoke-NovaRelease</code> coordinates versioning plus publishing.</p>
                 </div>
@@ -140,7 +141,7 @@
 
             <section class="content-section" id="pack">
                 <h2>Create package artifacts</h2>
-                <p>Use <code>Merge-NovaModule</code> or <code>nova merge</code> when you want a package artifact
+                <p>Use <code>New-NovaModulePackage</code> or <code>nova package</code> when you want a package artifact
                     generated
                     from the built module output.</p>
                 <h3>What happens</h3>
@@ -152,8 +153,8 @@
                     </li>
                 </ol>
                 <h3>Common examples</h3>
-                <pre><code>Merge-NovaModule
-nova merge</code></pre>
+                <pre><code>New-NovaModulePackage
+nova package</code></pre>
                 <p>This creates a <code>.nupkg</code> by default when <code>Package.Types</code> is omitted.</p>
                 <pre><code>{
   "Package": {
@@ -195,7 +196,7 @@ MyModule.latest.zip</code></pre>
                     and you need to push them to a raw HTTP endpoint.</p>
                 <div class="notice">
                     <strong>Upload works on existing files only.</strong>
-                    <p>If you have not run <code>Merge-NovaModule</code> yet, upload has nothing to send unless you
+                    <p>If you have not run <code>New-NovaModulePackage</code> yet, upload has nothing to send unless you
                         explicitly point it at existing package files with <code>-PackagePath</code>.</p>
                 </div>
                 <h3>Common ways to target artifacts</h3>

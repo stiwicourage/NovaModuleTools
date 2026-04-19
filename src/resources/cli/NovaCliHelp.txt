@@ -10,7 +10,7 @@ work with the current project
    version    Show the current project version, or use -Installed for the locally installed project module version
    build      Build the module into the dist folder
    test       Run Pester tests for the project
-   merge      Build, test, and package the module as configured package artifact(s)
+   package    Build, test, and package the module as configured package artifact(s)
    deploy     Upload generated package artifact(s) to a raw HTTP endpoint
    bump       Update the module version in project.json
    update     Update the installed NovaModuleTools module using the stored prerelease preference
@@ -37,7 +37,7 @@ Examples:
    nova version -Installed
    nova build
    nova test
-   nova merge
+   nova package
    nova deploy -repository LocalNexus
    nova deploy -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN
    nova bump -WhatIf
@@ -57,7 +57,7 @@ Use 'nova <command>' to run a command, or call the underlying PowerShell cmdlet 
 when you want a scriptable function interface.
 
 Use 'nova <command> --help' to show the routed PowerShell help for commands such as
-'nova merge', 'nova deploy', and 'nova init'.
+'nova package', 'nova deploy', and 'nova init'.
 
 Use 'nova notification' to show the current prerelease self-update preference,
 'nova notification -disable' to keep 'nova update' on stable releases only,
