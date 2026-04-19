@@ -26,6 +26,7 @@ function New-NovaPackageArtifact {
 
     return [pscustomobject]@{
         Type = $PackageMetadata.Type
+        Latest = [bool]$PackageMetadata.Latest
         Id = $PackageMetadata.Id
         Version = $PackageMetadata.Version
         PackageFileName = $PackageMetadata.PackageFileName

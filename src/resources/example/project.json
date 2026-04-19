@@ -1,6 +1,6 @@
 {
   "ProjectName": "NovaExampleModule",
-  "Description": "A working example project that demonstrates how to build, test, and package a small module with NovaModuleTools.",
+  "Description": "A working example project that demonstrates how to build, test, package, and upload a small module with NovaModuleTools.",
   "Version": "0.1.0",
   "CopyResourcesToModuleRoot": false,
   "BuildRecursiveFolders": true,
@@ -19,16 +19,66 @@
       "NovaModuleTools",
       "PowerShell"
     ],
-    "ProjectUri": "https://www.novamoduletools.com/"
+    "ProjectUri": "https://www.novamoduletools.com/",
+    "ReleaseNotes": "https://www.novamoduletools.com/release-notes.html",
+    "LicenseUri": "https://www.novamoduletools.com/license.html"
   },
   "Package": {
+    "Id": "NovaExampleModule",
     "Types": [
-      "NuGet"
+      "NuGet",
+      "Zip"
     ],
+    "Latest": true,
     "OutputDirectory": {
       "Path": "artifacts/packages",
       "Clean": true
-    }
+    },
+    "PackageFileName": "NovaExampleModule.0.1.0",
+    "FileNamePattern": "NovaExampleModule*",
+    "Authors": [
+      "NovaModuleTools",
+      "Example Maintainer"
+    ],
+    "Description": "Example package metadata and raw upload configuration for NovaExampleModule.",
+    "RepositoryUrl": "https://packages.example.test/raw/novamodule/",
+    "UploadPath": "stable/latest",
+    "Headers": {
+      "X-Client-Id": "nova-example",
+      "X-Trace-Source": "nova-init-example"
+    },
+    "Auth": {
+      "HeaderName": "Authorization",
+      "Scheme": "Bearer",
+      "TokenEnvironmentVariable": "NOVA_EXAMPLE_PACKAGE_TOKEN"
+    },
+    "Repositories": [
+      {
+        "Name": "ExampleRaw",
+        "Url": "https://packages.example.test/raw/novamodule/",
+        "UploadPath": "stable/latest",
+        "Headers": {
+          "X-Repository": "example-raw"
+        },
+        "Auth": {
+          "HeaderName": "Authorization",
+          "Scheme": "Bearer",
+          "TokenEnvironmentVariable": "NOVA_EXAMPLE_PACKAGE_TOKEN"
+        }
+      },
+      {
+        "Name": "ExampleApiKey",
+        "Url": "https://packages.example.test/raw/novamodule/alt/",
+        "UploadPath": "preview",
+        "Headers": {
+          "X-Repository": "example-api-key"
+        },
+        "Auth": {
+          "HeaderName": "X-Api-Key",
+          "Token": "replace-me-for-local-testing"
+        }
+      }
+    ]
   },
   "Pester": {
     "TestResult": {

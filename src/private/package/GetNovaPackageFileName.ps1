@@ -3,7 +3,8 @@ function Get-NovaPackageFileName {
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [Parameter(Mandatory)][string]$PackageId,
-        [Parameter(Mandatory)][string]$PackageType
+        [Parameter(Mandatory)][string]$PackageType,
+        [switch]$Latest
     )
 
     $packageType = ConvertTo-NovaPackageType -Type $PackageType
@@ -13,6 +14,16 @@ function Get-NovaPackageFileName {
     }
 
     $packageFileName = $packageFileName -replace '(?i)(?:\.nupkg|\.zip)$', ''
+    if ($Latest) {
+        $versionSuffix = ".$( $ProjectInfo.Version )"
+        if ( $packageFileName.EndsWith($versionSuffix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            $packageFileName = "$($packageFileName.Substring(0, $packageFileName.Length - $versionSuffix.Length) ).latest"
+        }
+        elseif (-not $packageFileName.EndsWith('.latest', [System.StringComparison]::OrdinalIgnoreCase)) {
+            $packageFileName = "$packageFileName.latest"
+        }
+    }
+
     $fileExtension = if ($packageType -eq 'Zip') {
         '.zip'
     }

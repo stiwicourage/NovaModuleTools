@@ -191,11 +191,14 @@ package metadata fields are simply left out.
 Use this `project.json` shape when you want to control the package types and output directory:
 
 ```json
-"Package": {
-"Types": ["NuGet", "Zip"],
-  "OutputDirectory": {
-    "Path": "artifacts/packages",
-    "Clean": true
+{
+  "Package": {
+    "Types": ["NuGet", "Zip"],
+    "Latest": true,
+    "OutputDirectory": {
+      "Path": "artifacts/packages",
+      "Clean": true
+    }
   }
 }
 ```
@@ -203,9 +206,52 @@ Use this `project.json` shape when you want to control the package types and out
 - `Types` is optional. When it is missing, empty, or null, Nova defaults to `NuGet` and creates a `.nupkg`.
 - Supported `Types` values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
 - Use `Types = ["Zip"]` when you only want a `.zip`, or `Types = ["NuGet", "Zip"]` when you want both files.
+- `Latest` is optional and defaults to `false`. When set to `true`, Nova also creates a companion `*.latest.*`
+  artifact for each selected package type, such as `NovaModuleTools.latest.nupkg` next to the normal versioned file.
 - `Path` selects where the package artifact(s) are written.
 - `Clean` defaults to `true` and removes that output directory before a new package is created.
 - Set `Clean` to `false` when you want to keep existing files in the package output directory.
+
+### Upload package artifacts to a raw endpoint
+
+Use the upload workflow when a Nova project must push existing package artifacts to a raw HTTP endpoint instead of a
+PowerShell repository:
+
+```powershell
+PS> Upload-NovaPackage -Repository LocalNexus
+PS> nova upload -repository LocalNexus
+PS> nova upload -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN
+```
+
+Use this `project.json` shape when you want Nova to resolve upload targets from named repositories:
+
+```json
+{
+  "Package": {
+    "Types": ["Zip"],
+    "OutputDirectory": {
+      "Path": "artifacts/packages",
+      "Clean": true
+    },
+    "Repositories": [
+      {
+        "Name": "LocalNexus",
+        "Url": "http://localhost:8081/repository/raw/com/novamoduletools/"
+      }
+    ]
+  }
+}
+```
+
+- `Upload-NovaPackage` uploads existing package files only; it does not build, test, or create packages.
+- `nova upload` is the CLI entrypoint for the same raw upload workflow.
+- `-Url` overrides repository or package-level upload settings and is the simplest CI/CD path.
+- When `-PackagePath` is omitted, Nova resolves package files from `Package.OutputDirectory.Path`.
+- When multiple matching files exist for a selected package type, Nova uploads all of them, including versioned and
+  `latest` variants.
+- `Package.Headers`, `Package.Auth`, `Package.RepositoryUrl`, and repository-specific overrides remain generic so the
+  workflow works with raw endpoints such as Nexus or Artifactory without turning `Publish-NovaModule` into a vendor-
+  specific upload command.
 
 ### Run code quality checks
 

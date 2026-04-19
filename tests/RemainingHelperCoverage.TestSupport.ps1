@@ -85,6 +85,7 @@ function Get-TestNovaPackageProjectInfo {
         [Parameter(Mandatory)][pscustomobject]$Layout,
         [Parameter(Mandatory)][bool]$CleanOutputDirectory,
         [string[]]$PackageTypes = @('NuGet'),
+        [bool]$Latest = $false,
         [switch]$OmitOptionalManifestMetadata
     )
 
@@ -112,6 +113,7 @@ function Get-TestNovaPackageProjectInfo {
         Package = [ordered]@{
             Id = 'PackageProject'
             Types = @($PackageTypes)
+            Latest = $Latest
             OutputDirectory = [ordered]@{
                 Path = $Layout.PackageOutputDir
                 Clean = $CleanOutputDirectory

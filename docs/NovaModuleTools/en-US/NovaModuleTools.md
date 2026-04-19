@@ -48,7 +48,11 @@ Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
 
 ### `PS> Pack-NovaModule`
 
-Builds, tests, and packages the current project as a `.nupkg` artifact.
+Builds, tests, and packages the current project as one or more configured package artifacts.
+
+### `PS> Upload-NovaPackage`
+
+Uploads generated package artifacts to a raw HTTP endpoint by using generic package upload settings.
 
 ### `PS> Test-NovaBuild`
 

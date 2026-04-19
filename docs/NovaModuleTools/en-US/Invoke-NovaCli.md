@@ -29,15 +29,15 @@ PS> Invoke-NovaCli [[-Command] <string>] [[-Arguments] <string[]>] [-WhatIf] [-C
 `nova` CLI rather than call `Invoke-NovaCli` directly.
 
 It dispatches high-level commands such as `nova info`, `nova version`, `nova --version`, `nova --help`, `nova build`,
-`nova test`, `nova pack`, `nova init`, `nova update`, `nova notification`, `nova publish`, `nova bump`, and
-`nova release`
+`nova test`, `nova pack`, `nova upload`, `nova init`, `nova update`, `nova notification`, `nova publish`,
+`nova bump`, and `nova release`
 to the matching Nova cmdlet.
 
 Use `Invoke-NovaCli` when you need a scriptable PowerShell command entrypoint. Use `nova` when you want the
 user-focused CLI experience.
 
-Mutating routed commands (`build`, `test`, `pack`, `bump`, `update`, `notification`, `publish`, and `release`) forward
-PowerShell
+Mutating routed commands (`build`, `test`, `pack`, `upload`, `bump`, `update`, `notification`, `publish`, and
+`release`) forward PowerShell
 `-WhatIf`/`-Confirm` to the underlying cmdlet. That means `nova build -WhatIf` and
 `Invoke-NovaCli -Command build -WhatIf` both preview the build instead of running it.
 
@@ -47,6 +47,13 @@ artifacts. By default it writes a `.nupkg` to `artifacts/packages/`, and you can
 
 Use `Package.Types` in `project.json` when you want to switch from the default `NuGet` output to `Zip`, or when you
 want both formats. Supported values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
+
+Set `Package.Latest` to `true` when you also want `nova pack` to create companion latest-named package artifacts such
+as `NovaModuleTools.latest.nupkg` next to the normal versioned files.
+
+Use `nova upload` when you want to push existing package artifacts from the configured package output directory to a raw
+HTTP endpoint. It can upload all matching artifacts for the configured package types, including versioned and `latest`
+files, and it resolves the upload target from `-url`, `Package.RepositoryUrl`, or `Package.Repositories`.
 
 For local publish inside an imported PowerShell session, `nova publish -local` now reloads the published module from the
 resolved local install path after the copy succeeds. Preview or cancelled runs do not import anything.
@@ -128,6 +135,22 @@ omitted, `nova pack` creates a `.nupkg` by default.
 ### EXAMPLE 6
 
 ```powershell
+nova upload --repository LocalNexus
+```
+
+Uploads the current project's generated package artifacts to the configured raw repository named `LocalNexus`.
+
+### EXAMPLE 7
+
+```powershell
+nova upload --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN
+```
+
+Uploads the matching package artifacts directly to the provided raw endpoint by using an explicit token.
+
+### EXAMPLE 8
+
+```powershell
 nova publish --repository PSGallery --apikey $env:PSGALLERY_API
 ```
 
@@ -135,7 +158,7 @@ Parses CLI arguments and publishes using `Publish-NovaModule`.
 
 When routed inside PowerShell with `-local`, the published module is reloaded from the local install path.
 
-### EXAMPLE 7
+### EXAMPLE 9
 
 ```powershell
 nova --help
@@ -143,7 +166,7 @@ nova --help
 
 Displays the built-in Nova CLI help text.
 
-### EXAMPLE 8
+### EXAMPLE 10
 
 ```powershell
 PS> Invoke-NovaCli -Command build
@@ -151,7 +174,7 @@ PS> Invoke-NovaCli -Command build
 
 Shows the equivalent scripted PowerShell form behind `nova build`.
 
-### EXAMPLE 9
+### EXAMPLE 11
 
 ```powershell
 PS> Invoke-NovaCli -Command publish -Arguments @('-local') -WhatIf
@@ -159,7 +182,7 @@ PS> Invoke-NovaCli -Command publish -Arguments @('-local') -WhatIf
 
 Previews the routed local publish flow without rebuilding, testing, or copying the module.
 
-### EXAMPLE 10
+### EXAMPLE 12
 
 ```powershell
 PS> Invoke-NovaCli -Command init -Arguments @('-Path', '~/Work')
@@ -167,7 +190,7 @@ PS> Invoke-NovaCli -Command init -Arguments @('-Path', '~/Work')
 
 Runs the interactive init flow and creates the project under `~/Work`.
 
-### EXAMPLE 11
+### EXAMPLE 13
 
 ```powershell
 PS> Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '~/Work')
@@ -175,7 +198,7 @@ PS> Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '~/Work')
 
 Runs the interactive init flow, scaffolds from the packaged example project, and creates the project under `~/Work`.
 
-### EXAMPLE 12
+### EXAMPLE 14
 
 ```powershell
 nova update
@@ -192,7 +215,7 @@ Successful updates print the release notes link from the installed module manife
 If no newer version is available, the standalone launcher prints `You're up to date!` and reports the installed
 `NovaModuleTools` version.
 
-### EXAMPLE 13
+### EXAMPLE 15
 
 ```powershell
 nova notification
@@ -200,7 +223,7 @@ nova notification
 
 Shows whether prerelease self-updates are enabled and where the preference is stored.
 
-### EXAMPLE 14
+### EXAMPLE 16
 
 ```powershell
 nova notification -disable
@@ -208,7 +231,7 @@ nova notification -disable
 
 Disables prerelease self-update targets so `nova update` stays on stable releases.
 
-### EXAMPLE 15
+### EXAMPLE 17
 
 ```powershell
 PS> Invoke-NovaCli -Command notification -Arguments @('-enable')
@@ -220,8 +243,8 @@ Re-enables prerelease self-update targets from the routed PowerShell entrypoint.
 
 ### -Command
 
-The command to execute. Supported values: `info`, `version`, `--version`, `--help`, `build`, `test`, `pack`, `init`,
-`update`, `notification`, `publish`, `bump`, `release`.
+The command to execute. Supported values: `info`, `version`, `--version`, `--help`, `build`, `test`, `pack`, `upload`,
+`init`, `update`, `notification`, `publish`, `bump`, `release`.
 
 ```yaml
 Type: System.String
@@ -236,7 +259,7 @@ ParameterSets:
     ValueFromPipelineByPropertyName: false
     ValueFromRemainingArguments: false
 DontShow: false
-AcceptedValues: [ info, version, --version, --help, build, test, init, update, notification, publish, bump, release ]
+AcceptedValues: [ info, version, --version, --help, build, test, pack, upload, init, update, notification, publish, bump, release ]
 HelpMessage: ''
 ```
 
@@ -278,8 +301,8 @@ Returned for text-oriented commands such as `nova --help`, `nova version`, `nova
 
 ### PSCustomObject
 
-Returned when the selected subcommand returns an object, for example `nova info`, `nova notification`, or
-`nova update`.
+Returned when the selected subcommand returns an object, for example `nova info`, `nova upload`, `nova notification`,
+or `nova update`.
 
 ### None
 
@@ -299,6 +322,7 @@ only to mutating subcommands.
 
 - `Invoke-NovaBuild`
 - `Install-NovaCli`
+- `Upload-NovaPackage`
 - `Test-NovaBuild`
 - `Update-NovaModuleTool`
 - `Invoke-NovaRelease`

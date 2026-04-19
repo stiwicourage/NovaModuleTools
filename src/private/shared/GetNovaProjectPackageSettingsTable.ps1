@@ -11,6 +11,11 @@ function Get-NovaProjectPackageSettingsTable {
 
     $packageSettings = [ordered]@{} + $ProjectData['Package']
     $null = $packageSettings.Remove('Enabled')
+
+    if (-not $packageSettings.Contains('RepositoryUrl') -and $packageSettings.Contains('RawRepositoryUrl')) {
+        $packageSettings['RepositoryUrl'] = $packageSettings['RawRepositoryUrl']
+    }
+
     return $packageSettings
 }
 
