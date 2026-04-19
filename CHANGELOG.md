@@ -50,18 +50,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     generic headers/auth settings.
   - Package upload now discovers all matching artifacts for the selected package types, including versioned and
     `latest` files in the configured package output directory.
-      - `nova package` and `New-NovaModulePackage` no longer depend on a separate `Package.Enabled` switch.
 
 ### Changed
 
 - Change the project to a Nova command model, replacing the previous mixed MT/Nova workflow.
     - All public commands are now Nova commands, and the `nova` CLI/Powershell alias is the primary entry point for all
       operations.
-- **BREAKING CHANGE**: Rename the public Nova packaging, raw deployment, and scaffold cmdlets to approved verbs.
-    - `Pack-NovaModule` → `New-NovaModulePackage`
-    - `Upload-NovaPackage` → `Deploy-NovaPackage`
+- **BREAKING CHANGE**: Rename the public Nova scaffold cmdlets to approved verbs.
     - `New-NovaModule` → `Initialize-NovaModule`
-    - CLI users must now use `nova package` and `nova deploy`; `nova init` is unchanged.
     - No compatibility aliases are exported for the retired cmdlet names or CLI subcommands.
 - Change `CopyResourcesToModuleRoot` to the canonical project setting name while keeping the default value `false`.
 - Change `Publish-NovaModule -Local` and `nova publish -local` so a successful local publish also reloads the published
@@ -71,9 +67,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
-- Fix `New-NovaModulePackage` and `nova package` so schema-optional `Manifest` metadata such as `ProjectUri`,
-  `ReleaseNotes`,
-  `LicenseUri`, and `Tags` are omitted cleanly instead of causing packaging failures when they are not present.
 
 ### Documentation
 
@@ -83,13 +76,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   commands, `project.json`, packaging/delivery, and versioning/update behavior.
     - Improve page spacing, card padding, code-block separation, and responsive layout density so the documentation is
       easier to scan and less visually cramped.
-- Change the public docs header navigation from a dense link row to a menu button so readers can choose pages from a
-  simpler page picker across the site while keeping the License page available from legal/footer links instead of the
-  primary menu.
 - Refresh public `Get-Help` content and examples for the Nova commands, including CLI usage and preview/confirmation
   scenarios.
-- Refresh `.github/pull_request_template.md` so pull requests now call out the current Nova workflows, CI/release
-  validation paths, documentation split, and example-project follow-up expectations.
 
 ### Removed
 
