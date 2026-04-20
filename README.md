@@ -193,6 +193,8 @@ Use this `project.json` shape when you want to control the package types and out
 ```json
 {
   "Package": {
+    "PackageFileName": "AgentInstaller",
+    "AddVersionToFileName": true,
     "Types": ["NuGet", "Zip"],
     "Latest": true,
     "OutputDirectory": {
@@ -208,6 +210,12 @@ Use this `project.json` shape when you want to control the package types and out
 - Use `Types = ["Zip"]` when you only want a `.zip`, or `Types = ["NuGet", "Zip"]` when you want both files.
 - `Latest` is optional and defaults to `false`. When set to `true`, Nova also creates a companion `*.latest.*`
   artifact for each selected package type, such as `NovaModuleTools.latest.nupkg` next to the normal versioned file.
+- `PackageFileName` lets you override the base artifact name.
+- `AddVersionToFileName` defaults to `false`. When set to `true`, Nova appends `.<Version>` from `project.json` to the
+  configured `PackageFileName`, so `AgentInstaller` becomes `AgentInstaller.2.3.4` before the package
+  extension is applied.
+- When both `AddVersionToFileName` and `Latest` are enabled, the companion artifact substitutes that appended version
+  suffix with `.latest`, such as `AgentInstaller.latest.nupkg`.
 - `Path` selects where the package artifact(s) are written.
 - `Clean` defaults to `true` and removes that output directory before a new package is created.
 - Set `Clean` to `false` when you want to keep existing files in the package output directory.
@@ -249,6 +257,8 @@ Use this `project.json` shape when you want Nova to resolve upload targets from 
 - When `-PackagePath` is omitted, Nova resolves package files from `Package.OutputDirectory.Path`.
 - `Package.FileNamePattern` overrides the default upload discovery pattern. When omitted, Nova falls back to
   `<Package.Id>*` and then applies the selected package type extension.
+- If `Package.PackageFileName` uses a different base name than `Package.Id`, update `Package.FileNamePattern` too so
+  automatic upload discovery keeps matching the generated files.
 - When `Package.FileNamePattern` already ends with `.zip` or `.nupkg`, Nova treats that extension as authoritative.
   For example, `MyModule.*.zip` discovers `MyModule.1.2.3.zip` and `MyModule.latest.zip` without picking up
   `MyModule.1.2.3.nupkg`.

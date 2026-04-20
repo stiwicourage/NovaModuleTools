@@ -36,6 +36,8 @@ Use this `project.json` shape when you want to control package types and the pac
 ```json
 {
   "Package": {
+    "PackageFileName": "AgentInstaller",
+    "AddVersionToFileName": true,
     "Types": [
       "NuGet",
       "Zip"
@@ -58,6 +60,14 @@ Supported `Package.Types` values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and m
 `Package.Latest` is optional and defaults to `false`. When set to `true`, `New-NovaModulePackage` also writes a
 companion
 `*.latest.*` artifact for each selected package type while keeping the normal versioned file.
+
+`Package.PackageFileName` lets you override the base package file name.
+
+`Package.AddVersionToFileName` defaults to `false`. When you set it to `true`, Nova appends `.<Version>` from
+`project.json` to the configured `Package.PackageFileName` before the package extension is applied.
+
+When both `Package.AddVersionToFileName` and `Package.Latest` are enabled, `New-NovaModulePackage` replaces that
+appended version suffix with `.latest` for the companion artifact.
 
 `Package.OutputDirectory.Clean` defaults to `true`, which deletes the configured package output directory before a new
 package is created. Set it to `false` when you want to keep existing files in that directory.
@@ -105,12 +115,21 @@ file such as `NovaModuleTools.latest.nupkg`.
 ### EXAMPLE 5
 
 ```powershell
+PS> New-NovaModulePackage
+```
+
+When `Package.PackageFileName` is `AgentInstaller` and `Package.AddVersionToFileName` is `true`, the command writes
+package files such as `AgentInstaller.2.3.4.nupkg` and `AgentInstaller.latest.nupkg`.
+
+### EXAMPLE 6
+
+```powershell
 PS> New-NovaModulePackage -WhatIf
 ```
 
 Previews the build, test, and package workflow without writing a package artifact.
 
-### EXAMPLE 6
+### EXAMPLE 7
 
 ```powershell
 PS> New-NovaModulePackage -Confirm

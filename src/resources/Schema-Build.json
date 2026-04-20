@@ -99,6 +99,9 @@
           "PackageFileName": {
             "type": "string"
           },
+          "AddVersionToFileName": {
+            "type": "boolean"
+          },
           "FileNamePattern": {
             "type": "string"
           },

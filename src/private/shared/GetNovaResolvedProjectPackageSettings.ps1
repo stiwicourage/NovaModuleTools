@@ -13,6 +13,7 @@ function Get-NovaResolvedProjectPackageSettings {
     Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'Id' -Value $ProjectData['ProjectName'] -TreatWhitespaceAsMissing
 
     Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'PackageFileName' -Value "$( $packageSettings['Id'] ).$( $ProjectData['Version'] ).nupkg" -TreatWhitespaceAsMissing
+    Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'AddVersionToFileName' -Value $false
     Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'FileNamePattern' -Value "$( $packageSettings['Id'] )*" -TreatWhitespaceAsMissing
     Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'Authors' -Value $ManifestSettings['Author']
     Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'Description' -Value $ProjectData['Description'] -TreatWhitespaceAsMissing
@@ -22,6 +23,7 @@ function Get-NovaResolvedProjectPackageSettings {
     Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'Auth' -Value ([ordered]@{})
 
     $packageSettings['Latest'] = [bool]$packageSettings['Latest']
+    $packageSettings['AddVersionToFileName'] = [bool]$packageSettings['AddVersionToFileName']
     $packageSettings['Repositories'] = @($packageSettings['Repositories'])
     $packageSettings['Headers'] = [ordered]@{} + $packageSettings['Headers']
     $packageSettings['Auth'] = [ordered]@{} + $packageSettings['Auth']

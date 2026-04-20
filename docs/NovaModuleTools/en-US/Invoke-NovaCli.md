@@ -54,6 +54,9 @@ want both formats. Supported values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, an
 Set `Package.Latest` to `true` when you also want `nova package` to create companion latest-named package artifacts such
 as `NovaModuleTools.latest.nupkg` next to the normal versioned files.
 
+Set `Package.AddVersionToFileName` to `true` when `Package.PackageFileName` is a stable base name such as
+`AgentInstaller` and you want Nova to append `.<Version>` from `project.json` before creating the package files.
+
 Use `nova deploy` when you want to push existing package artifacts from the configured package output directory to a raw
 HTTP endpoint. It can upload all matching artifacts for the configured package types, including versioned and `latest`
 files, and it resolves the upload target from `-url`, `Package.RepositoryUrl`, or `Package.Repositories`.
