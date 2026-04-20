@@ -153,7 +153,8 @@
       "Path": "artifacts/packages",
       "Clean": true
     },
-    "PackageFileName": "NovaExampleModule.0.1.0",
+    "PackageFileName": "NovaExampleModule",
+    "AddVersionToFileName": true,
     "FileNamePattern": "NovaExampleModule*",
     "Authors": ["NovaModuleTools", "Example Maintainer"],
     "Description": "Example package metadata and raw upload configuration for NovaExampleModule.",
@@ -417,16 +418,35 @@
                             <td><code>PackageFileName</code></td>
                             <td><code>&lt;Id&gt;.&lt;Version&gt;.nupkg</code></td>
                             <td>Base file name used for package generation.</td>
-                            <td>Nova normalizes the extension per package type and swaps the version suffix for <code>latest</code>
-                                when needed.
+                            <td>Nova normalizes the extension per package type. When you combine a custom base name with
+                                <code>AddVersionToFileName</code>, Nova appends the project version before the extension
+                                and can still swap that suffix for <code>latest</code> when needed.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>AddVersionToFileName</code></td>
+                            <td><code>false</code></td>
+                            <td>Appends <code>.&lt;Version&gt;</code> from the top-level project version to the
+                                configured
+                                <code>PackageFileName</code>.
+                            </td>
+                            <td>Useful when <code>PackageFileName</code> is a stable base name such as
+                                <code>AgentInstaller</code>. With <code>Latest</code> enabled, Nova substitutes the
+                                appended version suffix with <code>.latest</code> for the companion artifact.
                             </td>
                         </tr>
                         <tr>
                             <td><code>FileNamePattern</code></td>
                             <td><code>&lt;Id&gt;*</code> in practice</td>
                             <td>Pattern used to discover matching package files for upload.</td>
-                            <td>Keep it wide enough to include both versioned and <code>latest</code> artifacts when you
-                                use <code>Package.Latest</code>.
+                            <td>When you omit it, Nova falls back to <code>&lt;Id&gt;*</code> and adds the active
+                                package
+                                type extension during discovery. When you set it, your pattern overrides that default.
+                                If <code>PackageFileName</code> uses a different base name than <code>Id</code>, update
+                                <code>FileNamePattern</code> too so deploy discovery still matches the generated files.
+                                A pattern that already ends with <code>.zip</code> or <code>.nupkg</code> is treated as
+                                authoritative, so <code>MyModule.*.zip</code> matches <code>MyModule.1.2.3.zip</code>
+                                and <code>MyModule.latest.zip</code> without discovering <code>.nupkg</code> files.
                             </td>
                         </tr>
                         <tr>

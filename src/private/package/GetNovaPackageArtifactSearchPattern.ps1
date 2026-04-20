@@ -5,13 +5,11 @@ function Get-NovaPackageArtifactSearchPattern {
         [Parameter(Mandatory)][string]$PackageType
     )
 
-    $pattern = "$( Get-NovaPackageSettingValue -InputObject $ProjectInfo.Package -Name 'FileNamePattern' )".Trim()
-    if ( [string]::IsNullOrWhiteSpace($pattern)) {
-        $packageId = "$( Get-NovaPackageSettingValue -InputObject $ProjectInfo.Package -Name 'Id' )".Trim()
-        $pattern = "$packageId*"
+    $patternInfo = Get-NovaPackageArtifactPatternInfo -ProjectInfo $ProjectInfo
+    if ($null -ne $patternInfo.ExplicitPackageType) {
+        return $patternInfo.Pattern
     }
 
-    $pattern = $pattern -replace '(?i)(?:\.nupkg|\.zip)$', ''
-    return "$pattern$( Get-NovaPackageTypeExtension -PackageType $PackageType )"
+    return "$( $patternInfo.Pattern )$( Get-NovaPackageTypeExtension -PackageType $PackageType )"
 }
 

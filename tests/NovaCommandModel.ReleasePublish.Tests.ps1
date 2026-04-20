@@ -570,6 +570,54 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
+    It 'Get-NovaPackageMetadataList resolves custom PackageFileName versioning when <Name>' -ForEach @(
+        @{
+            Name = 'AddVersionToFileName appends the project version'
+            PackageFileName = 'AgentInstaller'
+        }
+        @{
+            Name = 'PackageFileName already ends with the current version'
+            PackageFileName = 'AgentInstaller.2.3.4.zip'
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'PackageProject'
+                Version = '2.3.4'
+                ProjectRoot = '/tmp/project'
+                Description = 'Top-level description'
+                Manifest = [ordered]@{
+                    Author = 'Author One'
+                    Tags = @('Nova', 'Packaging')
+                }
+                Package = [ordered]@{
+                    Id = 'PackageProject'
+                    Types = @('NuGet', 'Zip')
+                    Latest = $true
+                    OutputDirectory = [ordered]@{
+                        Path = '/tmp/project/artifacts/packages'
+                        Clean = $true
+                    }
+                    PackageFileName = $TestCase.PackageFileName
+                    AddVersionToFileName = $true
+                    Authors = 'Author One'
+                    Description = 'Top-level description'
+                }
+            }
+
+            $result = @(Get-NovaPackageMetadataList -ProjectInfo $projectInfo)
+
+            $result.PackageFileName | Should -Be @(
+                'AgentInstaller.2.3.4.nupkg',
+                'AgentInstaller.latest.nupkg',
+                'AgentInstaller.2.3.4.zip',
+                'AgentInstaller.latest.zip'
+            )
+        }
+    }
+
     It 'Get-NovaPackageMetadata keeps schema-optional manifest fields empty when they are omitted' {
         InModuleScope $script:moduleName {
             $projectInfo = [pscustomobject]@{

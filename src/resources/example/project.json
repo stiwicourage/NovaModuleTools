@@ -34,7 +34,8 @@
       "Path": "artifacts/packages",
       "Clean": true
     },
-    "PackageFileName": "NovaExampleModule.0.1.0",
+    "PackageFileName": "NovaExampleModule",
+    "AddVersionToFileName": true,
     "FileNamePattern": "NovaExampleModule*",
     "Authors": [
       "NovaModuleTools",

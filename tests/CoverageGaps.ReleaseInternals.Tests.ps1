@@ -55,12 +55,55 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
-    It 'Get-NovaVersionPreReleaseLabel returns preview, stable, or the existing prerelease label' {
+    It 'Get-NovaVersionPartForLabel finalizes prerelease targets or advances to the next stable core when <Name>' -ForEach @(
+        @{Name = 'major prerelease already targets the current release line'; CurrentVersion = '2.0.0-preview7'; Label = 'Major'; Expected = '2.0.0'}
+        @{Name = 'minor prerelease already targets the current release line'; CurrentVersion = '1.3.0-preview7'; Label = 'Minor'; Expected = '1.3.0'}
+        @{Name = 'patch prerelease already targets the current release line'; CurrentVersion = '1.2.4-preview7'; Label = 'Patch'; Expected = '1.2.4'}
+        @{Name = 'major prerelease on a lower release line advances to the next major'; CurrentVersion = '1.2.3-preview7'; Label = 'Major'; Expected = '2.0.0'}
+        @{Name = 'minor prerelease on a lower release line advances to the next minor'; CurrentVersion = '1.2.3-preview7'; Label = 'Minor'; Expected = '1.3.0'}
+        @{Name = 'patch prerelease on the current patch line finalizes that line'; CurrentVersion = '1.2.3-preview7'; Label = 'Patch'; Expected = '1.2.3'}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            $result = Get-NovaVersionPartForLabel -CurrentVersion ([semver]$TestCase.CurrentVersion) -Label $TestCase.Label
+
+            "$( $result.Major ).$( $result.Minor ).$( $result.Patch )" | Should -Be $TestCase.Expected
+        }
+    }
+
+    It 'Get-NovaVersionPreReleaseLabel returns preview or stable output without preserving prerelease labels by default' {
         InModuleScope $script:moduleName {
-            Get-NovaVersionPreReleaseLabel -CurrentVersion ([semver]'1.2.3-preview') -PreviewRelease | Should -Be 'preview'
-            $stable = Get-NovaVersionPreReleaseLabel -CurrentVersion ([semver]'1.2.3-preview') -StableRelease
+            Get-NovaVersionPreReleaseLabel -PreviewRelease | Should -Be 'preview'
+            $stable = Get-NovaVersionPreReleaseLabel -StableRelease
             $stable | Should -BeNullOrEmpty
-            Get-NovaVersionPreReleaseLabel -CurrentVersion ([semver]'1.2.3-preview') | Should -Be 'preview'
+            Get-NovaVersionPreReleaseLabel | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'Get-NovaVersionPreReleaseLabel handles dotted prerelease identifiers when preview parsing is supported' {
+        InModuleScope $script:moduleName {
+            $version = [semver]'1.2.3-preview.7'
+
+            $version.ToString() | Should -Be '1.2.3-preview.7'
+            Get-NovaVersionPreReleaseLabel -PreviewRelease | Should -Be 'preview'
+            Get-NovaVersionPreReleaseLabel | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'Get-NovaVersionUpdatePlan resolves prerelease versions to the expected next stable target when <Name>' -ForEach @(
+        @{Name = 'finalizing a major prerelease line'; CurrentVersion = '2.0.0-preview7'; Label = 'Major'; ExpectedVersion = '2.0.0'}
+        @{Name = 'finalizing a minor prerelease line'; CurrentVersion = '1.3.0-preview7'; Label = 'Minor'; ExpectedVersion = '1.3.0'}
+        @{Name = 'finalizing a patch prerelease line'; CurrentVersion = '1.2.4-preview7'; Label = 'Patch'; ExpectedVersion = '1.2.4'}
+        @{Name = 'advancing from an earlier prerelease line to the next minor'; CurrentVersion = '1.2.3-preview7'; Label = 'Minor'; ExpectedVersion = '1.3.0'}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectJSON = '/tmp/project.json'}}
+            Mock Get-Content {([ordered]@{Version = $TestCase.CurrentVersion} | ConvertTo-Json -Compress)} -ParameterFilter {$LiteralPath -eq '/tmp/project.json' -and $Raw}
+
+            (Get-NovaVersionUpdatePlan -Label $TestCase.Label).NewVersion.ToString() | Should -Be $TestCase.ExpectedVersion
         }
     }
 

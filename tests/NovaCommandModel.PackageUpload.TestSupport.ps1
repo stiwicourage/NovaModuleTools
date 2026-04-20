@@ -3,6 +3,7 @@ $global:novaCommandModelPackageUploadTestSupportFunctionNameList = @(
     'Initialize-TestNovaPackageUploadLayout'
     'New-TestNovaPackageUploadProjectInfo'
     'New-TestNovaPackageArtifactFile'
+    'New-TestNovaPackageArtifactSet'
 )
 
 function Get-TestNovaPackageUploadOptionValue {
@@ -86,5 +87,28 @@ function New-TestNovaPackageArtifactFile {
     $path = Join-Path $Directory $Name
     'artifact' | Set-Content -LiteralPath $path -Encoding utf8
     return $path
+}
+
+function New-TestNovaPackageArtifactSet {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Directory,
+        [string[]]$PackageType = @('NuGet', 'Zip'),
+        [switch]$IncludeLatest
+    )
+
+    return @(
+    foreach ($type in $PackageType) {
+        $extension = if ($type -eq 'Zip') {
+            '.zip'
+        } else {
+            '.nupkg'
+        }
+        New-TestNovaPackageArtifactFile -Directory $Directory -Name "PackageProject.2.3.4$extension"
+        if ($IncludeLatest) {
+            New-TestNovaPackageArtifactFile -Directory $Directory -Name "PackageProject.latest$extension"
+        }
+    }
+    )
 }
 

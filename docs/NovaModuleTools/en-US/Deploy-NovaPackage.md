@@ -31,6 +31,10 @@ When `-PackagePath` is omitted, the command resolves artifacts from the configur
 current package model, which means it can upload `.nupkg`, `.zip`, or both, depending on `Package.Types` and the files
 present in the output directory.
 
+If you customize `Package.PackageFileName`, you can keep upload discovery aligned by updating
+`Package.FileNamePattern` as well. When `Package.AddVersionToFileName` is `true`, Nova appends `.<Version>` from
+`project.json` to the configured package file base name before it discovers or uploads matching artifacts.
+
 When multiple matching artifacts exist for a selected package type, `Deploy-NovaPackage` uploads all of them. That
 includes versioned and `latest` variants such as `NovaModuleTools.2.0.0-preview6.nupkg` and
 `NovaModuleTools.latest.nupkg`.

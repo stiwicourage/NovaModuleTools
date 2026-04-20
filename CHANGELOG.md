@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Package output now supports `Package.Types` with case-insensitive `NuGet`, `Zip`, `.nupkg`, and `.zip` values.
     - Omitting `Package.Types` still defaults packaging to a `.nupkg` artifact.
     - Selecting both `NuGet` and `Zip` creates both package formats in the configured output directory.
+  - `Package.AddVersionToFileName` can append the top-level project version to a custom `Package.PackageFileName`
+    before the package extension is applied.
   - Setting `Package.Latest` to `true` also creates a companion `*.latest.*` artifact for each selected package type
     while keeping the normal versioned file.
     - Package output now uses `Package.OutputDirectory.Path` with `Package.OutputDirectory.Clean` defaulting to `true`.
@@ -67,6 +69,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
+- Fix `Update-NovaModuleVersion` / `nova bump` so prerelease versions finalize the correct SemVer target instead of
+  carrying old prerelease labels like `preview7` into the next major, minor, or patch line.
 
 ### Documentation
 

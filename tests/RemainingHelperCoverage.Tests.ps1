@@ -420,6 +420,27 @@ Locale: en-US
         @($result.PackagePath | ForEach-Object {Test-Path -LiteralPath $_}) | Should -Be @($true, $true, $true, $true)
     }
 
+    It 'New-NovaPackageArtifacts appends the project version to a custom PackageFileName when AddVersionToFileName is true' {
+        $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive 'versioned-custom-package-name-project')
+
+        $result = InModuleScope $script:moduleName -Parameters @{
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip') -Latest $true -PackageFileName 'AgentInstaller' -AddVersionToFileName $true)
+        } {
+            param($ProjectInfo)
+
+            $packageMetadataList = @(Get-NovaPackageMetadataList -ProjectInfo $ProjectInfo)
+            @(New-NovaPackageArtifacts -ProjectInfo $ProjectInfo -PackageMetadataList $packageMetadataList)
+        }
+
+        $result.PackageFileName | Should -Be @(
+            'AgentInstaller.2.3.4.nupkg',
+            'AgentInstaller.latest.nupkg',
+            'AgentInstaller.2.3.4.zip',
+            'AgentInstaller.latest.zip'
+        )
+        @($result.PackagePath | ForEach-Object {Test-Path -LiteralPath $_}) | Should -Be @($true, $true, $true, $true)
+    }
+
     It 'New-NovaPackageArtifact omits schema-optional manifest URI elements when they are not provided' {
         $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive 'package-project-without-optional-manifest-metadata')
         $packagePath = InModuleScope $script:moduleName -Parameters @{

@@ -86,6 +86,8 @@ function Get-TestNovaPackageProjectInfo {
         [Parameter(Mandatory)][bool]$CleanOutputDirectory,
         [string[]]$PackageTypes = @('NuGet'),
         [bool]$Latest = $false,
+        [string]$PackageFileName = 'PackageProject.2.3.4.nupkg',
+        [bool]$AddVersionToFileName = $false,
         [switch]$OmitOptionalManifestMetadata
     )
 
@@ -118,7 +120,8 @@ function Get-TestNovaPackageProjectInfo {
                 Path = $Layout.PackageOutputDir
                 Clean = $CleanOutputDirectory
             }
-            PackageFileName = 'PackageProject.2.3.4.nupkg'
+            PackageFileName = $PackageFileName
+            AddVersionToFileName = $AddVersionToFileName
             Authors = @('Author One', 'Author Two')
             Description = 'Package project description'
         }

@@ -1,7 +1,6 @@
 function Get-NovaVersionPreReleaseLabel {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][semver]$CurrentVersion,
         [switch]$PreviewRelease,
         [switch]$StableRelease
     )
@@ -14,5 +13,5 @@ function Get-NovaVersionPreReleaseLabel {
         return $null
     }
 
-    return $CurrentVersion.PreReleaseLabel
+    return $null
 }
