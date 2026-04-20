@@ -69,6 +69,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
+- Fix `Update-NovaModuleVersion` / `nova bump` so prerelease versions finalize the correct SemVer target instead of
+  carrying old prerelease labels like `preview7` into the next major, minor, or patch line.
 
 ### Documentation
 

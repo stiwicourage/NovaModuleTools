@@ -88,6 +88,28 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
+    It 'Update-NovaModuleVersion -WhatIf finalizes a prerelease major target instead of carrying the old prerelease label forward' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    Version = '2.0.0-preview7'
+                    ProjectJSON = '/tmp/project.json'
+                }
+            }
+            Mock Get-Content {'{"Version":"2.0.0-preview7"}'} -ParameterFilter {$LiteralPath -eq '/tmp/project.json' -and $Raw}
+            Mock Get-GitCommitMessageForVersionBump {@('feat!: breaking api')}
+            Mock Get-VersionLabelFromCommitSet {'Major'}
+            Mock Set-NovaModuleVersion {}
+
+            $result = Update-NovaModuleVersion -Path (Get-Location).Path -WhatIf
+
+            $result.PreviousVersion | Should -Be '2.0.0-preview7'
+            $result.NewVersion | Should -Be '2.0.0'
+            $result.Label | Should -Be 'Major'
+            Assert-MockCalled Set-NovaModuleVersion -Times 0
+        }
+    }
+
     It 'Update-NovaModuleVersion -WhatIf falls back to a Patch preview when the project is not a git repository' {
         InModuleScope $script:moduleName {
             $projectRoot = Join-Path $TestDrive 'no-git-bump-project'

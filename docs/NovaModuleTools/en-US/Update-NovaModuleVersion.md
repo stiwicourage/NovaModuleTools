@@ -44,6 +44,10 @@ has no commits yet. Create an initial commit first.`
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
 calculated release label and the exact next version without changing the stored version.
 
+When the current version is already a prerelease for the selected release line, Nova finalizes that same semantic
+version instead of incrementing again. For example, a `Major` bump from `2.0.0-preview7` resolves to `2.0.0`, not
+`3.0.0-preview7`.
+
 From the standalone `nova` launcher on macOS/Linux, `nova bump -Confirm` uses a CLI-friendly confirmation prompt. If you
 choose `No`, `No to All`, or `Suspend`, the command exits without changing `project.json` and without returning a
 version
@@ -69,17 +73,33 @@ Updates the version for the project rooted at `./src/resources/example`.
 
 ### EXAMPLE 3
 
-```powershell
+```text
 PS> Update-NovaModuleVersion -WhatIf
 
 What if: Performing the operation "Update module version using Minor release label" on target "project.json".
 
-PreviousVersion NewVersion Label CommitCount
---------------- ---------- ----- -----------
-1.12.0          1.13.0     Minor          12
+PreviousVersion: 1.12.0
+NewVersion: 1.13.0
+Label: Minor
+CommitCount: 12
 ```
 
 Shows the calculated version update without modifying `project.json`.
+
+### EXAMPLE 4
+
+```text
+PS> Update-NovaModuleVersion -WhatIf
+
+What if: Performing the operation "Update module version using Major release label" on target "project.json".
+
+PreviousVersion: 2.0.0-preview7
+NewVersion: 2.0.0
+Label: Major
+CommitCount: 84
+```
+
+Shows how Nova finalizes an existing prerelease target instead of carrying the old prerelease label into the next major.
 
 ## PARAMETERS
 

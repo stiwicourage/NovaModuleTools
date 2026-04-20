@@ -302,6 +302,11 @@ nova release -repository PSGallery -apikey $env:PSGALLERY_API</code></pre>
                             <li><strong>Notable behavior:</strong> falls back to a patch bump when the folder is not a
                                 Git repository, but throws when the repository exists and has no commits yet
                             </li>
+                            <li><strong>Prerelease rule:</strong> finalizes matching prerelease targets like
+                                <code>2.0.0-preview7 -&gt; 2.0.0</code> instead of carrying the old prerelease label
+                                into
+                                the next release line
+                            </li>
                         </ul>
                         <pre><code>Update-NovaModuleVersion -WhatIf
 nova bump -Confirm</code></pre>
