@@ -107,16 +107,47 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
-    It 'Set-NovaModuleVersion writes a new semantic version to project.json' {
+    It 'Set-NovaModuleVersion writes a new semantic version to project.json without flattening nested package repositories' {
         InModuleScope $script:moduleName {
             $projectJsonPath = Join-Path $TestDrive 'project.json'
-            Set-Content -LiteralPath $projectJsonPath -Value '{"Version":"1.2.3"}' -Encoding utf8
+            Set-Content -LiteralPath $projectJsonPath -Encoding utf8 -Value @'
+{
+  "ProjectName": "AzureDevOpsAgentInstaller",
+  "Version": "1.2.3",
+  "Package": {
+    "RepositoryUrl": "https://packages.example/raw/",
+    "Auth": {
+      "HeaderName": "Authorization",
+      "Scheme": "Basic",
+      "Token": "NEXUS_TOKEN"
+    },
+    "Repositories": [
+      {
+        "Name": "staging",
+        "Url": "https://packages.example/raw/staging/",
+        "Auth": {
+          "TokenEnvironmentVariable": "NEXUS_STAGING_TOKEN"
+        }
+      }
+    ]
+  }
+}
+'@
             Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectJSON = $projectJsonPath}}
             Mock Write-Host {}
+            $warningMessages = $null
 
-            Set-NovaModuleVersion -Label Minor -PreviewRelease -Confirm:$false
+            Set-NovaModuleVersion -Label Minor -PreviewRelease -Confirm:$false -WarningVariable warningMessages
 
-            (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version | Should -Be '1.3.0-preview'
+            $updatedProject = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json
+
+            $updatedProject.Version | Should -Be '1.3.0-preview'
+            $updatedProject.Package.Auth.HeaderName | Should -Be 'Authorization'
+            $updatedProject.Package.Repositories.Count | Should -Be 1
+            ($updatedProject.Package.Repositories[0] -is [string]) | Should -BeFalse
+            $updatedProject.Package.Repositories[0].Name | Should -Be 'staging'
+            $updatedProject.Package.Repositories[0].Auth.TokenEnvironmentVariable | Should -Be 'NEXUS_STAGING_TOKEN'
+            $warningMessages | Should -BeNullOrEmpty
         }
     }
 

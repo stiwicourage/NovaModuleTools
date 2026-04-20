@@ -71,6 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   clear messages.
 - Fix `Update-NovaModuleVersion` / `nova bump` so prerelease versions finalize the correct SemVer target instead of
   carrying old prerelease labels like `preview7` into the next major, minor, or patch line.
+- Fix `Update-NovaModuleVersion` / `nova bump` so bumping `project.json` preserves nested `Package.Repositories` and
+  other nested JSON objects instead of truncating them during serialization.
 
 ### Documentation
 
