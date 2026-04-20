@@ -130,30 +130,61 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
-    It 'Deploy-NovaPackage handles the current package model when multiple artifacts may exist' {
-        $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'multi-artifact-upload')
+    It 'Deploy-NovaPackage resolves matching artifacts when <Name>' -ForEach @(
+        @{
+            Name = 'multiple artifacts exist for the configured package types'
+            ProjectRootName = 'multi-artifact-upload'
+            Options = @{PackageTypes = @('Zip', 'NuGet')}
+            ExpectedPackagePathFilter = 'PackageProject.*'
+            ExpectedTypeList = @('NuGet', 'NuGet', 'Zip', 'Zip')
+        }
+        @{
+            Name = 'FileNamePattern targets zip artifacts'
+            ProjectRootName = 'explicit-zip-pattern-upload'
+            Options = @{PackageTypes = @('Zip', 'NuGet'); FileNamePattern = 'PackageProject.*.zip'}
+            ExpectedPackagePathFilter = '*.zip'
+            ExpectedTypeList = @('Zip', 'Zip')
+        }
+    ) {
+        $testCase = $_
+        $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive $testCase.ProjectRootName)
+        $artifactPathList = @(New-TestNovaPackageArtifactSet -Directory $layout.PackageOutputDir -PackageType @('NuGet', 'Zip') -IncludeLatest)
         $expectedPackagePathList = @(
-            New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.nupkg'
-            New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.latest.nupkg'
-            New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
-            New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.latest.zip'
+        $artifactPathList |
+                Where-Object {[System.IO.Path]::GetFileName($_) -like $testCase.ExpectedPackagePathFilter}
         )
 
         InModuleScope $script:moduleName -Parameters @{
-            ProjectInfo = (New-TestNovaPackageUploadProjectInfo -Layout $layout -Options @{PackageTypes = @('Zip', 'NuGet')})
+            ProjectInfo = (New-TestNovaPackageUploadProjectInfo -Layout $layout -Options $testCase.Options)
             ExpectedPackagePathList = $expectedPackagePathList
+            ExpectedTypeList = $testCase.ExpectedTypeList
         } {
-            param($ProjectInfo, $ExpectedPackagePathList)
+            param($ProjectInfo, $ExpectedPackagePathList, $ExpectedTypeList)
 
             Mock Get-NovaProjectInfo {$ProjectInfo}
             Mock Invoke-WebRequest {[pscustomobject]@{StatusCode = 200}}
 
             $result = @(Deploy-NovaPackage -Url 'https://packages.example/raw/')
 
-            $result.Count | Should -Be 4
+            $result.Count | Should -Be $ExpectedPackagePathList.Count
             @($result.PackagePath | Sort-Object) | Should -Be @($ExpectedPackagePathList | Sort-Object)
-            @($result.Type | Sort-Object) | Should -Be @('NuGet', 'NuGet', 'Zip', 'Zip')
-            Assert-MockCalled Invoke-WebRequest -Times 4
+            @($result.Type | Sort-Object) | Should -Be @($ExpectedTypeList | Sort-Object)
+            Assert-MockCalled Invoke-WebRequest -Times $ExpectedPackagePathList.Count
+        }
+    }
+
+    It 'Deploy-NovaPackage fails clearly when PackageType conflicts with FileNamePattern' {
+        $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'conflicting-package-type-and-pattern')
+        New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip' | Out-Null
+
+        InModuleScope $script:moduleName -Parameters @{
+            ProjectInfo = (New-TestNovaPackageUploadProjectInfo -Layout $layout -Options @{PackageTypes = @('Zip', 'NuGet'); FileNamePattern = 'PackageProject.*.zip'})
+        } {
+            param($ProjectInfo)
+
+            Mock Get-NovaProjectInfo {$ProjectInfo}
+
+            {Deploy-NovaPackage -PackageType NuGet -Url 'https://packages.example/raw/'} | Should -Throw "Package.FileNamePattern 'PackageProject.*.zip' resolves to type 'Zip'*"
         }
     }
 

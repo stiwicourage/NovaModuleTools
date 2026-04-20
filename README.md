@@ -247,6 +247,11 @@ Use this `project.json` shape when you want Nova to resolve upload targets from 
 - `nova deploy` is the CLI entrypoint for the same raw upload workflow.
 - `-Url` overrides repository or package-level upload settings and is the simplest CI/CD path.
 - When `-PackagePath` is omitted, Nova resolves package files from `Package.OutputDirectory.Path`.
+- `Package.FileNamePattern` overrides the default upload discovery pattern. When omitted, Nova falls back to
+  `<Package.Id>*` and then applies the selected package type extension.
+- When `Package.FileNamePattern` already ends with `.zip` or `.nupkg`, Nova treats that extension as authoritative.
+  For example, `MyModule.*.zip` discovers `MyModule.1.2.3.zip` and `MyModule.latest.zip` without picking up
+  `MyModule.1.2.3.nupkg`.
 - When multiple matching files exist for a selected package type, Nova uploads all of them, including versioned and
   `latest` variants.
 - `Package.Headers`, `Package.Auth`, `Package.RepositoryUrl`, and repository-specific overrides remain generic so the
