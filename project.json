@@ -10,6 +10,16 @@
     "Author": "Stiwi Gabriel Courage",
     "PowerShellHostVersion": "7.4",
     "GUID": "6b9202c8-0353-473b-b73c-afab632125a6",
+    "RequiredModules": [
+      {
+        "ModuleName": "Pester",
+        "ModuleVersion": "5.7.1"
+      },
+      {
+        "ModuleName": "Microsoft.PowerShell.PlatyPS",
+        "ModuleVersion": "1.0.1"
+      }
+    ],
     "Tags": [
       "PowerShell",
       "ModuleBuilder",
