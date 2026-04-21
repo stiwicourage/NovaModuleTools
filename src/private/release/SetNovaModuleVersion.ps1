@@ -20,7 +20,7 @@ function Set-NovaModuleVersion {
         Write-Host "Version bumped to : $newVersion"
 
         # Convert the JSON object back to JSON format
-        $newJsonContent = $jsonContent | ConvertTo-Json
+        $newJsonContent = $jsonContent | ConvertTo-Json -Depth 20
 
         # Write the updated JSON back to the file
         $newJsonContent | Set-Content -LiteralPath $versionUpdatePlan.ProjectFile

@@ -110,6 +110,56 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
+    It 'Update-NovaModuleVersion preserves nested package repository objects when writing the bumped version' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'package-repository-bump-project'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            $projectJsonPath = Join-Path $projectRoot 'project.json'
+            Set-Content -LiteralPath $projectJsonPath -Encoding utf8 -Value @'
+{
+  "ProjectName": "AzureDevOpsAgentInstaller",
+  "Description": "Self-contained installer that configures Azure DevOps build agents on Windows.",
+  "Version": "1.5.2-preview",
+  "Manifest": {
+    "Author": "DevOps Teamet"
+  },
+  "Package": {
+    "RepositoryUrl": "https://packages.example/raw/",
+    "Auth": {
+      "HeaderName": "Authorization",
+      "Scheme": "Basic",
+      "Token": "NEXUS_TOKEN"
+    },
+    "Repositories": [
+      {
+        "Name": "staging",
+        "Url": "https://packages.example/raw/staging/",
+        "Auth": {
+          "TokenEnvironmentVariable": "NEXUS_STAGING_TOKEN"
+        }
+      }
+    ]
+  }
+}
+'@
+            Mock Get-GitCommitMessageForVersionBump {@('feat!: breaking api')}
+            Mock Write-Host {}
+            $warningMessages = $null
+
+            $result = Update-NovaModuleVersion -Path $projectRoot -Confirm:$false -WarningVariable warningMessages
+            $updatedProject = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json
+
+            $result.PreviousVersion | Should -Be '1.5.2-preview'
+            $result.NewVersion | Should -Be '2.0.0'
+            $result.Label | Should -Be 'Major'
+            $updatedProject.Version | Should -Be '2.0.0'
+            ($updatedProject.Package.Repositories[0] -is [string]) | Should -BeFalse
+            $updatedProject.Package.Repositories[0].Name | Should -Be 'staging'
+            $updatedProject.Package.Repositories[0].Auth.TokenEnvironmentVariable | Should -Be 'NEXUS_STAGING_TOKEN'
+            $warningMessages | Should -BeNullOrEmpty
+        }
+    }
+
     It 'Update-NovaModuleVersion -WhatIf falls back to a Patch preview when the project is not a git repository' {
         InModuleScope $script:moduleName {
             $projectRoot = Join-Path $TestDrive 'no-git-bump-project'
