@@ -82,11 +82,15 @@ Describe 'Coverage gaps for release and git internals' {
     }
 
     It 'Get-NovaVersionPreReleaseLabel increments existing prerelease labels generically when preview mode is requested' -ForEach @(
-        @{CurrentVersion = '1.2.3-preview'; Expected = 'preview1'}
+        @{CurrentVersion = '1.2.3-preview'; Expected = 'preview01'}
+        @{CurrentVersion = '1.2.3-preview01'; Expected = 'preview02'}
+        @{CurrentVersion = '1.2.3-preview09'; Expected = 'preview10'}
         @{CurrentVersion = '1.2.3-preview1'; Expected = 'preview2'}
+        @{CurrentVersion = '1.2.3-preview9'; Expected = 'preview10'}
         @{CurrentVersion = '1.2.3-preview.7'; Expected = 'preview.8'}
         @{CurrentVersion = '1.2.3-rc1'; Expected = 'rc2'}
-        @{CurrentVersion = '1.2.3-SNAPSHOT'; Expected = 'SNAPSHOT1'}
+        @{CurrentVersion = '1.2.3-SNAPSHOT'; Expected = 'SNAPSHOT01'}
+        @{CurrentVersion = '1.2.3-SNAPSHOT1'; Expected = 'SNAPSHOT2'}
     ) {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
             param($TestCase)
@@ -137,11 +141,13 @@ Describe 'Coverage gaps for release and git internals' {
     }
 
     It 'Get-NovaVersionUpdatePlan keeps the semantic core and increments an existing prerelease label when preview mode continues a prerelease' -ForEach @(
-        @{CurrentVersion = '1.5.3-preview'; ExpectedVersion = '1.5.3-preview1'}
+        @{CurrentVersion = '1.5.3-preview'; ExpectedVersion = '1.5.3-preview01'}
+        @{CurrentVersion = '1.5.3-preview01'; ExpectedVersion = '1.5.3-preview02'}
+        @{CurrentVersion = '1.5.3-preview09'; ExpectedVersion = '1.5.3-preview10'}
         @{CurrentVersion = '1.5.3-preview1'; ExpectedVersion = '1.5.3-preview2'}
-        @{CurrentVersion = '1.5.3-preview2'; ExpectedVersion = '1.5.3-preview3'}
         @{CurrentVersion = '1.5.3-rc1'; ExpectedVersion = '1.5.3-rc2'}
-        @{CurrentVersion = '1.5.3-SNAPSHOT'; ExpectedVersion = '1.5.3-SNAPSHOT1'}
+        @{CurrentVersion = '1.5.3-SNAPSHOT'; ExpectedVersion = '1.5.3-SNAPSHOT01'}
+        @{CurrentVersion = '1.5.3-SNAPSHOT1'; ExpectedVersion = '1.5.3-SNAPSHOT2'}
     ) {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
             param($TestCase)

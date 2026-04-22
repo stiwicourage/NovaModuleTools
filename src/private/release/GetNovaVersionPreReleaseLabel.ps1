@@ -41,8 +41,29 @@ function Get-NovaNextPreReleaseLabel {
     $preReleaseNumber = $match.Groups['Number'].Value
 
     if ( [string]::IsNullOrWhiteSpace($preReleaseNumber)) {
-        return "$stem`1"
+        return "$stem$( Get-NovaInitialPreReleaseNumber )"
     }
 
-    return "$stem$( [int]$preReleaseNumber + 1 )"
+    return "$stem$( Get-NovaIncrementedPreReleaseNumber -PreReleaseNumber $preReleaseNumber )"
+}
+
+function Get-NovaInitialPreReleaseNumber {
+    [CmdletBinding()]
+    param()
+
+    return '01'
+}
+
+function Get-NovaIncrementedPreReleaseNumber {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$PreReleaseNumber
+    )
+
+    $nextNumber = [int]$PreReleaseNumber + 1
+    if ($PreReleaseNumber.Length -eq 1) {
+        return $nextNumber
+    }
+
+    return $nextNumber.ToString("D$( $PreReleaseNumber.Length )")
 }

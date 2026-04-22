@@ -63,6 +63,8 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
     It 'Update-NovaModuleVersion -WhatIf returns the expected next version without persisting it when <Name>' -ForEach @(
         @{Name = 'the default bump flow is used'; CurrentVersion = '1.0.0'; CommitMessages = @('feat: add change'); Label = 'Minor'; NewVersion = '1.1.0'; Preview = $false}
         @{Name = 'preview mode starts from a stable version'; CurrentVersion = '1.5.3'; CommitMessages = @('feat: add change'); Label = 'Minor'; NewVersion = '1.6.0-preview'; Preview = $true}
+        @{Name = 'preview mode zero-pads compact preview labels for gallery ordering'; CurrentVersion = '1.5.3-preview'; CommitMessages = @('fix: patch bug'); Label = 'Patch'; NewVersion = '1.5.3-preview01'; Preview = $true}
+        @{Name = 'preview mode starts any bare prerelease stem at 01'; CurrentVersion = '1.5.3-SNAPSHOT'; CommitMessages = @('feat!: breaking api'); Label = 'Major'; NewVersion = '1.5.3-SNAPSHOT01'; Preview = $true}
         @{Name = 'preview mode continues an existing prerelease version'; CurrentVersion = '1.5.3-rc1'; CommitMessages = @('feat!: breaking api'); Label = 'Major'; NewVersion = '1.5.3-rc2'; Preview = $true}
     ) {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {

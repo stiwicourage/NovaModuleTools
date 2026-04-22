@@ -32,7 +32,9 @@ version back to `project.json`.
 Use `-Preview` when you want an explicit prerelease-continuation bump instead of the default prerelease finalization
 behavior. In preview mode, stable versions first calculate the normal semantic bump target and then append
 `-preview`. Existing prerelease versions keep the same semantic core and preserve the current prerelease stem while
-appending or incrementing trailing digits: `preview -> preview1`, `rc1 -> rc2`, and `SNAPSHOT -> SNAPSHOT1`.
+appending or incrementing trailing digits. Any bare prerelease label now starts at `01` for predictable ordering,
+for example `preview -> preview01`, `preview09 -> preview10`, `rc -> rc01`, `rc1 -> rc2`, and
+`SNAPSHOT -> SNAPSHOT01`.
 
 The release label is inferred from the commit set:
 
@@ -129,8 +131,8 @@ PS> Update-NovaModuleVersion -Preview -WhatIf
 
 What if: Performing the operation "Update module version using Patch release label" on target "project.json".
 
-PreviousVersion: 1.5.3-preview1
-NewVersion: 1.5.3-preview2
+PreviousVersion: 1.5.3-preview01
+NewVersion: 1.5.3-preview02
 Label: Patch
 CommitCount: 3
 ```
@@ -145,13 +147,13 @@ PS> Update-NovaModuleVersion -Preview -WhatIf
 
 What if: Performing the operation "Update module version using Patch release label" on target "project.json".
 
-PreviousVersion: 1.5.3-rc1
-NewVersion: 1.5.3-rc2
+PreviousVersion: 1.5.3-SNAPSHOT
+NewVersion: 1.5.3-SNAPSHOT01
 Label: Patch
 CommitCount: 3
 ```
 
-Shows how `-Preview` preserves non-preview prerelease stems such as `rc` and only increments the trailing number.
+Shows how `-Preview` starts any bare non-preview prerelease stem at `01` instead of jumping directly to `1`.
 
 ## PARAMETERS
 
@@ -182,7 +184,8 @@ Opt into preview bump mode.
 
 When the current version is stable, Nova calculates the normal semantic target and appends `-preview`. When the current
 version already has any prerelease label, Nova keeps the same semantic core version and increments the current
-prerelease suffix instead of finalizing or advancing to another release line.
+prerelease suffix instead of finalizing or advancing to another release line. Any prerelease stem without a trailing
+number starts at `01`, while labels that already include a number simply increment that number.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter

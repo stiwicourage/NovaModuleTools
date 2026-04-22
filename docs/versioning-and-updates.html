@@ -148,12 +148,17 @@ nova --version</code></pre>
                 <p>Use <code>-Preview</code> when you want that bump to stay explicitly in prerelease mode. Stable
                     versions first resolve the normal semantic target and then append <code>-preview</code>. Existing
                     prerelease versions keep the same semantic core and preserve the current prerelease stem while
-                    appending or incrementing trailing digits instead of finalizing.</p>
+                    appending or incrementing trailing digits instead of finalizing. Any bare prerelease stem now
+                    starts at <code>01</code>, so <code>preview</code> becomes <code>preview01</code> and
+                    <code>SNAPSHOT</code> becomes <code>SNAPSHOT01</code>.</p>
                 <pre><code>1.5.3 + Minor + -Preview -> 1.6.0-preview
-1.5.3-preview + -Preview -> 1.5.3-preview1
-1.5.3-preview1 + -Preview -> 1.5.3-preview2
+1.5.3-preview + -Preview -> 1.5.3-preview01
+1.5.3-preview01 + -Preview -> 1.5.3-preview02
+1.5.3-preview09 + -Preview -> 1.5.3-preview10
+1.5.3-SNAPSHOT + -Preview -> 1.5.3-SNAPSHOT01
+1.5.3-SNAPSHOT1 + -Preview -> 1.5.3-SNAPSHOT2
 1.5.3-rc1 + -Preview -> 1.5.3-rc2
-1.5.3-SNAPSHOT + -Preview -> 1.5.3-SNAPSHOT1</code></pre>
+1.5.3-rc + -Preview -> 1.5.3-rc01</code></pre>
                 <pre><code>Update-NovaModuleVersion -WhatIf
 Update-NovaModuleVersion -Preview -WhatIf
 nova bump -WhatIf

@@ -86,8 +86,8 @@ cancel the bump cleanly and return control to the shell without printing a versi
 
 Use `nova bump -Preview` when you want an explicit prerelease-continuation bump. Stable versions resolve to the normal
 semantic target plus `-preview`, while existing prerelease versions stay on the same semantic core and preserve the
-current prerelease stem while appending or incrementing trailing digits such as `preview -> preview1`, `rc1 -> rc2`,
-or `SNAPSHOT -> SNAPSHOT1`.
+current prerelease stem while appending or incrementing trailing digits such as `preview -> preview01`,
+`preview09 -> preview10`, `rc -> rc01`, `rc1 -> rc2`, or `SNAPSHOT -> SNAPSHOT01`.
 
 `nova init` remains interactive. Use `nova init -Path <path>` when you want an explicit destination and
 `nova init -Example` when you want the packaged example scaffold. The CLI rejects positional `nova init <path>` usage

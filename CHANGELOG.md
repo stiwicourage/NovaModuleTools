@@ -37,8 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add an opt-in `-Preview` mode to `Update-NovaModuleVersion` / `nova bump` for explicit preview iteration.
     - Stable versions still use the normal semantic bump target first, then append `-preview`.
     - Existing prerelease versions now stay on the same semantic core and preserve the current prerelease stem while
-      appending or incrementing trailing digits, for example `preview -> preview1`, `rc1 -> rc2`, and
-      `SNAPSHOT -> SNAPSHOT1`.
+      appending or incrementing trailing digits, for example `preview -> preview01`, `preview09 -> preview10`,
+      `rc -> rc01`, `rc1 -> rc2`, `SNAPSHOT -> SNAPSHOT01`, and `SNAPSHOT1 -> SNAPSHOT2`.
 - Add `New-NovaModulePackage` and `nova package` so projects can build, test, and package the built module output as a
   `.nupkg`
   artifact by using generic metadata from `project.json`, including repositories whose test runs reload or remove
