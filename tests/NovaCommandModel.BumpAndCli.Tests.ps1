@@ -60,30 +60,46 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
-    It 'Update-NovaModuleVersion -WhatIf previews the calculated next version without persisting it' {
-        InModuleScope $script:moduleName {
+    It 'Update-NovaModuleVersion -WhatIf returns the expected next version without persisting it when <Name>' -ForEach @(
+        @{Name = 'the default bump flow is used'; CurrentVersion = '1.0.0'; CommitMessages = @('feat: add change'); Label = 'Minor'; NewVersion = '1.1.0'; Preview = $false}
+        @{Name = 'preview mode starts from a stable version'; CurrentVersion = '1.5.3'; CommitMessages = @('feat: add change'); Label = 'Minor'; NewVersion = '1.6.0-preview'; Preview = $true}
+        @{Name = 'preview mode continues an existing prerelease version'; CurrentVersion = '1.5.3-rc1'; CommitMessages = @('feat!: breaking api'); Label = 'Major'; NewVersion = '1.5.3-rc2'; Preview = $true}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
             Mock Get-NovaProjectInfo {
                 [pscustomobject]@{
-                    Version = '1.0.0'
+                    Version = $TestCase.CurrentVersion
                     ProjectJSON = '/tmp/project.json'
                 }
             }
-            Mock Get-GitCommitMessageForVersionBump {@('feat: add change')}
-            Mock Get-VersionLabelFromCommitSet {'Minor'}
+            Mock Get-GitCommitMessageForVersionBump {$TestCase.CommitMessages}
+            Mock Get-VersionLabelFromCommitSet {$TestCase.Label}
             Mock Get-NovaVersionUpdatePlan {
                 [pscustomobject]@{
                     ProjectFile = '/tmp/project.json'
-                    CurrentVersion = [semver]'1.0.0'
-                    NewVersion = [semver]'1.1.0'
+                    CurrentVersion = [semver]$TestCase.CurrentVersion
+                    NewVersion = [semver]$TestCase.NewVersion
                 }
             }
             Mock Set-NovaModuleVersion {}
 
-            $result = Update-NovaModuleVersion -Path (Get-Location).Path -WhatIf
+            $parameters = @{Path = (Get-Location).Path; WhatIf = $true}
+            if ($TestCase.Preview) {
+                $parameters.Preview = $true
+            }
 
-            $result.PreviousVersion | Should -Be '1.0.0'
-            $result.NewVersion | Should -Be '1.1.0'
-            $result.Label | Should -Be 'Minor'
+            $result = Update-NovaModuleVersion @parameters
+
+            $result.PreviousVersion | Should -Be $TestCase.CurrentVersion
+            $result.NewVersion | Should -Be $TestCase.NewVersion
+            $result.Label | Should -Be $TestCase.Label
+            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {$Label -eq $TestCase.Label}
+            if ($TestCase.Preview) {
+                Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {$Label -eq $TestCase.Label -and $PreviewRelease}
+            }
+
             Assert-MockCalled Set-NovaModuleVersion -Times 0
         }
     }

@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/19/2026
+ms.date: 04/22/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-NovaCli
 ---
@@ -84,6 +84,11 @@ before running a prerelease update. If no newer version is available, the standa
 For the standalone launcher, `nova bump -Confirm` uses a CLI-friendly confirmation prompt. Declined or suspended choices
 cancel the bump cleanly and return control to the shell without printing a version result.
 
+Use `nova bump -Preview` when you want an explicit prerelease-continuation bump. Stable versions resolve to the normal
+semantic target plus `-preview`, while existing prerelease versions stay on the same semantic core and preserve the
+current prerelease stem while appending or incrementing trailing digits such as `preview -> preview1`, `rc1 -> rc2`,
+or `SNAPSHOT -> SNAPSHOT1`.
+
 `nova init` remains interactive. Use `nova init -Path <path>` when you want an explicit destination and
 `nova init -Example` when you want the packaged example scaffold. The CLI rejects positional `nova init <path>` usage
 and also rejects `nova init -WhatIf` with a clear error.
@@ -129,6 +134,14 @@ PS> nova init --help
 Shows the full help for `Initialize-NovaModule` through the CLI without starting the interactive scaffold flow.
 
 ### EXAMPLE 16
+
+```powershell
+nova bump -Preview -WhatIf
+```
+
+Previews an explicit preview bump by routing `-Preview` through `Update-NovaModuleVersion`.
+
+### EXAMPLE 17
 
 ```powershell
 nova version
@@ -228,7 +241,7 @@ PS> Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '~/Work')
 
 Runs the interactive init flow, scaffolds from the packaged example project, and creates the project under `~/Work`.
 
-### EXAMPLE 14
+### EXAMPLE 18
 
 ```powershell
 nova update
@@ -245,7 +258,7 @@ Successful updates print the release notes link from the installed module manife
 If no newer version is available, the standalone launcher prints `You're up to date!` and reports the installed
 `NovaModuleTools` version.
 
-### EXAMPLE 15
+### EXAMPLE 19
 
 ```powershell
 nova notification
@@ -253,7 +266,7 @@ nova notification
 
 Shows whether prerelease self-updates are enabled and where the preference is stored.
 
-### EXAMPLE 16
+### EXAMPLE 20
 
 ```powershell
 nova notification -disable
@@ -261,7 +274,7 @@ nova notification -disable
 
 Disables prerelease self-update targets so `nova update` stays on stable releases.
 
-### EXAMPLE 17
+### EXAMPLE 21
 
 ```powershell
 PS> Invoke-NovaCli -Command notification -Arguments @('-enable')

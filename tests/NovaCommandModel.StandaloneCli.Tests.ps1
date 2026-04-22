@@ -186,20 +186,65 @@ function Invoke-TestCliVerbose {
             $buildResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('build', '-WhatIf')
             $publishResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('publish', '--local', '-WhatIf')
             $bumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '-WhatIf')
+            $previewBumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '-Preview', '-WhatIf')
             $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
 
             $buildResult.ExitCode | Should -Be 0
             $publishResult.ExitCode | Should -Be 0
             $bumpResult.ExitCode | Should -Be 0
+            $previewBumpResult.ExitCode | Should -Be 0
             $buildResult.Text | Should -Match 'What if:'
             $publishResult.Text | Should -Match 'What if:'
             $publishResult.Text | Should -Not -Match 'Unknown argument:'
             $bumpResult.Text | Should -Match 'What if:'
             $bumpResult.Text | Should -Match '0\.0\.1\s+0\.1\.0\s+Minor\s+1'
+            $previewBumpResult.Text | Should -Match 'What if:'
+            $previewBumpResult.Text | Should -Match '0\.0\.1\s+0\.1\.0-preview\s+Minor\s+1'
             $bumpResult.Text | Should -Not -Match 'Version bumped to :'
+            $previewBumpResult.Text | Should -Not -Match 'Unknown argument:'
+            $previewBumpResult.Text | Should -Not -Match 'Version bumped to :'
             $versionAfterBump | Should -Be '0.0.1'
             (Test-Path -LiteralPath $builtModulePath) | Should -BeFalse
             (Test-Path -LiteralPath $testResultPath) | Should -BeFalse
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+    }
+
+    It 'Install-NovaCli forwards -Preview so prerelease bumps keep the same semantic core and increment the current prerelease label' {
+        $targetDirectory = Join-Path $TestDrive 'preview-bump-bin'
+        $installedPath = Join-Path $targetDirectory 'nova'
+        $projectRoot = Join-Path $TestDrive 'CliPreviewBumpProject'
+        $projectJsonPath = Join-Path $projectRoot 'project.json'
+        $originalModulePath = $env:PSModulePath
+        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
+        $distParent = Split-Path -Parent $script:distModuleDir
+
+        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
+
+        Initialize-TestNovaCliProjectLayout -ProjectRoot $projectRoot
+        Write-TestNovaCliProjectJson -ProjectRoot $projectRoot -ProjectName 'CliPreviewBumpProject' -ProjectGuid '44444444-4444-4444-4444-444444444444'
+        Write-TestNovaCliPublicFunction -ProjectRoot $projectRoot -FunctionName 'Invoke-TestCliPreviewBump'
+
+        $projectData = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json
+        $projectData.Version = '0.0.1-rc1'
+        $projectData | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $projectJsonPath -Encoding utf8
+
+        try {
+            Initialize-TestNovaCliGitRepository -ProjectRoot $projectRoot -CommitMessage 'feat!: add prerelease cli bump coverage'
+
+            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
+
+            $previewBumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '-Preview', '-WhatIf')
+            $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
+
+            $previewBumpResult.ExitCode | Should -Be 0
+            $previewBumpResult.Text | Should -Match 'What if:'
+            $previewBumpResult.Text | Should -Match '0\.0\.1-rc1\s+0\.0\.1-rc2\s+Major\s+1'
+            $previewBumpResult.Text | Should -Not -Match 'Unknown argument:'
+            $previewBumpResult.Text | Should -Not -Match 'Version bumped to :'
+            $versionAfterBump | Should -Be '0.0.1-rc1'
         }
         finally {
             $env:PSModulePath = $originalModulePath
