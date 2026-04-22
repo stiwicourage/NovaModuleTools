@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/15/2026
+ms.date: 04/22/2026
 PlatyPS schema version: 2024-05-01
 title: Update-NovaModuleVersion
 ---
@@ -20,7 +20,7 @@ Updates the project version in `project.json` based on git commit history.
 ### __AllParameterSets
 
 ```powershell
-PS> Update-NovaModuleVersion [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Update-NovaModuleVersion [[-Path] <string>] [-Preview] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -28,6 +28,11 @@ PS> Update-NovaModuleVersion [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonPar
 `Update-NovaModuleVersion` reads the current project version from `project.json`, collects Git commit messages from the
 project repository, chooses a semantic version bump label, calculates the next semantic version, and writes the updated
 version back to `project.json`.
+
+Use `-Preview` when you want an explicit prerelease-continuation bump instead of the default prerelease finalization
+behavior. In preview mode, stable versions first calculate the normal semantic bump target and then append
+`-preview`. Existing prerelease versions keep the same semantic core and preserve the current prerelease stem while
+appending or incrementing trailing digits: `preview -> preview1`, `rc1 -> rc2`, and `SNAPSHOT -> SNAPSHOT1`.
 
 The release label is inferred from the commit set:
 
@@ -101,6 +106,53 @@ CommitCount: 84
 
 Shows how Nova finalizes an existing prerelease target instead of carrying the old prerelease label into the next major.
 
+### EXAMPLE 5
+
+```text
+PS> Update-NovaModuleVersion -Preview -WhatIf
+
+What if: Performing the operation "Update module version using Minor release label" on target "project.json".
+
+PreviousVersion: 1.5.3
+NewVersion: 1.6.0-preview
+Label: Minor
+CommitCount: 12
+```
+
+Shows how `-Preview` keeps the normal bump label selection but emits a preview target when the current version is
+stable.
+
+### EXAMPLE 6
+
+```text
+PS> Update-NovaModuleVersion -Preview -WhatIf
+
+What if: Performing the operation "Update module version using Patch release label" on target "project.json".
+
+PreviousVersion: 1.5.3-preview1
+NewVersion: 1.5.3-preview2
+Label: Patch
+CommitCount: 3
+```
+
+Shows how `-Preview` stays on the same semantic core and increments the current prerelease label when the current
+version is already a prerelease.
+
+### EXAMPLE 7
+
+```text
+PS> Update-NovaModuleVersion -Preview -WhatIf
+
+What if: Performing the operation "Update module version using Patch release label" on target "project.json".
+
+PreviousVersion: 1.5.3-rc1
+NewVersion: 1.5.3-rc2
+Label: Patch
+CommitCount: 3
+```
+
+Shows how `-Preview` preserves non-preview prerelease stems such as `rc` and only increments the trailing number.
+
 ## PARAMETERS
 
 ### -Path
@@ -121,6 +173,31 @@ ParameterSets:
   ValueFromRemainingArguments: false
 DontShow: false
 AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Preview
+
+Opt into preview bump mode.
+
+When the current version is stable, Nova calculates the normal semantic target and appends `-preview`. When the current
+version already has any prerelease label, Nova keeps the same semantic core version and increments the current
+prerelease suffix instead of finalizing or advancing to another release line.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
 HelpMessage: ''
 ```
 

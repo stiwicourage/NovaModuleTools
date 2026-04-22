@@ -74,10 +74,24 @@ Describe 'Coverage gaps for release and git internals' {
 
     It 'Get-NovaVersionPreReleaseLabel returns preview or stable output without preserving prerelease labels by default' {
         InModuleScope $script:moduleName {
-            Get-NovaVersionPreReleaseLabel -PreviewRelease | Should -Be 'preview'
+            Get-NovaVersionPreReleaseLabel -CurrentVersion ([semver]'1.2.3') -PreviewRelease | Should -Be 'preview'
             $stable = Get-NovaVersionPreReleaseLabel -StableRelease
             $stable | Should -BeNullOrEmpty
             Get-NovaVersionPreReleaseLabel | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'Get-NovaVersionPreReleaseLabel increments existing prerelease labels generically when preview mode is requested' -ForEach @(
+        @{CurrentVersion = '1.2.3-preview'; Expected = 'preview1'}
+        @{CurrentVersion = '1.2.3-preview1'; Expected = 'preview2'}
+        @{CurrentVersion = '1.2.3-preview.7'; Expected = 'preview.8'}
+        @{CurrentVersion = '1.2.3-rc1'; Expected = 'rc2'}
+        @{CurrentVersion = '1.2.3-SNAPSHOT'; Expected = 'SNAPSHOT1'}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            Get-NovaVersionPreReleaseLabel -CurrentVersion ([semver]$TestCase.CurrentVersion) -PreviewRelease | Should -Be $TestCase.Expected
         }
     }
 
@@ -104,6 +118,38 @@ Describe 'Coverage gaps for release and git internals' {
             Mock Get-Content {([ordered]@{Version = $TestCase.CurrentVersion} | ConvertTo-Json -Compress)} -ParameterFilter {$LiteralPath -eq '/tmp/project.json' -and $Raw}
 
             (Get-NovaVersionUpdatePlan -Label $TestCase.Label).NewVersion.ToString() | Should -Be $TestCase.ExpectedVersion
+        }
+    }
+
+    It 'Get-NovaVersionUpdatePlan appends a preview label to the normal bump target when preview mode starts from stable' -ForEach @(
+        @{CurrentVersion = '1.5.3'; Label = 'Major'; ExpectedVersion = '2.0.0-preview'}
+        @{CurrentVersion = '1.5.3'; Label = 'Minor'; ExpectedVersion = '1.6.0-preview'}
+        @{CurrentVersion = '1.5.3'; Label = 'Patch'; ExpectedVersion = '1.5.4-preview'}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectJSON = '/tmp/project.json'}}
+            Mock Get-Content {([ordered]@{Version = $TestCase.CurrentVersion} | ConvertTo-Json -Compress)} -ParameterFilter {$LiteralPath -eq '/tmp/project.json' -and $Raw}
+
+            (Get-NovaVersionUpdatePlan -Label $TestCase.Label -PreviewRelease).NewVersion.ToString() | Should -Be $TestCase.ExpectedVersion
+        }
+    }
+
+    It 'Get-NovaVersionUpdatePlan keeps the semantic core and increments an existing prerelease label when preview mode continues a prerelease' -ForEach @(
+        @{CurrentVersion = '1.5.3-preview'; ExpectedVersion = '1.5.3-preview1'}
+        @{CurrentVersion = '1.5.3-preview1'; ExpectedVersion = '1.5.3-preview2'}
+        @{CurrentVersion = '1.5.3-preview2'; ExpectedVersion = '1.5.3-preview3'}
+        @{CurrentVersion = '1.5.3-rc1'; ExpectedVersion = '1.5.3-rc2'}
+        @{CurrentVersion = '1.5.3-SNAPSHOT'; ExpectedVersion = '1.5.3-SNAPSHOT1'}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectJSON = '/tmp/project.json'}}
+            Mock Get-Content {([ordered]@{Version = $TestCase.CurrentVersion} | ConvertTo-Json -Compress)} -ParameterFilter {$LiteralPath -eq '/tmp/project.json' -and $Raw}
+
+            (Get-NovaVersionUpdatePlan -Label Minor -PreviewRelease).NewVersion.ToString() | Should -Be $TestCase.ExpectedVersion
         }
     }
 

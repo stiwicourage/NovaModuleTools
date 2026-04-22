@@ -39,7 +39,8 @@ function Invoke-NovaCli {
             return Invoke-NovaCliInitCommand -Arguments $Arguments -ForwardedParameters $mutatingCommonParameters -WhatIfEnabled:$WhatIfPreference
         }
         'bump' {
-            return Update-NovaModuleVersion @mutatingCommonParameters
+            $options = ConvertFrom-NovaBumpCliArgument -Arguments $Arguments
+            return Update-NovaModuleVersion @options @mutatingCommonParameters
         }
         'update' {
             $result = Invoke-NovaCliUpdateCommand -Arguments $Arguments -ForwardedParameters $mutatingCommonParameters

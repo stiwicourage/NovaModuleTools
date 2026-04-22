@@ -72,10 +72,22 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             Invoke-NovaCli -Command init -Arguments @('-Example') | Should -Be 'init-example-default'
             Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '/tmp/demo') | Should -Be 'init-example:/tmp/demo'
             Invoke-NovaCli bump | Should -Be 'bump-value'
+            Invoke-NovaCli bump -Preview | Should -Be 'bump-value'
             (Invoke-NovaCli notification).Mode | Should -Be 'status'
             (Invoke-NovaCli notification -disable).Disabled | Should -BeTrue
             (Invoke-NovaCli notification -enable).Enabled | Should -BeTrue
             (Invoke-NovaCli release --repository PSGallery --apikey key123).Repository | Should -Be 'PSGallery'
+
+            Assert-MockCalled Update-NovaModuleVersion -Times 1 -ParameterFilter {-not $Preview}
+            Assert-MockCalled Update-NovaModuleVersion -Times 1 -ParameterFilter {$Preview}
+        }
+    }
+
+    It 'ConvertFrom-NovaBumpCliArgument parses the preview switch and rejects unsupported bump arguments' {
+        InModuleScope $script:moduleName {
+            (ConvertFrom-NovaBumpCliArgument -Arguments @('--preview')).Preview | Should -BeTrue
+            (ConvertFrom-NovaBumpCliArgument -Arguments @('-Preview')).Preview | Should -BeTrue
+            {ConvertFrom-NovaBumpCliArgument -Arguments @('--bogus')} | Should -Throw 'Unknown argument: --bogus'
         }
     }
 

@@ -1,7 +1,8 @@
 function Update-NovaModuleVersion {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
-        [string]$Path = (Get-Location).Path
+        [string]$Path = (Get-Location).Path,
+        [switch]$Preview
     )
 
     $projectRoot = (Resolve-Path -LiteralPath $Path).Path
@@ -13,7 +14,7 @@ function Update-NovaModuleVersion {
 
     Push-Location -LiteralPath $projectRoot
     try {
-        $versionUpdatePlan = Get-NovaVersionUpdatePlan -Label $label
+        $versionUpdatePlan = Get-NovaVersionUpdatePlan -Label $label -PreviewRelease:$Preview
         $target = [System.IO.Path]::GetFileName($before.ProjectJSON)
         $action = "Update module version using $label release label"
         $nextVersion = $versionUpdatePlan.NewVersion.ToString()
@@ -26,7 +27,7 @@ function Update-NovaModuleVersion {
         }
 
         if ( $PSCmdlet.ShouldProcess($target, $action)) {
-            Set-NovaModuleVersion -Label $label -Confirm:$false
+            Set-NovaModuleVersion -Label $label -PreviewRelease:$Preview -Confirm:$false
             $shouldReturnResult = $true
         }
     }
