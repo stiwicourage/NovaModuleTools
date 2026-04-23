@@ -63,6 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change the project to a Nova command model, replacing the previous mixed MT/Nova workflow.
     - All public commands are now Nova commands, and the `nova` CLI/Powershell alias is the primary entry point for all
       operations.
+- Clarify publish and release layering so public commands focus on orchestration while private workflow helpers own
+  publish/release sequencing and shared publish context resolution.
 - Centralize runtime `project.json` writing behind one shared helper so scaffold and version-bump flows use the same
   serialization policy for nested arrays, nested objects, JSON depth, and UTF-8 output.
 - **BREAKING CHANGE**: Rename the public Nova scaffold cmdlets to approved verbs.
