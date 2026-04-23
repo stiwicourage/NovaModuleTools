@@ -4,11 +4,12 @@ function Set-NovaModuleVersion {
         [ValidateSet('Major', 'Minor', 'Patch')]
         [string]$Label = 'Patch',
         [switch]$PreviewRelease,
-        [switch]$StableRelease
+        [switch]$StableRelease,
+        [pscustomobject]$ProjectInfo
     )
     Write-Verbose 'Running Version Update'
 
-    $versionUpdatePlan = Get-NovaVersionUpdatePlan -Label $Label -PreviewRelease:$PreviewRelease -StableRelease:$StableRelease
+    $versionUpdatePlan = Get-NovaVersionUpdatePlan -ProjectInfo $ProjectInfo -Label $Label -PreviewRelease:$PreviewRelease -StableRelease:$StableRelease
     $jsonContent = Read-ProjectJsonData -ProjectJsonPath $versionUpdatePlan.ProjectFile
     $newVersion = $versionUpdatePlan.NewVersion.ToString()
     $target = [System.IO.Path]::GetFileName($versionUpdatePlan.ProjectFile)

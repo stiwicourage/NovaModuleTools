@@ -6,43 +6,16 @@ function Update-NovaModuleVersion {
     )
 
     $projectRoot = (Resolve-Path -LiteralPath $Path).Path
-    $before = Get-NovaProjectInfo -Path $projectRoot
-    $commitMessages = @(Get-GitCommitMessageForVersionBump -ProjectRoot $projectRoot)
-    $label = Get-NovaVersionLabelForBump -ProjectRoot $projectRoot -CommitMessages $commitMessages
-    $nextVersion = $null
-    $shouldReturnResult = $WhatIfPreference
+    $workflowContext = Get-NovaVersionUpdateWorkflowContext -ProjectRoot $projectRoot -PreviewRelease:$Preview
 
-    Push-Location -LiteralPath $projectRoot
-    try {
-        $versionUpdatePlan = Get-NovaVersionUpdatePlan -Label $label -PreviewRelease:$Preview
-        $target = [System.IO.Path]::GetFileName($before.ProjectJSON)
-        $action = "Update module version using $label release label"
-        $nextVersion = $versionUpdatePlan.NewVersion.ToString()
-
-        if ($env:NOVA_CLI_CONFIRM_BUMP -eq '1' -and -not $WhatIfPreference) {
-            $confirmedFromCli = Confirm-NovaCliBumpAction -Target $target -Action $action
-            if (-not $confirmedFromCli) {
-                return
-            }
-        }
-
-        if ( $PSCmdlet.ShouldProcess($target, $action)) {
-            Set-NovaModuleVersion -Label $label -PreviewRelease:$Preview -Confirm:$false
-            $shouldReturnResult = $true
+    if ((Test-NovaCliBumpConfirmationIsEnabled) -and -not $WhatIfPreference) {
+        $confirmedFromCli = Confirm-NovaCliBumpAction -Target $workflowContext.Target -Action $workflowContext.Action
+        if (-not $confirmedFromCli) {
+            return
         }
     }
-    finally {
-        Pop-Location
-    }
 
-    if (-not $shouldReturnResult) {
-        return
-    }
+    $shouldRun = $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Action)
 
-    return [pscustomobject]@{
-        PreviousVersion = $before.Version
-        NewVersion = $nextVersion
-        Label = $label
-        CommitCount = $commitMessages.Count
-    }
+    return Invoke-NovaVersionUpdateWorkflow -WorkflowContext $workflowContext -ShouldRun:$shouldRun -WhatIfEnabled:$WhatIfPreference
 }
