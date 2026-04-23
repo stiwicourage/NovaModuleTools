@@ -4,6 +4,10 @@ $global:novaCommandModelPackageUploadTestSupportFunctionNameList = @(
     'New-TestNovaPackageUploadProjectInfo'
     'New-TestNovaPackageArtifactFile'
     'New-TestNovaPackageArtifactSet'
+    'Get-TestNovaPackageUploadTargetResolutionCases'
+    'Get-TestNovaPackageUploadHeaderResolutionCases'
+    'Get-TestNovaPackageUploadArtifactResolutionCases'
+    'Get-TestNovaPackageUploadFailureCases'
 )
 
 function Get-TestNovaPackageUploadOptionValue {
@@ -109,6 +113,186 @@ function New-TestNovaPackageArtifactSet {
             New-TestNovaPackageArtifactFile -Directory $Directory -Name "PackageProject.latest$extension"
         }
     }
+    )
+}
+
+function Get-TestNovaPackageUploadTargetResolutionCases {
+    [CmdletBinding()]
+    param()
+
+    return @(
+        @{
+            Name = 'repository settings should override package headers and auth'
+            ProjectRootName = 'target-merge-precedence'
+            UseExplicitOverride = $false
+            ExpectedUrl = 'https://packages.example/raw/repository/'
+            ExpectedUploadPath = 'repo-path'
+            ExpectedTraceId = 'repo-trace'
+            ExpectPackageToken = $true
+        }
+        @{
+            Name = 'explicit Url and UploadPath should override configured locations'
+            ProjectRootName = 'target-explicit-overrides'
+            UseExplicitOverride = $true
+            ExpectedUrl = 'https://override.example/upload/'
+            ExpectedUploadPath = 'manual/path'
+            ExpectedTraceId = $null
+            ExpectPackageToken = $false
+        }
+    )
+}
+
+function Get-TestNovaPackageUploadHeaderResolutionCases {
+    [CmdletBinding()]
+    param()
+
+    return @(
+        Get-TestNovaPackageUploadHeaderResolutionNoTokenCase
+        Get-TestNovaPackageUploadHeaderResolutionCustomHeaderCase
+        Get-TestNovaPackageUploadHeaderResolutionAuthorizationCase
+        Get-TestNovaPackageUploadHeaderResolutionOverrideCase
+    )
+}
+
+function Get-TestNovaPackageUploadHeaderResolutionNoTokenCase {
+    [CmdletBinding()]
+    param()
+
+    return New-TestNovaPackageUploadNamedHeaderResolutionCase -Name 'no token is available' -Token $null -ExpectedHeaders ([ordered]@{
+        'X-Base' = 'base'
+        'X-Override' = 'override'
+    })
+}
+
+function Get-TestNovaPackageUploadHeaderResolutionCustomHeaderCase {
+    [CmdletBinding()]
+    param()
+
+    return New-TestNovaPackageUploadNamedHeaderResolutionCase -Name 'a custom auth header should be added with the raw token' -Token 'secret-token' -ExpectedHeaders ([ordered]@{
+        'X-Base' = 'base'
+        'X-Override' = 'override'
+        'X-Api-Key' = 'secret-token'
+    })
+}
+
+function New-TestNovaPackageUploadNamedHeaderResolutionCase {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [AllowNull()][string]$Token,
+        [Parameter(Mandatory)][System.Collections.IDictionary]$ExpectedHeaders
+    )
+
+    return @{
+        Name = $Name
+        UploadTarget = [pscustomobject]@{
+            Headers = [ordered]@{'X-Base' = 'base'}
+            Auth = [ordered]@{
+                HeaderName = 'X-Api-Key'
+            }
+        }
+        UploadOption = [pscustomobject]@{
+            Headers = [ordered]@{'X-Override' = 'override'}
+            Token = $Token
+            TokenEnvironmentVariable = $null
+            AuthenticationScheme = $null
+        }
+        ExpectedHeaders = [ordered]@{} + $ExpectedHeaders
+    }
+}
+
+function Get-TestNovaPackageUploadHeaderResolutionAuthorizationCase {
+    [CmdletBinding()]
+    param()
+
+    return @{
+        Name = 'Authorization should use the explicit authentication scheme'
+        UploadTarget = [pscustomobject]@{
+            Headers = [ordered]@{'X-Base' = 'base'}
+            Auth = [ordered]@{}
+        }
+        UploadOption = [pscustomobject]@{
+            Headers = [ordered]@{}
+            Token = 'secret-token'
+            TokenEnvironmentVariable = $null
+            AuthenticationScheme = 'Basic'
+        }
+        ExpectedHeaders = [ordered]@{
+            'X-Base' = 'base'
+            'Authorization' = 'Basic secret-token'
+        }
+    }
+}
+
+function Get-TestNovaPackageUploadHeaderResolutionOverrideCase {
+    [CmdletBinding()]
+    param()
+
+    return @{
+        Name = 'the auth header should override an existing merged header with the same name'
+        UploadTarget = [pscustomobject]@{
+            Headers = [ordered]@{'Authorization' = 'stale-value'}
+            Auth = [ordered]@{}
+        }
+        UploadOption = [pscustomobject]@{
+            Headers = [ordered]@{'Authorization' = 'also-stale'}
+            Token = 'fresh-token'
+            TokenEnvironmentVariable = $null
+            AuthenticationScheme = 'Bearer'
+        }
+        ExpectedHeaders = [ordered]@{
+            'Authorization' = 'Bearer fresh-token'
+        }
+    }
+}
+
+function Get-TestNovaPackageUploadArtifactResolutionCases {
+    [CmdletBinding()]
+    param()
+
+    return @(
+        @{
+            Name = 'multiple artifacts exist for the configured package types'
+            ProjectRootName = 'multi-artifact-upload'
+            Options = @{PackageTypes = @('Zip', 'NuGet')}
+            ExpectedPackagePathFilter = 'PackageProject.*'
+            ExpectedTypeList = @('NuGet', 'NuGet', 'Zip', 'Zip')
+        }
+        @{
+            Name = 'FileNamePattern targets zip artifacts'
+            ProjectRootName = 'explicit-zip-pattern-upload'
+            Options = @{PackageTypes = @('Zip', 'NuGet'); FileNamePattern = 'PackageProject.*.zip'}
+            ExpectedPackagePathFilter = '*.zip'
+            ExpectedTypeList = @('Zip', 'Zip')
+        }
+    )
+}
+
+function Get-TestNovaPackageUploadFailureCases {
+    [CmdletBinding()]
+    param()
+
+    return @(
+        @{
+            Name = 'the upload target URL is missing'
+            ProjectRootName = 'missing-upload-url'
+            ExpectedMessage = 'Upload target URL is missing*'
+            Invoke = {
+                param($PackagePath)
+
+                Deploy-NovaPackage -PackagePath $PackagePath
+            }
+        }
+        @{
+            Name = 'package selection is ambiguous'
+            ProjectRootName = 'ambiguous-package-selection'
+            ExpectedMessage = 'Package selection is ambiguous*'
+            Invoke = {
+                param($PackagePath)
+
+                Deploy-NovaPackage -PackagePath $PackagePath -PackageType NuGet -Url 'https://packages.example/raw/'
+            }
+        }
     )
 }
 

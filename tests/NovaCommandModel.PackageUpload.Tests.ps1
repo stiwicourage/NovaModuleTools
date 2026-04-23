@@ -186,26 +186,7 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
-    It 'Resolve-NovaPackageUploadTarget resolves target precedence correctly when <Name>' -ForEach @(
-        @{
-            Name = 'repository settings should override package headers and auth'
-            ProjectRootName = 'target-merge-precedence'
-            UseExplicitOverride = $false
-            ExpectedUrl = 'https://packages.example/raw/repository/'
-            ExpectedUploadPath = 'repo-path'
-            ExpectedTraceId = 'repo-trace'
-            ExpectPackageToken = $true
-        }
-        @{
-            Name = 'explicit Url and UploadPath should override configured locations'
-            ProjectRootName = 'target-explicit-overrides'
-            UseExplicitOverride = $true
-            ExpectedUrl = 'https://override.example/upload/'
-            ExpectedUploadPath = 'manual/path'
-            ExpectedTraceId = $null
-            ExpectPackageToken = $false
-        }
-    ) {
+    It 'Resolve-NovaPackageUploadTarget resolves target precedence correctly when <Name>' -ForEach (Get-TestNovaPackageUploadTargetResolutionCases) {
         $testCase = $_
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive $testCase.ProjectRootName)
         $repositoryList = @(
@@ -266,6 +247,22 @@ Describe 'Nova command model - package upload behavior' {
 
             if ($TestCase.ExpectPackageToken) {
                 $result.Auth.Token | Should -Be 'package-token'
+            }
+        }
+    }
+
+    It 'Resolve-NovaPackageUploadHeaders handles auth resolution scenarios correctly' {
+        foreach ($testCase in @(Get-TestNovaPackageUploadHeaderResolutionCases)) {
+            InModuleScope $script:moduleName -Parameters @{TestCase = $testCase} {
+                param($TestCase)
+
+                $result = Resolve-NovaPackageUploadHeaders -UploadTarget $TestCase.UploadTarget -UploadOption $TestCase.UploadOption
+
+                foreach ($headerName in $TestCase.ExpectedHeaders.Keys) {
+                    $result[$headerName] | Should -Be $TestCase.ExpectedHeaders[$headerName] -Because $TestCase.Name
+                }
+
+                $result.Keys.Count | Should -Be $TestCase.ExpectedHeaders.Keys.Count -Because $TestCase.Name
             }
         }
     }
@@ -381,22 +378,7 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
-    It 'Deploy-NovaPackage resolves matching artifacts when <Name>' -ForEach @(
-        @{
-            Name = 'multiple artifacts exist for the configured package types'
-            ProjectRootName = 'multi-artifact-upload'
-            Options = @{PackageTypes = @('Zip', 'NuGet')}
-            ExpectedPackagePathFilter = 'PackageProject.*'
-            ExpectedTypeList = @('NuGet', 'NuGet', 'Zip', 'Zip')
-        }
-        @{
-            Name = 'FileNamePattern targets zip artifacts'
-            ProjectRootName = 'explicit-zip-pattern-upload'
-            Options = @{PackageTypes = @('Zip', 'NuGet'); FileNamePattern = 'PackageProject.*.zip'}
-            ExpectedPackagePathFilter = '*.zip'
-            ExpectedTypeList = @('Zip', 'Zip')
-        }
-    ) {
+    It 'Deploy-NovaPackage resolves matching artifacts when <Name>' -ForEach (Get-TestNovaPackageUploadArtifactResolutionCases) {
         $testCase = $_
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive $testCase.ProjectRootName)
         $artifactPathList = @(New-TestNovaPackageArtifactSet -Directory $layout.PackageOutputDir -PackageType @('NuGet', 'Zip') -IncludeLatest)
@@ -453,28 +435,7 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
-    It 'Deploy-NovaPackage fails with a clear message when <Name>' -ForEach @(
-        @{
-            Name = 'the upload target URL is missing'
-            ProjectRootName = 'missing-upload-url'
-            ExpectedMessage = 'Upload target URL is missing*'
-            Invoke = {
-                param($PackagePath)
-
-                Deploy-NovaPackage -PackagePath $PackagePath
-            }
-        }
-        @{
-            Name = 'package selection is ambiguous'
-            ProjectRootName = 'ambiguous-package-selection'
-            ExpectedMessage = 'Package selection is ambiguous*'
-            Invoke = {
-                param($PackagePath)
-
-                Deploy-NovaPackage -PackagePath $PackagePath -PackageType NuGet -Url 'https://packages.example/raw/'
-            }
-        }
-    ) {
+    It 'Deploy-NovaPackage fails with a clear message when <Name>' -ForEach (Get-TestNovaPackageUploadFailureCases) {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive $_.ProjectRootName)
         $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
 

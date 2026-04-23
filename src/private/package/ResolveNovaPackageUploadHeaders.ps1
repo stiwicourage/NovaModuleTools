@@ -7,13 +7,12 @@ function Resolve-NovaPackageUploadHeaders {
     )
 
     $resolvedHeaders = Merge-NovaPackageSettingTable -BaseSettings $UploadTarget.Headers -OverrideSettings $UploadOption.Headers
-    $resolvedToken = Get-NovaPackageUploadToken -AuthSettings $UploadTarget.Auth -Token $UploadOption.Token -TokenEnvironmentVariable $UploadOption.TokenEnvironmentVariable
-    if ( [string]::IsNullOrWhiteSpace($resolvedToken)) {
+    $authHeaderEntry = Resolve-NovaPackageUploadAuthHeaderEntry -AuthSettings $UploadTarget.Auth -UploadOption $UploadOption
+    if ($null -eq $authHeaderEntry) {
         return $resolvedHeaders
     }
 
-    $headerName = Get-NovaPackageUploadAuthHeaderName -AuthSettings $UploadTarget.Auth
-    $resolvedHeaders[$headerName] = Get-NovaPackageUploadAuthHeaderValue -AuthSettings $UploadTarget.Auth -AuthenticationScheme $UploadOption.AuthenticationScheme -HeaderName $headerName -Token $resolvedToken
+    $resolvedHeaders[$authHeaderEntry.Name] = $authHeaderEntry.Value
     return $resolvedHeaders
 }
 
