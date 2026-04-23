@@ -186,6 +186,90 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
+    It 'Resolve-NovaPackageUploadTarget resolves target precedence correctly when <Name>' -ForEach @(
+        @{
+            Name = 'repository settings should override package headers and auth'
+            ProjectRootName = 'target-merge-precedence'
+            UseExplicitOverride = $false
+            ExpectedUrl = 'https://packages.example/raw/repository/'
+            ExpectedUploadPath = 'repo-path'
+            ExpectedTraceId = 'repo-trace'
+            ExpectPackageToken = $true
+        }
+        @{
+            Name = 'explicit Url and UploadPath should override configured locations'
+            ProjectRootName = 'target-explicit-overrides'
+            UseExplicitOverride = $true
+            ExpectedUrl = 'https://override.example/upload/'
+            ExpectedUploadPath = 'manual/path'
+            ExpectedTraceId = $null
+            ExpectPackageToken = $false
+        }
+    ) {
+        $testCase = $_
+        $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive $testCase.ProjectRootName)
+        $repositoryList = @(
+            [ordered]@{
+                Name = 'LocalRaw'
+                Url = 'https://packages.example/raw/repository/'
+                UploadPath = 'repo-path'
+                Headers = [ordered]@{} + $( if ($null -ne $testCase.ExpectedTraceId) {
+                    [ordered]@{'X-Trace-Id' = 'repo-trace'}
+                } else {
+                    [ordered]@{}
+                } ) + [ordered]@{
+                    'X-Repo-Only' = 'repo-only'
+                }
+                Auth = [ordered]@{
+                    HeaderName = 'X-Repo-Token'
+                    TokenEnvironmentVariable = 'REPO_UPLOAD_TOKEN'
+                }
+            }
+        )
+
+        InModuleScope $script:moduleName -Parameters @{
+            ProjectInfo = (New-TestNovaPackageUploadProjectInfo -Layout $layout -Options @{
+                RepositoryUrl = 'https://packages.example/raw/package/'
+                UploadPath = 'package-path'
+                Headers = [ordered]@{
+                    'X-Package-Only' = 'package-only'
+                }
+                Auth = [ordered]@{
+                    HeaderName = 'X-Package-Token'
+                    TokenEnvironmentVariable = 'PACKAGE_UPLOAD_TOKEN'
+                    Token = 'package-token'
+                }
+                Repositories = $repositoryList
+            })
+            TestCase = $testCase
+        } {
+            param($ProjectInfo, $TestCase)
+
+            $result = if ($TestCase.UseExplicitOverride) {
+                Resolve-NovaPackageUploadTarget -ProjectInfo $ProjectInfo -Repository 'LocalRaw' -Url 'https://override.example/upload/' -UploadPath 'manual/path'
+            }
+            else {
+                Resolve-NovaPackageUploadTarget -ProjectInfo $ProjectInfo -Repository 'localraw'
+            }
+
+            $result.Repository | Should -Be 'LocalRaw'
+            $result.Url | Should -Be $TestCase.ExpectedUrl
+            $result.UploadPath | Should -Be $TestCase.ExpectedUploadPath
+            $result.Headers['X-Package-Only'] | Should -Be 'package-only'
+            $result.Headers['X-Repo-Only'] | Should -Be 'repo-only'
+            $result.Auth.HeaderName | Should -Be 'X-Repo-Token'
+            $result.Auth.TokenEnvironmentVariable | Should -Be 'REPO_UPLOAD_TOKEN'
+
+            if ($null -ne $TestCase.ExpectedTraceId) {
+                $result.Headers['X-Trace-Id'] | Should -Be $TestCase.ExpectedTraceId
+            }
+
+            if ($TestCase.ExpectPackageToken) {
+                $result.Auth.Token | Should -Be 'package-token'
+            }
+        }
+    }
+
     It 'Deploy-NovaPackage uploads the specified package file to the specified raw URL' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'explicit-upload')
         $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
