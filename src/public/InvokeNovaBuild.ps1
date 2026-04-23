@@ -2,27 +2,11 @@ function Invoke-NovaBuild {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
     )
-    $data = Get-NovaProjectInfo
+    $workflowContext = Get-NovaBuildWorkflowContext
 
-    if (-not $PSCmdlet.ShouldProcess($data.OutputModuleDir, 'Build Nova module output')) {
+    if (-not $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Operation)) {
         return
     }
 
-    Reset-ProjectDist -Confirm:$false
-    Build-Module
-
-    if ($data.FailOnDuplicateFunctionNames) {
-        Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo $data
-    }
-
-    Build-Manifest
-    Build-Help
-    Copy-ProjectResource
-
-    try {
-        Invoke-NovaBuildUpdateNotification
-    }
-    catch {
-        $null = $_
-    }
+    Invoke-NovaBuildWorkflow -WorkflowContext $workflowContext
 }

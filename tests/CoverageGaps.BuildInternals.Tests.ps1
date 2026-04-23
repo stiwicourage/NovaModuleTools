@@ -33,9 +33,47 @@ BeforeAll {
 }
 
 Describe 'Coverage gaps for build and duplicate-analysis internals' {
+    It 'Get-NovaBuildWorkflowContext resolves project info once and returns the public build operation metadata' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaBuildProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            }
+
+            $result = Get-NovaBuildWorkflowContext
+
+            $result.ProjectInfo.ProjectName | Should -Be 'NovaModuleTools'
+            $result.Target | Should -Be '/tmp/dist/NovaModuleTools'
+            $result.Operation | Should -Be 'Build Nova module output'
+            Assert-MockCalled Get-NovaBuildProjectInfo -Times 1 -ParameterFilter {$null -eq $ProjectInfo}
+        }
+    }
+
+    It 'Invoke-NovaBuildDuplicateValidation skips duplicate analysis when the project disables that quality gate' {
+        InModuleScope $script:moduleName {
+            Mock Assert-BuiltModuleHasNoDuplicateFunctionName {throw 'should not validate duplicates'}
+
+            $result = Invoke-NovaBuildDuplicateValidation -ProjectInfo ([pscustomobject]@{FailOnDuplicateFunctionNames = $false})
+
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled Assert-BuiltModuleHasNoDuplicateFunctionName -Times 0
+        }
+    }
+
+    It 'Invoke-NovaBuildUpdateNotificationSafely swallows update lookup failures' {
+        InModuleScope $script:moduleName {
+            Mock Invoke-NovaBuildUpdateNotification {throw 'network issue'}
+
+            {Invoke-NovaBuildUpdateNotificationSafely} | Should -Not -Throw
+            Assert-MockCalled Invoke-NovaBuildUpdateNotification -Times 1
+        }
+    }
+
     It 'Build-Help skips when no markdown files exist' {
         InModuleScope $script:moduleName {
-            Mock Get-NovaProjectInfo {[pscustomobject]@{DocsDir = '/tmp/docs'}}
+            Mock Get-NovaBuildProjectInfo {[pscustomobject]@{DocsDir = '/tmp/docs'}}
             Mock Get-ChildItem {@()}
             Mock Get-Module {}
 
@@ -47,7 +85,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
 
     It 'Build-Help throws when PlatyPS is unavailable and docs exist' {
         InModuleScope $script:moduleName {
-            Mock Get-NovaProjectInfo {[pscustomobject]@{DocsDir = '/tmp/docs'}}
+            Mock Get-NovaBuildProjectInfo {[pscustomobject]@{DocsDir = '/tmp/docs'}}
             Mock Get-ChildItem {@([pscustomobject]@{FullName = '/tmp/docs/Invoke-NovaBuild.md'})}
             Mock Get-Module {$null}
 
@@ -60,7 +98,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             $docPath = Join-Path $TestDrive 'Invoke-NovaBuild.md'
             Set-Content -LiteralPath $docPath -Value "---`nLocale: da-DK`n---"
 
-            Mock Get-NovaProjectInfo {
+            Mock Get-NovaBuildProjectInfo {
                 [pscustomobject]@{
                     DocsDir = '/tmp/docs'
                     OutputModuleDir = '/tmp/dist'
@@ -142,7 +180,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
                 ProjectName = 'NovaModuleTools'
                 ManifestFilePSD1 = '/tmp/NovaModuleTools.psd1'
             }
-            Mock Get-NovaProjectInfo {$projectInfo}
+            Mock Get-NovaBuildProjectInfo {$projectInfo}
             Mock Get-ChildItem {@([pscustomobject]@{FullName = '/tmp/public/Get-Thing.ps1'})} -ParameterFilter {$Path -eq '/tmp/public'}
             Mock Get-ChildItem {@([pscustomobject]@{Name = 'Nova.Format.ps1xml'})} -ParameterFilter {$Filter -eq '*Format.ps1xml'}
             Mock Get-ChildItem {@([pscustomobject]@{Name = 'Nova.Types.ps1xml'})} -ParameterFilter {$Filter -eq '*Types.ps1xml'}
@@ -151,7 +189,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             Mock Assert-ManifestSchema {}
             Mock New-ModuleManifest {}
 
-            Build-Manifest
+            Build-Manifest -ProjectInfo $projectInfo
 
             Assert-MockCalled New-ModuleManifest -Times 1 -ParameterFilter {
                 $Path -eq '/tmp/NovaModuleTools.psd1' -and
@@ -168,7 +206,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
 
     It 'Build-Manifest reports manifest creation failures' {
         InModuleScope $script:moduleName {
-            Mock Get-NovaProjectInfo {
+            Mock Get-NovaBuildProjectInfo {
                 [pscustomobject]@{
                     PublicDir = '/tmp/public'
                     ResourcesDir = '/tmp/resources'
@@ -188,7 +226,18 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             Mock Assert-ManifestSchema {}
             Mock New-ModuleManifest {throw 'manifest failed'}
 
-            {Build-Manifest} | Should -Throw 'Failed to create Manifest*'
+            {
+                Build-Manifest -ProjectInfo ([pscustomobject]@{
+                    PublicDir = '/tmp/public'
+                    ResourcesDir = '/tmp/resources'
+                    CopyResourcesToModuleRoot = $false
+                    Manifest = [ordered]@{Author = 'Tester'; CompanyName = 'Nova'}
+                    Version = '1.2.3-preview'
+                    Description = 'Example'
+                    ProjectName = 'NovaModuleTools'
+                    ManifestFilePSD1 = '/tmp/NovaModuleTools.psd1'
+                })
+            } | Should -Throw 'Failed to create Manifest*'
         }
     }
 

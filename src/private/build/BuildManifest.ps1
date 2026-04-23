@@ -1,9 +1,11 @@
 function Build-Manifest {
     [CmdletBinding()]
-    param()
+    param(
+        [pscustomobject]$ProjectInfo
+    )
 
     Write-Verbose 'Building psd1 data file Manifest'
-    $data = Get-NovaProjectInfo
+    $data = Get-NovaBuildProjectInfo -ProjectInfo $ProjectInfo
 
     $PubFunctionFiles = @(Get-ChildItem -Path $data.PublicDir -Filter *.ps1)
     $functionToExport = @()

@@ -1,5 +1,10 @@
 function Build-Module {
-    $data = Get-NovaProjectInfo
+    [CmdletBinding()]
+    param(
+        [pscustomobject]$ProjectInfo
+    )
+
+    $data = Get-NovaBuildProjectInfo -ProjectInfo $ProjectInfo
     $novaBuildVersion = (Get-Command Invoke-NovaBuild).Version
     Write-Verbose "Running NovaModuleTools Version: $novaBuildVersion"
     Write-Verbose 'Buidling module psm1 file'
