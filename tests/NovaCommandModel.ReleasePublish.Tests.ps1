@@ -289,40 +289,48 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
-    It 'New-NovaModulePackage runs build, test, and package creation in order for all requested package types' {
+    It 'Get-NovaPackageWorkflowContext resolves package metadata, target, and operation for all requested package types' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'NovaModuleTools'
+            }
+            $packageMetadataList = @(
+                [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                [pscustomobject]@{Type = 'Zip'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.zip'}
+            )
+
+            Mock Get-NovaPackageMetadataList {$packageMetadataList}
+            Mock Assert-NovaPackageMetadata {}
+
+            $result = Get-NovaPackageWorkflowContext -ProjectInfo $projectInfo -WorkflowParams @{WhatIf = $true} -ModulePath '/tmp/NovaModuleTools.psm1'
+
+            $result.ProjectInfo.ProjectName | Should -Be 'NovaModuleTools'
+            $result.WorkflowParams.WhatIf | Should -BeTrue
+            $result.ModulePath | Should -Be '/tmp/NovaModuleTools.psm1'
+            $result.Target | Should -Be '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg, /tmp/project/artifacts/packages/NovaModuleTools.1.2.3.zip'
+            $result.Operation | Should -Be 'Create package artifacts from built module output'
+            $result.PackageMetadataList.Type | Should -Be @('NuGet', 'Zip')
+            Assert-MockCalled Get-NovaPackageMetadataList -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
+            Assert-MockCalled Assert-NovaPackageMetadata -Times 2
+        }
+    }
+
+    It 'Invoke-NovaPackageWorkflow runs build, test, and package creation in order for all requested package types' {
         InModuleScope $script:moduleName {
             $script:steps = @()
-
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    ProjectName = 'NovaModuleTools'
-                    Version = '1.2.3'
-                    ProjectRoot = '/tmp/project'
-                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
-                    Description = 'Package test'
-                    Manifest = [ordered]@{
-                        Author = 'Test Author'
-                        Tags = @('Nova', 'PowerShell')
-                        ProjectUri = 'https://example.test/project'
-                        ReleaseNotes = 'https://example.test/release-notes'
-                        LicenseUri = 'https://example.test/license'
-                    }
-                    Package = [ordered]@{
-                        Id = 'NovaModuleTools'
-                        Types = @('NuGet', 'Zip')
-                        OutputDirectory = [ordered]@{
-                            Path = '/tmp/project/artifacts/packages'
-                            Clean = $true
-                        }
-                        PackageFileName = 'NovaModuleTools.1.2.3.nupkg'
-                        Authors = 'Test Author'
-                        Description = 'Package test'
-                    }
-                }
+            $workflowContext = [pscustomobject]@{
+                ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                WorkflowParams = @{}
+                PackageMetadataList = @(
+                    [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                    [pscustomobject]@{Type = 'Zip'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.zip'}
+                )
+                ModulePath = '/tmp/NovaModuleTools.psm1'
             }
+
             Mock Invoke-NovaBuild {$script:steps += 'build'}
             Mock Test-NovaBuild {$script:steps += 'test'}
-            Mock New-NovaPackageArtifacts {
+            Mock Invoke-NovaPackageArtifactCreation {
                 $script:steps += 'pack'
                 @(
                     [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
@@ -330,7 +338,7 @@ Describe 'Nova command model - release and publish behavior' {
                 )
             }
 
-            $result = @(New-NovaModulePackage)
+            $result = @(Invoke-NovaPackageWorkflow -WorkflowContext $workflowContext -ShouldRun)
 
             $script:steps -join ',' | Should -Be 'build,test,pack'
             $result.Type | Should -Be @('NuGet', 'Zip')
@@ -338,42 +346,27 @@ Describe 'Nova command model - release and publish behavior' {
                 '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg',
                 '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.zip'
             )
+            Assert-MockCalled Invoke-NovaBuild -Times 1
+            Assert-MockCalled Test-NovaBuild -Times 1
+            Assert-MockCalled Invoke-NovaPackageArtifactCreation -Times 1 -ParameterFilter {
+                $WorkflowContext.ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
+                        $WorkflowContext.PackageMetadataList.Count -eq 2 -and
+                        $WorkflowContext.ModulePath -eq '/tmp/NovaModuleTools.psm1'
+            }
         }
     }
 
-    It 'New-NovaModulePackage reimports the current module when package helpers were unloaded during tests' {
+    It 'Invoke-NovaPackageArtifactCreation reimports the current module when package helpers were unloaded during tests' {
         InModuleScope $script:moduleName {
             $script:steps = @()
-
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    ProjectName = 'NovaModuleTools'
-                    Version = '1.2.3'
-                    ProjectRoot = '/tmp/project'
-                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
-                    Description = 'Package test'
-                    Manifest = [ordered]@{
-                        Author = 'Test Author'
-                        Tags = @('Nova', 'PowerShell')
-                        ProjectUri = 'https://example.test/project'
-                        ReleaseNotes = 'https://example.test/release-notes'
-                        LicenseUri = 'https://example.test/license'
-                    }
-                    Package = [ordered]@{
-                        Id = 'NovaModuleTools'
-                        Types = @('NuGet', 'Zip')
-                        OutputDirectory = [ordered]@{
-                            Path = '/tmp/project/artifacts/packages'
-                            Clean = $true
-                        }
-                        PackageFileName = 'NovaModuleTools.1.2.3.nupkg'
-                        Authors = 'Test Author'
-                        Description = 'Package test'
-                    }
-                }
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'NovaModuleTools'
             }
-            Mock Invoke-NovaBuild {$script:steps += 'build'}
-            Mock Test-NovaBuild {$script:steps += 'test'}
+            $packageMetadataList = @(
+                [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                [pscustomobject]@{Type = 'Zip'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.zip'}
+            )
+
             Mock Get-Command {
                 $null
             } -ParameterFilter {$Name -eq 'New-NovaPackageArtifacts' -and $CommandType -eq 'Function'}
@@ -388,53 +381,74 @@ Describe 'Nova command model - release and publish behavior' {
                 )
             }
 
-            $result = @(New-NovaModulePackage)
+            $workflowContext = [pscustomobject]@{
+                ProjectInfo = $projectInfo
+                PackageMetadataList = $packageMetadataList
+                ModulePath = $ExecutionContext.SessionState.Module.Path
+            }
 
-            $script:steps -join ',' | Should -Be 'build,test,pack'
+            $result = @(Invoke-NovaPackageArtifactCreation -WorkflowContext $workflowContext)
+
+            $script:steps -join ',' | Should -Be 'pack'
             $result.Type | Should -Be @('NuGet', 'Zip')
             Assert-MockCalled Import-Module -Times 1 -ParameterFilter {$Name -eq $ExecutionContext.SessionState.Module.Path -and $PassThru}
         }
     }
 
-    It 'New-NovaModulePackage -WhatIf forwards preview mode through build and test without creating a package' {
+    It 'New-NovaModulePackage delegates orchestration to the private package workflow helpers' {
         InModuleScope $script:moduleName {
-            $script:steps = @()
-
-            Mock Get-NovaProjectInfo {
+            Mock Get-NovaPackageWorkflowContext {
                 [pscustomobject]@{
-                    ProjectName = 'NovaModuleTools'
-                    Version = '1.2.3'
-                    ProjectRoot = '/tmp/project'
-                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
-                    Description = 'Package test'
-                    Manifest = [ordered]@{
-                        Author = 'Test Author'
-                        Tags = @()
-                        ProjectUri = ''
-                        ReleaseNotes = ''
-                        LicenseUri = ''
-                    }
-                    Package = [ordered]@{
-                        Id = 'NovaModuleTools'
-                        OutputDirectory = [ordered]@{
-                            Path = '/tmp/project/artifacts/packages'
-                            Clean = $true
-                        }
-                        PackageFileName = 'NovaModuleTools.1.2.3.nupkg'
-                        Authors = 'Test Author'
-                        Description = 'Package test'
-                    }
+                    ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                    WorkflowParams = @{}
+                    PackageMetadataList = @(
+                        [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                    )
+                    ModulePath = '/tmp/NovaModuleTools.psm1'
+                    Target = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'
+                    Operation = 'Create NuGet package from built module output'
                 }
             }
+            Mock Invoke-NovaPackageWorkflow {
+                @(
+                    [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                )
+            }
+
+            $result = @(New-NovaModulePackage -Confirm:$false)
+
+            $result.Type | Should -Be @('NuGet')
+            $result.PackagePath | Should -Be @('/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg')
+            Assert-MockCalled Get-NovaPackageWorkflowContext -Times 1
+            Assert-MockCalled Invoke-NovaPackageWorkflow -Times 1 -ParameterFilter {
+                $ShouldRun -and
+                        $WorkflowContext.Target -eq '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg' -and
+                        $WorkflowContext.Operation -eq 'Create NuGet package from built module output'
+            }
+        }
+    }
+
+    It 'Invoke-NovaPackageWorkflow -WhatIf forwards preview mode through build and test without creating a package' {
+        InModuleScope $script:moduleName {
+            $script:steps = @()
+            $workflowContext = [pscustomobject]@{
+                ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                WorkflowParams = @{WhatIf = $true}
+                PackageMetadataList = @(
+                    [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                )
+                ModulePath = '/tmp/NovaModuleTools.psm1'
+            }
+
             Mock Invoke-NovaBuild {$script:steps += "build:$WhatIfPreference"}
             Mock Test-NovaBuild {$script:steps += "test:$WhatIfPreference"}
-            Mock New-NovaPackageArtifacts {$script:steps += 'pack'}
+            Mock Invoke-NovaPackageArtifactCreation {throw 'should not package'}
 
-            $result = New-NovaModulePackage -WhatIf
+            $result = Invoke-NovaPackageWorkflow -WorkflowContext $workflowContext
 
             $result | Should -BeNullOrEmpty
             $script:steps -join ',' | Should -Be 'build:True,test:True'
-            Assert-MockCalled New-NovaPackageArtifacts -Times 0
+            Assert-MockCalled Invoke-NovaPackageArtifactCreation -Times 0
         }
     }
 
