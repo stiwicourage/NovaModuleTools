@@ -55,6 +55,77 @@ BeforeAll {
 }
 
 Describe 'Nova command model - package upload behavior' {
+    It 'Get-NovaPackageUploadWorkflowContext resolves project info, normalized upload options, and upload artifacts' {
+        $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'workflow-context-upload')
+        $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
+
+        InModuleScope $script:moduleName -Parameters @{
+            ProjectInfo = (New-TestNovaPackageUploadProjectInfo -Layout $layout)
+            PackagePath = $packagePath
+        } {
+            param($ProjectInfo, $PackagePath)
+
+            $uploadOption = [pscustomobject]@{
+                PackagePath = @($PackagePath)
+                PackageType = @('Zip')
+                Url = 'https://packages.example/raw/'
+                Repository = ''
+                UploadPath = 'modules'
+                Headers = [ordered]@{}
+                Token = $null
+                TokenEnvironmentVariable = $null
+                AuthenticationScheme = $null
+            }
+            $uploadArtifactList = @(
+                [pscustomobject]@{
+                    Type = 'Zip'
+                    PackagePath = $PackagePath
+                    PackageFileName = 'PackageProject.2.3.4.zip'
+                    Repository = ''
+                    Headers = [ordered]@{}
+                    UploadUrl = 'https://packages.example/raw/modules/PackageProject.2.3.4.zip'
+                }
+            )
+
+            Mock Resolve-NovaPackageUploadInvocation {$uploadArtifactList}
+
+            $result = Get-NovaPackageUploadWorkflowContext -BoundParameters @{PackagePath = @($PackagePath); Url = 'https://packages.example/raw/'} -ProjectInfo $ProjectInfo -UploadOption $uploadOption
+
+            $result.ProjectInfo.ProjectRoot | Should -Be $ProjectInfo.ProjectRoot
+            $result.UploadOption.Url | Should -Be 'https://packages.example/raw/'
+            $result.UploadArtifactList.Count | Should -Be 1
+            $result.UploadArtifactList[0].UploadUrl | Should -Be 'https://packages.example/raw/modules/PackageProject.2.3.4.zip'
+            Assert-MockCalled Resolve-NovaPackageUploadInvocation -Times 1 -ParameterFilter {$UploadOption.Url -eq 'https://packages.example/raw/'}
+        }
+    }
+
+    It 'Invoke-NovaPackageUploadWorkflow uploads each approved artifact in order' {
+        InModuleScope $script:moduleName {
+            $script:steps = @()
+            $workflowContext = [pscustomobject]@{
+                UploadArtifactList = @(
+                    [pscustomobject]@{PackageFileName = 'PackageProject.2.3.4.nupkg'}
+                    [pscustomobject]@{PackageFileName = 'PackageProject.2.3.4.zip'}
+                )
+            }
+            $approvedUploadArtifactList = @(
+                [pscustomobject]@{PackageFileName = 'PackageProject.2.3.4.nupkg'}
+                [pscustomobject]@{PackageFileName = 'PackageProject.2.3.4.zip'}
+            )
+
+            Mock Invoke-NovaPackageArtifactUpload {
+                $script:steps += $UploadArtifact.PackageFileName
+                [pscustomobject]@{PackageFileName = $UploadArtifact.PackageFileName; StatusCode = 200}
+            }
+
+            $result = @(Invoke-NovaPackageUploadWorkflow -WorkflowContext $workflowContext -UploadArtifactList $approvedUploadArtifactList)
+
+            $script:steps | Should -Be @('PackageProject.2.3.4.nupkg', 'PackageProject.2.3.4.zip')
+            $result.PackageFileName | Should -Be @('PackageProject.2.3.4.nupkg', 'PackageProject.2.3.4.zip')
+            Assert-MockCalled Invoke-NovaPackageArtifactUpload -Times 2
+        }
+    }
+
     It 'Deploy-NovaPackage uploads the specified package file to the specified raw URL' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'explicit-upload')
         $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
@@ -77,6 +148,42 @@ Describe 'Nova command model - package upload behavior' {
                 $Uri -eq 'https://packages.example/raw/PackageProject.2.3.4.zip' -and
                         $Method -eq 'Put' -and
                         $InFile -eq $PackagePath
+            }
+        }
+    }
+
+    It 'Deploy-NovaPackage delegates orchestration to the private upload workflow helpers' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaPackageUploadWorkflowContext {
+                [pscustomobject]@{
+                    UploadArtifactList = @(
+                        [pscustomobject]@{
+                            Type = 'Zip'
+                            PackagePath = '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip'
+                            PackageFileName = 'PackageProject.2.3.4.zip'
+                            UploadUrl = 'https://packages.example/raw/PackageProject.2.3.4.zip'
+                        }
+                    )
+                }
+            }
+            Mock Invoke-NovaPackageUploadWorkflow {
+                @(
+                    [pscustomobject]@{
+                        PackageFileName = 'PackageProject.2.3.4.zip'
+                        StatusCode = 200
+                    }
+                )
+            }
+
+            $result = @(Deploy-NovaPackage -Url 'https://packages.example/raw/' -Confirm:$false)
+
+            $result.PackageFileName | Should -Be @('PackageProject.2.3.4.zip')
+            $result.StatusCode | Should -Be @(200)
+            Assert-MockCalled Get-NovaPackageUploadWorkflowContext -Times 1 -ParameterFilter {$BoundParameters.Url -eq 'https://packages.example/raw/'}
+            Assert-MockCalled Invoke-NovaPackageUploadWorkflow -Times 1 -ParameterFilter {
+                $WorkflowContext.UploadArtifactList.Count -eq 1 -and
+                        $UploadArtifactList.Count -eq 1 -and
+                        $UploadArtifactList[0].UploadUrl -eq 'https://packages.example/raw/PackageProject.2.3.4.zip'
             }
         }
     }
