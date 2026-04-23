@@ -6,7 +6,8 @@ function Write-NovaModuleProjectJson {
         [switch]$Example
     )
 
-    $jsonData = Get-Content (Get-NovaModuleProjectTemplatePath -Example:$Example) -Raw | ConvertFrom-Json -AsHashtable
+    $projectTemplatePath = Get-NovaModuleProjectTemplatePath -Example:$Example
+    $jsonData = Read-ProjectJsonData -ProjectJsonPath $projectTemplatePath
 
     $jsonData.ProjectName = $Answer.ProjectName
     $jsonData.Description = $Answer.Description
@@ -22,5 +23,5 @@ function Write-NovaModuleProjectJson {
     }
 
     Write-Verbose $jsonData
-    $jsonData | ConvertTo-Json -Depth 10 | Out-File $ProjectJsonFile
+    Write-ProjectJsonData -ProjectJsonPath $ProjectJsonFile -Data $jsonData
 }

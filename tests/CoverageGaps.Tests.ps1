@@ -289,6 +289,8 @@ Describe 'Coverage gaps for scaffold internals' {
             $project.Manifest.Author | Should -Be 'Test Author'
             $project.Manifest.PowerShellHostVersion | Should -Be '7.4'
             $project.Manifest.GUID | Should -Be '11111111-1111-1111-1111-111111111111'
+            $project.Package.OutputDirectory.Path | Should -Be 'artifacts/packages'
+            $project.Package.OutputDirectory.Clean | Should -BeTrue
             $project.ContainsKey('Pester') | Should -BeFalse
         }
     }
@@ -314,7 +316,58 @@ Describe 'Coverage gaps for scaffold internals' {
             $project.Manifest.Author | Should -Be 'Example Author'
             $project.Manifest.PowerShellHostVersion | Should -Be '7.5'
             $project.Manifest.GUID | Should -Be 'b3b4ca64-a274-4768-872d-2b3c8bc12a39'
+            $project.Package.OutputDirectory.Path | Should -Be 'artifacts/packages'
+            $project.Package.Repositories[0].Headers.'X-Repository' | Should -Be 'example-raw'
+            $project.Package.Repositories[0].Auth.TokenEnvironmentVariable | Should -Be 'NOVA_EXAMPLE_PACKAGE_TOKEN'
             $project.ContainsKey('Pester') | Should -BeTrue
+        }
+    }
+
+    It 'Write-NovaModuleProjectJson delegates final persistence to Write-ProjectJsonData' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaModuleProjectTemplatePath {'/tmp/project-template.json'}
+            Mock Read-ProjectJsonData {
+                [ordered]@{
+                    ProjectName = ''
+                    Description = ''
+                    Version = ''
+                    Manifest = [ordered]@{
+                        Author = ''
+                        PowerShellHostVersion = ''
+                        GUID = ''
+                    }
+                    Package = [ordered]@{
+                        OutputDirectory = [ordered]@{
+                            Path = 'artifacts/packages'
+                            Clean = $true
+                        }
+                    }
+                    Pester = [ordered]@{
+                        TestResult = [ordered]@{
+                            Enabled = $true
+                        }
+                    }
+                }
+            }
+            Mock New-Guid {[guid]'22222222-2222-2222-2222-222222222222'}
+            Mock Write-ProjectJsonData {}
+
+            Write-NovaModuleProjectJson -Answer @{
+                ProjectName = 'NovaDelegated'
+                Description = 'Shared writer path'
+                Version = '3.2.1'
+                Author = 'Writer Test'
+                PowerShellHostVersion = '7.4'
+                EnablePester = 'Yes'
+            } -ProjectJsonFile '/tmp/project.json'
+
+            Assert-MockCalled Read-ProjectJsonData -Times 1 -ParameterFilter {$ProjectJsonPath -eq '/tmp/project-template.json'}
+            Assert-MockCalled Write-ProjectJsonData -Times 1 -ParameterFilter {
+                $ProjectJsonPath -eq '/tmp/project.json' -and
+                        $Data.ProjectName -eq 'NovaDelegated' -and
+                        $Data.Manifest.GUID -eq '22222222-2222-2222-2222-222222222222' -and
+                        $Data.Package.OutputDirectory.Path -eq 'artifacts/packages'
+            }
         }
     }
 
