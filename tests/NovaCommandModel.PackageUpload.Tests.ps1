@@ -126,6 +126,66 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
+    It 'Resolve-NovaPackageUploadInvocation orchestrates file, target, header, and artifact resolution' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'PackageProject'
+            }
+            $uploadOption = [pscustomobject]@{
+                PackagePath = @('/tmp/project/artifacts/packages/PackageProject.2.3.4.zip')
+                PackageType = @('Zip')
+                Url = 'https://packages.example/raw/'
+                Repository = 'LocalRaw'
+                UploadPath = 'modules'
+                Headers = [ordered]@{}
+                Token = $null
+                TokenEnvironmentVariable = $null
+                AuthenticationScheme = $null
+            }
+            $uploadFileList = @(
+                [pscustomobject]@{
+                    Type = 'Zip'
+                    PackagePath = '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip'
+                    PackageFileName = 'PackageProject.2.3.4.zip'
+                }
+            )
+            $uploadTarget = [pscustomobject]@{
+                Repository = 'LocalRaw'
+                Url = 'https://packages.example/raw/'
+                UploadPath = 'modules'
+            }
+            $uploadHeaders = [ordered]@{
+                'X-Trace-Id' = 'trace-123'
+            }
+
+            Mock Get-NovaPackageUploadFileList {$uploadFileList}
+            Mock Resolve-NovaPackageUploadTarget {$uploadTarget}
+            Mock Resolve-NovaPackageUploadHeaders {$uploadHeaders}
+            Mock Get-NovaPackageUploadArtifact {
+                [pscustomobject]@{
+                    Type = $PackageFileInfo.Type
+                    PackagePath = $PackageFileInfo.PackagePath
+                    PackageFileName = $PackageFileInfo.PackageFileName
+                    Repository = $UploadTarget.Repository
+                    Headers = $UploadHeaders
+                    UploadUrl = 'https://packages.example/raw/modules/PackageProject.2.3.4.zip'
+                }
+            }
+
+            $result = @(Resolve-NovaPackageUploadInvocation -ProjectInfo $projectInfo -UploadOption $uploadOption)
+
+            $result.Count | Should -Be 1
+            $result[0].Type | Should -Be 'Zip'
+            $result[0].Repository | Should -Be 'LocalRaw'
+            $result[0].Headers['X-Trace-Id'] | Should -Be 'trace-123'
+            $result[0].UploadUrl | Should -Be 'https://packages.example/raw/modules/PackageProject.2.3.4.zip'
+            Assert-MockCalled Get-NovaPackageUploadFileList -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'PackageProject' -and $PackageType -eq @('Zip')}
+            Assert-MockCalled Resolve-NovaPackageUploadTarget -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'PackageProject' -and $Repository -eq 'LocalRaw' -and $UploadPath -eq 'modules'}
+            Assert-MockCalled Resolve-NovaPackageUploadHeaders -Times 1 -ParameterFilter {$UploadTarget.Repository -eq 'LocalRaw' -and $UploadOption.Repository -eq 'LocalRaw'}
+            Assert-MockCalled Get-NovaPackageUploadArtifact -Times 1 -ParameterFilter {$PackageFileInfo.PackageFileName -eq 'PackageProject.2.3.4.zip' -and $UploadTarget.Repository -eq 'LocalRaw'}
+        }
+    }
+
     It 'Deploy-NovaPackage uploads the specified package file to the specified raw URL' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'explicit-upload')
         $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'

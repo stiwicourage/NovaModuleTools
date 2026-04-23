@@ -12,14 +12,7 @@ function Resolve-NovaPackageUploadInvocation {
 
     return @(
     $uploadFileList | ForEach-Object {
-        [pscustomobject]@{
-            Type = $_.Type
-            PackagePath = $_.PackagePath
-            PackageFileName = $_.PackageFileName
-            Repository = $uploadTarget.Repository
-            Headers = $uploadHeaders
-            UploadUrl = Join-NovaPackageUploadUrl -Url $uploadTarget.Url -UploadPath $uploadTarget.UploadPath -PackageFileName $_.PackageFileName
-        }
+        Get-NovaPackageUploadArtifact -PackageFileInfo $_ -UploadTarget $uploadTarget -UploadHeaders $uploadHeaders
     }
     )
 }
