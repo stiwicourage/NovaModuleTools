@@ -605,6 +605,30 @@ title: Invoke-NovaBuild
         }
     }
 
+    It 'Test-NovaBuild delegates orchestration to the private test workflow helper' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaTestWorkflowContext {
+                [pscustomobject]@{
+                    Target = '/tmp/nova-project/artifacts/TestResults.xml'
+                    Operation = 'Run Pester tests and write test results'
+                    PesterConfig = [pscustomobject]@{}
+                }
+            }
+            Mock Invoke-NovaTestWorkflow {}
+
+            Test-NovaBuild -Confirm:$false
+
+            Assert-MockCalled Get-NovaTestWorkflowContext -Times 1 -ParameterFilter {
+                $BoundParameters.ContainsKey('Confirm') -and
+                        $BoundParameters.Confirm -eq $false
+            }
+            Assert-MockCalled Invoke-NovaTestWorkflow -Times 1 -ParameterFilter {
+                $WorkflowContext.Target -eq '/tmp/nova-project/artifacts/TestResults.xml' -and
+                        $WorkflowContext.Operation -eq 'Run Pester tests and write test results'
+            }
+        }
+    }
+
     It 'Test-NovaBuild rejects the removed Plaintext output render mode' {
         InModuleScope $script:moduleName {
             {Test-NovaBuild -OutputRenderMode Plaintext} | Should -Throw '*Cannot validate argument on parameter*OutputRenderMode*'

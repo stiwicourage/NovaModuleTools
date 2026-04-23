@@ -65,6 +65,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       operations.
 - Clarify `Invoke-NovaBuild` layering so the public command focuses on orchestration while private helpers own build
   workflow context, sequencing, and explicit reuse of resolved project metadata.
+- Clarify `Test-NovaBuild` layering so the public command focuses on orchestration while private helpers own Pester
+  workflow context, artifact preparation, and pass/fail translation.
 - Clarify `Update-NovaModuleVersion` layering so the public command focuses on orchestration while private helpers own
   bump workflow context, result shaping, and version persistence.
 - Clarify publish and release layering so public commands focus on orchestration while private workflow helpers own
