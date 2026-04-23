@@ -203,6 +203,40 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
+    It 'Set-NovaModuleVersion delegates project.json persistence to Write-ProjectJsonData' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    ProjectFile = '/tmp/project.json'
+                    NewVersion = [semver]'1.3.0-preview'
+                }
+            }
+            Mock Read-ProjectJsonData {
+                [ordered]@{
+                    Version = '1.2.3'
+                    Package = [ordered]@{
+                        Repositories = @(
+                            [ordered]@{
+                                Name = 'staging'
+                            }
+                        )
+                    }
+                }
+            }
+            Mock Write-ProjectJsonData {}
+            Mock Write-Host {}
+
+            Set-NovaModuleVersion -Label Minor -PreviewRelease -Confirm:$false
+
+            Assert-MockCalled Read-ProjectJsonData -Times 1 -ParameterFilter {$ProjectJsonPath -eq '/tmp/project.json'}
+            Assert-MockCalled Write-ProjectJsonData -Times 1 -ParameterFilter {
+                $ProjectJsonPath -eq '/tmp/project.json' -and
+                        $Data.Version -eq '1.3.0-preview' -and
+                        $Data.Package.Repositories[0].Name -eq 'staging'
+            }
+        }
+    }
+
     It 'Publish-NovaBuiltModuleToRepository uses the PSGallery fallback api key when needed' {
         InModuleScope $script:moduleName {
             $originalApiKey = $env:PSGALLERY_API

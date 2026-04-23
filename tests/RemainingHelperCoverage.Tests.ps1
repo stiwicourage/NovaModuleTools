@@ -276,6 +276,46 @@ function Get-Second {
         }
     }
 
+    It 'Write-ProjectJsonData preserves nested objects, arrays, and unicode text when writing project.json' {
+        $projectJsonPath = Join-Path $TestDrive 'written-project.json'
+
+        InModuleScope $script:moduleName -Parameters @{ProjectJsonPath = $projectJsonPath} {
+            param($ProjectJsonPath)
+
+            $projectData = [ordered]@{
+                ProjectName = 'NovaModuleTools'
+                Description = 'ÆØÅ nested output'
+                Version = '1.2.3'
+                Manifest = [ordered]@{
+                    Author = 'Stiwi'
+                }
+                Package = [ordered]@{
+                    OutputDirectory = [ordered]@{
+                        Path = 'artifacts/packages'
+                        Clean = $true
+                    }
+                    Repositories = @(
+                        [ordered]@{
+                            Name = 'staging'
+                            Auth = [ordered]@{
+                                TokenEnvironmentVariable = 'NOVA_TOKEN'
+                            }
+                        }
+                    )
+                }
+            }
+
+            Write-ProjectJsonData -ProjectJsonPath $ProjectJsonPath -Data $projectData
+
+            $result = Read-ProjectJsonData -ProjectJsonPath $ProjectJsonPath
+
+            $result.Description | Should -Be 'ÆØÅ nested output'
+            $result.Package.OutputDirectory.Path | Should -Be 'artifacts/packages'
+            $result.Package.Repositories[0].Name | Should -Be 'staging'
+            $result.Package.Repositories[0].Auth.TokenEnvironmentVariable | Should -Be 'NOVA_TOKEN'
+        }
+    }
+
     It 'Get-NovaHelpLocale defaults to en-US when docs metadata has no locale' {
         $docPath = Join-Path $TestDrive 'No-Locale.md'
         @'
