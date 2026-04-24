@@ -198,6 +198,22 @@ Describe 'Update notification behavior' {
         }
     }
 
+    It 'Get-NovaModuleSelfUpdateWorkflowContext throws when update lookup cannot resolve a candidate' {
+        InModuleScope $script:moduleName {
+            Mock Read-NovaUpdateNotificationPreference {[pscustomobject]@{PrereleaseNotificationsEnabled = $true}}
+            Mock Get-NovaInstalledModuleVersionInfo {[pscustomobject]@{ModuleName = 'NovaModuleTools'}}
+            Mock Invoke-NovaModuleUpdateLookup {$null}
+
+            {
+                Get-NovaModuleSelfUpdateWorkflowContext
+            } | Should -Throw 'Unable to determine a NovaModuleTools update candidate. Try again when the PowerShell Gallery is reachable.'
+
+            Assert-MockCalled Invoke-NovaModuleUpdateLookup -Times 1 -ParameterFilter {
+                $AllowPrereleaseNotifications -and $TimeoutMilliseconds -eq 10000
+            }
+        }
+    }
+
     It 'Invoke-NovaModuleSelfUpdateWorkflow handles both update and no-update paths correctly' {
         foreach ($testCase in @(
             @{
