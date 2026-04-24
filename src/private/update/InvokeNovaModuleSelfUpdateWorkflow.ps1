@@ -1,3 +1,17 @@
+function Invoke-NovaModuleSelfUpdateOrStop {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Plan
+    )
+
+    try {
+        $null = Invoke-NovaModuleSelfUpdate -ModuleName $Plan.ModuleName -AllowPrerelease:$Plan.UsedAllowPrerelease
+    }
+    catch {
+        Stop-NovaOperation -Message $_.Exception.Message -ErrorId 'Nova.Dependency.ModuleSelfUpdateFailed' -Category InvalidOperation -TargetObject $Plan.ModuleName
+    }
+}
+
 function Invoke-NovaModuleSelfUpdateWorkflow {
     [CmdletBinding()]
     param(
@@ -9,7 +23,7 @@ function Invoke-NovaModuleSelfUpdateWorkflow {
         return $plan
     }
 
-    $null = Invoke-NovaModuleSelfUpdate -ModuleName $plan.ModuleName -AllowPrerelease:$plan.UsedAllowPrerelease
+    Invoke-NovaModuleSelfUpdateOrStop -Plan $plan
     $plan.Updated = $true
     Write-NovaModuleReleaseNotesLink
     return $plan

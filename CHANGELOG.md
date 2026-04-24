@@ -79,6 +79,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   whole-message matches.
 - Continue the shared error-model migration for CI coverage remapping so missing built-module source markers now expose
   a stable coverage error id and category instead of a raw script throw.
+- Continue the shared error-model migration for public self-update entrypoints so `Update-NovaModuleTool` and
+  `nova update` now expose a stable self-update failure id and category while preserving the underlying
+  `Update-Module` guidance text.
 
 ### Documentation
 

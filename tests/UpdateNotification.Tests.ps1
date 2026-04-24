@@ -586,8 +586,23 @@ throw 'offline'
         $result.HostMessages | Should -HaveCount 0
     }
 
-    It 'nova update stops on self-update failure instead of returning a success object' {
-        InModuleScope $script:moduleName {
+    It 'public self-update entrypoints stop on a structured self-update failure for <Name>' -ForEach @(
+        @{
+            Name = 'Update-NovaModuleTool'
+            Invoke = {
+                Update-NovaModuleTool -Confirm:$false
+            }
+        },
+        @{
+            Name = 'nova update'
+            Invoke = {
+                nova update -Confirm:$false
+            }
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
             Mock Read-NovaUpdateNotificationPreference {
                 [pscustomobject]@{PrereleaseNotificationsEnabled = $true}
             }
@@ -610,7 +625,19 @@ throw 'offline'
                 throw "Module 'NovaModuleTools' was not installed by using Install-Module, so it cannot be updated."
             }
 
-            {nova update -Confirm:$false} | Should -Throw '*was not installed by using Install-Module*'
+            $thrown = $null
+            try {
+                & $TestCase.Invoke
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be "Module 'NovaModuleTools' was not installed by using Install-Module, so it cannot be updated."
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.ModuleSelfUpdateFailed'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
+            $thrown.TargetObject | Should -Be 'NovaModuleTools'
             Assert-MockCalled Invoke-NovaModuleSelfUpdate -Times 1
         }
     }
