@@ -74,6 +74,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
+- Continue the shared error-model migration for standalone CLI argument failures so removed subcommands, unsupported
+  `nova init` usage, and unknown CLI tokens are verified through stable error ids and categories instead of raw
+  whole-message matches.
+- Continue the shared error-model migration for CI coverage remapping so missing built-module source markers now expose
+  a stable coverage error id and category instead of a raw script throw.
 
 ### Documentation
 
