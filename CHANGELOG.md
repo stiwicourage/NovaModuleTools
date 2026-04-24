@@ -88,6 +88,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continue the shared error-model migration for update-notification selection, self-update candidate lookup, release
   publish dist checks, and packaged example configuration lookup so those remaining update/release/example paths expose
   stable error ids and categories.
+- Continue the shared error-model migration for local installed-version CLI checks, no-commit version bump handling,
+  and invalid package-type project loading so more public command coverage now asserts stable error ids and categories
+  instead of brittle whole-message matches.
 
 ### Documentation
 

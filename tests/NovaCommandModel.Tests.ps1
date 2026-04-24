@@ -351,7 +351,12 @@ Describe 'Nova command model - project, help, and build behavior' {
             Version = '0.0.5'
             Guid = '88888888-8888-8888-8888-888888888888'
             Types = @('Tar')
-            ErrorMessage = 'Unsupported Package.Types value: Tar*'
+            ExpectedError = [pscustomobject]@{
+                Message = 'Unsupported Package.Types value: Tar. Supported values: NuGet, Zip, .nupkg, .zip.'
+                ErrorId = 'Nova.Configuration.UnsupportedPackageType'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                TargetObject = 'Tar'
+            }
         }
     ) {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
@@ -375,8 +380,20 @@ Describe 'Nova command model - project, help, and build behavior' {
 
             Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
 
-            if ( $TestCase.ContainsKey('ErrorMessage')) {
-                {Get-NovaProjectInfo -Path $projectRoot} | Should -Throw $TestCase.ErrorMessage
+            if ( $TestCase.ContainsKey('ExpectedError')) {
+                $thrown = $null
+                try {
+                    Get-NovaProjectInfo -Path $projectRoot
+                }
+                catch {
+                    $thrown = $_
+                }
+
+                $thrown | Should -Not -BeNullOrEmpty
+                $thrown.Exception.Message | Should -Be $TestCase.ExpectedError.Message
+                $thrown.FullyQualifiedErrorId | Should -Be $TestCase.ExpectedError.ErrorId
+                $thrown.CategoryInfo.Category | Should -Be $TestCase.ExpectedError.Category
+                $thrown.TargetObject | Should -Be $TestCase.ExpectedError.TargetObject
                 return
             }
 

@@ -520,11 +520,29 @@ Describe 'Coverage for remaining command and filesystem branches' {
         }
     }
 
-    It 'Invoke-NovaCli version -Installed throws a clear error when the current project is not installed locally' {
-        InModuleScope $script:moduleName {
-            Mock Get-NovaInstalledProjectVersion {throw "Local module install not found for AzureDevOpsAgentInstaller. Expected manifest at: /tmp/modules/AzureDevOpsAgentInstaller/AzureDevOpsAgentInstaller.psd1. Run 'nova publish -local' first."}
+    It 'Invoke-NovaCli version -Installed throws a clear structured error when the current project is not installed locally' {
+        InModuleScope $script:moduleName -Parameters @{
+            ExpectedManifestPath = '/tmp/modules/AzureDevOpsAgentInstaller/AzureDevOpsAgentInstaller.psd1'
+        } {
+            param($ExpectedManifestPath)
 
-            {Invoke-NovaCli version -Installed} | Should -Throw "Local module install not found for AzureDevOpsAgentInstaller*nova publish -local*"
+            Mock Get-NovaInstalledProjectVersion {
+                Stop-NovaOperation -Message "Local module install not found for AzureDevOpsAgentInstaller. Expected manifest at: $ExpectedManifestPath. Run 'nova publish -local' first." -ErrorId 'Nova.Environment.LocalModuleInstallNotFound' -Category ObjectNotFound -TargetObject $ExpectedManifestPath
+            }
+
+            $thrown = $null
+            try {
+                Invoke-NovaCli version -Installed
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be "Local module install not found for AzureDevOpsAgentInstaller. Expected manifest at: $ExpectedManifestPath. Run 'nova publish -local' first."
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.LocalModuleInstallNotFound'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+            $thrown.TargetObject | Should -Be $ExpectedManifestPath
         }
     }
 }
