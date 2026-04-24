@@ -94,7 +94,19 @@ Describe 'Update notification behavior' {
 
     It 'Get-NovaUpdateNotificationPreferenceChangeContext throws when neither enable nor disable was requested' {
         InModuleScope $script:moduleName {
-            {Get-NovaUpdateNotificationPreferenceChangeContext} | Should -Throw 'Specify either -EnablePrereleaseNotifications or -DisablePrereleaseNotifications.'
+            $thrown = $null
+            try {
+                Get-NovaUpdateNotificationPreferenceChangeContext
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Specify either -EnablePrereleaseNotifications or -DisablePrereleaseNotifications.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UpdateNotificationPreferenceChangeRequired'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $thrown.TargetObject | Should -Be 'PrereleaseNotifications'
         }
     }
 
@@ -204,9 +216,19 @@ Describe 'Update notification behavior' {
             Mock Get-NovaInstalledModuleVersionInfo {[pscustomobject]@{ModuleName = 'NovaModuleTools'}}
             Mock Invoke-NovaModuleUpdateLookup {$null}
 
-            {
+            $thrown = $null
+            try {
                 Get-NovaModuleSelfUpdateWorkflowContext
-            } | Should -Throw 'Unable to determine a NovaModuleTools update candidate. Try again when the PowerShell Gallery is reachable.'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Unable to determine a NovaModuleTools update candidate. Try again when the PowerShell Gallery is reachable.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.ModuleSelfUpdateCandidateUnavailable'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ResourceUnavailable)
+            $thrown.TargetObject | Should -Be 'NovaModuleTools'
 
             Assert-MockCalled Invoke-NovaModuleUpdateLookup -Times 1 -ParameterFilter {
                 $AllowPrereleaseNotifications -and $TimeoutMilliseconds -eq 10000

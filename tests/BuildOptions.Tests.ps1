@@ -80,6 +80,33 @@ Describe 'Invoke-NovaBuild options' {
         (Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/example/tests/Pester.Some.Tests.ps1')) | Should -BeTrue
     }
 
+    It 'Get-ExampleConfiguration exposes a structured error when the packaged example config is missing' {
+        $newNovaErrorRecordPath = Join-Path $repoRoot 'src/private/shared/NewNovaErrorRecord.ps1'
+        $stopNovaOperationPath = Join-Path $repoRoot 'src/private/shared/StopNovaOperation.ps1'
+        $exampleConfigurationPath = Join-Path $repoRoot 'src/resources/example/src/private/Get-ExampleConfiguration.ps1'
+        $expectedConfigurationPath = Join-Path $repoRoot 'src/resources/example/src/private/resources/greeting-config.json'
+
+        . $newNovaErrorRecordPath
+        . $stopNovaOperationPath
+        . $exampleConfigurationPath
+
+        Mock Test-Path {$false} -ParameterFilter {$LiteralPath -eq $expectedConfigurationPath}
+
+        $thrown = $null
+        try {
+            Get-ExampleConfiguration
+        }
+        catch {
+            $thrown = $_
+        }
+
+        $thrown | Should -Not -BeNullOrEmpty
+        $thrown.Exception.Message | Should -Be "Example configuration not found: $expectedConfigurationPath"
+        $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.ExampleConfigurationNotFound'
+        $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+        $thrown.TargetObject | Should -Be $expectedConfigurationPath
+    }
+
     It 'ScriptAnalyzer ignores generated packaged example dist and artifacts content' {
         if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
             Set-ItResult -Skipped -Because 'PSScriptAnalyzer is not available in this environment'

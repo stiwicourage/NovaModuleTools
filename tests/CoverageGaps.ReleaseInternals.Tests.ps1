@@ -305,7 +305,20 @@ Describe 'Coverage gaps for release and git internals' {
     It 'Publish-NovaBuiltModule throws when dist is missing and Resolve-NovaLocalPublishPath returns explicit or local paths' {
         InModuleScope $script:moduleName {
             Mock Test-Path {$false}
-            {Publish-NovaBuiltModule -ProjectInfo ([pscustomobject]@{OutputModuleDir = '/tmp/missing'; ProjectName = 'Nova'})} | Should -Throw 'Dist folder is empty*'
+
+            $thrown = $null
+            try {
+                Publish-NovaBuiltModule -ProjectInfo ([pscustomobject]@{OutputModuleDir = '/tmp/missing'; ProjectName = 'Nova'})
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Dist folder is empty, build the module before running publish command'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.ReleaseBuildOutputNotFound'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+            $thrown.TargetObject | Should -Be '/tmp/missing'
 
             Mock Get-LocalModulePath {'/tmp/local-modules'}
             Resolve-NovaLocalPublishPath -ModuleDirectoryPath '/tmp/custom' | Should -Be '/tmp/custom'

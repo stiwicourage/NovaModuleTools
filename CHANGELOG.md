@@ -85,6 +85,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   stable error ids and categories.
 - Continue the shared error-model migration for scaffold project-name validation, scaffold base-path checks, and
   existing-project detection so the remaining initialization paths expose stable error ids and categories.
+- Continue the shared error-model migration for update-notification selection, self-update candidate lookup, release
+  publish dist checks, and packaged example configuration lookup so those remaining update/release/example paths expose
+  stable error ids and categories.
 
 ### Documentation
 

@@ -21,5 +21,5 @@ function Get-NovaUpdateNotificationPreferenceChangeContext {
         }
     }
 
-    throw 'Specify either -EnablePrereleaseNotifications or -DisablePrereleaseNotifications.'
+    Stop-NovaOperation -Message 'Specify either -EnablePrereleaseNotifications or -DisablePrereleaseNotifications.' -ErrorId 'Nova.Validation.UpdateNotificationPreferenceChangeRequired' -Category InvalidArgument -TargetObject 'PrereleaseNotifications'
 }

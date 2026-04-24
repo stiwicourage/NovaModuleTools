@@ -27,7 +27,7 @@ function Get-NovaModuleSelfUpdateWorkflowContext {
     }
 
     if ($null -eq $resolvedLookupResult) {
-        throw 'Unable to determine a NovaModuleTools update candidate. Try again when the PowerShell Gallery is reachable.'
+        Stop-NovaOperation -Message 'Unable to determine a NovaModuleTools update candidate. Try again when the PowerShell Gallery is reachable.' -ErrorId 'Nova.Dependency.ModuleSelfUpdateCandidateUnavailable' -Category ResourceUnavailable -TargetObject 'NovaModuleTools'
     }
 
     $plan = Get-NovaModuleSelfUpdatePlan -InstalledModule $resolvedInstalledModule -LookupResult $resolvedLookupResult -PrereleaseNotificationsEnabled $resolvedPreference.PrereleaseNotificationsEnabled
