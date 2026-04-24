@@ -9,7 +9,7 @@ function Resolve-NovaModuleScaffoldBasePath {
     $resolvedPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($normalizedPath)
 
     if (-not (Test-Path -LiteralPath $resolvedPath -PathType Container)) {
-        throw "Not a valid path: $Path"
+        Stop-NovaOperation -Message "Not a valid path: $Path" -ErrorId 'Nova.Environment.ScaffoldBasePathNotFound' -Category ObjectNotFound -TargetObject $Path
     }
 
     return [System.IO.Path]::GetFullPath($resolvedPath)

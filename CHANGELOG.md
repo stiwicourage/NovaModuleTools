@@ -83,6 +83,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continue the shared error-model migration for test workflow failures, duplicate-function validation, preamble and
   manifest validation, help-locale conflicts, and package output safety checks so more build and packaging paths expose
   stable error ids and categories.
+- Continue the shared error-model migration for scaffold project-name validation, scaffold base-path checks, and
+  existing-project detection so the remaining initialization paths expose stable error ids and categories.
 
 ### Documentation
 
