@@ -74,25 +74,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
-- Continue the shared error-model migration for package upload, build help/manifest, package metadata, and version bump
-  workflow failures so tests can assert stable error ids and categories without losing the existing user guidance.
-- Continue the shared error-model migration for CLI launcher/route failures, package repository and upload request
-  failures,
-  and local installed-version lookup so the remaining environment and dependency flows can be verified with structured
-  assertions instead of brittle whole-message checks.
-- Continue the shared error-model migration for test workflow failures, duplicate-function validation, preamble and
-  manifest validation, help-locale conflicts, and package output safety checks so more build and packaging paths expose
-  stable error ids and categories.
-- Continue the shared error-model migration for scaffold project-name validation, scaffold base-path checks, and
-  existing-project detection so the remaining initialization paths expose stable error ids and categories.
-- Continue the shared error-model migration for update-notification selection, self-update candidate lookup, release
-  publish dist checks, and packaged example configuration lookup so those remaining update/release/example paths expose
-  stable error ids and categories.
-- Continue the shared error-model migration for local installed-version CLI checks, no-commit version bump handling,
-  and invalid package-type project loading so more public command coverage now asserts stable error ids and categories
-  instead of brittle whole-message matches.
-- Continue the shared error-model migration for `project.json` schema validation so Build/Pester schema failures now
-  expose a stable error id and category instead of raw `Test-Json` exception text.
 
 ### Documentation
 

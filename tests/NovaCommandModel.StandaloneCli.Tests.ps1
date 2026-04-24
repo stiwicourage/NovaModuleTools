@@ -409,9 +409,72 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Invoke-NovaCli deploy rejects the removed package subcommand token' {
-        InModuleScope $script:moduleName {
-            {Invoke-NovaCli deploy package --repository LocalRaw} | Should -Throw 'Unknown argument: package'
+    It 'Invoke-NovaCli surfaces structured CLI errors for <Name>' -ForEach @(
+        @{
+            Name = 'the removed deploy package subcommand token'
+            Action = {
+                Invoke-NovaCli deploy package --repository LocalRaw
+            }
+            ExpectedError = [pscustomobject]@{
+                Message = 'Unknown argument: package'
+                ErrorId = 'Nova.Validation.UnknownCliArgument'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = 'package'
+            }
+        }
+        @{
+            Name = 'an unsupported publish argument'
+            Action = {
+                Invoke-NovaCli publish --bogus
+            }
+            ExpectedError = [pscustomobject]@{
+                Message = 'Unknown argument: --bogus'
+                ErrorId = 'Nova.Validation.UnknownCliArgument'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '--bogus'
+            }
+        }
+        @{
+            Name = 'unsupported init WhatIf usage'
+            Action = {
+                Invoke-NovaCli init -WhatIf
+            }
+            ExpectedError = [pscustomobject]@{
+                Message = "The 'nova init' CLI command does not support -WhatIf. Run 'nova init' or 'nova init -Path <path>' without -WhatIf."
+                ErrorId = 'Nova.Validation.UnsupportedInitCliWhatIf'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                TargetObject = 'WhatIf'
+            }
+        }
+        @{
+            Name = 'unsupported positional init path usage'
+            Action = {
+                Invoke-NovaCli init 'some/path'
+            }
+            ExpectedError = [pscustomobject]@{
+                Message = "Unsupported 'nova init' usage: positional paths are no longer accepted. Use 'nova init -Path some/path' instead."
+                ErrorId = 'Nova.Validation.UnsupportedInitCliUsage'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = 'some/path'
+            }
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            $thrown = $null
+            try {
+                & $TestCase.Action
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be $TestCase.ExpectedError.Message
+            $thrown.FullyQualifiedErrorId | Should -Be $TestCase.ExpectedError.ErrorId
+            $thrown.CategoryInfo.Category | Should -Be $TestCase.ExpectedError.Category
+            $thrown.TargetObject | Should -Be $TestCase.ExpectedError.TargetObject
         }
     }
 
@@ -455,21 +518,4 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Invoke-NovaCli init rejects -WhatIf with a clear error' {
-        InModuleScope $script:moduleName {
-            {Invoke-NovaCli init -WhatIf} | Should -Throw '*does not support -WhatIf*'
-        }
-    }
-
-    It 'Invoke-NovaCli init rejects positional paths instead of treating them as -Path' {
-        InModuleScope $script:moduleName {
-            {Invoke-NovaCli init 'some/path'} | Should -Throw '*positional paths are no longer accepted*'
-        }
-    }
-
-    It 'Invoke-NovaCli throws on unsupported argument' {
-        InModuleScope $script:moduleName {
-            {Invoke-NovaCli publish --bogus} | Should -Throw 'Unknown argument*'
-        }
-    }
 }
