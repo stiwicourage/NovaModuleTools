@@ -10,7 +10,7 @@ function ConvertFrom-NovaNotificationCliArgument {
     }
 
     if ($Arguments.Count -ne 1) {
-        throw "Unsupported 'nova notification' usage. Use 'nova notification', 'nova notification -enable', or 'nova notification -disable'."
+        Stop-NovaOperation -Message "Unsupported 'nova notification' usage. Use 'nova notification', 'nova notification -enable', or 'nova notification -disable'." -ErrorId 'Nova.Validation.UnsupportedNotificationCliUsage' -Category InvalidArgument -TargetObject $Arguments
     }
 
     switch -Regex ($Arguments[0]) {
@@ -21,7 +21,7 @@ function ConvertFrom-NovaNotificationCliArgument {
             return 'disable'
         }
         default {
-            throw "Unknown argument: $( $Arguments[0] )"
+            Stop-NovaOperation -Message "Unknown argument: $( $Arguments[0] )" -ErrorId 'Nova.Validation.UnknownCliArgument' -Category InvalidArgument -TargetObject $Arguments[0]
         }
     }
 }

@@ -1,12 +1,21 @@
 $script:gitTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'GitTestSupport.ps1')).Path
+$script:coverageGapsCliTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'CoverageGaps.Cli.TestSupport.ps1')).Path
 $global:gitTestSupportFunctionNameList = @(
     'Initialize-TestGitRepository'
     'New-TestGitCommit'
     'New-TestGitTag'
 )
+$global:coverageGapsCliTestSupportFunctionNameList = @(
+    'Assert-TestStructuredCliError'
+)
 . $script:gitTestSupportPath
+. $script:coverageGapsCliTestSupportPath
 
 foreach ($functionName in $global:gitTestSupportFunctionNameList) {
+    $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+    Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+}
+foreach ($functionName in $global:coverageGapsCliTestSupportFunctionNameList) {
     $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
     Set-Item -Path "function:global:$functionName" -Value $scriptBlock
 }
@@ -14,6 +23,7 @@ foreach ($functionName in $global:gitTestSupportFunctionNameList) {
 BeforeAll {
     $here = Split-Path -Parent $PSCommandPath
     $gitTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'GitTestSupport.ps1')).Path
+    $coverageGapsCliTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'CoverageGaps.Cli.TestSupport.ps1')).Path
     $script:repoRoot = Split-Path -Parent $here
     $script:moduleName = (Get-Content -LiteralPath (Join-Path $script:repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
     $script:distModuleDir = Join-Path $script:repoRoot "dist/$script:moduleName"
@@ -23,7 +33,12 @@ BeforeAll {
     }
 
     . $gitTestSupportPath
+    . $coverageGapsCliTestSupportPath
     foreach ($functionName in $global:gitTestSupportFunctionNameList) {
+        $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+        Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+    }
+    foreach ($functionName in $global:coverageGapsCliTestSupportFunctionNameList) {
         $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
         Set-Item -Path "function:global:$functionName" -Value $scriptBlock
     }
@@ -179,39 +194,89 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
-    It 'ConvertFrom-NovaInitCliArgument rejects positional init paths' {
-        InModuleScope $script:moduleName {
-            $thrown = $null
-            try {
-                ConvertFrom-NovaInitCliArgument -Arguments @('some/path')
+    It 'the migrated CLI parsers expose structured validation errors for invalid usage cases' -ForEach @(
+        [pscustomobject]@{
+            CommandName = 'ConvertFrom-NovaInitCliArgument'
+            Arguments = @('some/path')
+            ExpectedError = [pscustomobject]@{
+                Message = "Unsupported 'nova init' usage*"
+                ErrorId = 'Nova.Validation.UnsupportedInitCliUsage'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = 'some/path'
             }
-            catch {
-                $thrown = $_
-            }
-
-            $thrown | Should -Not -BeNullOrEmpty
-            $thrown.Exception.Message | Should -BeLike "Unsupported 'nova init' usage*"
-            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnsupportedInitCliUsage'
-            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
-            $thrown.TargetObject | Should -Be 'some/path'
         }
-    }
+        [pscustomobject]@{
+            CommandName = 'ConvertFrom-NovaInitCliArgument'
+            Arguments = @('--path')
+            ExpectedError = [pscustomobject]@{
+                Message = 'Missing value for --path'
+                ErrorId = 'Nova.Validation.MissingCliOptionValue'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '--path'
+            }
+        }
+        [pscustomobject]@{
+            CommandName = 'ConvertFrom-NovaNotificationCliArgument'
+            Arguments = @('-enable', '-disable')
+            ExpectedError = [pscustomobject]@{
+                Message = "Unsupported 'nova notification' usage*"
+                ErrorId = 'Nova.Validation.UnsupportedNotificationCliUsage'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+            }
+        }
+        [pscustomobject]@{
+            CommandName = 'ConvertFrom-NovaNotificationCliArgument'
+            Arguments = @('--bogus')
+            ExpectedError = [pscustomobject]@{
+                Message = 'Unknown argument: --bogus'
+                ErrorId = 'Nova.Validation.UnknownCliArgument'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '--bogus'
+            }
+        }
+        [pscustomobject]@{
+            CommandName = 'ConvertFrom-NovaDeployCliArgument'
+            Arguments = @('--url')
+            ExpectedError = [pscustomobject]@{
+                Message = 'Missing value for --url'
+                ErrorId = 'Nova.Validation.MissingCliOptionValue'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '--url'
+            }
+        }
+        [pscustomobject]@{
+            CommandName = 'ConvertFrom-NovaDeployCliArgument'
+            Arguments = @('--bogus')
+            ExpectedError = [pscustomobject]@{
+                Message = 'Unknown argument: --bogus'
+                ErrorId = 'Nova.Validation.UnknownCliArgument'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '--bogus'
+            }
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
 
-    It 'ConvertFrom-NovaInitCliArgument reports a missing path value' {
-        InModuleScope $script:moduleName {
             $thrown = $null
             try {
-                ConvertFrom-NovaInitCliArgument -Arguments @('--path')
+                switch ($TestCase.CommandName) {
+                    'ConvertFrom-NovaInitCliArgument' {
+                        ConvertFrom-NovaInitCliArgument -Arguments $TestCase.Arguments
+                    }
+                    'ConvertFrom-NovaNotificationCliArgument' {
+                        ConvertFrom-NovaNotificationCliArgument -Arguments $TestCase.Arguments
+                    }
+                    'ConvertFrom-NovaDeployCliArgument' {
+                        ConvertFrom-NovaDeployCliArgument -Arguments $TestCase.Arguments
+                    }
+                }
             }
             catch {
                 $thrown = $_
             }
 
-            $thrown | Should -Not -BeNullOrEmpty
-            $thrown.Exception.Message | Should -Be 'Missing value for --path'
-            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.MissingCliOptionValue'
-            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
-            $thrown.TargetObject | Should -Be '--path'
+            Assert-TestStructuredCliError -ThrownError $thrown -ExpectedError $TestCase.ExpectedError
         }
     }
 
@@ -223,18 +288,62 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
-    It 'ConvertFrom-NovaNotificationCliArgument rejects unsupported notification usage' {
-        InModuleScope $script:moduleName {
-            {ConvertFrom-NovaNotificationCliArgument -Arguments @('-enable', '-disable')} | Should -Throw "Unsupported 'nova notification' usage*"
-            {ConvertFrom-NovaNotificationCliArgument -Arguments @('--bogus')} | Should -Throw 'Unknown argument: --bogus'
-        }
-    }
-
     It 'ConvertFrom-NovaVersionCliArgument resolves default and installed version modes' {
         InModuleScope $script:moduleName {
             (ConvertFrom-NovaVersionCliArgument).Installed | Should -BeFalse
             (ConvertFrom-NovaVersionCliArgument -Arguments @('-Installed')).Installed | Should -BeTrue
-            {ConvertFrom-NovaVersionCliArgument -Arguments @('--bogus')} | Should -Throw "Unsupported 'nova version' usage*"
+
+            $unsupportedUsageError = $null
+            try {
+                ConvertFrom-NovaVersionCliArgument -Arguments @('--bogus')
+            }
+            catch {
+                $unsupportedUsageError = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $unsupportedUsageError -ExpectedError ([pscustomobject]@{
+                Message = "Unsupported 'nova version' usage*"
+                ErrorId = 'Nova.Validation.UnsupportedVersionCliUsage'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+            })
+        }
+    }
+
+    It 'Get-NovaCliCommandHelp and Add-NovaCliHeaderOption expose structured CLI validation errors' {
+        InModuleScope $script:moduleName {
+            $unknownCommandError = $null
+            try {
+                Get-NovaCliCommandHelp -Command 'banana'
+            }
+            catch {
+                $unknownCommandError = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $unknownCommandError -ExpectedError ([pscustomobject]@{
+                Message = "Unknown command: <banana> | Use 'nova --help' to see available commands."
+                ErrorId = 'Nova.Validation.UnknownCliCommand'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = 'banana'
+            })
+
+            $options = @{}
+            Add-NovaCliHeaderOption -Options $options -HeaderArgument 'X-Trace-Id=trace-123'
+            $options.Headers['X-Trace-Id'] | Should -Be 'trace-123'
+
+            $invalidHeaderError = $null
+            try {
+                Add-NovaCliHeaderOption -Options @{} -HeaderArgument '=value'
+            }
+            catch {
+                $invalidHeaderError = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $invalidHeaderError -ExpectedError ([pscustomobject]@{
+                Message = 'Invalid header argument: =value. Use Name=Value.'
+                ErrorId = 'Nova.Validation.InvalidCliHeaderArgument'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '=value'
+            })
         }
     }
 
@@ -267,44 +376,13 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                     $thrown = $_
                 }
 
-                $thrown | Should -Not -BeNullOrEmpty
-                $thrown.Exception.Message | Should -Be $testCase.ExpectedMessage
-                $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.MissingCliOptionValue'
-                $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
-                $thrown.TargetObject | Should -Be $testCase.Target
+                Assert-TestStructuredCliError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                    Message = $testCase.ExpectedMessage
+                    ErrorId = 'Nova.Validation.MissingCliOptionValue'
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                    TargetObject = $testCase.Target
+                })
             }
-        }
-    }
-
-    It 'ConvertFrom-NovaDeployCliArgument reports structured parsing errors' {
-        InModuleScope $script:moduleName {
-            $missingValueError = $null
-            try {
-                ConvertFrom-NovaDeployCliArgument -Arguments @('--url')
-            }
-            catch {
-                $missingValueError = $_
-            }
-
-            $missingValueError | Should -Not -BeNullOrEmpty
-            $missingValueError.Exception.Message | Should -Be 'Missing value for --url'
-            $missingValueError.FullyQualifiedErrorId | Should -Be 'Nova.Validation.MissingCliOptionValue'
-            $missingValueError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
-            $missingValueError.TargetObject | Should -Be '--url'
-
-            $unknownArgumentError = $null
-            try {
-                ConvertFrom-NovaDeployCliArgument -Arguments @('--bogus')
-            }
-            catch {
-                $unknownArgumentError = $_
-            }
-
-            $unknownArgumentError | Should -Not -BeNullOrEmpty
-            $unknownArgumentError.Exception.Message | Should -Be 'Unknown argument: --bogus'
-            $unknownArgumentError.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnknownCliArgument'
-            $unknownArgumentError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
-            $unknownArgumentError.TargetObject | Should -Be '--bogus'
         }
     }
 

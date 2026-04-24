@@ -51,7 +51,7 @@ function Get-NovaCliCommandHelp {
             'Invoke-NovaRelease'
         }
         default {
-            throw "Unknown command: <$Command> | Use 'nova --help' to see available commands."
+            Stop-NovaOperation -Message "Unknown command: <$Command> | Use 'nova --help' to see available commands." -ErrorId 'Nova.Validation.UnknownCliCommand' -Category InvalidArgument -TargetObject $Command
         }
     }
 

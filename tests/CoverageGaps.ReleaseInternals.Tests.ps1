@@ -426,7 +426,19 @@ Describe 'Coverage gaps for release and git internals' {
             Mock Get-NovaProjectInfo {throw 'not a project'}
             Mock Test-Path {$false}
 
-            {Get-ResourceFilePath -FileName 'missing.json'} | Should -Throw 'Resource file not found: missing.json*'
+            $thrown = $null
+            try {
+                Get-ResourceFilePath -FileName 'missing.json'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -BeLike 'Resource file not found: missing.json*'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.ResourceFileNotFound'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+            $thrown.TargetObject | Should -Be 'missing.json'
         }
     }
 }

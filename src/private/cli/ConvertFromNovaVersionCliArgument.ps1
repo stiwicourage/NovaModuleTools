@@ -13,5 +13,5 @@ function ConvertFrom-NovaVersionCliArgument {
         return @{Installed = $true}
     }
 
-    throw "Unsupported 'nova version' usage. Use 'nova version' or 'nova version -Installed'."
+    Stop-NovaOperation -Message "Unsupported 'nova version' usage. Use 'nova version' or 'nova version -Installed'." -ErrorId 'Nova.Validation.UnsupportedVersionCliUsage' -Category InvalidArgument -TargetObject $Arguments
 }

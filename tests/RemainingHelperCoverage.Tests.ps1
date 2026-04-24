@@ -184,6 +184,29 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         }
     }
 
+    It 'ConvertTo-NovaPackageType normalizes supported aliases and exposes a structured error for unsupported values' {
+        InModuleScope $script:moduleName {
+            ConvertTo-NovaPackageType -Type 'NuGet' | Should -Be 'NuGet'
+            ConvertTo-NovaPackageType -Type '.nupkg' | Should -Be 'NuGet'
+            ConvertTo-NovaPackageType -Type 'zip' | Should -Be 'Zip'
+            ConvertTo-NovaPackageType -Type '.zip' | Should -Be 'Zip'
+
+            $thrown = $null
+            try {
+                ConvertTo-NovaPackageType -Type 'tar.gz'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Unsupported Package.Types value: tar.gz. Supported values: NuGet, Zip, .nupkg, .zip.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.UnsupportedPackageType'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+            $thrown.TargetObject | Should -Be 'tar.gz'
+        }
+    }
+
     It 'Get-AliasInFunctionFromFile returns aliases declared on the function' {
         $filePath = Join-Path $script:repoRoot 'src/public/InvokeNovaCli.ps1'
 
