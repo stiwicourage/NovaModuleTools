@@ -73,6 +73,83 @@ Describe 'Update notification behavior' {
         }
     }
 
+    It 'Get-NovaUpdateNotificationPreferenceChangeContext resolves enable and disable actions' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaUpdateSettingsFilePath {'/tmp/nova/settings.json'}
+
+            foreach ($testCase in @(
+                @{Enable = $true; Disable = $false; ExpectedEnabled = $true; ExpectedAction = 'Enable prerelease update notifications'}
+                @{Enable = $false; Disable = $true; ExpectedEnabled = $false; ExpectedAction = 'Disable prerelease update notifications'}
+            )) {
+                $result = Get-NovaUpdateNotificationPreferenceChangeContext -EnablePrereleaseNotifications:$testCase.Enable -DisablePrereleaseNotifications:$testCase.Disable
+
+                $result.PrereleaseNotificationsEnabled | Should -Be $testCase.ExpectedEnabled
+                $result.Target | Should -Be '/tmp/nova/settings.json'
+                $result.Action | Should -Be $testCase.ExpectedAction
+            }
+
+            Assert-MockCalled Get-NovaUpdateSettingsFilePath -Times 2
+        }
+    }
+
+    It 'Invoke-NovaUpdateNotificationPreferenceChange writes the new preference and returns the shared status' {
+        InModuleScope $script:moduleName {
+            $workflowContext = [pscustomobject]@{
+                PrereleaseNotificationsEnabled = $false
+                Target = '/tmp/nova/settings.json'
+                Action = 'Disable prerelease update notifications'
+            }
+            Mock Write-NovaUpdateNotificationPreference {}
+            Mock Get-NovaUpdateNotificationPreferenceStatus {
+                [pscustomobject]@{
+                    PrereleaseNotificationsEnabled = $false
+                    StableReleaseNotificationsEnabled = $true
+                    SettingsPath = '/tmp/nova/settings.json'
+                }
+            }
+
+            $result = Invoke-NovaUpdateNotificationPreferenceChange -WorkflowContext $workflowContext
+
+            $result.PrereleaseNotificationsEnabled | Should -BeFalse
+            $result.SettingsPath | Should -Be '/tmp/nova/settings.json'
+            Assert-MockCalled Write-NovaUpdateNotificationPreference -Times 1 -ParameterFilter {
+                -not $PrereleaseNotificationsEnabled
+            }
+            Assert-MockCalled Get-NovaUpdateNotificationPreferenceStatus -Times 1
+        }
+    }
+
+    It 'Set-NovaUpdateNotificationPreference delegates context resolution and workflow execution to private helpers' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaUpdateNotificationPreferenceChangeContext {
+                [pscustomobject]@{
+                    PrereleaseNotificationsEnabled = $true
+                    Target = '/tmp/nova/settings.json'
+                    Action = 'Enable prerelease update notifications'
+                }
+            }
+            Mock Invoke-NovaUpdateNotificationPreferenceChange {
+                [pscustomobject]@{
+                    PrereleaseNotificationsEnabled = $true
+                    StableReleaseNotificationsEnabled = $true
+                    SettingsPath = '/tmp/nova/settings.json'
+                }
+            }
+
+            $result = Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications -Confirm:$false
+
+            $result.PrereleaseNotificationsEnabled | Should -BeTrue
+            Assert-MockCalled Get-NovaUpdateNotificationPreferenceChangeContext -Times 1 -ParameterFilter {
+                $EnablePrereleaseNotifications -and -not $DisablePrereleaseNotifications
+            }
+            Assert-MockCalled Invoke-NovaUpdateNotificationPreferenceChange -Times 1 -ParameterFilter {
+                $WorkflowContext.PrereleaseNotificationsEnabled -and
+                        $WorkflowContext.Target -eq '/tmp/nova/settings.json' -and
+                        $WorkflowContext.Action -eq 'Enable prerelease update notifications'
+            }
+        }
+    }
+
     It 'Get-NovaUpdateNotificationPreference defaults prerelease notifications to enabled when no settings file exists' {
         $configRoot = Join-Path $TestDrive 'config-default'
         $originalConfigHome = $env:XDG_CONFIG_HOME
