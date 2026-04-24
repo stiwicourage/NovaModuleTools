@@ -77,6 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   workflow context resolution and launcher install execution.
 - Clarify `Initialize-NovaModule` layering so the public command focuses on orchestration while private helpers own
   scaffold workflow context resolution and scaffold/project-file execution.
+- Clarify `Invoke-NovaCli` layering so the public command focuses on orchestration while private helpers own CLI
+  invocation-context preparation and command routing.
 - Clarify `Test-NovaBuild` layering so the public command focuses on orchestration while private helpers own Pester
   workflow context, artifact preparation, and pass/fail translation.
 - Clarify `New-NovaModulePackage` layering so the public command focuses on orchestration while private helpers own
