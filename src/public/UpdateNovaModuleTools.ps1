@@ -3,14 +3,8 @@ function Update-NovaModuleTool {
     [Alias('Update-NovaModuleTools')]
     param()
 
-    $preference = Read-NovaUpdateNotificationPreference
-    $installedModule = Get-NovaInstalledModuleVersionInfo
-    $lookupResult = Invoke-NovaModuleUpdateLookup -AllowPrereleaseNotifications:$preference.PrereleaseNotificationsEnabled -TimeoutMilliseconds 10000
-    if ($null -eq $lookupResult) {
-        throw 'Unable to determine a NovaModuleTools update candidate. Try again when the PowerShell Gallery is reachable.'
-    }
-
-    $plan = Get-NovaModuleSelfUpdatePlan -InstalledModule $installedModule -LookupResult $lookupResult -PrereleaseNotificationsEnabled $preference.PrereleaseNotificationsEnabled
+    $workflowContext = Get-NovaModuleSelfUpdateWorkflowContext
+    $plan = $workflowContext.Plan
     if (-not $plan.UpdateAvailable) {
         return $plan
     }
@@ -20,19 +14,9 @@ function Update-NovaModuleTool {
         return $plan
     }
 
-    $action = if ($plan.IsPrereleaseTarget) {
-        "Update NovaModuleTools to prerelease version $( $plan.TargetVersion )"
-    }
-    else {
-        "Update NovaModuleTools to version $( $plan.TargetVersion )"
-    }
-
-    if (-not $PSCmdlet.ShouldProcess($plan.ModuleName, $action)) {
+    if (-not $PSCmdlet.ShouldProcess($plan.ModuleName, $workflowContext.Action)) {
         return $plan
     }
 
-    $null = Invoke-NovaModuleSelfUpdate -ModuleName $plan.ModuleName -AllowPrerelease:$plan.UsedAllowPrerelease
-    $plan.Updated = $true
-    Write-NovaModuleReleaseNotesLink
-    return $plan
+    return Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext $workflowContext
 }

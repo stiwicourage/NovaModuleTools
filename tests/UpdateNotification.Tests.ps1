@@ -150,6 +150,111 @@ Describe 'Update notification behavior' {
         }
     }
 
+    It 'Get-NovaModuleSelfUpdateWorkflowContext resolves the update plan and action text' {
+        InModuleScope $script:moduleName {
+            $preference = [pscustomobject]@{PrereleaseNotificationsEnabled = $true}
+            $installedModule = [pscustomobject]@{
+                ModuleName = 'NovaModuleTools'
+                Version = '1.0.0'
+                SemanticVersion = [semver]'1.0.0'
+                IsPrerelease = $false
+            }
+            $lookupResult = [pscustomobject]@{
+                Stable = $null
+                Prerelease = [pscustomobject]@{Version = '1.1.0-preview'}
+            }
+            Mock Get-NovaModuleSelfUpdatePlan {
+                [pscustomobject]@{
+                    ModuleName = 'NovaModuleTools'
+                    CurrentVersion = '1.0.0'
+                    TargetVersion = '1.1.0-preview'
+                    PrereleaseNotificationsEnabled = $true
+                    UpdateAvailable = $true
+                    Updated = $false
+                    Cancelled = $false
+                    IsPrereleaseTarget = $true
+                    UsedAllowPrerelease = $true
+                }
+            }
+
+            $result = Get-NovaModuleSelfUpdateWorkflowContext -Preference $preference -InstalledModule $installedModule -LookupResult $lookupResult
+
+            $result.Preference.PrereleaseNotificationsEnabled | Should -BeTrue
+            $result.InstalledModule.ModuleName | Should -Be 'NovaModuleTools'
+            $result.LookupResult.Prerelease.Version | Should -Be '1.1.0-preview'
+            $result.Plan.TargetVersion | Should -Be '1.1.0-preview'
+            $result.Action | Should -Be 'Update NovaModuleTools to prerelease version 1.1.0-preview'
+            Assert-MockCalled Get-NovaModuleSelfUpdatePlan -Times 1 -ParameterFilter {
+                $InstalledModule.ModuleName -eq 'NovaModuleTools' -and
+                        $LookupResult.Prerelease.Version -eq '1.1.0-preview' -and
+                        $PrereleaseNotificationsEnabled
+            }
+        }
+    }
+
+    It 'Invoke-NovaModuleSelfUpdateWorkflow runs the self-update and marks the plan as updated' {
+        InModuleScope $script:moduleName {
+            $workflowContext = [pscustomobject]@{
+                Plan = [pscustomobject]@{
+                    ModuleName = 'NovaModuleTools'
+                    CurrentVersion = '1.0.0'
+                    TargetVersion = '1.1.0'
+                    PrereleaseNotificationsEnabled = $true
+                    UpdateAvailable = $true
+                    Updated = $false
+                    Cancelled = $false
+                    IsPrereleaseTarget = $false
+                    UsedAllowPrerelease = $false
+                }
+                Action = 'Update NovaModuleTools to version 1.1.0'
+            }
+            Mock Invoke-NovaModuleSelfUpdate {}
+            Mock Write-NovaModuleReleaseNotesLink {}
+
+            $result = Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext $workflowContext
+
+            $result.Updated | Should -BeTrue
+            Assert-MockCalled Invoke-NovaModuleSelfUpdate -Times 1 -ParameterFilter {
+                $ModuleName -eq 'NovaModuleTools' -and -not $AllowPrerelease
+            }
+            Assert-MockCalled Write-NovaModuleReleaseNotesLink -Times 1
+        }
+    }
+
+    It 'Update-NovaModuleTool delegates workflow context resolution and execution to private helpers' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaModuleSelfUpdateWorkflowContext {
+                [pscustomobject]@{
+                    Plan = [pscustomobject]@{
+                        ModuleName = 'NovaModuleTools'
+                        CurrentVersion = '1.0.0'
+                        TargetVersion = '1.1.0'
+                        PrereleaseNotificationsEnabled = $true
+                        UpdateAvailable = $true
+                        Updated = $false
+                        Cancelled = $false
+                        IsPrereleaseTarget = $false
+                        UsedAllowPrerelease = $false
+                    }
+                    Action = 'Update NovaModuleTools to version 1.1.0'
+                }
+            }
+            Mock Invoke-NovaModuleSelfUpdateWorkflow {
+                $WorkflowContext.Plan.Updated = $true
+                return $WorkflowContext.Plan
+            }
+
+            $result = Update-NovaModuleTool -Confirm:$false
+
+            $result.Updated | Should -BeTrue
+            Assert-MockCalled Get-NovaModuleSelfUpdateWorkflowContext -Times 1
+            Assert-MockCalled Invoke-NovaModuleSelfUpdateWorkflow -Times 1 -ParameterFilter {
+                $WorkflowContext.Action -eq 'Update NovaModuleTools to version 1.1.0' -and
+                        $WorkflowContext.Plan.ModuleName -eq 'NovaModuleTools'
+            }
+        }
+    }
+
     It 'Get-NovaUpdateNotificationPreference defaults prerelease notifications to enabled when no settings file exists' {
         $configRoot = Join-Path $TestDrive 'config-default'
         $originalConfigHome = $env:XDG_CONFIG_HOME
