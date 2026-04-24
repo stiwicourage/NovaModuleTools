@@ -67,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   workflow context, sequencing, and explicit reuse of resolved project metadata.
 - Clarify `Get-NovaProjectInfo` layering so the public command focuses on orchestration while private helpers own
   project-info context resolution and result shaping.
+- Clarify `Get-NovaUpdateNotificationPreference` layering so the public command focuses on orchestration while private
+  helpers own notification-status shaping and settings-path resolution.
 - Clarify `Test-NovaBuild` layering so the public command focuses on orchestration while private helpers own Pester
   workflow context, artifact preparation, and pass/fail translation.
 - Clarify `New-NovaModulePackage` layering so the public command focuses on orchestration while private helpers own

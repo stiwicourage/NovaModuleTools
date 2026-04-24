@@ -39,6 +39,40 @@ BeforeAll {
 }
 
 Describe 'Update notification behavior' {
+    It 'Get-NovaUpdateNotificationPreferenceStatus shapes the stored preference and settings path' {
+        InModuleScope $script:moduleName {
+            Mock Read-NovaUpdateNotificationPreference {
+                [pscustomobject]@{PrereleaseNotificationsEnabled = $false}
+            }
+            Mock Get-NovaUpdateSettingsFilePath {'/tmp/nova/settings.json'}
+
+            $result = Get-NovaUpdateNotificationPreferenceStatus
+
+            $result.PrereleaseNotificationsEnabled | Should -BeFalse
+            $result.StableReleaseNotificationsEnabled | Should -BeTrue
+            $result.SettingsPath | Should -Be '/tmp/nova/settings.json'
+            Assert-MockCalled Read-NovaUpdateNotificationPreference -Times 1
+            Assert-MockCalled Get-NovaUpdateSettingsFilePath -Times 1
+        }
+    }
+
+    It 'Get-NovaUpdateNotificationPreference delegates to the private status helper' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaUpdateNotificationPreferenceStatus {
+                [pscustomobject]@{
+                    PrereleaseNotificationsEnabled = $true
+                    StableReleaseNotificationsEnabled = $true
+                    SettingsPath = '/tmp/delegated-settings.json'
+                }
+            }
+
+            $result = Get-NovaUpdateNotificationPreference
+
+            $result.SettingsPath | Should -Be '/tmp/delegated-settings.json'
+            Assert-MockCalled Get-NovaUpdateNotificationPreferenceStatus -Times 1
+        }
+    }
+
     It 'Get-NovaUpdateNotificationPreference defaults prerelease notifications to enabled when no settings file exists' {
         $configRoot = Join-Path $TestDrive 'config-default'
         $originalConfigHome = $env:XDG_CONFIG_HOME
