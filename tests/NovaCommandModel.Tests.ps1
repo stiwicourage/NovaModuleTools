@@ -54,11 +54,56 @@ BeforeAll {
 }
 
 Describe 'Nova command model - project, help, and build behavior' {
+    It 'Get-NovaProjectInfoContext resolves the project root, project.json path, and JSON data' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'project-info-context'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value '{"ProjectName":"ContextProject","Version":"1.2.3"}' -Encoding utf8
+            Mock Read-ProjectJsonData {
+                [ordered]@{
+                    ProjectName = 'ContextProject'
+                    Version = '1.2.3'
+                }
+            }
+
+            $result = Get-NovaProjectInfoContext -Path $projectRoot
+
+            $result.ProjectRoot | Should -Be (Resolve-Path -LiteralPath $projectRoot).Path
+            $result.ProjectJson | Should -Be ([System.IO.Path]::Join((Resolve-Path -LiteralPath $projectRoot).Path, 'project.json'))
+            $result.JsonData.ProjectName | Should -Be 'ContextProject'
+            Assert-MockCalled Read-ProjectJsonData -Times 1 -ParameterFilter {$ProjectJsonPath -eq ([System.IO.Path]::Join((Resolve-Path -LiteralPath $projectRoot).Path, 'project.json'))}
+        }
+    }
+
     It 'Get-NovaProjectInfo -Version returns only version' {
         InModuleScope $script:moduleName {
             Mock Get-Content {'{"ProjectName":"X","Version":"9.9.9"}'}
 
             Get-NovaProjectInfo -Version | Should -Be '9.9.9'
+        }
+    }
+
+    It 'Get-NovaProjectInfo delegates context resolution and result shaping to private helpers' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfoContext {
+                [pscustomobject]@{
+                    ProjectRoot = '/tmp/project'
+                    ProjectJson = '/tmp/project/project.json'
+                    JsonData = [ordered]@{ProjectName = 'DelegationProject'; Version = '1.0.0'}
+                }
+            }
+            Mock Get-NovaProjectInfoResult {
+                [pscustomobject]@{
+                    ProjectName = 'DelegationProject'
+                    ProjectRoot = '/tmp/project'
+                }
+            }
+
+            $result = Get-NovaProjectInfo -Path '/tmp/project'
+
+            $result.ProjectName | Should -Be 'DelegationProject'
+            Assert-MockCalled Get-NovaProjectInfoContext -Times 1 -ParameterFilter {$Path -eq '/tmp/project'}
+            Assert-MockCalled Get-NovaProjectInfoResult -Times 1 -ParameterFilter {$WorkflowContext.ProjectRoot -eq '/tmp/project' -and -not $Version}
         }
     }
 
@@ -428,22 +473,57 @@ Describe 'Nova command model - project, help, and build behavior' {
         }
     }
 
-    It 'Invoke-NovaBuild runs module build pipeline' {
+    It 'Invoke-NovaBuildWorkflow runs the build pipeline in order and forwards project info to build helpers' {
         InModuleScope $script:moduleName {
-            Mock Reset-ProjectDist {}
-            Mock Build-Module {}
-            Mock Get-NovaProjectInfo {[pscustomobject]@{FailOnDuplicateFunctionNames = $false; OutputModuleDir = '/tmp/dist/NovaModuleTools'}}
-            Mock Build-Manifest {}
-            Mock Build-Help {}
-            Mock Copy-ProjectResource {}
-            Mock New-NovaPackageArtifact {}
-            Mock Invoke-NovaBuildUpdateNotification {}
+            $script:steps = @()
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'NovaModuleTools'
+                OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                FailOnDuplicateFunctionNames = $true
+            }
+            $workflowContext = [pscustomobject]@{
+                ProjectInfo = $projectInfo
+            }
 
-            Invoke-NovaBuild
+            Mock Reset-ProjectDist {$script:steps += 'reset'}
+            Mock Build-Module {$script:steps += 'module'}
+            Mock Assert-BuiltModuleHasNoDuplicateFunctionName {$script:steps += 'duplicates'}
+            Mock Build-Manifest {$script:steps += 'manifest'}
+            Mock Build-Help {$script:steps += 'help'}
+            Mock Copy-ProjectResource {$script:steps += 'resources'}
+            Mock Invoke-NovaBuildUpdateNotification {$script:steps += 'notification'}
 
-            Assert-MockCalled Build-Module -Times 1
-            Assert-MockCalled New-NovaPackageArtifact -Times 0
+            Invoke-NovaBuildWorkflow -WorkflowContext $workflowContext
+
+            $script:steps -join ',' | Should -Be 'reset,module,duplicates,manifest,help,resources,notification'
+            Assert-MockCalled Reset-ProjectDist -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools' -and -not $Confirm}
+            Assert-MockCalled Build-Module -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
+            Assert-MockCalled Assert-BuiltModuleHasNoDuplicateFunctionName -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
+            Assert-MockCalled Build-Manifest -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
+            Assert-MockCalled Build-Help -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
+            Assert-MockCalled Copy-ProjectResource -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
             Assert-MockCalled Invoke-NovaBuildUpdateNotification -Times 1
+        }
+    }
+
+    It 'Invoke-NovaBuild delegates orchestration to the private build workflow helper' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaBuildWorkflowContext {
+                [pscustomobject]@{
+                    Target = '/tmp/dist/NovaModuleTools'
+                    Operation = 'Build Nova module output'
+                    ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                }
+            }
+            Mock Invoke-NovaBuildWorkflow {}
+
+            Invoke-NovaBuild -Confirm:$false
+
+            Assert-MockCalled Get-NovaBuildWorkflowContext -Times 1
+            Assert-MockCalled Invoke-NovaBuildWorkflow -Times 1 -ParameterFilter {
+                $WorkflowContext.Target -eq '/tmp/dist/NovaModuleTools' -and
+                        $WorkflowContext.Operation -eq 'Build Nova module output'
+            }
         }
     }
 
@@ -567,6 +647,30 @@ title: Invoke-NovaBuild
 
             & $TestCase.Assert $cfg
             $cfg.TestResult.OutputPath | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts', 'TestResults.xml'))
+        }
+    }
+
+    It 'Test-NovaBuild delegates orchestration to the private test workflow helper' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaTestWorkflowContext {
+                [pscustomobject]@{
+                    Target = '/tmp/nova-project/artifacts/TestResults.xml'
+                    Operation = 'Run Pester tests and write test results'
+                    PesterConfig = [pscustomobject]@{}
+                }
+            }
+            Mock Invoke-NovaTestWorkflow {}
+
+            Test-NovaBuild -Confirm:$false
+
+            Assert-MockCalled Get-NovaTestWorkflowContext -Times 1 -ParameterFilter {
+                $BoundParameters.ContainsKey('Confirm') -and
+                        $BoundParameters.Confirm -eq $false
+            }
+            Assert-MockCalled Invoke-NovaTestWorkflow -Times 1 -ParameterFilter {
+                $WorkflowContext.Target -eq '/tmp/nova-project/artifacts/TestResults.xml' -and
+                        $WorkflowContext.Operation -eq 'Run Pester tests and write test results'
+            }
         }
     }
 

@@ -3,9 +3,23 @@ BeforeAll {
     $script:repoRoot = Split-Path -Parent $here
     $script:moduleName = (Get-Content -LiteralPath (Join-Path $script:repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
     $script:distModuleDir = Join-Path $script:repoRoot "dist/$script:moduleName"
+    $remainingCommandCoverageTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'RemainingCommandCoverage.TestSupport.ps1')).Path
+    $remainingCommandCoverageTestSupportFunctionNameList = @(
+        'Get-TestNovaPesterConfig'
+        'Get-TestNovaTestWorkflowContext'
+        'Get-TestNovaPesterWorkflowReportContext'
+        'Get-TestNovaPesterArtifactWriter'
+        'Get-TestNovaPesterReportWriter'
+    )
 
     if (-not (Test-Path -LiteralPath $script:distModuleDir)) {
         throw "Expected built $script:moduleName module at: $script:distModuleDir. Run Invoke-NovaBuild in the repo root first."
+    }
+
+    . $remainingCommandCoverageTestSupportPath
+    foreach ($functionName in $remainingCommandCoverageTestSupportFunctionNameList) {
+        $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+        Set-Item -Path "function:global:$functionName" -Value $scriptBlock
     }
 
     Remove-Module $script:moduleName -ErrorAction SilentlyContinue
@@ -95,31 +109,15 @@ Describe 'Coverage for remaining command and filesystem branches' {
         }
     }
 
-    It 'Test-NovaBuild creates the artifacts directory when it is missing' {
-        $cfg = [pscustomobject]@{
-            Run = [pscustomobject]@{
-                Path = $null
-                PassThru = $false
-                Exit = $false
-                Throw = $false
-            }
-            Filter = [pscustomobject]@{
-                Tag = @()
-                ExcludeTag = @()
-            }
-            Output = [pscustomobject]@{
-                Verbosity = 'Detailed'
-                RenderMode = 'Auto'
-            }
-            TestResult = [pscustomobject]@{
-                OutputPath = $null
-            }
-        }
+    It 'Get-NovaTestWorkflowContext prepares the Pester workflow state and resolves the report writers' {
+        $cfg = Get-TestNovaPesterConfig
 
         InModuleScope $script:moduleName -Parameters @{Config = $cfg} {
             param($Config)
 
             $projectRoot = '/tmp/nova-project'
+            $artifactWriter = [pscustomobject]@{ScriptBlock = {}}
+            $reportWriter = [pscustomobject]@{ScriptBlock = {}}
 
             Mock Test-ProjectSchema {}
             Mock Get-NovaProjectInfo {
@@ -131,113 +129,71 @@ Describe 'Coverage for remaining command and filesystem branches' {
                 }
             }
             Mock New-PesterConfiguration {$Config}
-            Mock Test-Path {$false}
-            Mock New-Item {}
-            Mock Invoke-Pester {[pscustomobject]@{Result = 'Passed'}}
+            Mock Get-Command {$artifactWriter} -ParameterFilter {$Name -eq 'Write-NovaPesterTestResultArtifact' -and $CommandType -eq 'Function'}
+            Mock Get-Command {$reportWriter} -ParameterFilter {$Name -eq 'Write-NovaPesterTestResultReport' -and $CommandType -eq 'Function'}
 
-            Test-NovaBuild
+            $result = Get-NovaTestWorkflowContext -TestOption @{} -BoundParameters @{}
 
+            $result.Target | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts', 'TestResults.xml'))
+            $result.Operation | Should -Be 'Run Pester tests and write test results'
             $Config.Run.Path | Should -Be ([System.IO.Path]::Join('tests', '*.Tests.ps1'))
             $Config.Output.RenderMode | Should -Be 'Auto'
+            $result.TestResultArtifactWriter | Should -Be $artifactWriter
+            $result.TestResultReportWriter | Should -Be $reportWriter
+        }
+    }
+
+    It 'Invoke-NovaTestWorkflow creates the artifacts directory when it is missing' {
+        $cfg = Get-TestNovaPesterConfig
+
+        InModuleScope $script:moduleName -Parameters @{Config = $cfg} {
+            param($Config)
+
+            $workflowContext = Get-TestNovaTestWorkflowContext -Config $Config -ProjectRoot '/tmp/nova-project' -ArtifactWriter {} -ReportWriter {}
+
+            Mock Test-Path {$false}
+            Mock New-Item {}
+            Mock Invoke-NovaPester {[pscustomobject]@{Result = 'Passed'}}
+
+            Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
+
             Assert-MockCalled New-Item -Times 1 -ParameterFilter {
-                $ItemType -eq 'Directory' -and $Path -eq ([System.IO.Path]::Join($projectRoot, 'artifacts')) -and $Force
+                $ItemType -eq 'Directory' -and $Path -eq '/tmp/nova-project/artifacts' -and $Force
             }
+            $Config.TestResult.OutputPath | Should -Be '/tmp/nova-project/artifacts/TestResults.xml'
         }
     }
 
-    It 'Test-NovaBuild throws when Pester reports a failing result' {
-        $cfg = [pscustomobject]@{
-            Run = [pscustomobject]@{
-                Path = $null
-                PassThru = $false
-                Exit = $false
-                Throw = $false
-            }
-            Filter = [pscustomobject]@{
-                Tag = @()
-                ExcludeTag = @()
-            }
-            Output = [pscustomobject]@{
-                Verbosity = 'Detailed'
-                RenderMode = 'Auto'
-            }
-            TestResult = [pscustomobject]@{
-                OutputPath = $null
-            }
-        }
+    It 'Invoke-NovaTestWorkflow throws when Pester reports a failing result' {
+        $cfg = Get-TestNovaPesterConfig
 
         InModuleScope $script:moduleName -Parameters @{Config = $cfg} {
             param($Config)
 
-            Mock Test-ProjectSchema {}
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    Pester = @{}
-                    BuildRecursiveFolders = $true
-                    TestsDir = 'tests'
-                    ProjectRoot = '/tmp/nova-project'
-                }
-            }
-            Mock New-PesterConfiguration {$Config}
-            Mock Test-Path {$true}
-            Mock Invoke-Pester {[pscustomobject]@{Result = 'Failed'}}
+            $workflowContext = Get-TestNovaTestWorkflowContext -Config $Config -ProjectRoot '/tmp/nova-project' -ArtifactWriter {} -ReportWriter {}
 
-            {Test-NovaBuild} | Should -Throw 'Tests failed'
+            Mock Test-Path {$true}
+            Mock Invoke-NovaPester {[pscustomobject]@{Result = 'Failed'}}
+
+            {Invoke-NovaTestWorkflow -WorkflowContext $workflowContext} | Should -Throw 'Tests failed'
         }
     }
 
-    It 'Test-NovaBuild resolves and invokes the private test result report writer when Pester returns tests' {
-        $cfg = [pscustomobject]@{
-            Run = [pscustomobject]@{
-                Path = $null
-                PassThru = $false
-                Exit = $false
-                Throw = $false
-            }
-            Filter = [pscustomobject]@{
-                Tag = @()
-                ExcludeTag = @()
-            }
-            Output = [pscustomobject]@{
-                Verbosity = 'Detailed'
-                RenderMode = 'Auto'
-            }
-            TestResult = [pscustomobject]@{
-                OutputPath = $null
-            }
-        }
+    It 'Invoke-NovaTestWorkflow resolves and invokes the private test result report writer when Pester returns tests' {
+        $cfg = Get-TestNovaPesterConfig
 
         InModuleScope $script:moduleName -Parameters @{Config = $cfg} {
             param($Config)
 
-            $script:reportWasWritten = $false
-            $projectRoot = '/tmp/nova-project'
-            $reportWriter = {
-                param($TestResult, $OutputPath, $ReportWriter)
+            $global:reportWasWritten = $false
+            $workflowContext = Get-TestNovaPesterWorkflowReportContext -Config $Config -ProjectRoot '/tmp/nova-project'
 
-                $script:reportWasWritten = $null -ne $TestResult -and $OutputPath -eq [System.IO.Path]::Join($projectRoot, 'artifacts', 'TestResults.xml')
-            }
-
-            Mock Test-ProjectSchema {}
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    Pester = @{}
-                    BuildRecursiveFolders = $true
-                    TestsDir = 'tests'
-                    ProjectRoot = $projectRoot
-                }
-            }
-            Mock New-PesterConfiguration {$Config}
             Mock Test-Path {$true}
-            Mock Get-Command {
-                [pscustomobject]@{ScriptBlock = $reportWriter}
-            } -ParameterFilter {$Name -eq 'Write-NovaPesterTestResultArtifact' -and $CommandType -eq 'Function'}
-            Mock Invoke-Pester {[pscustomobject]@{Result = 'Passed'; Tests = @([pscustomobject]@{Result = 'Passed'})}}
+            Mock Invoke-NovaPester {[pscustomobject]@{Result = 'Passed'; Tests = @([pscustomobject]@{Result = 'Passed'})}}
 
-            Test-NovaBuild
+            Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
 
-            $script:reportWasWritten | Should -BeTrue
-            Assert-MockCalled Get-Command -Times 1 -ParameterFilter {$Name -eq 'Write-NovaPesterTestResultArtifact' -and $CommandType -eq 'Function'}
+            $global:reportWasWritten | Should -BeTrue
         }
     }
 
@@ -250,6 +206,89 @@ Describe 'Coverage for remaining command and filesystem branches' {
             }
             finally {
                 Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    It 'Get-NovaCliInstallWorkflowContext resolves launcher install paths and action text' {
+        InModuleScope $script:moduleName {
+            try {
+                Set-Variable -Name IsWindows -Value $false -Force
+                Mock Get-NovaCliInstallDirectory {'/tmp/bin'}
+                Mock Get-NovaCliLauncherPath {'/tmp/source/nova'}
+                Mock Test-Path {$false}
+
+                $result = Get-NovaCliInstallWorkflowContext -DestinationDirectory '/tmp/bin' -Force
+
+                $result.SourcePath | Should -Be '/tmp/source/nova'
+                $result.TargetPath | Should -Be '/tmp/bin/nova'
+                $result.TargetDirectory | Should -Be '/tmp/bin'
+                $result.Force | Should -BeTrue
+                $result.Action | Should -Be 'Install nova CLI launcher'
+            }
+            finally {
+                Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    It 'Invoke-NovaCliInstallWorkflow copies the launcher and shapes the install result' {
+        InModuleScope $script:moduleName {
+            $workflowContext = [pscustomobject]@{
+                SourcePath = '/tmp/source/nova'
+                TargetPath = '/tmp/bin/nova'
+                TargetDirectory = '/tmp/bin'
+                Force = $true
+                Action = 'Install nova CLI launcher'
+            }
+            Mock Copy-NovaCliLauncher {'/tmp/bin/nova'}
+            Mock Test-NovaCliDirectoryOnPath {$true}
+            Mock Write-NovaModuleReleaseNotesLink {}
+
+            $result = Invoke-NovaCliInstallWorkflow -WorkflowContext $workflowContext
+
+            $result.CommandName | Should -Be 'nova'
+            $result.InstalledPath | Should -Be '/tmp/bin/nova'
+            $result.DestinationDirectory | Should -Be '/tmp/bin'
+            $result.DirectoryOnPath | Should -BeTrue
+            Assert-MockCalled Copy-NovaCliLauncher -Times 1 -ParameterFilter {
+                $SourcePath -eq '/tmp/source/nova' -and
+                        $TargetPath -eq '/tmp/bin/nova' -and
+                        $Force
+            }
+            Assert-MockCalled Write-NovaModuleReleaseNotesLink -Times 1
+        }
+    }
+
+    It 'Install-NovaCli delegates context resolution and install execution to private helpers' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaCliInstallWorkflowContext {
+                [pscustomobject]@{
+                    SourcePath = '/tmp/source/nova'
+                    TargetPath = '/tmp/bin/nova'
+                    TargetDirectory = '/tmp/bin'
+                    Force = $true
+                    Action = 'Install nova CLI launcher'
+                }
+            }
+            Mock Invoke-NovaCliInstallWorkflow {
+                [pscustomobject]@{
+                    CommandName = 'nova'
+                    InstalledPath = '/tmp/bin/nova'
+                    DestinationDirectory = '/tmp/bin'
+                    DirectoryOnPath = $true
+                }
+            }
+
+            $result = Install-NovaCli -DestinationDirectory '/tmp/bin' -Force -Confirm:$false
+
+            $result.InstalledPath | Should -Be '/tmp/bin/nova'
+            Assert-MockCalled Get-NovaCliInstallWorkflowContext -Times 1 -ParameterFilter {
+                $DestinationDirectory -eq '/tmp/bin' -and $Force
+            }
+            Assert-MockCalled Invoke-NovaCliInstallWorkflow -Times 1 -ParameterFilter {
+                $WorkflowContext.TargetPath -eq '/tmp/bin/nova' -and
+                        $WorkflowContext.Action -eq 'Install nova CLI launcher'
             }
         }
     }

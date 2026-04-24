@@ -11,29 +11,22 @@ function Publish-NovaModule {
         [string]$ApiKey
     )
 
-    $projectInfo = Get-NovaProjectInfo
-    $workflowParams = Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference
-    $publishInvocation = Resolve-NovaPublishInvocation -ProjectInfo $projectInfo -Repository $Repository -ModuleDirectoryPath $ModuleDirectoryPath -ApiKey $ApiKey
+    $workflowContext = Get-NovaPublishWorkflowContext -ProjectInfo (Get-NovaProjectInfo) -PublishOption @{
+        Local = [bool]$Local
+        Repository = $Repository
+        ModuleDirectoryPath = $ModuleDirectoryPath
+        ApiKey = $ApiKey
+    } -WorkflowParams (Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference) -WorkflowSettings @{
+        WorkflowName = 'publish'
+        IncludeLocalPublishActivation = $true
+    }
 
-    Write-NovaLocalWorkflowMode -WorkflowName publish -LocalRequested:$Local
-    Write-NovaResolvedLocalPublishTarget -PublishInvocation $publishInvocation
+    Write-NovaPublishWorkflowContext -WorkflowContext $workflowContext
 
-    $publishOperation = Get-NovaPublishWorkflowOperation -IsLocal:$publishInvocation.IsLocal
-    $localPublishActivation = Get-NovaLocalPublishActivation -PublishInvocation $publishInvocation
-    $publishParams = Get-NovaResolvedPublishParameterMap -PublishInvocation $publishInvocation -WorkflowParams $workflowParams
-
-    $shouldRun = $PSCmdlet.ShouldProcess($publishInvocation.Target, $publishOperation)
+    $shouldRun = $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Operation)
     if (-not $shouldRun -and -not $WhatIfPreference) {
         return
     }
 
-    Invoke-NovaBuild @workflowParams
-    Test-NovaBuild @workflowParams
-
-    & $publishInvocation.Action @publishParams
-
-    if ($shouldRun -and $localPublishActivation) {
-        $null = & $localPublishActivation.ImportAction -ProjectName $projectInfo.ProjectName -ManifestPath $localPublishActivation.ManifestPath
-        Write-Verbose "Module copy to local path complete and imported from $( $localPublishActivation.ManifestPath )"
-    }
+    Invoke-NovaPublishWorkflow -WorkflowContext $workflowContext -ShouldRun:$shouldRun
 }

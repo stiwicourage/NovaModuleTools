@@ -1,8 +1,9 @@
 function Reset-ProjectDist {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
+        [pscustomobject]$ProjectInfo
     )
-    $data = Get-NovaProjectInfo
+    $data = Get-NovaBuildProjectInfo -ProjectInfo $ProjectInfo
     try {
         Write-Verbose 'Running dist folder reset'
         if (Test-Path $data.OutputDir) {

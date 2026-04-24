@@ -8,22 +8,11 @@ function Set-NovaUpdateNotificationPreference {
         [switch]$DisablePrereleaseNotifications
     )
 
-    $enablePrerelease = $EnablePrereleaseNotifications.IsPresent
-    $target = Get-NovaUpdateSettingsFilePath
-    $action = if ($enablePrerelease) {
-        'Enable prerelease update notifications'
-    }
-    elseif ($DisablePrereleaseNotifications.IsPresent) {
-        'Disable prerelease update notifications'
-    }
-    else {
-        throw 'Specify either -EnablePrereleaseNotifications or -DisablePrereleaseNotifications.'
-    }
+    $workflowContext = Get-NovaUpdateNotificationPreferenceChangeContext -EnablePrereleaseNotifications:$EnablePrereleaseNotifications -DisablePrereleaseNotifications:$DisablePrereleaseNotifications
 
-    if (-not $PSCmdlet.ShouldProcess($target, $action)) {
+    if (-not $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Action)) {
         return
     }
 
-    Write-NovaUpdateNotificationPreference -PrereleaseNotificationsEnabled:$enablePrerelease
-    return Get-NovaUpdateNotificationPreference
+    return Invoke-NovaUpdateNotificationPreferenceChange -WorkflowContext $workflowContext
 }

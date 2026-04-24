@@ -63,6 +63,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change the project to a Nova command model, replacing the previous mixed MT/Nova workflow.
     - All public commands are now Nova commands, and the `nova` CLI/Powershell alias is the primary entry point for all
       operations.
+- Clarify `Invoke-NovaBuild` layering so the public command focuses on orchestration while private helpers own build
+  workflow context, sequencing, and explicit reuse of resolved project metadata.
+- Clarify `Get-NovaProjectInfo` layering so the public command focuses on orchestration while private helpers own
+  project-info context resolution and result shaping.
+- Clarify `Get-NovaUpdateNotificationPreference` layering so the public command focuses on orchestration while private
+  helpers own notification-status shaping and settings-path resolution.
+- Clarify `Set-NovaUpdateNotificationPreference` layering so the public command focuses on orchestration while private
+  helpers own preference-change context resolution and write/status sequencing.
+- Clarify `Update-NovaModuleTool` layering so the public command focuses on orchestration while private helpers own
+  self-update workflow context resolution and update/release-notes execution.
+- Clarify `Install-NovaCli` layering so the public command focuses on orchestration while private helpers own install
+  workflow context resolution and launcher install execution.
+- Clarify `Initialize-NovaModule` layering so the public command focuses on orchestration while private helpers own
+  scaffold workflow context resolution and scaffold/project-file execution.
+- Clarify `Invoke-NovaCli` layering so the public command focuses on orchestration while private helpers own CLI
+  invocation-context preparation and command routing.
+- Clarify `Test-NovaBuild` layering so the public command focuses on orchestration while private helpers own Pester
+  workflow context, artifact preparation, and pass/fail translation.
+- Clarify `New-NovaModulePackage` layering so the public command focuses on orchestration while private helpers own
+  package workflow context, build/test/package sequencing, and package-helper reload fallback.
+- Clarify `Deploy-NovaPackage` layering so the public command focuses on orchestration while private helpers own upload
+  workflow context, upload planning, and artifact upload sequencing.
+- Clarify `Update-NovaModuleVersion` layering so the public command focuses on orchestration while private helpers own
+  bump workflow context, result shaping, and version persistence.
+- Clarify publish and release layering so public commands focus on orchestration while private workflow helpers own
+  publish/release sequencing and shared publish context resolution.
 - Centralize runtime `project.json` writing behind one shared helper so scaffold and version-bump flows use the same
   serialization policy for nested arrays, nested objects, JSON depth, and UTF-8 output.
 - **BREAKING CHANGE**: Rename the public Nova scaffold cmdlets to approved verbs.

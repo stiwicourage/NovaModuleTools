@@ -1,10 +1,11 @@
 function Build-Help {
     [CmdletBinding()]
     param(
+        [pscustomobject]$ProjectInfo
     )
     Write-Verbose 'Running Help update'
 
-    $data = Get-NovaProjectInfo
+    $data = Get-NovaBuildProjectInfo -ProjectInfo $ProjectInfo
     $helpMarkdownFiles = Get-ChildItem -Path $data.DocsDir -Filter '*.md' -Recurse
 
     if (-not $helpMarkdownFiles) {

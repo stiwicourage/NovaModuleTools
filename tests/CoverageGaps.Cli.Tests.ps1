@@ -33,6 +33,85 @@ BeforeAll {
 }
 
 Describe 'Coverage gaps for CLI and installed-version internals' {
+    It 'Get-NovaCliInvocationContext resolves forwarded parameter sets, normalized arguments, and help detection' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaCliForwardingParameterSet {
+                if ($IncludeShouldProcess) {
+                    return @{WhatIf = $true}
+                }
+
+                return @{Verbose = $true}
+            }
+            Mock ConvertTo-NovaCliArgumentArray {@('--help')}
+            Mock Test-NovaCliHelpRequest {$true}
+
+            $result = Get-NovaCliInvocationContext -Command 'publish' -BoundParameters @{Verbose = $true; Arguments = @('--help')} -Arguments @('--help') -WhatIfEnabled
+
+            $result.Command | Should -Be 'publish'
+            $result.Arguments | Should -Be @('--help')
+            $result.CommonParameters.Verbose | Should -BeTrue
+            $result.MutatingCommonParameters.WhatIf | Should -BeTrue
+            $result.IsHelpRequest | Should -BeTrue
+            $result.ModuleName | Should -Be 'NovaModuleTools'
+            $result.WhatIfEnabled | Should -BeTrue
+            Assert-MockCalled Get-NovaCliForwardingParameterSet -Times 1 -ParameterFilter {
+                $BoundParameters.ContainsKey('Verbose') -and -not $IncludeShouldProcess
+            }
+            Assert-MockCalled Get-NovaCliForwardingParameterSet -Times 1 -ParameterFilter {
+                $BoundParameters.ContainsKey('Verbose') -and $IncludeShouldProcess
+            }
+        }
+    }
+
+    It 'Invoke-NovaCliCommandRoute returns routed command help when the invocation requests help' {
+        InModuleScope $script:moduleName {
+            $invocationContext = [pscustomobject]@{
+                Command = 'package'
+                Arguments = @('--help')
+                CommonParameters = @{}
+                MutatingCommonParameters = @{}
+                IsHelpRequest = $true
+                ModuleName = 'NovaModuleTools'
+                WhatIfEnabled = $false
+            }
+            Mock Get-NovaCliCommandHelp {'package-help'}
+
+            $result = Invoke-NovaCliCommandRoute -InvocationContext $invocationContext
+
+            $result | Should -Be 'package-help'
+            Assert-MockCalled Get-NovaCliCommandHelp -Times 1 -ParameterFilter {$Command -eq 'package'}
+        }
+    }
+
+    It 'Invoke-NovaCli delegates invocation preparation and routing to private helpers' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaCliInvocationContext {
+                [pscustomobject]@{
+                    Command = 'build'
+                    Arguments = @()
+                    CommonParameters = @{}
+                    MutatingCommonParameters = @{WhatIf = $true}
+                    IsHelpRequest = $false
+                    ModuleName = 'NovaModuleTools'
+                    WhatIfEnabled = $true
+                }
+            }
+            Mock Invoke-NovaCliCommandRoute {'delegated-build'}
+
+            $result = Invoke-NovaCli build -WhatIf
+
+            $result | Should -Be 'delegated-build'
+            Assert-MockCalled Get-NovaCliInvocationContext -Times 1 -ParameterFilter {
+                $Command -eq 'build' -and
+                        $BoundParameters.ContainsKey('WhatIf') -and
+                        $WhatIfEnabled
+            }
+            Assert-MockCalled Invoke-NovaCliCommandRoute -Times 1 -ParameterFilter {
+                $InvocationContext.Command -eq 'build' -and $InvocationContext.WhatIfEnabled
+            }
+        }
+    }
+
     It 'Invoke-NovaCli dispatches the remaining public command branches' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {'info-value'} -ParameterFilter {-not $Version}

@@ -7,36 +7,19 @@ function Invoke-NovaRelease {
 
     Push-Location -LiteralPath $Path
     try {
-        $projectInfo = Get-NovaProjectInfo
-        $workflowParams = Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference
-        $repository = Get-NovaPublishOptionValue -PublishOption $PublishOption -Name Repository
-        $moduleDirectoryPath = Get-NovaPublishOptionValue -PublishOption $PublishOption -Name ModuleDirectoryPath
-        $apiKey = Get-NovaPublishOptionValue -PublishOption $PublishOption -Name ApiKey
-        $publishInvocation = Resolve-NovaPublishInvocation -ProjectInfo $projectInfo -Repository $repository -ModuleDirectoryPath $moduleDirectoryPath -ApiKey $apiKey
+        $workflowContext = Get-NovaPublishWorkflowContext -ProjectInfo (Get-NovaProjectInfo) -PublishOption $PublishOption -WorkflowParams (Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference) -WorkflowSettings @{
+            WorkflowName = 'release'
+            Release = $true
+        }
 
-        Write-NovaLocalWorkflowMode -WorkflowName release -LocalRequested:($PublishOption.ContainsKey('Local') -and $PublishOption.Local)
-        Write-NovaResolvedLocalPublishTarget -PublishInvocation $publishInvocation
+        Write-NovaPublishWorkflowContext -WorkflowContext $workflowContext
 
-        $releaseOperation = Get-NovaPublishWorkflowOperation -IsLocal:$publishInvocation.IsLocal -Release
-        $publishParams = Get-NovaResolvedPublishParameterMap -PublishInvocation $publishInvocation -WorkflowParams $workflowParams
-
-        $shouldRun = $PSCmdlet.ShouldProcess($publishInvocation.Target, $releaseOperation)
+        $shouldRun = $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Operation)
         if (-not $shouldRun -and -not $WhatIfPreference) {
             return
         }
 
-        Invoke-NovaBuild @workflowParams
-        Test-NovaBuild @workflowParams
-        $versionResult = Update-NovaModuleVersion @workflowParams
-        Invoke-NovaBuild @workflowParams
-
-
-        & $publishInvocation.Action @publishParams
-
-        return $versionResult
-    }
-    catch {
-        throw
+        return Invoke-NovaReleaseWorkflow -WorkflowContext $workflowContext
     }
     finally {
         Pop-Location

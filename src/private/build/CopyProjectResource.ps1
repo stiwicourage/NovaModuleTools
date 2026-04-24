@@ -1,5 +1,10 @@
 function Copy-ProjectResource {
-    $data = Get-NovaProjectInfo
+    [CmdletBinding()]
+    param(
+        [pscustomobject]$ProjectInfo
+    )
+
+    $data = Get-NovaBuildProjectInfo -ProjectInfo $ProjectInfo
     $resourceFolder = Get-ProjectResourceFolderPath -ProjectRoot $data.ProjectRoot
     if (-not (Test-Path $resourceFolder)) {
         return

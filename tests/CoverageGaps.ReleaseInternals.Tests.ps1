@@ -118,8 +118,12 @@ Describe 'Coverage gaps for release and git internals' {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
             param($TestCase)
 
-            Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectJSON = '/tmp/project.json'}}
-            Mock Get-Content {([ordered]@{Version = $TestCase.CurrentVersion} | ConvertTo-Json -Compress)} -ParameterFilter {$LiteralPath -eq '/tmp/project.json' -and $Raw}
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectJSON = '/tmp/project.json'
+                    Version = $TestCase.CurrentVersion
+                }
+            }
 
             (Get-NovaVersionUpdatePlan -Label $TestCase.Label).NewVersion.ToString() | Should -Be $TestCase.ExpectedVersion
         }
@@ -133,8 +137,12 @@ Describe 'Coverage gaps for release and git internals' {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
             param($TestCase)
 
-            Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectJSON = '/tmp/project.json'}}
-            Mock Get-Content {([ordered]@{Version = $TestCase.CurrentVersion} | ConvertTo-Json -Compress)} -ParameterFilter {$LiteralPath -eq '/tmp/project.json' -and $Raw}
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectJSON = '/tmp/project.json'
+                    Version = $TestCase.CurrentVersion
+                }
+            }
 
             (Get-NovaVersionUpdatePlan -Label $TestCase.Label -PreviewRelease).NewVersion.ToString() | Should -Be $TestCase.ExpectedVersion
         }
@@ -152,8 +160,12 @@ Describe 'Coverage gaps for release and git internals' {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
             param($TestCase)
 
-            Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectJSON = '/tmp/project.json'}}
-            Mock Get-Content {([ordered]@{Version = $TestCase.CurrentVersion} | ConvertTo-Json -Compress)} -ParameterFilter {$LiteralPath -eq '/tmp/project.json' -and $Raw}
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectJSON = '/tmp/project.json'
+                    Version = $TestCase.CurrentVersion
+                }
+            }
 
             (Get-NovaVersionUpdatePlan -Label Minor -PreviewRelease).NewVersion.ToString() | Should -Be $TestCase.ExpectedVersion
         }

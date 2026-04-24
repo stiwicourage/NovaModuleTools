@@ -395,6 +395,95 @@ Describe 'Coverage gaps for scaffold internals' {
         }
     }
 
+    It 'Get-NovaModuleInitializationWorkflowContext resolves scaffold inputs and ShouldProcess metadata' {
+        InModuleScope $script:moduleName {
+            Mock Resolve-NovaModuleScaffoldBasePath {'/tmp/base'}
+            Mock Get-NovaModuleQuestionSet {[ordered]@{ProjectName = @{Prompt = 'Name?'}}}
+            Mock Read-NovaModuleAnswerSet {
+                [ordered]@{
+                    ProjectName = 'NovaContext'
+                    EnableGit = 'No'
+                }
+            }
+            Mock Get-NovaModuleScaffoldLayout {
+                [pscustomobject]@{
+                    Project = '/tmp/base/NovaContext'
+                    ProjectJsonFile = '/tmp/base/NovaContext/project.json'
+                }
+            }
+
+            $result = Get-NovaModuleInitializationWorkflowContext -Path '/tmp/base' -Example
+
+            $result.BasePath | Should -Be '/tmp/base'
+            $result.AnswerSet.ProjectName | Should -Be 'NovaContext'
+            $result.Layout.Project | Should -Be '/tmp/base/NovaContext'
+            $result.Example | Should -BeTrue
+            $result.Target | Should -Be '/tmp/base/NovaContext'
+            $result.Action | Should -Be 'Create Nova module scaffold'
+            Assert-MockCalled Get-NovaModuleQuestionSet -Times 1 -ParameterFilter {$Example}
+            Assert-MockCalled Get-NovaModuleScaffoldLayout -Times 1 -ParameterFilter {
+                $Path -eq '/tmp/base' -and $ProjectName -eq 'NovaContext'
+            }
+        }
+    }
+
+    It 'Invoke-NovaModuleInitializationWorkflow runs scaffold creation, project.json writing, and completion messaging' {
+        InModuleScope $script:moduleName {
+            $workflowContext = [pscustomobject]@{
+                AnswerSet = [ordered]@{ProjectName = 'NovaWorkflow'}
+                Layout = [pscustomobject]@{
+                    Project = '/tmp/base/NovaWorkflow'
+                    ProjectJsonFile = '/tmp/base/NovaWorkflow/project.json'
+                }
+                Example = $true
+            }
+            Mock Initialize-NovaModuleScaffold {}
+            Mock Write-NovaModuleProjectJson {}
+            Mock Write-Message {}
+
+            Invoke-NovaModuleInitializationWorkflow -WorkflowContext $workflowContext
+
+            Assert-MockCalled Initialize-NovaModuleScaffold -Times 1 -ParameterFilter {
+                $Answer.ProjectName -eq 'NovaWorkflow' -and
+                        $Paths.Project -eq '/tmp/base/NovaWorkflow' -and
+                        $Example
+            }
+            Assert-MockCalled Write-NovaModuleProjectJson -Times 1 -ParameterFilter {
+                $Answer.ProjectName -eq 'NovaWorkflow' -and
+                        $ProjectJsonFile -eq '/tmp/base/NovaWorkflow/project.json' -and
+                        $Example
+            }
+            Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+                $Text -eq 'Module NovaWorkflow scaffolding complete' -and $color -eq 'Green'
+            }
+        }
+    }
+
+    It 'Initialize-NovaModule delegates workflow context resolution and execution to private helpers' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaModuleInitializationWorkflowContext {
+                [pscustomobject]@{
+                    Target = '/tmp/base/NovaDelegation'
+                    Action = 'Create Nova module scaffold'
+                    AnswerSet = [ordered]@{ProjectName = 'NovaDelegation'}
+                    Layout = [pscustomobject]@{Project = '/tmp/base/NovaDelegation'}
+                    Example = $false
+                }
+            }
+            Mock Invoke-NovaModuleInitializationWorkflow {}
+
+            Initialize-NovaModule -Path '/tmp/base' -Confirm:$false
+
+            Assert-MockCalled Get-NovaModuleInitializationWorkflowContext -Times 1 -ParameterFilter {
+                $Path -eq '/tmp/base' -and -not $Example
+            }
+            Assert-MockCalled Invoke-NovaModuleInitializationWorkflow -Times 1 -ParameterFilter {
+                $WorkflowContext.Target -eq '/tmp/base/NovaDelegation' -and
+                        $WorkflowContext.Action -eq 'Create Nova module scaffold'
+            }
+        }
+    }
+
     It 'Initialize-NovaModule -Example creates the packaged example scaffold without asking about Pester' {
         InModuleScope $script:moduleName {
             $answer = @{

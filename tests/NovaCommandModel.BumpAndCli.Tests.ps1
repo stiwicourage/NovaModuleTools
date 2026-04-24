@@ -60,6 +60,91 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
+    It 'Get-NovaVersionUpdateWorkflowContext prepares version bump state from project info and commit history' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    Version = '1.0.0'
+                    ProjectJSON = '/tmp/project.json'
+                }
+            }
+            Mock Get-GitCommitMessageForVersionBump {@('feat: add change', 'fix: patch bug')}
+            Mock Get-NovaVersionLabelForBump {'Minor'}
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    NewVersion = [semver]'1.1.0'
+                }
+            }
+
+            $result = Get-NovaVersionUpdateWorkflowContext -ProjectRoot '/tmp/project'
+
+            $result.ProjectRoot | Should -Be '/tmp/project'
+            $result.PreviousVersion | Should -Be '1.0.0'
+            $result.NewVersion | Should -Be '1.1.0'
+            $result.Label | Should -Be 'Minor'
+            $result.CommitCount | Should -Be 2
+            $result.Target | Should -Be 'project.json'
+            $result.Action | Should -Be 'Update module version using Minor release label'
+            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
+                $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
+                        $Label -eq 'Minor' -and
+                        -not $PreviewRelease
+            }
+        }
+    }
+
+    It 'Invoke-NovaVersionUpdateWorkflow writes only when requested and still returns WhatIf results' {
+        InModuleScope $script:moduleName {
+            $workflowContext = [pscustomobject]@{
+                ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                Label = 'Minor'
+                PreviewRelease = $true
+                PreviousVersion = '1.0.0'
+                NewVersion = '1.1.0-preview'
+                CommitCount = 2
+            }
+            Mock Set-NovaModuleVersion {}
+
+            $whatIfResult = Invoke-NovaVersionUpdateWorkflow -WorkflowContext $workflowContext -WhatIfEnabled
+            $runResult = Invoke-NovaVersionUpdateWorkflow -WorkflowContext $workflowContext -ShouldRun
+
+            $whatIfResult.NewVersion | Should -Be '1.1.0-preview'
+            $runResult.NewVersion | Should -Be '1.1.0-preview'
+            Assert-MockCalled Set-NovaModuleVersion -Times 1 -ParameterFilter {
+                $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
+                        $Label -eq 'Minor' -and
+                        $PreviewRelease -and
+                        -not $Confirm
+            }
+        }
+    }
+
+    It 'Update-NovaModuleVersion delegates orchestration to private bump workflow helpers' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaVersionUpdateWorkflowContext {
+                [pscustomobject]@{
+                    Target = 'project.json'
+                    Action = 'Update module version using Minor release label'
+                }
+            }
+            Mock Test-NovaCliBumpConfirmationIsEnabled {$false}
+            Mock Invoke-NovaVersionUpdateWorkflow {
+                [pscustomobject]@{NewVersion = '1.1.0'}
+            }
+
+            $result = Update-NovaModuleVersion -Path (Get-Location).Path -Confirm:$false
+
+            $result.NewVersion | Should -Be '1.1.0'
+            Assert-MockCalled Get-NovaVersionUpdateWorkflowContext -Times 1
+            Assert-MockCalled Invoke-NovaVersionUpdateWorkflow -Times 1 -ParameterFilter {
+                $WorkflowContext.Target -eq 'project.json' -and
+                        $ShouldRun -and
+                        -not $WhatIfEnabled
+            }
+        }
+    }
+
     It 'Update-NovaModuleVersion -WhatIf returns the expected next version without persisting it when <Name>' -ForEach @(
         @{Name = 'the default bump flow is used'; CurrentVersion = '1.0.0'; CommitMessages = @('feat: add change'); Label = 'Minor'; NewVersion = '1.1.0'; Preview = $false}
         @{Name = 'preview mode starts from a stable version'; CurrentVersion = '1.5.3'; CommitMessages = @('feat: add change'); Label = 'Minor'; NewVersion = '1.6.0-preview'; Preview = $true}
@@ -278,7 +363,3 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 }
-
-
-
-
