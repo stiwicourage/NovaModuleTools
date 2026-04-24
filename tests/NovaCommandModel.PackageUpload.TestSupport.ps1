@@ -276,7 +276,12 @@ function Get-TestNovaPackageUploadFailureCases {
         @{
             Name = 'the upload target URL is missing'
             ProjectRootName = 'missing-upload-url'
-            ExpectedMessage = 'Upload target URL is missing*'
+            ExpectedError = [pscustomobject]@{
+                Message = 'Upload target URL is missing*'
+                ErrorId = 'Nova.Configuration.PackageUploadTargetUrlMissing'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                TargetObject = 'Url'
+            }
             Invoke = {
                 param($PackagePath)
 
@@ -286,7 +291,11 @@ function Get-TestNovaPackageUploadFailureCases {
         @{
             Name = 'package selection is ambiguous'
             ProjectRootName = 'ambiguous-package-selection'
-            ExpectedMessage = 'Package selection is ambiguous*'
+            ExpectedError = [pscustomobject]@{
+                Message = 'Package selection is ambiguous*'
+                ErrorId = 'Nova.Validation.PackageUploadSelectionAmbiguous'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+            }
             Invoke = {
                 param($PackagePath)
 

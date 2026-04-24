@@ -46,6 +46,6 @@ function Resolve-NovaRequestedPackageUploadTypeList {
         return $matchingRequestedTypeList
     }
 
-    throw "Package.FileNamePattern '$( $PatternInfo.Pattern )' resolves to type '$( $PatternInfo.ExplicitPackageType )', but requested PackageType values are: $( $resolvedTypeList -join ', ' )."
+    Stop-NovaOperation -Message "Package.FileNamePattern '$( $PatternInfo.Pattern )' resolves to type '$( $PatternInfo.ExplicitPackageType )', but requested PackageType values are: $( $resolvedTypeList -join ', ' )." -ErrorId 'Nova.Validation.PackageUploadPatternConflict' -Category InvalidArgument -TargetObject $PatternInfo.Pattern
 }
 

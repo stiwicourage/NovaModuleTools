@@ -8,7 +8,7 @@ function Resolve-NovaPackageUploadOutputFileList {
 
     $outputDirectory = Get-NovaPackageOutputDirectory -ProjectInfo $ProjectInfo
     if (-not (Test-Path -LiteralPath $outputDirectory -PathType Container)) {
-        throw "Package output directory not found: $outputDirectory. Run New-NovaModulePackage first or provide -PackagePath."
+        Stop-NovaOperation -Message "Package output directory not found: $outputDirectory. Run New-NovaModulePackage first or provide -PackagePath." -ErrorId 'Nova.Environment.PackageOutputDirectoryNotFound' -Category ObjectNotFound -TargetObject $outputDirectory
     }
 
     return @(

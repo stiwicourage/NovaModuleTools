@@ -2,6 +2,7 @@ $script:testSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'N
 $global:novaCommandModelTestSupportFunctionNameList = @(
     'Get-TestRegexMatchGroup'
     'ConvertTo-TestNormalizedText'
+    'Assert-TestStructuredError'
     'Get-TestModuleDisplayVersion'
     'Get-TestHelpLocaleFromMarkdownFiles'
     'Get-CommandHelpActivationTestCase'
@@ -19,6 +20,8 @@ foreach ($functionName in $global:novaCommandModelTestSupportFunctionNameList) {
     $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
     Set-Item -Path "function:global:$functionName" -Value $scriptBlock
 }
+$assertStructuredErrorScriptBlock = (Get-Command -Name 'Assert-TestStructuredError' -CommandType Function -ErrorAction Stop).ScriptBlock
+Set-Item -Path 'function:global:Assert-TestStructuredError' -Value $assertStructuredErrorScriptBlock
 
 BeforeAll {
     $testSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.ps1')).Path
@@ -39,6 +42,9 @@ BeforeAll {
         $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
         Set-Item -Path "function:global:$functionName" -Value $scriptBlock
     }
+
+    $assertStructuredErrorScriptBlock = (Get-Command -Name 'Assert-TestStructuredError' -CommandType Function -ErrorAction Stop).ScriptBlock
+    Set-Item -Path 'function:global:Assert-TestStructuredError' -Value $assertStructuredErrorScriptBlock
 }
 
 Describe 'Nova command model - release and publish behavior' {
@@ -739,7 +745,20 @@ Describe 'Nova command model - release and publish behavior' {
             Mock Invoke-NovaBuild {throw 'should not build'}
             Mock Test-NovaBuild {throw 'should not test'}
 
-            {New-NovaModulePackage} | Should -Throw 'Missing package metadata value: Authors'
+            $thrown = $null
+            try {
+                New-NovaModulePackage
+            }
+            catch {
+                $thrown = $_
+            }
+
+            Assert-TestStructuredError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                Message = 'Missing package metadata value: Authors'
+                ErrorId = 'Nova.Configuration.PackageMetadataValueMissing'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                TargetObject = 'Authors'
+            })
             Assert-MockCalled Invoke-NovaBuild -Times 0
             Assert-MockCalled Test-NovaBuild -Times 0
         }

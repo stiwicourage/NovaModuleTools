@@ -17,7 +17,7 @@ function Get-NovaPackageUploadTargetUrl {
         $resolvedUrl = Get-NovaPackageSettingValue -InputObject $PackageSettings -Name 'RawRepositoryUrl'
     }
     if ( [string]::IsNullOrWhiteSpace("$resolvedUrl")) {
-        throw 'Upload target URL is missing. Provide -Url or configure Package.RepositoryUrl or Package.Repositories[].Url.'
+        Stop-NovaOperation -Message 'Upload target URL is missing. Provide -Url or configure Package.RepositoryUrl or Package.Repositories[].Url.' -ErrorId 'Nova.Configuration.PackageUploadTargetUrlMissing' -Category InvalidData -TargetObject 'Url'
     }
 
     return "$resolvedUrl".Trim()

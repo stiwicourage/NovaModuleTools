@@ -14,11 +14,11 @@ function Get-NovaVersionLabelForBump {
     }
 
     if (-not (Test-GitRepositoryHasCommittedHead -ProjectRoot $ProjectRoot)) {
-        throw 'Cannot bump version because the repository has no commits yet. Create an initial commit first.'
+        Stop-NovaOperation -Message 'Cannot bump version because the repository has no commits yet. Create an initial commit first.' -ErrorId 'Nova.Workflow.GitRepositoryHasNoCommits' -Category InvalidOperation -TargetObject $ProjectRoot
     }
 
     if (-not (Test-GitRepositoryHasCommitsSinceLatestTag -ProjectRoot $ProjectRoot)) {
-        throw 'Cannot bump version because there are no commits since the latest tag.'
+        Stop-NovaOperation -Message 'Cannot bump version because there are no commits since the latest tag.' -ErrorId 'Nova.Workflow.NoCommitsSinceLatestTag' -Category InvalidOperation -TargetObject $ProjectRoot
     }
 
     return 'Patch'

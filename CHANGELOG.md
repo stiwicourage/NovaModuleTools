@@ -74,6 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
+- Continue the shared error-model migration for package upload, build help/manifest, package metadata, and version bump
+  workflow failures so tests can assert stable error ids and categories without losing the existing user guidance.
 
 ### Documentation
 

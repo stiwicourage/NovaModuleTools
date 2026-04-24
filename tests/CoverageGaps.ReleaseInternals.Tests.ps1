@@ -343,7 +343,18 @@ Describe 'Coverage gaps for release and git internals' {
             $projectRoot = Join-Path $TestDrive 'empty-git-project'
             Initialize-TestGitRepository -Path $projectRoot
 
-            {Get-NovaVersionLabelForBump -ProjectRoot $projectRoot} | Should -Throw 'Cannot bump version because the repository has no commits yet. Create an initial commit first.'
+            $thrown = $null
+            try {
+                Get-NovaVersionLabelForBump -ProjectRoot $projectRoot
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -Be 'Cannot bump version because the repository has no commits yet. Create an initial commit first.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.GitRepositoryHasNoCommits'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
+            $thrown.TargetObject | Should -Be $projectRoot
         }
     }
 
@@ -359,7 +370,18 @@ Describe 'Coverage gaps for release and git internals' {
             New-TestGitCommit -RepositoryPath $projectRoot -Message 'feat: initial release' -File @{Name = 'first.txt'; Content = 'first'}
             New-TestGitTag -RepositoryPath $projectRoot -TagName 'v1.0.0'
 
-            {Get-NovaVersionLabelForBump -ProjectRoot $projectRoot} | Should -Throw 'Cannot bump version because there are no commits since the latest tag.'
+            $thrown = $null
+            try {
+                Get-NovaVersionLabelForBump -ProjectRoot $projectRoot
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -Be 'Cannot bump version because there are no commits since the latest tag.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.NoCommitsSinceLatestTag'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
+            $thrown.TargetObject | Should -Be $projectRoot
         }
     }
 

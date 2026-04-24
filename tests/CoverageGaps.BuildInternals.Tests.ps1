@@ -89,7 +89,18 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             Mock Get-ChildItem {@([pscustomobject]@{FullName = '/tmp/docs/Invoke-NovaBuild.md'})}
             Mock Get-Module {$null}
 
-            {Build-Help} | Should -Throw 'The module Microsoft.PowerShell.PlatyPS must be installed*'
+            $thrown = $null
+            try {
+                Build-Help
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -BeLike 'The module Microsoft.PowerShell.PlatyPS must be installed*'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.BuildHelpDependencyMissing'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ResourceUnavailable)
+            $thrown.TargetObject | Should -Be 'Microsoft.PowerShell.PlatyPS'
         }
     }
 
@@ -226,7 +237,8 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             Mock Assert-ManifestSchema {}
             Mock New-ModuleManifest {throw 'manifest failed'}
 
-            {
+            $thrown = $null
+            try {
                 Build-Manifest -ProjectInfo ([pscustomobject]@{
                     PublicDir = '/tmp/public'
                     ResourcesDir = '/tmp/resources'
@@ -237,7 +249,15 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
                     ProjectName = 'NovaModuleTools'
                     ManifestFilePSD1 = '/tmp/NovaModuleTools.psd1'
                 })
-            } | Should -Throw 'Failed to create Manifest*'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -BeLike 'Failed to create Manifest*'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.ModuleManifestCreationFailed'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::OpenError)
+            $thrown.TargetObject | Should -Be '/tmp/NovaModuleTools.psd1'
         }
     }
 

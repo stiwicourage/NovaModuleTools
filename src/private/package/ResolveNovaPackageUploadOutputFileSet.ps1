@@ -15,7 +15,7 @@ function Resolve-NovaPackageUploadOutputFileSet {
     )
 
     if ($matchingFileList.Count -eq 0) {
-        throw "Package file not found for package type '$PackageType' in '$OutputDirectory'. Expected pattern: $searchPattern. Run New-NovaModulePackage first or provide -PackagePath."
+        Stop-NovaOperation -Message "Package file not found for package type '$PackageType' in '$OutputDirectory'. Expected pattern: $searchPattern. Run New-NovaModulePackage first or provide -PackagePath." -ErrorId 'Nova.Workflow.PackageOutputArtifactNotFound' -Category InvalidOperation -TargetObject $PackageType
     }
 
     return @(
