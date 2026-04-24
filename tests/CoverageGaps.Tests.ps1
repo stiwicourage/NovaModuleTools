@@ -205,7 +205,20 @@ Describe 'Coverage gaps for scaffold internals' {
                     }
                 }
             }
-            {Read-NovaModuleAnswerSet -Questions $questions} | Should -Throw 'Module name is invalid*'
+
+            $thrown = $null
+            try {
+                Read-NovaModuleAnswerSet -Questions $questions
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Module name is invalid. Use a single word that starts with a letter and contains only letters, numbers, underscores, or periods.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.ScaffoldProjectNameInvalid'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+            $thrown.TargetObject | Should -Be 'bad name'
         }
     }
 
@@ -258,9 +271,19 @@ Describe 'Coverage gaps for scaffold internals' {
             Mock New-Item {}
             Mock New-InitiateGitRepo {}
 
-            {
+            $thrown = $null
+            try {
                 Initialize-NovaModuleScaffold -Answer @{EnablePester = 'No'; EnableGit = 'No'} -Paths $paths
-            } | Should -Throw 'Project already exists, aborting'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Project already exists, aborting'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.ScaffoldProjectAlreadyExists'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ResourceExists)
+            $thrown.TargetObject | Should -Be $paths.Project
 
             Assert-MockCalled New-Item -Times 0
             Assert-MockCalled New-InitiateGitRepo -Times 0
@@ -532,7 +555,19 @@ Describe 'Coverage gaps for scaffold internals' {
             Mock Initialize-NovaModuleScaffold {}
             Mock Write-NovaModuleProjectJson {}
 
-            {Initialize-NovaModule -Path '/tmp/does-not-exist' -WhatIf} | Should -Throw 'Not a valid path*'
+            $thrown = $null
+            try {
+                Initialize-NovaModule -Path '/tmp/does-not-exist' -WhatIf
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Not a valid path: /tmp/does-not-exist'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.ScaffoldBasePathNotFound'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+            $thrown.TargetObject | Should -Be '/tmp/does-not-exist'
 
             Assert-MockCalled Initialize-NovaModuleScaffold -Times 0
             Assert-MockCalled Write-NovaModuleProjectJson -Times 0
@@ -543,9 +578,19 @@ Describe 'Coverage gaps for scaffold internals' {
         InModuleScope $script:moduleName {
             Mock Read-AwesomeHost {'invalid name!'}
 
-            {
+            $thrown = $null
+            try {
                 Read-NovaModuleAnswerSet -Questions @{ProjectName = @{Prompt = 'Name?'}}
-            } | Should -Throw 'Module name is invalid*'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Module name is invalid. Use a single word that starts with a letter and contains only letters, numbers, underscores, or periods.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.ScaffoldProjectNameInvalid'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+            $thrown.TargetObject | Should -Be 'invalid name!'
         }
     }
 }

@@ -7,7 +7,7 @@ function Initialize-NovaModuleScaffold {
     )
 
     if (Test-Path $Paths.Project) {
-        throw 'Project already exists, aborting'
+        Stop-NovaOperation -Message 'Project already exists, aborting' -ErrorId 'Nova.Workflow.ScaffoldProjectAlreadyExists' -Category ResourceExists -TargetObject $Paths.Project
     }
 
     Write-Message "`nStarted Module Scaffolding" -color Green

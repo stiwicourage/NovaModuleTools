@@ -6,13 +6,13 @@ function Resolve-NovaPackageUploadExplicitFile {
     )
 
     if (-not (Test-Path -LiteralPath $PackagePath -PathType Leaf)) {
-        throw "Package file not found: $PackagePath"
+        Stop-NovaOperation -Message "Package file not found: $PackagePath" -ErrorId 'Nova.Environment.PackageUploadFileNotFound' -Category ObjectNotFound -TargetObject $PackagePath
     }
 
     $resolvedPackagePath = (Resolve-Path -LiteralPath $PackagePath -ErrorAction Stop).Path
     $resolvedPackageType = Get-NovaPackageArtifactType -PackagePath $resolvedPackagePath
     if (@($RequestedPackageTypeList).Count -gt 0 -and $resolvedPackageType -notin $RequestedPackageTypeList) {
-        throw "Package selection is ambiguous. Explicit PackagePath '$resolvedPackagePath' resolves to type '$resolvedPackageType', but requested PackageType values are: $( $RequestedPackageTypeList -join ', ' )."
+        Stop-NovaOperation -Message "Package selection is ambiguous. Explicit PackagePath '$resolvedPackagePath' resolves to type '$resolvedPackageType', but requested PackageType values are: $( $RequestedPackageTypeList -join ', ' )." -ErrorId 'Nova.Validation.PackageUploadSelectionAmbiguous' -Category InvalidArgument -TargetObject $resolvedPackagePath
     }
 
     return [pscustomobject]@{

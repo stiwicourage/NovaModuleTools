@@ -5,13 +5,67 @@ $global:remainingHelperCoverageTestSupportFunctionNameList = @(
     'Initialize-TestNovaPackageProjectLayout',
     'Get-TestNovaPackageProjectInfo'
 )
+$script:remainingHelperCoverageLocalHelperFunctionNameList = @(
+    'Get-TestPackageOutputDirectorySafetyCases'
+)
 
-. $script:remainingHelperCoverageTestSupportPath
+function Publish-RemainingHelperCoverageTestSupportFunctions {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$SupportPath,
+        [Parameter(Mandatory)][string[]]$FunctionNameList
+    )
 
-foreach ($functionName in $global:remainingHelperCoverageTestSupportFunctionNameList) {
+    . $SupportPath
+
+    foreach ($functionName in $FunctionNameList) {
+        $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+        Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+    }
+}
+
+function Get-TestPackageOutputDirectorySafetyCases {
+    [CmdletBinding()]
+    param()
+
+    $rootPath = if ($IsWindows) {
+        'C:\'
+    } else {
+        '/'
+    }
+
+    return @(
+        @{
+            Name = 'filesystem root'
+            OutputDirectory = $rootPath
+            ProjectInfo = [pscustomobject]@{
+                ProjectRoot = '/tmp/project-root'
+                OutputModuleDir = '/tmp/project-root/dist/NovaModuleTools'
+            }
+            ErrorId = 'Nova.Configuration.PackageOutputDirectoryRootNotAllowed'
+            Message = 'Package.OutputDirectory.Path cannot be a filesystem root when Package.OutputDirectory.Clean is true.'
+            TargetObject = $rootPath
+        }
+        @{
+            Name = 'protected project content'
+            OutputDirectory = '/tmp/packages'
+            ProjectInfo = [pscustomobject]@{
+                ProjectRoot = '/tmp/packages/project-root'
+                OutputModuleDir = '/tmp/project-root/dist/NovaModuleTools'
+            }
+            ErrorId = 'Nova.Configuration.PackageOutputDirectoryProtectedPath'
+            Message = 'Package.OutputDirectory.Path cannot be cleaned because it would remove required project content: /tmp/packages/project-root'
+            TargetObject = '/tmp/packages/project-root'
+        }
+    )
+}
+
+foreach ($functionName in $script:remainingHelperCoverageLocalHelperFunctionNameList) {
     $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
     Set-Item -Path "function:global:$functionName" -Value $scriptBlock
 }
+
+Publish-RemainingHelperCoverageTestSupportFunctions -SupportPath $script:remainingHelperCoverageTestSupportPath -FunctionNameList $global:remainingHelperCoverageTestSupportFunctionNameList
 
 BeforeAll {
     $remainingHelperCoverageTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'RemainingHelperCoverage.TestSupport.ps1')).Path
@@ -20,6 +74,12 @@ BeforeAll {
         'Assert-TestNovaZipPackageArtifactContent',
         'Initialize-TestNovaPackageProjectLayout',
         'Get-TestNovaPackageProjectInfo'
+    )
+    $remainingHelperCoverageLocalHelperFunctionNameList = @(
+        'Get-TestSchemaResourceFilePath',
+        'Get-TestSchemaResourceContent',
+        'Get-TestPackageOutputDirectorySafetyCases',
+        'Assert-TestPackageArtifactContentForType'
     )
 
     . $remainingHelperCoverageTestSupportPath
@@ -122,6 +182,8 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
     It 'Test-ProjectSchema validates the Build schema' {
         InModuleScope $script:moduleName {
             Mock Get-ResourceFilePath {
+                param($FileName)
+
                 if ($FileName -eq 'Schema-Build.json') {
                     return '/tmp/build-schema.json'
                 }
@@ -129,7 +191,9 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
                 return '/tmp/pester-schema.json'
             }
             Mock Get-Content {
-                if ($Path -eq '/tmp/build-schema.json') {
+                param($Path)
+
+                if ([string]$Path -eq '/tmp/build-schema.json') {
                     return '{"title":"build"}'
                 }
 
@@ -145,11 +209,8 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         }
     }
 
-    It 'Test-ProjectSchema accepts Package.Types aliases case-insensitively and rejects unsupported values' -ForEach @(
-        @{Name = 'accepts mixed-case aliases'; Types = @('.NuPkg', 'ZIP'); Expected = $true; Throws = $false; ErrorMessage = $null}
-        @{Name = 'rejects unsupported type'; Types = @('Tar'); Expected = $null; Throws = $true; ErrorMessage = '*The JSON is not valid with the schema*'}
-    ) {
-        $projectRoot = Join-Path $TestDrive $_.Name.Replace(' ', '-')
+    It 'Test-ProjectSchema accepts Package.Types aliases case-insensitively' {
+        $projectRoot = Join-Path $TestDrive 'accepts-mixed-case-aliases'
         New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
         $projectJson = ([ordered]@{
             ProjectName = 'SchemaTypesProject'
@@ -161,26 +222,83 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
                 GUID = '99999999-9999-9999-9999-999999999999'
             }
             Package = [ordered]@{
-                Types = $_.Types
+                Types = @('.NuPkg', 'ZIP')
             }
         } | ConvertTo-Json -Depth 5)
         Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
 
         Push-Location $projectRoot
         try {
-            InModuleScope $script:moduleName -Parameters @{Expected = $_.Expected; Throws = $_.Throws; ErrorMessage = $_.ErrorMessage} {
-                param($Expected, $Throws, $ErrorMessage)
-
-                if ($Throws) {
-                    {Test-ProjectSchema -Schema Build} | Should -Throw $ErrorMessage
-                    return
-                }
-
-                Test-ProjectSchema -Schema Build | Should -Be $Expected
+            InModuleScope $script:moduleName {
+                Test-ProjectSchema -Schema Build | Should -BeTrue
             }
         }
         finally {
             Pop-Location
+        }
+    }
+
+    It 'Test-ProjectSchema exposes a structured error for unsupported Package.Types values' {
+        $projectRoot = Join-Path $TestDrive 'rejects-unsupported-type'
+        New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+        $projectJson = ([ordered]@{
+            ProjectName = 'SchemaTypesProject'
+            Description = 'Schema package types test'
+            Version = '0.0.1'
+            Manifest = [ordered]@{
+                Author = 'Test Author'
+                PowerShellHostVersion = '7.4'
+                GUID = '99999999-9999-9999-9999-999999999999'
+            }
+            Package = [ordered]@{
+                Types = @('Tar')
+            }
+        } | ConvertTo-Json -Depth 5)
+        Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
+
+        Push-Location $projectRoot
+        try {
+            InModuleScope $script:moduleName {
+                $thrown = $null
+                try {
+                    Test-ProjectSchema -Schema Build
+                }
+                catch {
+                    $thrown = $_
+                }
+
+                $thrown | Should -Not -BeNullOrEmpty
+                $thrown.Exception.Message | Should -BeLike 'Invalid project.json for the Build schema: *The JSON is not valid with the schema*'
+                $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.ProjectSchemaValidationFailed'
+                $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+                $thrown.TargetObject | Should -Be 'project.json'
+            }
+        }
+        finally {
+            Pop-Location
+        }
+    }
+
+    It 'ConvertTo-NovaPackageType normalizes supported aliases and exposes a structured error for unsupported values' {
+        InModuleScope $script:moduleName {
+            ConvertTo-NovaPackageType -Type 'NuGet' | Should -Be 'NuGet'
+            ConvertTo-NovaPackageType -Type '.nupkg' | Should -Be 'NuGet'
+            ConvertTo-NovaPackageType -Type 'zip' | Should -Be 'Zip'
+            ConvertTo-NovaPackageType -Type '.zip' | Should -Be 'Zip'
+
+            $thrown = $null
+            try {
+                ConvertTo-NovaPackageType -Type 'tar.gz'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Unsupported Package.Types value: tar.gz. Supported values: NuGet, Zip, .nupkg, .zip.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.UnsupportedPackageType'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+            $thrown.TargetObject | Should -Be 'tar.gz'
         }
     }
 
@@ -246,33 +364,75 @@ function Get-Second {
         }
     }
 
+    It 'New-NovaErrorRecord and Stop-NovaOperation expose a stable error contract' {
+        InModuleScope $script:moduleName {
+            $errorRecord = New-NovaErrorRecord -Message 'Missing value for --path' -ErrorId 'Nova.Validation.MissingCliOptionValue' -Category InvalidArgument -TargetObject '--path'
+
+            $errorRecord.FullyQualifiedErrorId | Should -Be 'Nova.Validation.MissingCliOptionValue'
+            $errorRecord.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $errorRecord.TargetObject | Should -Be '--path'
+            $errorRecord.Exception.Message | Should -Be 'Missing value for --path'
+
+            $thrown = $null
+            try {
+                Stop-NovaOperation -Message 'Missing value for --path' -ErrorId 'Nova.Validation.MissingCliOptionValue' -Category InvalidArgument -TargetObject '--path'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.MissingCliOptionValue'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $thrown.TargetObject | Should -Be '--path'
+            $thrown.Exception.Message | Should -Be 'Missing value for --path'
+        }
+    }
+
     It 'Read-ProjectJsonData throws when project.json is <Name>' -ForEach @(
         @{
             Name = 'empty'
             FileName = 'empty-project.json'
             Content = ''
             ExpectedMessage = 'project.json is empty*'
+            ExpectedErrorId = 'Nova.Configuration.ProjectJsonEmpty'
+            ExpectedCategory = [System.Management.Automation.ErrorCategory]::InvalidData
         }
         @{
             Name = 'not valid JSON'
             FileName = 'invalid-project.json'
             Content = '{ invalid json }'
             ExpectedMessage = 'project.json is not valid JSON*'
+            ExpectedErrorId = 'Nova.Configuration.ProjectJsonInvalidJson'
+            ExpectedCategory = [System.Management.Automation.ErrorCategory]::ParserError
         }
         @{
             Name = 'not a top-level object'
             FileName = 'array-project.json'
             Content = '[1,2,3]'
             ExpectedMessage = 'project.json must contain a top-level JSON object*'
+            ExpectedErrorId = 'Nova.Configuration.ProjectJsonTopLevelObjectRequired'
+            ExpectedCategory = [System.Management.Automation.ErrorCategory]::InvalidData
         }
     ) {
         $projectJsonPath = Join-Path $TestDrive $_.FileName
         $_.Content | Set-Content -LiteralPath $projectJsonPath -Encoding utf8
 
-        InModuleScope $script:moduleName -Parameters @{ProjectJsonPath = $projectJsonPath; ExpectedMessage = $_.ExpectedMessage} {
-            param($ProjectJsonPath, $ExpectedMessage)
+        InModuleScope $script:moduleName -Parameters @{ProjectJsonPath = $projectJsonPath; ExpectedMessage = $_.ExpectedMessage; ExpectedErrorId = $_.ExpectedErrorId; ExpectedCategory = $_.ExpectedCategory} {
+            param($ProjectJsonPath, $ExpectedMessage, $ExpectedErrorId, $ExpectedCategory)
 
-            {Read-ProjectJsonData -ProjectJsonPath $ProjectJsonPath} | Should -Throw $ExpectedMessage
+            $thrown = $null
+            try {
+                Read-ProjectJsonData -ProjectJsonPath $ProjectJsonPath
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -BeLike $ExpectedMessage
+            $thrown.FullyQualifiedErrorId | Should -Be $ExpectedErrorId
+            $thrown.CategoryInfo.Category | Should -Be $ExpectedCategory
         }
     }
 
@@ -353,7 +513,19 @@ Locale: en-US
                 Get-Item -LiteralPath $SecondDocPath
             )
 
-            {Get-NovaHelpLocale -HelpMarkdownFiles $helpFiles} | Should -Throw 'Multiple help locales found in docs metadata*'
+            $thrown = $null
+            try {
+                Get-NovaHelpLocale -HelpMarkdownFiles $helpFiles
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Multiple help locales found in docs metadata: da-DK, en-US'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.HelpLocaleConflict'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+            @($thrown.TargetObject) | Should -Be @('da-DK', 'en-US')
         }
     }
 
@@ -364,11 +536,97 @@ Locale: en-US
         }
     }
 
+    It 'Get-NovaPackageAuthorList exposes a structured configuration error for unsupported values' {
+        InModuleScope $script:moduleName {
+            $thrown = $null
+            try {
+                Get-NovaPackageAuthorList -AuthorValue ([pscustomobject]@{Name = 'Author One'})
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -Be 'Package.Authors must be a string or an array of strings.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.PackageAuthorsInvalidType'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+        }
+    }
+
+    It 'Assert-NovaPackageOutputDirectoryCanBeCleared exposes structured validation errors for unsafe cleanup targets' -ForEach (Get-TestPackageOutputDirectorySafetyCases) {
+        InModuleScope $script:moduleName -Parameters @{Case = $_} {
+            param($Case)
+
+            $thrown = $null
+            try {
+                Assert-NovaPackageOutputDirectoryCanBeCleared -ProjectInfo $Case.ProjectInfo -OutputDirectory $Case.OutputDirectory
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be $Case.Message
+            $thrown.FullyQualifiedErrorId | Should -Be $Case.ErrorId
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+            $thrown.TargetObject | Should -Be $Case.TargetObject
+        }
+    }
+
+    It 'Get-NovaPackageContentItemList exposes structured errors when built output is missing or empty' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{OutputModuleDir = '/tmp/dist/NovaModuleTools'}
+            $packageMetadata = [pscustomobject]@{ContentRoot = 'content'}
+
+            Mock Test-Path {$false}
+
+            $missingOutputError = $null
+            try {
+                Get-NovaPackageContentItemList -ProjectInfo $projectInfo -PackageMetadata $packageMetadata
+            }
+            catch {
+                $missingOutputError = $_
+            }
+
+            $missingOutputError.Exception.Message | Should -Be 'Built module output not found: /tmp/dist/NovaModuleTools. Run Invoke-NovaBuild before packaging.'
+            $missingOutputError.FullyQualifiedErrorId | Should -Be 'Nova.Environment.PackageBuildOutputNotFound'
+            $missingOutputError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+            $missingOutputError.TargetObject | Should -Be '/tmp/dist/NovaModuleTools'
+
+            Mock Test-Path {$true}
+            Mock Get-ChildItem {@()}
+
+            $emptyOutputError = $null
+            try {
+                Get-NovaPackageContentItemList -ProjectInfo $projectInfo -PackageMetadata $packageMetadata
+            }
+            catch {
+                $emptyOutputError = $_
+            }
+
+            $emptyOutputError.Exception.Message | Should -Be 'Built module output has no files to package: /tmp/dist/NovaModuleTools'
+            $emptyOutputError.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.PackageBuildOutputEmpty'
+            $emptyOutputError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
+            $emptyOutputError.TargetObject | Should -Be '/tmp/dist/NovaModuleTools'
+        }
+    }
+
     It 'New-NovaPackageArtifact writes the expected package structure for <ExpectedType>' -ForEach @(
         @{ProjectRootName = 'package-project'; PackageTypes = @('NuGet'); RequestedPackageType = 'NuGet'; ExpectedType = 'NuGet'}
         @{ProjectRootName = 'zip-package-project'; PackageTypes = @('Zip'); RequestedPackageType = 'Zip'; ExpectedType = 'Zip'}
     ) {
         $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive $_.ProjectRootName)
+        $assertPackageContentByType = @{
+            NuGet = {
+                param($PackagePath)
+
+                Assert-TestNovaPackageArtifactContent -PackagePath $PackagePath
+            }
+            Zip = {
+                param($PackagePath)
+
+                Assert-TestNovaZipPackageArtifactContent -PackagePath $PackagePath
+            }
+        }
 
         $packagePath = InModuleScope $script:moduleName -Parameters @{
             ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true -PackageTypes $_.PackageTypes)
@@ -386,12 +644,7 @@ Locale: en-US
         }
 
         $packagePath | Should -Not -BeNullOrEmpty
-        if ($_.ExpectedType -eq 'Zip') {
-            Assert-TestNovaZipPackageArtifactContent -PackagePath $packagePath
-            return
-        }
-
-        Assert-TestNovaPackageArtifactContent -PackagePath $packagePath
+        & $assertPackageContentByType[$_.ExpectedType] $packagePath
     }
 
     It 'New-NovaPackageArtifact honors Package.OutputDirectory.Clean when stale package files exist' -ForEach @(
@@ -435,6 +688,34 @@ Locale: en-US
         Test-Path -LiteralPath $staleFilePath | Should -BeFalse
         Assert-TestNovaPackageArtifactContent -PackagePath $result[0].PackagePath
         Assert-TestNovaZipPackageArtifactContent -PackagePath $result[1].PackagePath
+    }
+
+    It 'New-NovaPackageArtifact rejects unsupported package types with a structured validation error' {
+        InModuleScope $script:moduleName {
+            Mock Assert-NovaPackageMetadata {}
+
+            $thrown = $null
+            try {
+                New-NovaPackageArtifact -ProjectInfo ([pscustomobject]@{OutputModuleDir = '/tmp/dist/NovaModuleTools'}) -PackageMetadata ([pscustomobject]@{
+                    Type = 'Tar'
+                    Latest = $false
+                    Id = 'PackageProject'
+                    Version = '2.3.4'
+                    PackageFileName = 'PackageProject.2.3.4.tar'
+                    PackagePath = '/tmp/packages/PackageProject.2.3.4.tar'
+                    OutputDirectory = '/tmp/packages'
+                }) -OutputDirectoryReady
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Unsupported package type: Tar'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnsupportedPackageArtifactType'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $thrown.TargetObject | Should -Be 'Tar'
+        }
     }
 
     It 'New-NovaPackageArtifacts also creates latest-named artifacts when Package.Latest is true' {

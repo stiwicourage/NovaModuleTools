@@ -10,7 +10,7 @@ function Publish-NovaBuiltModule {
     )
 
     if (-not (Test-Path -LiteralPath $ProjectInfo.OutputModuleDir)) {
-        throw 'Dist folder is empty, build the module before running publish command'
+        Stop-NovaOperation -Message 'Dist folder is empty, build the module before running publish command' -ErrorId 'Nova.Environment.ReleaseBuildOutputNotFound' -Category ObjectNotFound -TargetObject $ProjectInfo.OutputModuleDir
     }
 
     if ( $PSBoundParameters.ContainsKey('Repository')) {

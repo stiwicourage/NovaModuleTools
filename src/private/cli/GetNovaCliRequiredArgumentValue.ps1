@@ -8,7 +8,7 @@ function Get-NovaCliRequiredArgumentValue {
 
     $Index.Value++
     if ($Index.Value -ge $Arguments.Count) {
-        throw "Missing value for $OptionName"
+        Stop-NovaOperation -Message "Missing value for $OptionName" -ErrorId 'Nova.Validation.MissingCliOptionValue' -Category InvalidArgument -TargetObject $OptionName
     }
 
     return $Arguments[$Index.Value]

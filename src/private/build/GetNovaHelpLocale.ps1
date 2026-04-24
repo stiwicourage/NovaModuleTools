@@ -14,7 +14,7 @@ function Get-NovaHelpLocale {
     $distinctLocales = @($locales | Where-Object {-not [string]::IsNullOrWhiteSpace($_)} | Select-Object -Unique)
 
     if ($distinctLocales.Count -gt 1) {
-        throw "Multiple help locales found in docs metadata: $( $distinctLocales -join ', ' )"
+        Stop-NovaOperation -Message "Multiple help locales found in docs metadata: $( $distinctLocales -join ', ' )" -ErrorId 'Nova.Configuration.HelpLocaleConflict' -Category InvalidData -TargetObject $distinctLocales
     }
 
     if ($distinctLocales.Count -eq 1) {

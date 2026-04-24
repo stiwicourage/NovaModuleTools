@@ -2,7 +2,7 @@ function Find-LocalModulePathMatch {
     param(
         [Parameter(Mandatory)][string[]]$ModulePaths,
         [Parameter(Mandatory)][string]$MatchPattern,
-        [Parameter(Mandatory)][string]$ErrorMessage
+        [Parameter(Mandatory)][pscustomobject]$ErrorDetails
     )
 
     $result = $ModulePaths |
@@ -13,5 +13,5 @@ function Find-LocalModulePathMatch {
         return $result
     }
 
-    throw $ErrorMessage
+    Stop-NovaOperation -Message $ErrorDetails.Message -ErrorId $ErrorDetails.ErrorId -Category $ErrorDetails.Category -TargetObject $ErrorDetails.TargetObject
 }

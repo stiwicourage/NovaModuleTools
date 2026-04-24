@@ -67,7 +67,18 @@ Describe 'Coverage for remaining command and filesystem branches' {
             Mock Test-Path {$false}
             Mock New-Item {throw 'access denied'} -ParameterFilter {$Path -eq $OutputDir}
 
-            {Reset-ProjectDist} | Should -Throw 'Failed to reset Dist folder: access denied'
+            $thrown = $null
+            try {
+                Reset-ProjectDist
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -Be 'Failed to reset Dist folder: access denied'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.DistResetFailed'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::OpenError)
+            $thrown.TargetObject | Should -Be $OutputDir
         }
     }
 
@@ -101,7 +112,18 @@ Describe 'Coverage for remaining command and filesystem branches' {
             InModuleScope $script:moduleName -Parameters @{RepoPath = $repoPath} {
                 param($RepoPath)
 
-                {New-InitiateGitRepo -DirectoryPath $RepoPath -Confirm:$false} | Should -Throw 'Failed to initialize Git repo: init failed'
+                $thrown = $null
+                try {
+                    New-InitiateGitRepo -DirectoryPath $RepoPath -Confirm:$false
+                }
+                catch {
+                    $thrown = $_
+                }
+
+                $thrown.Exception.Message | Should -Be 'Failed to initialize Git repo: init failed'
+                $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.GitRepositoryInitializationFailed'
+                $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::OpenError)
+                $thrown.TargetObject | Should -Be $RepoPath
             }
         }
         finally {
@@ -175,7 +197,19 @@ Describe 'Coverage for remaining command and filesystem branches' {
             Mock Test-Path {$true}
             Mock Invoke-NovaPester {[pscustomobject]@{Result = 'Failed'}}
 
-            {Invoke-NovaTestWorkflow -WorkflowContext $workflowContext} | Should -Throw 'Tests failed'
+            $thrown = $null
+            try {
+                Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Tests failed'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.TestRunFailed'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
+            $thrown.TargetObject | Should -Be '/tmp/nova-project/artifacts/TestResults.xml'
         }
     }
 
@@ -202,7 +236,19 @@ Describe 'Coverage for remaining command and filesystem branches' {
             try {
                 Set-Variable -Name IsWindows -Value $true -Force
 
-                {Install-NovaCli} | Should -Throw 'Install-NovaCli currently supports macOS/Linux only*'
+                $unsupportedPlatformError = $null
+                try {
+                    Install-NovaCli
+                }
+                catch {
+                    $unsupportedPlatformError = $_
+                }
+
+                $unsupportedPlatformError | Should -Not -BeNullOrEmpty
+                $unsupportedPlatformError.Exception.Message | Should -BeLike 'Install-NovaCli currently supports macOS/Linux only*'
+                $unsupportedPlatformError.FullyQualifiedErrorId | Should -Be 'Nova.Environment.UnsupportedCliInstallPlatform'
+                $unsupportedPlatformError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::NotImplemented)
+                $unsupportedPlatformError.TargetObject | Should -Be 'Windows'
             }
             finally {
                 Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
@@ -301,7 +347,19 @@ Describe 'Coverage for remaining command and filesystem branches' {
                 Mock Get-NovaCliLauncherPath {'/tmp/source/nova'}
                 Mock Test-Path {$true}
 
-                {Install-NovaCli} | Should -Throw 'Target file already exists: /tmp/bin/nova*'
+                $targetExistsError = $null
+                try {
+                    Install-NovaCli
+                }
+                catch {
+                    $targetExistsError = $_
+                }
+
+                $targetExistsError | Should -Not -BeNullOrEmpty
+                $targetExistsError.Exception.Message | Should -BeLike 'Target file already exists: /tmp/bin/nova*'
+                $targetExistsError.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.CliInstallTargetExists'
+                $targetExistsError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ResourceExists)
+                $targetExistsError.TargetObject | Should -Be '/tmp/bin/nova'
             }
             finally {
                 Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
@@ -426,7 +484,18 @@ Describe 'Coverage for remaining command and filesystem branches' {
 
     It 'Invoke-NovaCli throws on an unknown top-level command' {
         InModuleScope $script:moduleName {
-            {Invoke-NovaCli banana} | Should -Throw 'Unknown command: <banana*'
+            $thrown = $null
+            try {
+                Invoke-NovaCli banana
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -Be "Unknown command: <banana> | Use 'nova --help' to see available commands."
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnknownCliCommand'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $thrown.TargetObject | Should -Be 'banana'
         }
     }
 
@@ -451,11 +520,29 @@ Describe 'Coverage for remaining command and filesystem branches' {
         }
     }
 
-    It 'Invoke-NovaCli version -Installed throws a clear error when the current project is not installed locally' {
-        InModuleScope $script:moduleName {
-            Mock Get-NovaInstalledProjectVersion {throw "Local module install not found for AzureDevOpsAgentInstaller. Expected manifest at: /tmp/modules/AzureDevOpsAgentInstaller/AzureDevOpsAgentInstaller.psd1. Run 'nova publish -local' first."}
+    It 'Invoke-NovaCli version -Installed throws a clear structured error when the current project is not installed locally' {
+        InModuleScope $script:moduleName -Parameters @{
+            ExpectedManifestPath = '/tmp/modules/AzureDevOpsAgentInstaller/AzureDevOpsAgentInstaller.psd1'
+        } {
+            param($ExpectedManifestPath)
 
-            {Invoke-NovaCli version -Installed} | Should -Throw "Local module install not found for AzureDevOpsAgentInstaller*nova publish -local*"
+            Mock Get-NovaInstalledProjectVersion {
+                Stop-NovaOperation -Message "Local module install not found for AzureDevOpsAgentInstaller. Expected manifest at: $ExpectedManifestPath. Run 'nova publish -local' first." -ErrorId 'Nova.Environment.LocalModuleInstallNotFound' -Category ObjectNotFound -TargetObject $ExpectedManifestPath
+            }
+
+            $thrown = $null
+            try {
+                Invoke-NovaCli version -Installed
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be "Local module install not found for AzureDevOpsAgentInstaller. Expected manifest at: $ExpectedManifestPath. Run 'nova publish -local' first."
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.LocalModuleInstallNotFound'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+            $thrown.TargetObject | Should -Be $ExpectedManifestPath
         }
     }
 }

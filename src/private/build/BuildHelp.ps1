@@ -14,7 +14,7 @@ function Build-Help {
     }
     
     if (-not (Get-Module -Name Microsoft.PowerShell.PlatyPS -ListAvailable)) {
-        throw 'The module Microsoft.PowerShell.PlatyPS must be installed for Markdown documentation to be generated.'
+        Stop-NovaOperation -Message 'The module Microsoft.PowerShell.PlatyPS must be installed for Markdown documentation to be generated.' -ErrorId 'Nova.Dependency.BuildHelpDependencyMissing' -Category ResourceUnavailable -TargetObject 'Microsoft.PowerShell.PlatyPS'
     }
 
     $AllCommandHelpFiles = $helpMarkdownFiles | Measure-PlatyPSMarkdown | Where-Object FileType -Match CommandHelp

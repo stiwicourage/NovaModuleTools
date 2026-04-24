@@ -7,12 +7,12 @@ function Assert-NovaPackageMetadata {
 
     foreach ($requiredField in @('Type', 'Id', 'Version', 'Description', 'OutputDirectory', 'PackageFileName', 'PackagePath')) {
         if ( [string]::IsNullOrWhiteSpace($PackageMetadata.$requiredField)) {
-            throw "Missing package metadata value: $requiredField"
+            Stop-NovaOperation -Message "Missing package metadata value: $requiredField" -ErrorId 'Nova.Configuration.PackageMetadataValueMissing' -Category InvalidData -TargetObject $requiredField
         }
     }
 
     if (@($PackageMetadata.Authors).Count -eq 0) {
-        throw 'Missing package metadata value: Authors'
+        Stop-NovaOperation -Message 'Missing package metadata value: Authors' -ErrorId 'Nova.Configuration.PackageMetadataValueMissing' -Category InvalidData -TargetObject 'Authors'
     }
 }
 

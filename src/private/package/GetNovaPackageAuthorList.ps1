@@ -17,7 +17,7 @@ function Get-NovaPackageAuthorList {
     }
 
     if ($AuthorValue -isnot [System.Collections.IEnumerable]) {
-        throw 'Package.Authors must be a string or an array of strings.'
+        Stop-NovaOperation -Message 'Package.Authors must be a string or an array of strings.' -ErrorId 'Nova.Configuration.PackageAuthorsInvalidType' -Category InvalidData -TargetObject $AuthorValue
     }
 
     return @(

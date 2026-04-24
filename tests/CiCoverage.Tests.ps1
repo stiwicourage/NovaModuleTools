@@ -99,9 +99,19 @@ Describe 'CodeScene Cobertura remapping helpers' {
 </coverage>
 '@ | Set-Content -LiteralPath $coveragePath -Encoding utf8
 
-        {
+        $thrown = $null
+        try {
             Convert-CoberturaCoverageToSourcePath -CoveragePath $coveragePath -BuiltModulePath $builtModulePath -RepoRoot $repoRoot
-        } | Should -Throw "Could not find any '# Source:' markers*"
+        }
+        catch {
+            $thrown = $_
+        }
+
+        $thrown | Should -Not -BeNullOrEmpty
+        $thrown.Exception.Message | Should -Be "Could not find any '# Source:' markers in built module: $builtModulePath"
+        $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Coverage.BuiltModuleSourceMarkersMissing'
+        $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+        $thrown.TargetObject | Should -Be $builtModulePath
     }
 
     It 'ignores covered built-module preamble lines before the first source marker' {

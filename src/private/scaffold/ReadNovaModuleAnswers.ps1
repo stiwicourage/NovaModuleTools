@@ -10,7 +10,7 @@ function Read-NovaModuleAnswerSet {
     }
 
     if ($answer.ProjectName -notmatch '^[A-Za-z][A-Za-z0-9_.]*$') {
-        throw 'Module name is invalid. Use a single word that starts with a letter and contains only letters, numbers, underscores, or periods.'
+        Stop-NovaOperation -Message 'Module name is invalid. Use a single word that starts with a letter and contains only letters, numbers, underscores, or periods.' -ErrorId 'Nova.Validation.ScaffoldProjectNameInvalid' -Category InvalidData -TargetObject $answer.ProjectName
     }
 
     return $answer

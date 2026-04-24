@@ -18,7 +18,7 @@ function ConvertTo-NovaPackageType {
             return 'Zip'
         }
         default {
-            throw "Unsupported Package.Types value: $Type. Supported values: NuGet, Zip, .nupkg, .zip."
+            Stop-NovaOperation -Message "Unsupported Package.Types value: $Type. Supported values: NuGet, Zip, .nupkg, .zip." -ErrorId 'Nova.Configuration.UnsupportedPackageType' -Category InvalidData -TargetObject $Type
         }
     }
 }

@@ -65,7 +65,7 @@ function Invoke-NovaCliCommandRoute {
 
     $commandHandler = $commandHandlerMap[$command]
     if ($null -eq $commandHandler) {
-        throw "Unknown command: <$command> | Use 'nova --help' to see available commands."
+        Stop-NovaOperation -Message "Unknown command: <$command> | Use 'nova --help' to see available commands." -ErrorId 'Nova.Validation.UnknownCliCommand' -Category InvalidArgument -TargetObject $command
     }
 
     return & $commandHandler

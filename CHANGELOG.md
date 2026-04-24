@@ -16,8 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add optional `Preamble` support in `project.json` to write module-level setup lines at the top of generated `.psm1`
   files.
 - Add `Initialize-NovaModule -Example` and `nova init -Example` to scaffold a full working project from the packaged
-  example
-  resources.
+  example resources.
+- git initialization failures so more build and release paths now expose stable error ids and categories.
     - Runs the normal init flow
     - Applies the metadata entered during init to the generated `project.json`
     - Always creates the example test structure without prompting to enable tests
@@ -40,17 +40,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       appending or incrementing trailing digits, for example `preview -> preview01`, `preview09 -> preview10`,
       `rc -> rc01`, `rc1 -> rc2`, `SNAPSHOT -> SNAPSHOT01`, and `SNAPSHOT1 -> SNAPSHOT2`.
 - Add `New-NovaModulePackage` and `nova package` so projects can build, test, and package the built module output as a
-  `.nupkg`
-  artifact by using generic metadata from `project.json`, including repositories whose test runs reload or remove
+  `.nupkg` artifact by using generic metadata from `project.json`, including repositories whose test runs reload or
+  remove
   `NovaModuleTools` before the final package step.
-    - Package output now supports `Package.Types` with case-insensitive `NuGet`, `Zip`, `.nupkg`, and `.zip` values.
+    - Package output supports `Package.Types` with case-insensitive `NuGet`, `Zip`, `.nupkg`, and `.zip` values.
     - Omitting `Package.Types` still defaults packaging to a `.nupkg` artifact.
     - Selecting both `NuGet` and `Zip` creates both package formats in the configured output directory.
   - `Package.AddVersionToFileName` can append the top-level project version to a custom `Package.PackageFileName`
     before the package extension is applied.
   - Setting `Package.Latest` to `true` also creates a companion `*.latest.*` artifact for each selected package type
     while keeping the normal versioned file.
-    - Package output now uses `Package.OutputDirectory.Path` with `Package.OutputDirectory.Clean` defaulting to `true`.
+      - Package output uses `Package.OutputDirectory.Path` with `Package.OutputDirectory.Clean` defaulting to `true`.
   - Add `Deploy-NovaPackage` and `nova deploy` for raw HTTP package uploads that stay separate from PowerShell
     repository publishing.
       - Package upload resolves `-Url`, `Package.RepositoryUrl`, or named `Package.Repositories` targets and can merge
@@ -63,34 +63,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change the project to a Nova command model, replacing the previous mixed MT/Nova workflow.
     - All public commands are now Nova commands, and the `nova` CLI/Powershell alias is the primary entry point for all
       operations.
-- Clarify `Invoke-NovaBuild` layering so the public command focuses on orchestration while private helpers own build
-  workflow context, sequencing, and explicit reuse of resolved project metadata.
-- Clarify `Get-NovaProjectInfo` layering so the public command focuses on orchestration while private helpers own
-  project-info context resolution and result shaping.
-- Clarify `Get-NovaUpdateNotificationPreference` layering so the public command focuses on orchestration while private
-  helpers own notification-status shaping and settings-path resolution.
-- Clarify `Set-NovaUpdateNotificationPreference` layering so the public command focuses on orchestration while private
-  helpers own preference-change context resolution and write/status sequencing.
-- Clarify `Update-NovaModuleTool` layering so the public command focuses on orchestration while private helpers own
-  self-update workflow context resolution and update/release-notes execution.
-- Clarify `Install-NovaCli` layering so the public command focuses on orchestration while private helpers own install
-  workflow context resolution and launcher install execution.
-- Clarify `Initialize-NovaModule` layering so the public command focuses on orchestration while private helpers own
-  scaffold workflow context resolution and scaffold/project-file execution.
-- Clarify `Invoke-NovaCli` layering so the public command focuses on orchestration while private helpers own CLI
-  invocation-context preparation and command routing.
-- Clarify `Test-NovaBuild` layering so the public command focuses on orchestration while private helpers own Pester
-  workflow context, artifact preparation, and pass/fail translation.
-- Clarify `New-NovaModulePackage` layering so the public command focuses on orchestration while private helpers own
-  package workflow context, build/test/package sequencing, and package-helper reload fallback.
-- Clarify `Deploy-NovaPackage` layering so the public command focuses on orchestration while private helpers own upload
-  workflow context, upload planning, and artifact upload sequencing.
-- Clarify `Update-NovaModuleVersion` layering so the public command focuses on orchestration while private helpers own
-  bump workflow context, result shaping, and version persistence.
-- Clarify publish and release layering so public commands focus on orchestration while private workflow helpers own
-  publish/release sequencing and shared publish context resolution.
-- Centralize runtime `project.json` writing behind one shared helper so scaffold and version-bump flows use the same
-  serialization policy for nested arrays, nested objects, JSON depth, and UTF-8 output.
 - **BREAKING CHANGE**: Rename the public Nova scaffold cmdlets to approved verbs.
     - `New-NovaModule` → `Initialize-NovaModule`
     - No compatibility aliases are exported for the retired cmdlet names or CLI subcommands.
@@ -102,10 +74,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
-- Fix `Update-NovaModuleVersion` / `nova bump` so prerelease versions finalize the correct SemVer target instead of
-  carrying old prerelease labels like `preview7` into the next major, minor, or patch line.
-- Fix `Update-NovaModuleVersion` / `nova bump` so bumping `project.json` preserves nested `Package.Repositories` and
-  other nested JSON objects instead of truncating them during serialization.
 
 ### Documentation
 

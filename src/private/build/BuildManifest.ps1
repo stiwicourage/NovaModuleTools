@@ -66,6 +66,6 @@ function Build-Manifest {
     try {
         New-ModuleManifest @ParmsManifest
     } catch {
-        throw ('Failed to create Manifest: {0}' -f $_.Exception.Message)
+        Stop-NovaOperation -Message ('Failed to create Manifest: {0}' -f $_.Exception.Message) -ErrorId 'Nova.Dependency.ModuleManifestCreationFailed' -Category OpenError -TargetObject $data.ManifestFilePSD1
     }
 }

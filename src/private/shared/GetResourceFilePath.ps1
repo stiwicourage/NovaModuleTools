@@ -31,5 +31,5 @@ function Get-ResourceFilePath {
         }
     }
 
-    throw "Resource file not found: $FileName. Checked: $( $candidates -join ', ' )"
+    Stop-NovaOperation -Message "Resource file not found: $FileName. Checked: $( $candidates -join ', ' )" -ErrorId 'Nova.Environment.ResourceFileNotFound' -Category ObjectNotFound -TargetObject $FileName
 }

@@ -7,12 +7,12 @@ function Assert-NovaPackageOutputDirectoryCanBeCleared {
 
     $resolvedOutputDirectory = [System.IO.Path]::GetFullPath($OutputDirectory)
     if ($resolvedOutputDirectory -eq [System.IO.Path]::GetPathRoot($resolvedOutputDirectory)) {
-        throw 'Package.OutputDirectory.Path cannot be a filesystem root when Package.OutputDirectory.Clean is true.'
+        Stop-NovaOperation -Message 'Package.OutputDirectory.Path cannot be a filesystem root when Package.OutputDirectory.Clean is true.' -ErrorId 'Nova.Configuration.PackageOutputDirectoryRootNotAllowed' -Category InvalidData -TargetObject $resolvedOutputDirectory
     }
 
     foreach ($protectedPath in @($ProjectInfo.ProjectRoot, $ProjectInfo.OutputModuleDir)) {
         if (Test-NovaPathContainsPath -ParentPath $resolvedOutputDirectory -ChildPath $protectedPath) {
-            throw "Package.OutputDirectory.Path cannot be cleaned because it would remove required project content: $protectedPath"
+            Stop-NovaOperation -Message "Package.OutputDirectory.Path cannot be cleaned because it would remove required project content: $protectedPath" -ErrorId 'Nova.Configuration.PackageOutputDirectoryProtectedPath' -Category InvalidData -TargetObject $protectedPath
         }
     }
 }

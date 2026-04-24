@@ -19,7 +19,7 @@ function Build-Module {
     )
 
     if ($files.Count -eq 0 -and $allSourceFiles.Count -eq 0) {
-        throw 'No source files found to build. Add one or more scripts under src/public, src/private, or src/classes.'
+        Stop-NovaOperation -Message 'No source files found to build. Add one or more scripts under src/public, src/private, or src/classes.' -ErrorId 'Nova.Environment.BuildSourceFilesNotFound' -Category ObjectNotFound -TargetObject 'src'
     }
 
     foreach ($file in $files) {
@@ -28,6 +28,6 @@ function Build-Module {
     try {
         Set-Content -Path $data.ModuleFilePSM1 -Value $sb.ToString() -Encoding 'UTF8' # psm1 file
     } catch {
-        throw ('Failed to create psm1 file: {0}' -f $_.Exception.Message)
+        Stop-NovaOperation -Message ('Failed to create psm1 file: {0}' -f $_.Exception.Message) -ErrorId 'Nova.Dependency.ModulePsm1CreationFailed' -Category OpenError -TargetObject $data.ModuleFilePSM1
     }
 }

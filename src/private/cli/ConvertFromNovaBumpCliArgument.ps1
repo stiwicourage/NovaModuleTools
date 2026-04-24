@@ -13,7 +13,7 @@ function ConvertFrom-NovaBumpCliArgument {
                 $options.Preview = $true
             }
             default {
-                throw "Unknown argument: $token"
+                Stop-NovaOperation -Message "Unknown argument: $token" -ErrorId 'Nova.Validation.UnknownCliArgument' -Category InvalidArgument -TargetObject $token
             }
         }
     }

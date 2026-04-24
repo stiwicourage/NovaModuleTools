@@ -4,12 +4,12 @@ function Get-NovaCliLauncherPath {
 
     $command = Get-Command -Name 'Install-NovaCli' -CommandType Function -ErrorAction SilentlyContinue
     if ($null -eq $command) {
-        throw 'Install-NovaCli command not found.'
+        Stop-NovaOperation -Message 'Install-NovaCli command not found.' -ErrorId 'Nova.Environment.CliInstallCommandNotFound' -Category ObjectNotFound -TargetObject 'Install-NovaCli'
     }
 
     $commandFile = $command.ScriptBlock.File
     if ( [string]::IsNullOrWhiteSpace($commandFile)) {
-        throw 'Install-NovaCli must be loaded from a file-backed module.'
+        Stop-NovaOperation -Message 'Install-NovaCli must be loaded from a file-backed module.' -ErrorId 'Nova.Environment.CliInstallCommandNotFileBacked' -Category ResourceUnavailable -TargetObject 'Install-NovaCli'
     }
 
     $commandRoot = Split-Path -Parent $commandFile
@@ -25,5 +25,5 @@ function Get-NovaCliLauncherPath {
         }
     }
 
-    throw "Nova CLI launcher not found. Checked: $( ($candidateList | ForEach-Object {[System.IO.Path]::GetFullPath($_)}) -join ', ' )"
+    Stop-NovaOperation -Message "Nova CLI launcher not found. Checked: $( ($candidateList | ForEach-Object {[System.IO.Path]::GetFullPath($_)}) -join ', ' )" -ErrorId 'Nova.Environment.CliLauncherNotFound' -Category ObjectNotFound -TargetObject 'nova'
 }

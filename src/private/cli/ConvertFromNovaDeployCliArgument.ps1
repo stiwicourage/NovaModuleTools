@@ -40,7 +40,7 @@ function ConvertFrom-NovaDeployCliArgument {
                 Add-NovaCliHeaderOption -Options $options -HeaderArgument (Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--header')
             }
             default {
-                throw "Unknown argument: $token"
+                Stop-NovaOperation -Message "Unknown argument: $token" -ErrorId 'Nova.Validation.UnknownCliArgument' -Category InvalidArgument -TargetObject $token
             }
         }
 

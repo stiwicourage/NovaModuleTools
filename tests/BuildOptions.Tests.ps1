@@ -80,6 +80,33 @@ Describe 'Invoke-NovaBuild options' {
         (Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/example/tests/Pester.Some.Tests.ps1')) | Should -BeTrue
     }
 
+    It 'Get-ExampleConfiguration exposes a structured error when the packaged example config is missing' {
+        $newNovaErrorRecordPath = Join-Path $repoRoot 'src/private/shared/NewNovaErrorRecord.ps1'
+        $stopNovaOperationPath = Join-Path $repoRoot 'src/private/shared/StopNovaOperation.ps1'
+        $exampleConfigurationPath = Join-Path $repoRoot 'src/resources/example/src/private/Get-ExampleConfiguration.ps1'
+        $expectedConfigurationPath = Join-Path $repoRoot 'src/resources/example/src/private/resources/greeting-config.json'
+
+        . $newNovaErrorRecordPath
+        . $stopNovaOperationPath
+        . $exampleConfigurationPath
+
+        Mock Test-Path {$false} -ParameterFilter {$LiteralPath -eq $expectedConfigurationPath}
+
+        $thrown = $null
+        try {
+            Get-ExampleConfiguration
+        }
+        catch {
+            $thrown = $_
+        }
+
+        $thrown | Should -Not -BeNullOrEmpty
+        $thrown.Exception.Message | Should -Be "Example configuration not found: $expectedConfigurationPath"
+        $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.ExampleConfigurationNotFound'
+        $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+        $thrown.TargetObject | Should -Be $expectedConfigurationPath
+    }
+
     It 'ScriptAnalyzer ignores generated packaged example dist and artifacts content' {
         if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
             Set-ItResult -Skipped -Because 'PSScriptAnalyzer is not available in this environment'
@@ -124,7 +151,12 @@ Describe 'Invoke-NovaBuild options' {
         $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'EmptyProject'
         Write-TestProjectJson -ProjectRoot $root -Options @{ProjectName = 'EmptyProject'; BuildRecursiveFolders = $false}
 
-        Assert-InvokeNovaBuildThrows -ProjectRoot $root -ExpectedMessage 'No source files found to build*'
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root -ExpectedError ([pscustomobject]@{
+            Message = 'No source files found to build*'
+            ErrorId = 'Nova.Environment.BuildSourceFilesNotFound'
+            Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+            TargetObject = 'src'
+        })
     }
 
     It 'BuildRecursiveFolders=false excludes nested classes/private and nested public' {
@@ -281,9 +313,15 @@ Describe 'Invoke-NovaBuild options' {
 
     It 'missing FailOnDuplicateFunctionNames defaults to true and fails on duplicate top-level function names' {
         $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupDefault' -Options @{ ProjectName = 'DupDefault'; BuildRecursiveFolders = $false; SetSourcePath = $false }
+        $expectedModulePath = Get-BuiltModuleFilePath -ProjectRoot $root
 
         (Get-TestProjectInfoValue -ProjectRoot $root -PropertyName 'FailOnDuplicateFunctionNames') | Should -BeTrue
-        Assert-InvokeNovaBuildThrows -ProjectRoot $root
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root -ExpectedError ([pscustomobject]@{
+            Message = 'Duplicate top-level function names detected in built module:*'
+            ErrorId = 'Nova.Validation.BuiltModuleDuplicateFunctionName'
+            Category = [System.Management.Automation.ErrorCategory]::InvalidData
+            TargetObject = $expectedModulePath
+        })
     }
 
     It 'fails build when Manifest contains unsupported New-ModuleManifest parameters' {
@@ -296,7 +334,8 @@ Describe 'Invoke-NovaBuild options' {
         $project.Manifest['BogusKey'] = 'nope'
         $project | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $projectJsonPath -Encoding utf8
 
-        {
+        $thrown = $null
+        try {
             Push-Location -LiteralPath $root
             try {
                 Invoke-NovaBuild
@@ -304,12 +343,28 @@ Describe 'Invoke-NovaBuild options' {
             finally {
                 Pop-Location
             }
-        } | Should -Throw 'Unknown parameter(s) in Manifest: BogusKey'
+        }
+        catch {
+            $thrown = $_
+        }
+
+        $thrown | Should -Not -BeNullOrEmpty
+        $thrown.Exception.Message | Should -Be 'Unknown parameter(s) in Manifest: BogusKey'
+        $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.ManifestUnknownParameter'
+        $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+        @($thrown.TargetObject) | Should -Be @('BogusKey')
     }
 
     It 'FailOnDuplicateFunctionNames=true fails when built psm1 contains duplicate top-level function names' {
         $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupFail' -Options @{ ProjectName = 'DupFail'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $true }
-        Assert-InvokeNovaBuildThrows -ProjectRoot $root
+        $expectedModulePath = Get-BuiltModuleFilePath -ProjectRoot $root
+
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root -ExpectedError ([pscustomobject]@{
+            Message = 'Duplicate top-level function names detected in built module:*'
+            ErrorId = 'Nova.Validation.BuiltModuleDuplicateFunctionName'
+            Category = [System.Management.Automation.ErrorCategory]::InvalidData
+            TargetObject = $expectedModulePath
+        })
     }
 
     It 'FailOnDuplicateFunctionNames=false allows duplicates (last wins) for backward compatibility' {

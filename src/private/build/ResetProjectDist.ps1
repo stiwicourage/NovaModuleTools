@@ -13,6 +13,6 @@ function Reset-ProjectDist {
         New-Item -Path $data.OutputDir -ItemType Directory -Force -ErrorAction Stop | Out-Null # Dist folder
         New-Item -Path $data.OutputModuleDir -Type Directory -Force -ErrorAction Stop | Out-Null # Module Folder
     } catch {
-        throw "Failed to reset Dist folder: $( $_.Exception.Message )"
+        Stop-NovaOperation -Message "Failed to reset Dist folder: $( $_.Exception.Message )" -ErrorId 'Nova.Dependency.DistResetFailed' -Category OpenError -TargetObject $data.OutputDir
     }
 }

@@ -2,6 +2,7 @@ $script:testSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'N
 $global:novaCommandModelTestSupportFunctionNameList = @(
     'Get-TestRegexMatchGroup'
     'ConvertTo-TestNormalizedText'
+    'Assert-TestStructuredError'
     'Get-TestModuleDisplayVersion'
     'Get-TestHelpLocaleFromMarkdownFiles'
     'Get-CommandHelpActivationTestCase'
@@ -19,6 +20,8 @@ foreach ($functionName in $global:novaCommandModelTestSupportFunctionNameList) {
     $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
     Set-Item -Path "function:global:$functionName" -Value $scriptBlock
 }
+$assertStructuredErrorScriptBlock = (Get-Command -Name 'Assert-TestStructuredError' -CommandType Function -ErrorAction Stop).ScriptBlock
+Set-Item -Path 'function:global:Assert-TestStructuredError' -Value $assertStructuredErrorScriptBlock
 
 BeforeAll {
     $testSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.ps1')).Path
@@ -39,6 +42,9 @@ BeforeAll {
         $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
         Set-Item -Path "function:global:$functionName" -Value $scriptBlock
     }
+
+    $assertStructuredErrorScriptBlock = (Get-Command -Name 'Assert-TestStructuredError' -CommandType Function -ErrorAction Stop).ScriptBlock
+    Set-Item -Path 'function:global:Assert-TestStructuredError' -Value $assertStructuredErrorScriptBlock
 }
 
 Describe 'Nova command model - release and publish behavior' {
@@ -79,7 +85,16 @@ Describe 'Nova command model - release and publish behavior' {
             Mock Test-NovaBuild {throw 'boom'}
             Mock Update-NovaModuleVersion {}
 
-            {Invoke-NovaRelease -PublishOption @{Local = $true} -Path (Get-Location).Path} | Should -Throw
+            $thrown = $null
+            try {
+                Invoke-NovaRelease -PublishOption @{Local = $true} -Path (Get-Location).Path
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'boom'
             Assert-MockCalled Update-NovaModuleVersion -Times 0
         }
     }
@@ -739,7 +754,20 @@ Describe 'Nova command model - release and publish behavior' {
             Mock Invoke-NovaBuild {throw 'should not build'}
             Mock Test-NovaBuild {throw 'should not test'}
 
-            {New-NovaModulePackage} | Should -Throw 'Missing package metadata value: Authors'
+            $thrown = $null
+            try {
+                New-NovaModulePackage
+            }
+            catch {
+                $thrown = $_
+            }
+
+            Assert-TestStructuredError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                Message = 'Missing package metadata value: Authors'
+                ErrorId = 'Nova.Configuration.PackageMetadataValueMissing'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                TargetObject = 'Authors'
+            })
             Assert-MockCalled Invoke-NovaBuild -Times 0
             Assert-MockCalled Test-NovaBuild -Times 0
         }
@@ -812,7 +840,7 @@ Describe 'Nova command model - release and publish behavior' {
 
             Mock Test-Path {$false}
 
-            $expectedError = if ($IsWindows) {
+            $expectedMessage = if ($IsWindows) {
                 'No windows module path matching*'
             }
             else {
@@ -820,11 +848,48 @@ Describe 'Nova command model - release and publish behavior' {
             }
 
             try {
-                {Get-LocalModulePath} | Should -Throw $expectedError
+                $thrown = $null
+                try {
+                    Get-LocalModulePath
+                }
+                catch {
+                    $thrown = $_
+                }
+
+                Assert-TestStructuredError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                    Message = $expectedMessage
+                    ErrorId = 'Nova.Environment.LocalModulePathNotFound'
+                    Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                    TargetObject = if ($IsWindows) {
+                        '\\Documents\\PowerShell\\Modules'
+                    }
+                    else {
+                        '/\.local/share/powershell/Modules$'
+                    }
+                })
             }
             finally {
                 $env:PSModulePath = $originalModulePath
             }
+        }
+    }
+
+    It 'Import-NovaPublishedLocalModule exposes a structured error when the local manifest is missing' {
+        InModuleScope $script:moduleName {
+            $thrown = $null
+            try {
+                Import-NovaPublishedLocalModule -ProjectName 'NovaModuleTools' -ManifestPath '/tmp/missing/NovaModuleTools.psd1'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            Assert-TestStructuredError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                Message = 'Expected locally published module manifest at: /tmp/missing/NovaModuleTools.psd1'
+                ErrorId = 'Nova.Environment.LocalPublishedModuleManifestNotFound'
+                Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                TargetObject = '/tmp/missing/NovaModuleTools.psd1'
+            })
         }
     }
 

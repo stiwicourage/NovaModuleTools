@@ -305,7 +305,20 @@ Describe 'Coverage gaps for release and git internals' {
     It 'Publish-NovaBuiltModule throws when dist is missing and Resolve-NovaLocalPublishPath returns explicit or local paths' {
         InModuleScope $script:moduleName {
             Mock Test-Path {$false}
-            {Publish-NovaBuiltModule -ProjectInfo ([pscustomobject]@{OutputModuleDir = '/tmp/missing'; ProjectName = 'Nova'})} | Should -Throw 'Dist folder is empty*'
+
+            $thrown = $null
+            try {
+                Publish-NovaBuiltModule -ProjectInfo ([pscustomobject]@{OutputModuleDir = '/tmp/missing'; ProjectName = 'Nova'})
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Dist folder is empty, build the module before running publish command'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.ReleaseBuildOutputNotFound'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+            $thrown.TargetObject | Should -Be '/tmp/missing'
 
             Mock Get-LocalModulePath {'/tmp/local-modules'}
             Resolve-NovaLocalPublishPath -ModuleDirectoryPath '/tmp/custom' | Should -Be '/tmp/custom'
@@ -343,7 +356,18 @@ Describe 'Coverage gaps for release and git internals' {
             $projectRoot = Join-Path $TestDrive 'empty-git-project'
             Initialize-TestGitRepository -Path $projectRoot
 
-            {Get-NovaVersionLabelForBump -ProjectRoot $projectRoot} | Should -Throw 'Cannot bump version because the repository has no commits yet. Create an initial commit first.'
+            $thrown = $null
+            try {
+                Get-NovaVersionLabelForBump -ProjectRoot $projectRoot
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -Be 'Cannot bump version because the repository has no commits yet. Create an initial commit first.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.GitRepositoryHasNoCommits'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
+            $thrown.TargetObject | Should -Be $projectRoot
         }
     }
 
@@ -359,7 +383,18 @@ Describe 'Coverage gaps for release and git internals' {
             New-TestGitCommit -RepositoryPath $projectRoot -Message 'feat: initial release' -File @{Name = 'first.txt'; Content = 'first'}
             New-TestGitTag -RepositoryPath $projectRoot -TagName 'v1.0.0'
 
-            {Get-NovaVersionLabelForBump -ProjectRoot $projectRoot} | Should -Throw 'Cannot bump version because there are no commits since the latest tag.'
+            $thrown = $null
+            try {
+                Get-NovaVersionLabelForBump -ProjectRoot $projectRoot
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -Be 'Cannot bump version because there are no commits since the latest tag.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.NoCommitsSinceLatestTag'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
+            $thrown.TargetObject | Should -Be $projectRoot
         }
     }
 
@@ -426,7 +461,19 @@ Describe 'Coverage gaps for release and git internals' {
             Mock Get-NovaProjectInfo {throw 'not a project'}
             Mock Test-Path {$false}
 
-            {Get-ResourceFilePath -FileName 'missing.json'} | Should -Throw 'Resource file not found: missing.json*'
+            $thrown = $null
+            try {
+                Get-ResourceFilePath -FileName 'missing.json'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -BeLike 'Resource file not found: missing.json*'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.ResourceFileNotFound'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+            $thrown.TargetObject | Should -Be 'missing.json'
         }
     }
 }

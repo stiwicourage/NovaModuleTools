@@ -315,7 +315,19 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             Mock Get-NovaVersionUpdatePlan {throw 'should not calculate a version plan'}
             Mock Set-NovaModuleVersion {throw 'should not write project.json'}
 
-            {Update-NovaModuleVersion -Path $projectRoot -WhatIf} | Should -Throw 'Cannot bump version because the repository has no commits yet. Create an initial commit first.'
+            $thrown = $null
+            try {
+                Update-NovaModuleVersion -Path $projectRoot -WhatIf
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Cannot bump version because the repository has no commits yet. Create an initial commit first.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.GitRepositoryHasNoCommits'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
+            $thrown.TargetObject | Should -Be $projectRoot
 
             Assert-MockCalled Get-NovaVersionUpdatePlan -Times 0
             Assert-MockCalled Set-NovaModuleVersion -Times 0

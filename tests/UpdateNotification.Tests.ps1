@@ -94,7 +94,19 @@ Describe 'Update notification behavior' {
 
     It 'Get-NovaUpdateNotificationPreferenceChangeContext throws when neither enable nor disable was requested' {
         InModuleScope $script:moduleName {
-            {Get-NovaUpdateNotificationPreferenceChangeContext} | Should -Throw 'Specify either -EnablePrereleaseNotifications or -DisablePrereleaseNotifications.'
+            $thrown = $null
+            try {
+                Get-NovaUpdateNotificationPreferenceChangeContext
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Specify either -EnablePrereleaseNotifications or -DisablePrereleaseNotifications.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UpdateNotificationPreferenceChangeRequired'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $thrown.TargetObject | Should -Be 'PrereleaseNotifications'
         }
     }
 
@@ -204,9 +216,19 @@ Describe 'Update notification behavior' {
             Mock Get-NovaInstalledModuleVersionInfo {[pscustomobject]@{ModuleName = 'NovaModuleTools'}}
             Mock Invoke-NovaModuleUpdateLookup {$null}
 
-            {
+            $thrown = $null
+            try {
                 Get-NovaModuleSelfUpdateWorkflowContext
-            } | Should -Throw 'Unable to determine a NovaModuleTools update candidate. Try again when the PowerShell Gallery is reachable.'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Unable to determine a NovaModuleTools update candidate. Try again when the PowerShell Gallery is reachable.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.ModuleSelfUpdateCandidateUnavailable'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ResourceUnavailable)
+            $thrown.TargetObject | Should -Be 'NovaModuleTools'
 
             Assert-MockCalled Invoke-NovaModuleUpdateLookup -Times 1 -ParameterFilter {
                 $AllowPrereleaseNotifications -and $TimeoutMilliseconds -eq 10000
@@ -375,7 +397,19 @@ Describe 'Update notification behavior' {
     It 'ConvertFrom-NovaUpdateCliArgument allows no arguments and rejects unsupported usage' {
         InModuleScope $script:moduleName {
             (ConvertFrom-NovaUpdateCliArgument).Count | Should -Be 0
-            {ConvertFrom-NovaUpdateCliArgument -Arguments @('--bogus')} | Should -Throw "Unsupported 'nova update' usage*"
+
+            $unsupportedUsageError = $null
+            try {
+                ConvertFrom-NovaUpdateCliArgument -Arguments @('--bogus')
+            }
+            catch {
+                $unsupportedUsageError = $_
+            }
+
+            $unsupportedUsageError | Should -Not -BeNullOrEmpty
+            $unsupportedUsageError.Exception.Message | Should -BeLike "Unsupported 'nova update' usage*"
+            $unsupportedUsageError.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnsupportedUpdateCliUsage'
+            $unsupportedUsageError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
         }
     }
 
@@ -552,8 +586,23 @@ throw 'offline'
         $result.HostMessages | Should -HaveCount 0
     }
 
-    It 'nova update stops on self-update failure instead of returning a success object' {
-        InModuleScope $script:moduleName {
+    It 'public self-update entrypoints stop on a structured self-update failure for <Name>' -ForEach @(
+        @{
+            Name = 'Update-NovaModuleTool'
+            Invoke = {
+                Update-NovaModuleTool -Confirm:$false
+            }
+        },
+        @{
+            Name = 'nova update'
+            Invoke = {
+                nova update -Confirm:$false
+            }
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
             Mock Read-NovaUpdateNotificationPreference {
                 [pscustomobject]@{PrereleaseNotificationsEnabled = $true}
             }
@@ -576,7 +625,19 @@ throw 'offline'
                 throw "Module 'NovaModuleTools' was not installed by using Install-Module, so it cannot be updated."
             }
 
-            {nova update -Confirm:$false} | Should -Throw '*was not installed by using Install-Module*'
+            $thrown = $null
+            try {
+                & $TestCase.Invoke
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be "Module 'NovaModuleTools' was not installed by using Install-Module, so it cannot be updated."
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.ModuleSelfUpdateFailed'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
+            $thrown.TargetObject | Should -Be 'NovaModuleTools'
             Assert-MockCalled Invoke-NovaModuleSelfUpdate -Times 1
         }
     }

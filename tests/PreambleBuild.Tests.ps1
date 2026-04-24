@@ -5,7 +5,6 @@ $global:preambleBuildTestSupportFunctionNameList = @(
     'Get-BuiltModuleFilePath'
     'Invoke-TestProjectBuild'
     'Get-BuiltModuleContent'
-    'Get-InvokeNovaBuildErrorMessage'
     'New-TestProjectWithPreamble'
 )
 
@@ -113,16 +112,31 @@ Describe 'Invoke-NovaBuild Preamble setting' {
     }
 
     Context 'invalid Preamble value <ProjectName>' -ForEach @(
-        @{ProjectName = 'PreambleInvalidType'; Preamble = 'Set-StrictMode -Version Latest'; ExpectedPatterns = @('Preamble', 'string\[\]', 'Set-StrictMode -Version Latest', 'top-level project\.json array of strings')}
-        @{ProjectName = 'PreambleInvalidItem'; Preamble = @('Set-StrictMode -Version Latest', 123); ExpectedPatterns = @('Preamble', 'string\[\]', 'index 1', '123', 'top-level project\.json array of strings')}
+        @{ProjectName = 'PreambleInvalidType'; Preamble = 'Set-StrictMode -Version Latest'; ExpectedMessage = 'Invalid project.json Preamble value: expected top-level Preamble as string[] but found type ''System.String'' with value "Set-StrictMode -Version Latest". Preamble must be a top-level project.json array of strings.'; ExpectedTarget = 'Set-StrictMode -Version Latest'}
+        @{ProjectName = 'PreambleInvalidItem'; Preamble = @('Set-StrictMode -Version Latest', 123); ExpectedMessage = 'Invalid project.json Preamble value: expected top-level Preamble as string[] but found entry at index 1 with type ''System.Int64'' and value 123. Preamble must be a top-level project.json array of strings.'; ExpectedTarget = 123}
     ) {
         It 'fails build with a clear validation error' {
             $root = New-TestProjectWithPreamble -TestDriveRoot $TestDrive -Name $ProjectName -Options @{Preamble = $Preamble}
-            $message = Get-InvokeNovaBuildErrorMessage -ProjectRoot $root
 
-            foreach ($pattern in $ExpectedPatterns) {
-                $message | Should -Match $pattern
+            $thrown = $null
+            try {
+                Push-Location -LiteralPath $root
+                try {
+                    Invoke-NovaBuild
+                }
+                finally {
+                    Pop-Location
+                }
             }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be $ExpectedMessage
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.ProjectPreambleInvalidType'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+            $thrown.TargetObject | Should -Be $ExpectedTarget
         }
     }
 }
