@@ -6,18 +6,18 @@ function Read-ProjectJsonData {
 
     $projectJsonContent = Get-Content -LiteralPath $ProjectJsonPath -Raw
     if ( [string]::IsNullOrWhiteSpace($projectJsonContent)) {
-        throw "project.json is empty: $ProjectJsonPath"
+        Stop-NovaOperation -Message "project.json is empty: $ProjectJsonPath" -ErrorId 'Nova.Configuration.ProjectJsonEmpty' -Category InvalidData -TargetObject $ProjectJsonPath
     }
 
     try {
         $jsonData = $projectJsonContent | ConvertFrom-Json -AsHashtable
     }
     catch {
-        throw "project.json is not valid JSON: $ProjectJsonPath. $( $_.Exception.Message )"
+        Stop-NovaOperation -Message "project.json is not valid JSON: $ProjectJsonPath. $( $_.Exception.Message )" -ErrorId 'Nova.Configuration.ProjectJsonInvalidJson' -Category ParserError -TargetObject $ProjectJsonPath
     }
 
     if ($jsonData -isnot [hashtable]) {
-        throw "project.json must contain a top-level JSON object: $ProjectJsonPath"
+        Stop-NovaOperation -Message "project.json must contain a top-level JSON object: $ProjectJsonPath" -ErrorId 'Nova.Configuration.ProjectJsonTopLevelObjectRequired' -Category InvalidData -TargetObject $ProjectJsonPath
     }
 
     return $jsonData

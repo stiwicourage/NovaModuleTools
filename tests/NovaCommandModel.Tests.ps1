@@ -112,7 +112,18 @@ Describe 'Nova command model - project, help, and build behavior' {
             $projectRoot = Join-Path $TestDrive 'missing-project-json'
             New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
 
-            {Get-NovaProjectInfo -Path $projectRoot} | Should -Throw 'Not a project folder. project.json not found:*'
+            $thrown = $null
+            try {
+                Get-NovaProjectInfo -Path $projectRoot
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -BeLike 'Not a project folder. project.json not found:*'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.ProjectJsonNotFound'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
         }
     }
 
@@ -122,7 +133,18 @@ Describe 'Nova command model - project, help, and build behavior' {
             New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
             Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value '' -Encoding utf8
 
-            {Get-NovaProjectInfo -Path $projectRoot} | Should -Throw 'project.json is empty:*'
+            $thrown = $null
+            try {
+                Get-NovaProjectInfo -Path $projectRoot
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -BeLike 'project.json is empty:*'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.ProjectJsonEmpty'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
         }
     }
 

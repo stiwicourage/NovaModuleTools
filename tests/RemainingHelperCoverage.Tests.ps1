@@ -246,33 +246,75 @@ function Get-Second {
         }
     }
 
+    It 'New-NovaErrorRecord and Stop-NovaOperation expose a stable error contract' {
+        InModuleScope $script:moduleName {
+            $errorRecord = New-NovaErrorRecord -Message 'Missing value for --path' -ErrorId 'Nova.Validation.MissingCliOptionValue' -Category InvalidArgument -TargetObject '--path'
+
+            $errorRecord.FullyQualifiedErrorId | Should -Be 'Nova.Validation.MissingCliOptionValue'
+            $errorRecord.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $errorRecord.TargetObject | Should -Be '--path'
+            $errorRecord.Exception.Message | Should -Be 'Missing value for --path'
+
+            $thrown = $null
+            try {
+                Stop-NovaOperation -Message 'Missing value for --path' -ErrorId 'Nova.Validation.MissingCliOptionValue' -Category InvalidArgument -TargetObject '--path'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.MissingCliOptionValue'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $thrown.TargetObject | Should -Be '--path'
+            $thrown.Exception.Message | Should -Be 'Missing value for --path'
+        }
+    }
+
     It 'Read-ProjectJsonData throws when project.json is <Name>' -ForEach @(
         @{
             Name = 'empty'
             FileName = 'empty-project.json'
             Content = ''
             ExpectedMessage = 'project.json is empty*'
+            ExpectedErrorId = 'Nova.Configuration.ProjectJsonEmpty'
+            ExpectedCategory = [System.Management.Automation.ErrorCategory]::InvalidData
         }
         @{
             Name = 'not valid JSON'
             FileName = 'invalid-project.json'
             Content = '{ invalid json }'
             ExpectedMessage = 'project.json is not valid JSON*'
+            ExpectedErrorId = 'Nova.Configuration.ProjectJsonInvalidJson'
+            ExpectedCategory = [System.Management.Automation.ErrorCategory]::ParserError
         }
         @{
             Name = 'not a top-level object'
             FileName = 'array-project.json'
             Content = '[1,2,3]'
             ExpectedMessage = 'project.json must contain a top-level JSON object*'
+            ExpectedErrorId = 'Nova.Configuration.ProjectJsonTopLevelObjectRequired'
+            ExpectedCategory = [System.Management.Automation.ErrorCategory]::InvalidData
         }
     ) {
         $projectJsonPath = Join-Path $TestDrive $_.FileName
         $_.Content | Set-Content -LiteralPath $projectJsonPath -Encoding utf8
 
-        InModuleScope $script:moduleName -Parameters @{ProjectJsonPath = $projectJsonPath; ExpectedMessage = $_.ExpectedMessage} {
-            param($ProjectJsonPath, $ExpectedMessage)
+        InModuleScope $script:moduleName -Parameters @{ProjectJsonPath = $projectJsonPath; ExpectedMessage = $_.ExpectedMessage; ExpectedErrorId = $_.ExpectedErrorId; ExpectedCategory = $_.ExpectedCategory} {
+            param($ProjectJsonPath, $ExpectedMessage, $ExpectedErrorId, $ExpectedCategory)
 
-            {Read-ProjectJsonData -ProjectJsonPath $ProjectJsonPath} | Should -Throw $ExpectedMessage
+            $thrown = $null
+            try {
+                Read-ProjectJsonData -ProjectJsonPath $ProjectJsonPath
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -BeLike $ExpectedMessage
+            $thrown.FullyQualifiedErrorId | Should -Be $ExpectedErrorId
+            $thrown.CategoryInfo.Category | Should -Be $ExpectedCategory
         }
     }
 

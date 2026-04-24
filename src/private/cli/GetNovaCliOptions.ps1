@@ -16,31 +16,16 @@ function ConvertFrom-NovaCliArgument {
                 $options.Local = $true
             }
             '^(--repository|-Repository)$' {
-                $index++
-                if ($index -ge $Arguments.Count) {
-                    throw 'Missing value for --repository'
-                }
-
-                $options.Repository = $Arguments[$index]
+                $options.Repository = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--repository'
             }
             '^(--path|-Path|-ModuleDirectoryPath)$' {
-                $index++
-                if ($index -ge $Arguments.Count) {
-                    throw 'Missing value for --path'
-                }
-
-                $options.ModuleDirectoryPath = $Arguments[$index]
+                $options.ModuleDirectoryPath = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--path'
             }
             '^(--apikey|-ApiKey)$' {
-                $index++
-                if ($index -ge $Arguments.Count) {
-                    throw 'Missing value for --apikey'
-                }
-
-                $options.ApiKey = $Arguments[$index]
+                $options.ApiKey = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--apikey'
             }
             default {
-                throw "Unknown argument: $token"
+                Stop-NovaOperation -Message "Unknown argument: $token" -ErrorId 'Nova.Validation.UnknownCliArgument' -Category InvalidArgument -TargetObject $token
             }
         }
 

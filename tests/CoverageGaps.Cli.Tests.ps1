@@ -181,13 +181,37 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
 
     It 'ConvertFrom-NovaInitCliArgument rejects positional init paths' {
         InModuleScope $script:moduleName {
-            {ConvertFrom-NovaInitCliArgument -Arguments @('some/path')} | Should -Throw "Unsupported 'nova init' usage*"
+            $thrown = $null
+            try {
+                ConvertFrom-NovaInitCliArgument -Arguments @('some/path')
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -BeLike "Unsupported 'nova init' usage*"
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnsupportedInitCliUsage'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $thrown.TargetObject | Should -Be 'some/path'
         }
     }
 
     It 'ConvertFrom-NovaInitCliArgument reports a missing path value' {
         InModuleScope $script:moduleName {
-            {ConvertFrom-NovaInitCliArgument -Arguments @('--path')} | Should -Throw 'Missing value for --path'
+            $thrown = $null
+            try {
+                ConvertFrom-NovaInitCliArgument -Arguments @('--path')
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Missing value for --path'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.MissingCliOptionValue'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $thrown.TargetObject | Should -Be '--path'
         }
     }
 
@@ -225,10 +249,62 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
     }
 
     It 'ConvertFrom-NovaCliArgument reports missing values for repository, path, and api key' {
+        InModuleScope $script:moduleName -Parameters @{
+            TestCases = @(
+                @{Arguments = @('--repository'); ExpectedMessage = 'Missing value for --repository'; Target = '--repository'}
+                @{Arguments = @('--path'); ExpectedMessage = 'Missing value for --path'; Target = '--path'}
+                @{Arguments = @('--apikey'); ExpectedMessage = 'Missing value for --apikey'; Target = '--apikey'}
+            )
+        } {
+            param($TestCases)
+
+            foreach ($testCase in $TestCases) {
+                $thrown = $null
+                try {
+                    ConvertFrom-NovaCliArgument -Arguments $testCase.Arguments
+                }
+                catch {
+                    $thrown = $_
+                }
+
+                $thrown | Should -Not -BeNullOrEmpty
+                $thrown.Exception.Message | Should -Be $testCase.ExpectedMessage
+                $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.MissingCliOptionValue'
+                $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+                $thrown.TargetObject | Should -Be $testCase.Target
+            }
+        }
+    }
+
+    It 'ConvertFrom-NovaDeployCliArgument reports structured parsing errors' {
         InModuleScope $script:moduleName {
-            {ConvertFrom-NovaCliArgument -Arguments @('--repository')} | Should -Throw 'Missing value for --repository'
-            {ConvertFrom-NovaCliArgument -Arguments @('--path')} | Should -Throw 'Missing value for --path'
-            {ConvertFrom-NovaCliArgument -Arguments @('--apikey')} | Should -Throw 'Missing value for --apikey'
+            $missingValueError = $null
+            try {
+                ConvertFrom-NovaDeployCliArgument -Arguments @('--url')
+            }
+            catch {
+                $missingValueError = $_
+            }
+
+            $missingValueError | Should -Not -BeNullOrEmpty
+            $missingValueError.Exception.Message | Should -Be 'Missing value for --url'
+            $missingValueError.FullyQualifiedErrorId | Should -Be 'Nova.Validation.MissingCliOptionValue'
+            $missingValueError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $missingValueError.TargetObject | Should -Be '--url'
+
+            $unknownArgumentError = $null
+            try {
+                ConvertFrom-NovaDeployCliArgument -Arguments @('--bogus')
+            }
+            catch {
+                $unknownArgumentError = $_
+            }
+
+            $unknownArgumentError | Should -Not -BeNullOrEmpty
+            $unknownArgumentError.Exception.Message | Should -Be 'Unknown argument: --bogus'
+            $unknownArgumentError.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnknownCliArgument'
+            $unknownArgumentError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $unknownArgumentError.TargetObject | Should -Be '--bogus'
         }
     }
 
