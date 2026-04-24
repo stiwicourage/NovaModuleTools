@@ -375,7 +375,19 @@ Describe 'Update notification behavior' {
     It 'ConvertFrom-NovaUpdateCliArgument allows no arguments and rejects unsupported usage' {
         InModuleScope $script:moduleName {
             (ConvertFrom-NovaUpdateCliArgument).Count | Should -Be 0
-            {ConvertFrom-NovaUpdateCliArgument -Arguments @('--bogus')} | Should -Throw "Unsupported 'nova update' usage*"
+
+            $unsupportedUsageError = $null
+            try {
+                ConvertFrom-NovaUpdateCliArgument -Arguments @('--bogus')
+            }
+            catch {
+                $unsupportedUsageError = $_
+            }
+
+            $unsupportedUsageError | Should -Not -BeNullOrEmpty
+            $unsupportedUsageError.Exception.Message | Should -BeLike "Unsupported 'nova update' usage*"
+            $unsupportedUsageError.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnsupportedUpdateCliUsage'
+            $unsupportedUsageError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
         }
     }
 

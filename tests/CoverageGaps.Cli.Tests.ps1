@@ -181,7 +181,21 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         InModuleScope $script:moduleName {
             (ConvertFrom-NovaBumpCliArgument -Arguments @('--preview')).Preview | Should -BeTrue
             (ConvertFrom-NovaBumpCliArgument -Arguments @('-Preview')).Preview | Should -BeTrue
-            {ConvertFrom-NovaBumpCliArgument -Arguments @('--bogus')} | Should -Throw 'Unknown argument: --bogus'
+
+            $unknownArgumentError = $null
+            try {
+                ConvertFrom-NovaBumpCliArgument -Arguments @('--bogus')
+            }
+            catch {
+                $unknownArgumentError = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $unknownArgumentError -ExpectedError ([pscustomobject]@{
+                Message = 'Unknown argument: --bogus'
+                ErrorId = 'Nova.Validation.UnknownCliArgument'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '--bogus'
+            })
         }
     }
 
@@ -396,11 +410,44 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 $env:HOME = $TestDrive
                 Get-NovaCliInstallDirectory | Should -Be ([System.IO.Path]::Join($TestDrive, '.local', 'bin'))
                 $env:HOME = ''
-                {Get-NovaCliInstallDirectory} | Should -Throw 'HOME environment variable is not set*'
+
+                $missingHomeError = $null
+                try {
+                    Get-NovaCliInstallDirectory
+                }
+                catch {
+                    $missingHomeError = $_
+                }
+
+                Assert-TestStructuredCliError -ThrownError $missingHomeError -ExpectedError ([pscustomobject]@{
+                    Message = 'HOME environment variable is not set*'
+                    ErrorId = 'Nova.Environment.HomeDirectoryMissing'
+                    Category = [System.Management.Automation.ErrorCategory]::ResourceUnavailable
+                    TargetObject = 'HOME'
+                })
             }
             finally {
                 $env:HOME = $originalHome
             }
+        }
+    }
+
+    It 'Invoke-NovaCliInitCommand rejects WhatIf with a structured validation error' {
+        InModuleScope $script:moduleName {
+            $unsupportedWhatIfError = $null
+            try {
+                Invoke-NovaCliInitCommand -Arguments @('--path', '/tmp/project') -ForwardedParameters @{} -WhatIfEnabled
+            }
+            catch {
+                $unsupportedWhatIfError = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $unsupportedWhatIfError -ExpectedError ([pscustomobject]@{
+                Message = "The 'nova init' CLI command does not support -WhatIf*"
+                ErrorId = 'Nova.Validation.UnsupportedInitCliWhatIf'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                TargetObject = 'WhatIf'
+            })
         }
     }
 

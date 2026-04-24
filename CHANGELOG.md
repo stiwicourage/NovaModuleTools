@@ -69,9 +69,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change `CopyResourcesToModuleRoot` to the canonical project setting name while keeping the default value `false`.
 - Change `Publish-NovaModule -Local` and `nova publish -local` so a successful local publish also reloads the published
   module from the local install path into the active PowerShell session.
-- Introduce a shared Nova error-record pattern across the current project-loading, shared validation, and CLI
-  parsing/help flows so those failures can expose stable error ids and categories while preserving clear user-facing
-  messages.
 
 ### Fixed
 

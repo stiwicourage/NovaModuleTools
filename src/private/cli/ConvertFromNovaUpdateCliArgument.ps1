@@ -9,5 +9,5 @@ function ConvertFrom-NovaUpdateCliArgument {
         return @{}
     }
 
-    throw "Unsupported 'nova update' usage. Use 'nova update'."
+    Stop-NovaOperation -Message "Unsupported 'nova update' usage. Use 'nova update'." -ErrorId 'Nova.Validation.UnsupportedUpdateCliUsage' -Category InvalidArgument -TargetObject $Arguments
 }

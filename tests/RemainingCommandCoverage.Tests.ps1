@@ -202,7 +202,19 @@ Describe 'Coverage for remaining command and filesystem branches' {
             try {
                 Set-Variable -Name IsWindows -Value $true -Force
 
-                {Install-NovaCli} | Should -Throw 'Install-NovaCli currently supports macOS/Linux only*'
+                $unsupportedPlatformError = $null
+                try {
+                    Install-NovaCli
+                }
+                catch {
+                    $unsupportedPlatformError = $_
+                }
+
+                $unsupportedPlatformError | Should -Not -BeNullOrEmpty
+                $unsupportedPlatformError.Exception.Message | Should -BeLike 'Install-NovaCli currently supports macOS/Linux only*'
+                $unsupportedPlatformError.FullyQualifiedErrorId | Should -Be 'Nova.Environment.UnsupportedCliInstallPlatform'
+                $unsupportedPlatformError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::NotImplemented)
+                $unsupportedPlatformError.TargetObject | Should -Be 'Windows'
             }
             finally {
                 Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
@@ -301,7 +313,19 @@ Describe 'Coverage for remaining command and filesystem branches' {
                 Mock Get-NovaCliLauncherPath {'/tmp/source/nova'}
                 Mock Test-Path {$true}
 
-                {Install-NovaCli} | Should -Throw 'Target file already exists: /tmp/bin/nova*'
+                $targetExistsError = $null
+                try {
+                    Install-NovaCli
+                }
+                catch {
+                    $targetExistsError = $_
+                }
+
+                $targetExistsError | Should -Not -BeNullOrEmpty
+                $targetExistsError.Exception.Message | Should -BeLike 'Target file already exists: /tmp/bin/nova*'
+                $targetExistsError.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.CliInstallTargetExists'
+                $targetExistsError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ResourceExists)
+                $targetExistsError.TargetObject | Should -Be '/tmp/bin/nova'
             }
             finally {
                 Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
