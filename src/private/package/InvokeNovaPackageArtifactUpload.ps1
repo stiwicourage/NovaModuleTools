@@ -6,7 +6,7 @@ function Invoke-NovaPackageArtifactUpload {
     )
 
     if (-not (Test-Path -LiteralPath $UploadArtifact.PackagePath -PathType Leaf)) {
-        throw "Package file not found: $( $UploadArtifact.PackagePath )"
+        Stop-NovaOperation -Message "Package file not found: $( $UploadArtifact.PackagePath )" -ErrorId 'Nova.Environment.PackageUploadFileNotFound' -Category ObjectNotFound -TargetObject $UploadArtifact.PackagePath
     }
 
     $webRequestParameters = @{
@@ -27,7 +27,7 @@ function Invoke-NovaPackageArtifactUpload {
         $response = Invoke-WebRequest @webRequestParameters
     }
     catch {
-        throw "Package upload failed for $( $UploadArtifact.PackagePath ) -> $( $UploadArtifact.UploadUrl ). $( $_.Exception.Message )"
+        Stop-NovaOperation -Message "Package upload failed for $( $UploadArtifact.PackagePath ) -> $( $UploadArtifact.UploadUrl ). $( $_.Exception.Message )" -ErrorId 'Nova.Dependency.PackageUploadRequestFailed' -Category ConnectionError -TargetObject $UploadArtifact.UploadUrl
     }
 
     return [pscustomobject]@{

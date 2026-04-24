@@ -450,7 +450,18 @@ Describe 'Coverage for remaining command and filesystem branches' {
 
     It 'Invoke-NovaCli throws on an unknown top-level command' {
         InModuleScope $script:moduleName {
-            {Invoke-NovaCli banana} | Should -Throw 'Unknown command: <banana*'
+            $thrown = $null
+            try {
+                Invoke-NovaCli banana
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -Be "Unknown command: <banana> | Use 'nova --help' to see available commands."
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnknownCliCommand'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $thrown.TargetObject | Should -Be 'banana'
         }
     }
 

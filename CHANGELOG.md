@@ -76,6 +76,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   clear messages.
 - Continue the shared error-model migration for package upload, build help/manifest, package metadata, and version bump
   workflow failures so tests can assert stable error ids and categories without losing the existing user guidance.
+- Continue the shared error-model migration for CLI launcher/route failures, package repository and upload request
+  failures,
+  and local installed-version lookup so the remaining environment and dependency flows can be verified with structured
+  assertions instead of brittle whole-message checks.
 
 ### Documentation
 

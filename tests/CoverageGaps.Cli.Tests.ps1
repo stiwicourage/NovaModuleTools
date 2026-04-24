@@ -454,14 +454,40 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
     It 'Get-NovaCliLauncherPath reports missing commands, missing file-backed commands, and missing launcher files' {
         InModuleScope $script:moduleName {
             Mock Get-Command {$null}
-            {Get-NovaCliLauncherPath} | Should -Throw 'Install-NovaCli command not found.'
+            $missingCommandError = $null
+            try {
+                Get-NovaCliLauncherPath
+            }
+            catch {
+                $missingCommandError = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $missingCommandError -ExpectedError ([pscustomobject]@{
+                Message = 'Install-NovaCli command not found.'
+                ErrorId = 'Nova.Environment.CliInstallCommandNotFound'
+                Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                TargetObject = 'Install-NovaCli'
+            })
 
             Mock Get-Command {
                 [pscustomobject]@{
                     ScriptBlock = [pscustomobject]@{File = $null}
                 }
             }
-            {Get-NovaCliLauncherPath} | Should -Throw 'Install-NovaCli must be loaded from a file-backed module.'
+            $nonFileBackedCommandError = $null
+            try {
+                Get-NovaCliLauncherPath
+            }
+            catch {
+                $nonFileBackedCommandError = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $nonFileBackedCommandError -ExpectedError ([pscustomobject]@{
+                Message = 'Install-NovaCli must be loaded from a file-backed module.'
+                ErrorId = 'Nova.Environment.CliInstallCommandNotFileBacked'
+                Category = [System.Management.Automation.ErrorCategory]::ResourceUnavailable
+                TargetObject = 'Install-NovaCli'
+            })
 
             Mock Get-Command {
                 [pscustomobject]@{
@@ -469,7 +495,20 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 }
             }
             Mock Test-Path {$false}
-            {Get-NovaCliLauncherPath} | Should -Throw 'Nova CLI launcher not found*'
+            $missingLauncherError = $null
+            try {
+                Get-NovaCliLauncherPath
+            }
+            catch {
+                $missingLauncherError = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $missingLauncherError -ExpectedError ([pscustomobject]@{
+                Message = 'Nova CLI launcher not found*'
+                ErrorId = 'Nova.Environment.CliLauncherNotFound'
+                Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                TargetObject = 'nova'
+            })
         }
     }
 
@@ -570,7 +609,20 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
 
             Mock Resolve-NovaLocalPublishPath {'/tmp/local-modules'}
 
-            {Get-NovaInstalledProjectVersion -ProjectInfo $projectInfo} | Should -Throw 'Local module install not found for AzureDevOpsAgentInstaller*Run ''nova publish -local'' first*'
+            $thrown = $null
+            try {
+                Get-NovaInstalledProjectVersion -ProjectInfo $projectInfo
+            }
+            catch {
+                $thrown = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                Message = 'Local module install not found for AzureDevOpsAgentInstaller*Run ''nova publish -local'' first*'
+                ErrorId = 'Nova.Environment.LocalModuleInstallNotFound'
+                Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                TargetObject = '/tmp/local-modules/AzureDevOpsAgentInstaller/AzureDevOpsAgentInstaller.psd1'
+            })
         }
     }
 
@@ -597,7 +649,21 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 return
             }
 
-            {Set-NovaCliExecutablePermission -Path (Join-Path $TestDrive 'missing-nova') -Confirm:$false} | Should -Throw 'Failed to make nova launcher executable*'
+            $path = Join-Path $TestDrive 'missing-nova'
+            $thrown = $null
+            try {
+                Set-NovaCliExecutablePermission -Path $path -Confirm:$false
+            }
+            catch {
+                $thrown = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                Message = 'Failed to make nova launcher executable*'
+                ErrorId = 'Nova.Dependency.CliLauncherPermissionUpdateFailed'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                TargetObject = $path
+            })
         }
     }
 

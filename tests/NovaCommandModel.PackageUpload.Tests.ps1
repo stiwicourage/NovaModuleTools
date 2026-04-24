@@ -617,6 +617,94 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
+    It 'Get-NovaPackageRepository exposes a structured configuration error when a named repository cannot be resolved' {
+        $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'missing-package-repository')
+
+        InModuleScope $script:moduleName -Parameters @{
+            ProjectInfo = (New-TestNovaPackageUploadProjectInfo -Layout $layout)
+        } {
+            param($ProjectInfo)
+
+            $thrown = $null
+            try {
+                Get-NovaPackageRepository -ProjectInfo $ProjectInfo -Repository 'MissingRepo'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            Assert-TestStructuredError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                Message = 'Package repository not found: MissingRepo*'
+                ErrorId = 'Nova.Configuration.PackageRepositoryNotFound'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                TargetObject = 'MissingRepo'
+            })
+        }
+    }
+
+    It 'Invoke-NovaPackageArtifactUpload exposes a structured error when the package file is missing' {
+        InModuleScope $script:moduleName {
+            $uploadArtifact = [pscustomobject]@{
+                Type = 'Zip'
+                PackagePath = '/tmp/missing-package.zip'
+                PackageFileName = 'missing-package.zip'
+                Repository = ''
+                UploadUrl = 'https://packages.example/raw/missing-package.zip'
+                Headers = [ordered]@{}
+            }
+
+            $thrown = $null
+            try {
+                Invoke-NovaPackageArtifactUpload -UploadArtifact $uploadArtifact
+            }
+            catch {
+                $thrown = $_
+            }
+
+            Assert-TestStructuredError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                Message = 'Package file not found: /tmp/missing-package.zip'
+                ErrorId = 'Nova.Environment.PackageUploadFileNotFound'
+                Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                TargetObject = '/tmp/missing-package.zip'
+            })
+        }
+    }
+
+    It 'Invoke-NovaPackageArtifactUpload exposes a structured dependency error when the upload request fails' {
+        $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'upload-request-fails')
+        $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
+
+        InModuleScope $script:moduleName -Parameters @{PackagePath = $packagePath} {
+            param($PackagePath)
+
+            $uploadArtifact = [pscustomobject]@{
+                Type = 'Zip'
+                PackagePath = $PackagePath
+                PackageFileName = 'PackageProject.2.3.4.zip'
+                Repository = ''
+                UploadUrl = 'https://packages.example/raw/PackageProject.2.3.4.zip'
+                Headers = [ordered]@{}
+            }
+
+            Mock Invoke-WebRequest {throw 'network down'}
+
+            $thrown = $null
+            try {
+                Invoke-NovaPackageArtifactUpload -UploadArtifact $uploadArtifact
+            }
+            catch {
+                $thrown = $_
+            }
+
+            Assert-TestStructuredError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                Message = "Package upload failed for $PackagePath -> https://packages.example/raw/PackageProject.2.3.4.zip*"
+                ErrorId = 'Nova.Dependency.PackageUploadRequestFailed'
+                Category = [System.Management.Automation.ErrorCategory]::ConnectionError
+                TargetObject = 'https://packages.example/raw/PackageProject.2.3.4.zip'
+            })
+        }
+    }
+
     It 'Deploy-NovaPackage includes expected headers and auth when configured' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'upload-headers-and-auth')
         $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
