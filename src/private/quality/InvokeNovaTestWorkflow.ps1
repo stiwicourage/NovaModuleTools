@@ -10,7 +10,7 @@ function Invoke-NovaTestWorkflow {
     & $WorkflowContext.TestResultArtifactWriter.ScriptBlock -TestResult $testResult -OutputPath $WorkflowContext.TestResultPath -ReportWriter $WorkflowContext.TestResultReportWriter.ScriptBlock
 
     if ($testResult.Result -ne 'Passed') {
-        throw 'Tests failed'
+        Stop-NovaOperation -Message 'Tests failed' -ErrorId 'Nova.Workflow.TestRunFailed' -Category InvalidOperation -TargetObject $WorkflowContext.TestResultPath
     }
 }
 

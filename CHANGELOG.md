@@ -80,6 +80,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   failures,
   and local installed-version lookup so the remaining environment and dependency flows can be verified with structured
   assertions instead of brittle whole-message checks.
+- Continue the shared error-model migration for test workflow failures, duplicate-function validation, preamble and
+  manifest validation, help-locale conflicts, and package output safety checks so more build and packaging paths expose
+  stable error ids and categories.
 
 ### Documentation
 

@@ -8,7 +8,7 @@ function Initialize-NovaPackageOutputDirectory {
 
     $packageMetadata = @($PackageMetadataList)[0]
     if ($null -eq $packageMetadata) {
-        throw 'Package metadata list cannot be empty.'
+        Stop-NovaOperation -Message 'Package metadata list cannot be empty.' -ErrorId 'Nova.Validation.PackageMetadataListEmpty' -Category InvalidArgument -TargetObject 'PackageMetadataList'
     }
 
     if ($PackageMetadata.CleanOutputDirectory) {

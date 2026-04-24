@@ -278,9 +278,19 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
         InModuleScope $script:moduleName {
             Mock Test-Path {$false}
 
-            {
+            $thrown = $null
+            try {
                 Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo ([pscustomobject]@{ModuleFilePSM1 = '/tmp/missing.psm1'})
-            } | Should -Throw 'Built module file not found*'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Built module file not found: /tmp/missing.psm1'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.BuiltModuleFileNotFound'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+            $thrown.TargetObject | Should -Be '/tmp/missing.psm1'
         }
     }
 
@@ -294,9 +304,19 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
                 }
             }
 
-            {
+            $thrown = $null
+            try {
                 Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo ([pscustomobject]@{ModuleFilePSM1 = '/tmp/bad.psm1'})
-            } | Should -Throw 'Built module contains parse errors*unexpected token'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Built module contains parse errors and cannot be validated for duplicates. File: /tmp/bad.psm1. Errors: unexpected token'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.BuiltModuleDuplicateValidationParseFailed'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ParserError)
+            $thrown.TargetObject | Should -Be '/tmp/bad.psm1'
         }
     }
 
@@ -315,9 +335,19 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             }
             Mock Get-DuplicateFunctionGroup {}
 
-            {
+            $thrown = $null
+            try {
                 Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo ([pscustomobject]@{ModuleFilePSM1 = '/tmp/empty.psm1'})
-            } | Should -Throw 'No functions found to build. Add a function to the source file.'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'No functions found to build. Add a function to the source file.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.BuiltModuleFunctionListEmpty'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
+            $thrown.TargetObject | Should -Be '/tmp/empty.psm1'
             Assert-MockCalled Get-DuplicateFunctionGroup -Times 0
         }
     }
@@ -428,6 +458,8 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
 
     It 'New-InitiateGitRepo initializes a git repository when git is available' {
         InModuleScope $script:moduleName {
+            Remove-Item -Path 'function:git' -Force -ErrorAction SilentlyContinue
+
             if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
                 Set-ItResult -Skipped -Because 'git is not available in this environment'
                 return

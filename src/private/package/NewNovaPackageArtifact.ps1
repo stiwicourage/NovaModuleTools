@@ -20,7 +20,7 @@ function New-NovaPackageArtifact {
             New-NovaZipPackageArtifact -ProjectInfo $ProjectInfo -PackageMetadata $PackageMetadata
         }
         default {
-            throw "Unsupported package type: $( $PackageMetadata.Type )"
+            Stop-NovaOperation -Message "Unsupported package type: $( $PackageMetadata.Type )" -ErrorId 'Nova.Validation.UnsupportedPackageArtifactType' -Category InvalidArgument -TargetObject $PackageMetadata.Type
         }
     }
 

@@ -15,5 +15,5 @@ function Assert-ManifestSchema {
         return
     }
 
-    throw "Unknown parameter(s) in Manifest: $( $unknownParameter -join ', ' )"
+    Stop-NovaOperation -Message "Unknown parameter(s) in Manifest: $( $unknownParameter -join ', ' )" -ErrorId 'Nova.Configuration.ManifestUnknownParameter' -Category InvalidData -TargetObject $unknownParameter
 }

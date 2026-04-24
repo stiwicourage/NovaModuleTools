@@ -197,7 +197,19 @@ Describe 'Coverage for remaining command and filesystem branches' {
             Mock Test-Path {$true}
             Mock Invoke-NovaPester {[pscustomobject]@{Result = 'Failed'}}
 
-            {Invoke-NovaTestWorkflow -WorkflowContext $workflowContext} | Should -Throw 'Tests failed'
+            $thrown = $null
+            try {
+                Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Tests failed'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.TestRunFailed'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
+            $thrown.TargetObject | Should -Be '/tmp/nova-project/artifacts/TestResults.xml'
         }
     }
 

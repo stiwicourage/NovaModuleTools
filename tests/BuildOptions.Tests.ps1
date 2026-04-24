@@ -301,7 +301,8 @@ Describe 'Invoke-NovaBuild options' {
         $project.Manifest['BogusKey'] = 'nope'
         $project | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $projectJsonPath -Encoding utf8
 
-        {
+        $thrown = $null
+        try {
             Push-Location -LiteralPath $root
             try {
                 Invoke-NovaBuild
@@ -309,7 +310,16 @@ Describe 'Invoke-NovaBuild options' {
             finally {
                 Pop-Location
             }
-        } | Should -Throw 'Unknown parameter(s) in Manifest: BogusKey'
+        }
+        catch {
+            $thrown = $_
+        }
+
+        $thrown | Should -Not -BeNullOrEmpty
+        $thrown.Exception.Message | Should -Be 'Unknown parameter(s) in Manifest: BogusKey'
+        $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.ManifestUnknownParameter'
+        $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+        @($thrown.TargetObject) | Should -Be @('BogusKey')
     }
 
     It 'FailOnDuplicateFunctionNames=true fails when built psm1 contains duplicate top-level function names' {

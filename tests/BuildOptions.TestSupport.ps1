@@ -260,27 +260,6 @@ function Assert-InvokeNovaBuildThrows {
     }
 }
 
-function Get-InvokeNovaBuildErrorMessage {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$ProjectRoot
-    )
-
-    Push-Location -LiteralPath $ProjectRoot
-    try {
-        try {
-            Invoke-NovaBuild
-        }
-        catch {
-            return $_.Exception.Message
-        }
-    }
-    finally {
-        Pop-Location
-    }
-
-    throw 'Expected Invoke-NovaBuild to throw, but it succeeded.'
-}
 
 function Get-TopLevelFunctionAstFromAst {
     [CmdletBinding()]
