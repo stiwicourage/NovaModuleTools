@@ -91,6 +91,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continue the shared error-model migration for local installed-version CLI checks, no-commit version bump handling,
   and invalid package-type project loading so more public command coverage now asserts stable error ids and categories
   instead of brittle whole-message matches.
+- Continue the shared error-model migration for `project.json` schema validation so Build/Pester schema failures now
+  expose a stable error id and category instead of raw `Test-Json` exception text.
 
 ### Documentation
 

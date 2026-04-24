@@ -11,13 +11,19 @@ function Test-ProjectSchema {
         Build  = Get-ResourceFilePath -FileName 'Schema-Build.json'
         Pester = Get-ResourceFilePath -FileName 'Schema-Pester.json'
     }
-    $result = switch ($Schema) {
-        'Build' {
-            Test-Json -Path 'project.json' -Schema (Get-Content $SchemaPath.Build -Raw)
-        }
-        'Pester' {
-            Test-Json -Path 'project.json' -Schema (Get-Content $SchemaPath.Pester -Raw)
+    try {
+        $result = switch ($Schema) {
+            'Build' {
+                Test-Json -Path 'project.json' -Schema (Get-Content $SchemaPath.Build -Raw)
+            }
+            'Pester' {
+                Test-Json -Path 'project.json' -Schema (Get-Content $SchemaPath.Pester -Raw)
+            }
         }
     }
+    catch {
+        Stop-NovaOperation -Message "Invalid project.json for the $Schema schema: $( $_.Exception.Message )" -ErrorId 'Nova.Configuration.ProjectSchemaValidationFailed' -Category InvalidData -TargetObject 'project.json'
+    }
+
     return $result
 }

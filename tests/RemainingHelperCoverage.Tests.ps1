@@ -209,11 +209,8 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         }
     }
 
-    It 'Test-ProjectSchema accepts Package.Types aliases case-insensitively and rejects unsupported values' -ForEach @(
-        @{Name = 'accepts mixed-case aliases'; Types = @('.NuPkg', 'ZIP'); Expected = $true; Throws = $false; ErrorMessage = $null}
-        @{Name = 'rejects unsupported type'; Types = @('Tar'); Expected = $null; Throws = $true; ErrorMessage = '*The JSON is not valid with the schema*'}
-    ) {
-        $projectRoot = Join-Path $TestDrive $_.Name.Replace(' ', '-')
+    It 'Test-ProjectSchema accepts Package.Types aliases case-insensitively' {
+        $projectRoot = Join-Path $TestDrive 'accepts-mixed-case-aliases'
         New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
         $projectJson = ([ordered]@{
             ProjectName = 'SchemaTypesProject'
@@ -225,22 +222,56 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
                 GUID = '99999999-9999-9999-9999-999999999999'
             }
             Package = [ordered]@{
-                Types = $_.Types
+                Types = @('.NuPkg', 'ZIP')
             }
         } | ConvertTo-Json -Depth 5)
         Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
 
         Push-Location $projectRoot
         try {
-            InModuleScope $script:moduleName -Parameters @{Expected = $_.Expected; Throws = $_.Throws; ErrorMessage = $_.ErrorMessage} {
-                param($Expected, $Throws, $ErrorMessage)
+            InModuleScope $script:moduleName {
+                Test-ProjectSchema -Schema Build | Should -BeTrue
+            }
+        }
+        finally {
+            Pop-Location
+        }
+    }
 
-                if ($Throws) {
-                    {Test-ProjectSchema -Schema Build} | Should -Throw $ErrorMessage
-                    return
+    It 'Test-ProjectSchema exposes a structured error for unsupported Package.Types values' {
+        $projectRoot = Join-Path $TestDrive 'rejects-unsupported-type'
+        New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+        $projectJson = ([ordered]@{
+            ProjectName = 'SchemaTypesProject'
+            Description = 'Schema package types test'
+            Version = '0.0.1'
+            Manifest = [ordered]@{
+                Author = 'Test Author'
+                PowerShellHostVersion = '7.4'
+                GUID = '99999999-9999-9999-9999-999999999999'
+            }
+            Package = [ordered]@{
+                Types = @('Tar')
+            }
+        } | ConvertTo-Json -Depth 5)
+        Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value $projectJson -Encoding utf8
+
+        Push-Location $projectRoot
+        try {
+            InModuleScope $script:moduleName {
+                $thrown = $null
+                try {
+                    Test-ProjectSchema -Schema Build
+                }
+                catch {
+                    $thrown = $_
                 }
 
-                Test-ProjectSchema -Schema Build | Should -Be $Expected
+                $thrown | Should -Not -BeNullOrEmpty
+                $thrown.Exception.Message | Should -BeLike 'Invalid project.json for the Build schema: *The JSON is not valid with the schema*'
+                $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.ProjectSchemaValidationFailed'
+                $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+                $thrown.TargetObject | Should -Be 'project.json'
             }
         }
         finally {
