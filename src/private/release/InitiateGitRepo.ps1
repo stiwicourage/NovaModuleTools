@@ -25,7 +25,7 @@ function New-InitiateGitRepo {
             try {
                 git init | Out-Null
             } catch {
-                throw "Failed to initialize Git repo: $( $_.Exception.Message )"
+                Stop-NovaOperation -Message "Failed to initialize Git repo: $( $_.Exception.Message )" -ErrorId 'Nova.Dependency.GitRepositoryInitializationFailed' -Category OpenError -TargetObject $DirectoryPath
             }
         }
         Write-Verbose 'Git repository initialized successfully'

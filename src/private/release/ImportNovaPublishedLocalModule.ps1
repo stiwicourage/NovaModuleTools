@@ -6,7 +6,7 @@ function Import-NovaPublishedLocalModule {
     )
 
     if (-not (Test-Path -LiteralPath $ManifestPath -PathType Leaf)) {
-        throw "Expected locally published module manifest at: $ManifestPath"
+        Stop-NovaOperation -Message "Expected locally published module manifest at: $ManifestPath" -ErrorId 'Nova.Environment.LocalPublishedModuleManifestNotFound' -Category ObjectNotFound -TargetObject $ManifestPath
     }
 
     $loadedModules = @(Get-Module -Name $ProjectName -All)

@@ -67,7 +67,18 @@ Describe 'Coverage for remaining command and filesystem branches' {
             Mock Test-Path {$false}
             Mock New-Item {throw 'access denied'} -ParameterFilter {$Path -eq $OutputDir}
 
-            {Reset-ProjectDist} | Should -Throw 'Failed to reset Dist folder: access denied'
+            $thrown = $null
+            try {
+                Reset-ProjectDist
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -Be 'Failed to reset Dist folder: access denied'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.DistResetFailed'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::OpenError)
+            $thrown.TargetObject | Should -Be $OutputDir
         }
     }
 
@@ -101,7 +112,18 @@ Describe 'Coverage for remaining command and filesystem branches' {
             InModuleScope $script:moduleName -Parameters @{RepoPath = $repoPath} {
                 param($RepoPath)
 
-                {New-InitiateGitRepo -DirectoryPath $RepoPath -Confirm:$false} | Should -Throw 'Failed to initialize Git repo: init failed'
+                $thrown = $null
+                try {
+                    New-InitiateGitRepo -DirectoryPath $RepoPath -Confirm:$false
+                }
+                catch {
+                    $thrown = $_
+                }
+
+                $thrown.Exception.Message | Should -Be 'Failed to initialize Git repo: init failed'
+                $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.GitRepositoryInitializationFailed'
+                $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::OpenError)
+                $thrown.TargetObject | Should -Be $RepoPath
             }
         }
         finally {

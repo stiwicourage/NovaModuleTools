@@ -831,7 +831,7 @@ Describe 'Nova command model - release and publish behavior' {
 
             Mock Test-Path {$false}
 
-            $expectedError = if ($IsWindows) {
+            $expectedMessage = if ($IsWindows) {
                 'No windows module path matching*'
             }
             else {
@@ -839,11 +839,48 @@ Describe 'Nova command model - release and publish behavior' {
             }
 
             try {
-                {Get-LocalModulePath} | Should -Throw $expectedError
+                $thrown = $null
+                try {
+                    Get-LocalModulePath
+                }
+                catch {
+                    $thrown = $_
+                }
+
+                Assert-TestStructuredError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                    Message = $expectedMessage
+                    ErrorId = 'Nova.Environment.LocalModulePathNotFound'
+                    Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                    TargetObject = if ($IsWindows) {
+                        '\\Documents\\PowerShell\\Modules'
+                    }
+                    else {
+                        '/\.local/share/powershell/Modules$'
+                    }
+                })
             }
             finally {
                 $env:PSModulePath = $originalModulePath
             }
+        }
+    }
+
+    It 'Import-NovaPublishedLocalModule exposes a structured error when the local manifest is missing' {
+        InModuleScope $script:moduleName {
+            $thrown = $null
+            try {
+                Import-NovaPublishedLocalModule -ProjectName 'NovaModuleTools' -ManifestPath '/tmp/missing/NovaModuleTools.psd1'
+            }
+            catch {
+                $thrown = $_
+            }
+
+            Assert-TestStructuredError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                Message = 'Expected locally published module manifest at: /tmp/missing/NovaModuleTools.psd1'
+                ErrorId = 'Nova.Environment.LocalPublishedModuleManifestNotFound'
+                Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                TargetObject = '/tmp/missing/NovaModuleTools.psd1'
+            })
         }
     }
 

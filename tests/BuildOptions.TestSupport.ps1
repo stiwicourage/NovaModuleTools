@@ -219,10 +219,10 @@ function Assert-InvokeNovaBuildThrows {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot,
-        [string]$ExpectedMessage
+        [AllowNull()][pscustomobject]$ExpectedError
     )
 
-    $scriptBlock = {
+    $invokeAction = {
         Push-Location -LiteralPath $ProjectRoot
         try {
             Invoke-NovaBuild
@@ -232,12 +232,32 @@ function Assert-InvokeNovaBuildThrows {
         }
     }
 
-    if ( [string]::IsNullOrWhiteSpace($ExpectedMessage)) {
-        $scriptBlock | Should -Throw
+    if ($null -eq $ExpectedError) {
+        $invokeAction | Should -Throw
         return
     }
 
-    $scriptBlock | Should -Throw $ExpectedMessage
+    $thrown = $null
+    try {
+        & $invokeAction
+    }
+    catch {
+        $thrown = $_
+    }
+
+    $thrown | Should -Not -BeNullOrEmpty
+    if ($ExpectedError.PSObject.Properties.Name -contains 'Message') {
+        $thrown.Exception.Message | Should -BeLike $ExpectedError.Message
+    }
+    if ($ExpectedError.PSObject.Properties.Name -contains 'ErrorId') {
+        $thrown.FullyQualifiedErrorId | Should -Be $ExpectedError.ErrorId
+    }
+    if ($ExpectedError.PSObject.Properties.Name -contains 'Category') {
+        $thrown.CategoryInfo.Category | Should -Be $ExpectedError.Category
+    }
+    if ($ExpectedError.PSObject.Properties.Name -contains 'TargetObject') {
+        $thrown.TargetObject | Should -Be $ExpectedError.TargetObject
+    }
 }
 
 function Get-InvokeNovaBuildErrorMessage {

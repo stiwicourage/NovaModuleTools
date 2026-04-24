@@ -6,12 +6,12 @@ function Get-NovaPackageContentItemList {
     )
 
     if (-not (Test-Path -LiteralPath $ProjectInfo.OutputModuleDir)) {
-        throw "Built module output not found: $( $ProjectInfo.OutputModuleDir ). Run Invoke-NovaBuild before packaging."
+        Stop-NovaOperation -Message "Built module output not found: $( $ProjectInfo.OutputModuleDir ). Run Invoke-NovaBuild before packaging." -ErrorId 'Nova.Environment.PackageBuildOutputNotFound' -Category ObjectNotFound -TargetObject $ProjectInfo.OutputModuleDir
     }
 
     $sourceFiles = @(Get-ChildItem -LiteralPath $ProjectInfo.OutputModuleDir -File -Recurse | Sort-Object FullName)
     if ($sourceFiles.Count -eq 0) {
-        throw "Built module output has no files to package: $( $ProjectInfo.OutputModuleDir )"
+        Stop-NovaOperation -Message "Built module output has no files to package: $( $ProjectInfo.OutputModuleDir )" -ErrorId 'Nova.Workflow.PackageBuildOutputEmpty' -Category InvalidOperation -TargetObject $ProjectInfo.OutputModuleDir
     }
 
     return @(

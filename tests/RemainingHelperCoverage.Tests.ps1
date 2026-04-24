@@ -429,6 +429,60 @@ Locale: en-US
         }
     }
 
+    It 'Get-NovaPackageAuthorList exposes a structured configuration error for unsupported values' {
+        InModuleScope $script:moduleName {
+            $thrown = $null
+            try {
+                Get-NovaPackageAuthorList -AuthorValue ([pscustomobject]@{Name = 'Author One'})
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -Be 'Package.Authors must be a string or an array of strings.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.PackageAuthorsInvalidType'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+        }
+    }
+
+    It 'Get-NovaPackageContentItemList exposes structured errors when built output is missing or empty' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{OutputModuleDir = '/tmp/dist/NovaModuleTools'}
+            $packageMetadata = [pscustomobject]@{ContentRoot = 'content'}
+
+            Mock Test-Path {$false}
+
+            $missingOutputError = $null
+            try {
+                Get-NovaPackageContentItemList -ProjectInfo $projectInfo -PackageMetadata $packageMetadata
+            }
+            catch {
+                $missingOutputError = $_
+            }
+
+            $missingOutputError.Exception.Message | Should -Be 'Built module output not found: /tmp/dist/NovaModuleTools. Run Invoke-NovaBuild before packaging.'
+            $missingOutputError.FullyQualifiedErrorId | Should -Be 'Nova.Environment.PackageBuildOutputNotFound'
+            $missingOutputError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+            $missingOutputError.TargetObject | Should -Be '/tmp/dist/NovaModuleTools'
+
+            Mock Test-Path {$true}
+            Mock Get-ChildItem {@()}
+
+            $emptyOutputError = $null
+            try {
+                Get-NovaPackageContentItemList -ProjectInfo $projectInfo -PackageMetadata $packageMetadata
+            }
+            catch {
+                $emptyOutputError = $_
+            }
+
+            $emptyOutputError.Exception.Message | Should -Be 'Built module output has no files to package: /tmp/dist/NovaModuleTools'
+            $emptyOutputError.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.PackageBuildOutputEmpty'
+            $emptyOutputError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
+            $emptyOutputError.TargetObject | Should -Be '/tmp/dist/NovaModuleTools'
+        }
+    }
+
     It 'New-NovaPackageArtifact writes the expected package structure for <ExpectedType>' -ForEach @(
         @{ProjectRootName = 'package-project'; PackageTypes = @('NuGet'); RequestedPackageType = 'NuGet'; ExpectedType = 'NuGet'}
         @{ProjectRootName = 'zip-package-project'; PackageTypes = @('Zip'); RequestedPackageType = 'Zip'; ExpectedType = 'Zip'}

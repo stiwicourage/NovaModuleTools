@@ -16,8 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add optional `Preamble` support in `project.json` to write module-level setup lines at the top of generated `.psm1`
   files.
 - Add `Initialize-NovaModule -Example` and `nova init -Example` to scaffold a full working project from the packaged
-  example
-  resources.
+  example resources.
+- git initialization failures so more build and release paths now expose stable error ids and categories.
     - Runs the normal init flow
     - Applies the metadata entered during init to the generated `project.json`
     - Always creates the example test structure without prompting to enable tests

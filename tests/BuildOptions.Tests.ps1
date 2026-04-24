@@ -124,7 +124,12 @@ Describe 'Invoke-NovaBuild options' {
         $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'EmptyProject'
         Write-TestProjectJson -ProjectRoot $root -Options @{ProjectName = 'EmptyProject'; BuildRecursiveFolders = $false}
 
-        Assert-InvokeNovaBuildThrows -ProjectRoot $root -ExpectedMessage 'No source files found to build*'
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root -ExpectedError ([pscustomobject]@{
+            Message = 'No source files found to build*'
+            ErrorId = 'Nova.Environment.BuildSourceFilesNotFound'
+            Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+            TargetObject = 'src'
+        })
     }
 
     It 'BuildRecursiveFolders=false excludes nested classes/private and nested public' {

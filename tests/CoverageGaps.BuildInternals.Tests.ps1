@@ -164,6 +164,57 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
         }
     }
 
+    It 'Build-Module exposes structured errors when there are no source files or the psm1 write fails' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ClassesDir = '/tmp/classes'
+                PublicDir = '/tmp/public'
+                PrivateDir = '/tmp/private'
+                ModuleFilePSM1 = '/tmp/NovaModuleTools.psm1'
+            }
+            $sourceFilePath = Join-Path $TestDrive 'Get-Thing.ps1'
+            Set-Content -LiteralPath $sourceFilePath -Value 'function Get-Thing { }' -Encoding utf8
+            $sourceFile = Get-Item -LiteralPath $sourceFilePath
+
+            Mock Get-NovaBuildProjectInfo {$projectInfo}
+            Mock Get-Command {[pscustomobject]@{Version = [version]'2.0.0'}} -ParameterFilter {$Name -eq 'Invoke-NovaBuild'}
+            Mock Test-ProjectSchema {}
+            Mock Add-ProjectPreambleToModuleBuilder {}
+            Mock Get-ProjectScriptFile {@()}
+            Mock Get-ChildItem {@()}
+
+            $missingSourceError = $null
+            try {
+                Build-Module -ProjectInfo $projectInfo
+            }
+            catch {
+                $missingSourceError = $_
+            }
+
+            $missingSourceError.Exception.Message | Should -Be 'No source files found to build. Add one or more scripts under src/public, src/private, or src/classes.'
+            $missingSourceError.FullyQualifiedErrorId | Should -Be 'Nova.Environment.BuildSourceFilesNotFound'
+            $missingSourceError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+            $missingSourceError.TargetObject | Should -Be 'src'
+
+            Mock Get-ProjectScriptFile {@($sourceFile)}
+            Mock Add-ScriptFileContentToModuleBuilder {}
+            Mock Set-Content {throw 'disk full'}
+
+            $psm1WriteError = $null
+            try {
+                Build-Module -ProjectInfo $projectInfo
+            }
+            catch {
+                $psm1WriteError = $_
+            }
+
+            $psm1WriteError.Exception.Message | Should -Be 'Failed to create psm1 file: disk full'
+            $psm1WriteError.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.ModulePsm1CreationFailed'
+            $psm1WriteError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::OpenError)
+            $psm1WriteError.TargetObject | Should -Be '/tmp/NovaModuleTools.psm1'
+        }
+    }
+
     It 'Build-Manifest includes expected resource paths and prerelease manifest metadata when resources go to <ResourceLocation>' -ForEach @(
         @{
             ResourceLocation = 'resources/'
