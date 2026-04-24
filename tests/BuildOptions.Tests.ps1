@@ -313,9 +313,15 @@ Describe 'Invoke-NovaBuild options' {
 
     It 'missing FailOnDuplicateFunctionNames defaults to true and fails on duplicate top-level function names' {
         $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupDefault' -Options @{ ProjectName = 'DupDefault'; BuildRecursiveFolders = $false; SetSourcePath = $false }
+        $expectedModulePath = Get-BuiltModuleFilePath -ProjectRoot $root
 
         (Get-TestProjectInfoValue -ProjectRoot $root -PropertyName 'FailOnDuplicateFunctionNames') | Should -BeTrue
-        Assert-InvokeNovaBuildThrows -ProjectRoot $root
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root -ExpectedError ([pscustomobject]@{
+            Message = 'Duplicate top-level function names detected in built module:*'
+            ErrorId = 'Nova.Validation.BuiltModuleDuplicateFunctionName'
+            Category = [System.Management.Automation.ErrorCategory]::InvalidData
+            TargetObject = $expectedModulePath
+        })
     }
 
     It 'fails build when Manifest contains unsupported New-ModuleManifest parameters' {
@@ -351,7 +357,14 @@ Describe 'Invoke-NovaBuild options' {
 
     It 'FailOnDuplicateFunctionNames=true fails when built psm1 contains duplicate top-level function names' {
         $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupFail' -Options @{ ProjectName = 'DupFail'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $true }
-        Assert-InvokeNovaBuildThrows -ProjectRoot $root
+        $expectedModulePath = Get-BuiltModuleFilePath -ProjectRoot $root
+
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root -ExpectedError ([pscustomobject]@{
+            Message = 'Duplicate top-level function names detected in built module:*'
+            ErrorId = 'Nova.Validation.BuiltModuleDuplicateFunctionName'
+            Category = [System.Management.Automation.ErrorCategory]::InvalidData
+            TargetObject = $expectedModulePath
+        })
     }
 
     It 'FailOnDuplicateFunctionNames=false allows duplicates (last wins) for backward compatibility' {

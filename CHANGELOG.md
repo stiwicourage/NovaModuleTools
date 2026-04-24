@@ -82,6 +82,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continue the shared error-model migration for public self-update entrypoints so `Update-NovaModuleTool` and
   `nova update` now expose a stable self-update failure id and category while preserving the underlying
   `Update-Module` guidance text.
+- Finish the broader repo-wide assertion cleanup so only the two intentional wording-contract checks remain
+  message-based;
+  all other remaining test failures now use explicit captured-error assertions or structured error checks.
 
 ### Documentation
 

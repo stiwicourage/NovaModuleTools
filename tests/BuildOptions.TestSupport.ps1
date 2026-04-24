@@ -232,11 +232,6 @@ function Assert-InvokeNovaBuildThrows {
         }
     }
 
-    if ($null -eq $ExpectedError) {
-        $invokeAction | Should -Throw
-        return
-    }
-
     $thrown = $null
     try {
         & $invokeAction
@@ -246,6 +241,10 @@ function Assert-InvokeNovaBuildThrows {
     }
 
     $thrown | Should -Not -BeNullOrEmpty
+    if ($null -eq $ExpectedError) {
+        return
+    }
+
     if ($ExpectedError.PSObject.Properties.Name -contains 'Message') {
         $thrown.Exception.Message | Should -BeLike $ExpectedError.Message
     }

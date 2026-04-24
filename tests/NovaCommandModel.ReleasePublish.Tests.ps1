@@ -85,7 +85,16 @@ Describe 'Nova command model - release and publish behavior' {
             Mock Test-NovaBuild {throw 'boom'}
             Mock Update-NovaModuleVersion {}
 
-            {Invoke-NovaRelease -PublishOption @{Local = $true} -Path (Get-Location).Path} | Should -Throw
+            $thrown = $null
+            try {
+                Invoke-NovaRelease -PublishOption @{Local = $true} -Path (Get-Location).Path
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'boom'
             Assert-MockCalled Update-NovaModuleVersion -Times 0
         }
     }
