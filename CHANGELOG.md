@@ -73,6 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   helpers own preference-change context resolution and write/status sequencing.
 - Clarify `Update-NovaModuleTool` layering so the public command focuses on orchestration while private helpers own
   self-update workflow context resolution and update/release-notes execution.
+- Clarify `Install-NovaCli` layering so the public command focuses on orchestration while private helpers own install
+  workflow context resolution and launcher install execution.
 - Clarify `Test-NovaBuild` layering so the public command focuses on orchestration while private helpers own Pester
   workflow context, artifact preparation, and pass/fail translation.
 - Clarify `New-NovaModulePackage` layering so the public command focuses on orchestration while private helpers own

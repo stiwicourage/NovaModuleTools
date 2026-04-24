@@ -210,6 +210,89 @@ Describe 'Coverage for remaining command and filesystem branches' {
         }
     }
 
+    It 'Get-NovaCliInstallWorkflowContext resolves launcher install paths and action text' {
+        InModuleScope $script:moduleName {
+            try {
+                Set-Variable -Name IsWindows -Value $false -Force
+                Mock Get-NovaCliInstallDirectory {'/tmp/bin'}
+                Mock Get-NovaCliLauncherPath {'/tmp/source/nova'}
+                Mock Test-Path {$false}
+
+                $result = Get-NovaCliInstallWorkflowContext -DestinationDirectory '/tmp/bin' -Force
+
+                $result.SourcePath | Should -Be '/tmp/source/nova'
+                $result.TargetPath | Should -Be '/tmp/bin/nova'
+                $result.TargetDirectory | Should -Be '/tmp/bin'
+                $result.Force | Should -BeTrue
+                $result.Action | Should -Be 'Install nova CLI launcher'
+            }
+            finally {
+                Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    It 'Invoke-NovaCliInstallWorkflow copies the launcher and shapes the install result' {
+        InModuleScope $script:moduleName {
+            $workflowContext = [pscustomobject]@{
+                SourcePath = '/tmp/source/nova'
+                TargetPath = '/tmp/bin/nova'
+                TargetDirectory = '/tmp/bin'
+                Force = $true
+                Action = 'Install nova CLI launcher'
+            }
+            Mock Copy-NovaCliLauncher {'/tmp/bin/nova'}
+            Mock Test-NovaCliDirectoryOnPath {$true}
+            Mock Write-NovaModuleReleaseNotesLink {}
+
+            $result = Invoke-NovaCliInstallWorkflow -WorkflowContext $workflowContext
+
+            $result.CommandName | Should -Be 'nova'
+            $result.InstalledPath | Should -Be '/tmp/bin/nova'
+            $result.DestinationDirectory | Should -Be '/tmp/bin'
+            $result.DirectoryOnPath | Should -BeTrue
+            Assert-MockCalled Copy-NovaCliLauncher -Times 1 -ParameterFilter {
+                $SourcePath -eq '/tmp/source/nova' -and
+                        $TargetPath -eq '/tmp/bin/nova' -and
+                        $Force
+            }
+            Assert-MockCalled Write-NovaModuleReleaseNotesLink -Times 1
+        }
+    }
+
+    It 'Install-NovaCli delegates context resolution and install execution to private helpers' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaCliInstallWorkflowContext {
+                [pscustomobject]@{
+                    SourcePath = '/tmp/source/nova'
+                    TargetPath = '/tmp/bin/nova'
+                    TargetDirectory = '/tmp/bin'
+                    Force = $true
+                    Action = 'Install nova CLI launcher'
+                }
+            }
+            Mock Invoke-NovaCliInstallWorkflow {
+                [pscustomobject]@{
+                    CommandName = 'nova'
+                    InstalledPath = '/tmp/bin/nova'
+                    DestinationDirectory = '/tmp/bin'
+                    DirectoryOnPath = $true
+                }
+            }
+
+            $result = Install-NovaCli -DestinationDirectory '/tmp/bin' -Force -Confirm:$false
+
+            $result.InstalledPath | Should -Be '/tmp/bin/nova'
+            Assert-MockCalled Get-NovaCliInstallWorkflowContext -Times 1 -ParameterFilter {
+                $DestinationDirectory -eq '/tmp/bin' -and $Force
+            }
+            Assert-MockCalled Invoke-NovaCliInstallWorkflow -Times 1 -ParameterFilter {
+                $WorkflowContext.TargetPath -eq '/tmp/bin/nova' -and
+                        $WorkflowContext.Action -eq 'Install nova CLI launcher'
+            }
+        }
+    }
+
     It 'Install-NovaCli throws when the target file exists and Force is not used' {
         InModuleScope $script:moduleName {
             try {
