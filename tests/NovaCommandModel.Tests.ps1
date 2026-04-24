@@ -54,11 +54,56 @@ BeforeAll {
 }
 
 Describe 'Nova command model - project, help, and build behavior' {
+    It 'Get-NovaProjectInfoContext resolves the project root, project.json path, and JSON data' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'project-info-context'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            Set-Content -LiteralPath (Join-Path $projectRoot 'project.json') -Value '{"ProjectName":"ContextProject","Version":"1.2.3"}' -Encoding utf8
+            Mock Read-ProjectJsonData {
+                [ordered]@{
+                    ProjectName = 'ContextProject'
+                    Version = '1.2.3'
+                }
+            }
+
+            $result = Get-NovaProjectInfoContext -Path $projectRoot
+
+            $result.ProjectRoot | Should -Be (Resolve-Path -LiteralPath $projectRoot).Path
+            $result.ProjectJson | Should -Be ([System.IO.Path]::Join((Resolve-Path -LiteralPath $projectRoot).Path, 'project.json'))
+            $result.JsonData.ProjectName | Should -Be 'ContextProject'
+            Assert-MockCalled Read-ProjectJsonData -Times 1 -ParameterFilter {$ProjectJsonPath -eq ([System.IO.Path]::Join((Resolve-Path -LiteralPath $projectRoot).Path, 'project.json'))}
+        }
+    }
+
     It 'Get-NovaProjectInfo -Version returns only version' {
         InModuleScope $script:moduleName {
             Mock Get-Content {'{"ProjectName":"X","Version":"9.9.9"}'}
 
             Get-NovaProjectInfo -Version | Should -Be '9.9.9'
+        }
+    }
+
+    It 'Get-NovaProjectInfo delegates context resolution and result shaping to private helpers' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfoContext {
+                [pscustomobject]@{
+                    ProjectRoot = '/tmp/project'
+                    ProjectJson = '/tmp/project/project.json'
+                    JsonData = [ordered]@{ProjectName = 'DelegationProject'; Version = '1.0.0'}
+                }
+            }
+            Mock Get-NovaProjectInfoResult {
+                [pscustomobject]@{
+                    ProjectName = 'DelegationProject'
+                    ProjectRoot = '/tmp/project'
+                }
+            }
+
+            $result = Get-NovaProjectInfo -Path '/tmp/project'
+
+            $result.ProjectName | Should -Be 'DelegationProject'
+            Assert-MockCalled Get-NovaProjectInfoContext -Times 1 -ParameterFilter {$Path -eq '/tmp/project'}
+            Assert-MockCalled Get-NovaProjectInfoResult -Times 1 -ParameterFilter {$WorkflowContext.ProjectRoot -eq '/tmp/project' -and -not $Version}
         }
     }
 

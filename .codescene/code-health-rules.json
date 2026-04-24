@@ -1,0 +1,70 @@
+{
+  "usage": "Persist this file inside your repositories as .codescene/code-health-rules.json Keep the rules you want to override, remove the rest for simplicity and an easy overview.Override the code health rules by changing the default 1.0 value to a lower relative weight. A value of 0.0 disables the rule. A value of 0.5 still implies a code health hit but only at 50% of the default impact. Note that you can specify multiple rule sets and use the matching-content-path to control to which parts or languages the rules apply. This makes it possible to differentiate between test vs application code, or tailor rules to specific languages. In case multiple rule sets match a piece of content, then we prioritize the first mathcing set of rules.",
+  "rule_sets": [
+    {
+      "thresholds": [
+        {
+          "name": "constructor_max_arguments",
+          "value": "4"
+        },
+        {
+          "name": "file_mean_cyclomatic_complexity_warning",
+          "value": "26"
+        },
+        {
+          "name": "function_complex_conditional_branches_alert",
+          "value": "11"
+        },
+        {
+          "name": "function_complex_conditional_branches_warning",
+          "value": "6"
+        },
+        {
+          "name": "function_cyclomatic_complexity_alert",
+          "value": "11"
+        },
+        {
+          "name": "function_cyclomatic_complexity_warning",
+          "value": "6"
+        },
+        {
+          "name": "function_duplication_min_lines_of_code_for_check",
+          "value": "6"
+        },
+        {
+          "name": "function_duplication_min_similarity_percentage",
+          "value": "89"
+        },
+        {
+          "name": "function_lines_of_code_alert",
+          "value": "31"
+        },
+        {
+          "name": "function_lines_of_code_warning",
+          "value": "16"
+        },
+        {
+          "name": "function_max_arguments",
+          "value": "4"
+        },
+        {
+          "name": "function_nesting_depth_warning",
+          "value": "6"
+        }
+      ],
+      "thresholds_doc": "The thresholds are configured to align CodeScene’s code health analysis with SIG’s recommended software quality principles. This ensures that code quality assessments follow established, research-based standards for maintainability and complexity, and that deviations from these thresholds should only be introduced with strong justification.",
+      "matching_content_path": "**/src/**",
+      "matching_content_path_doc": "Specify a glob pattern relative to this repository root. The pattern is intentionally limited to **/src/main/** so that production code is evaluated according to SIG’s recommended software quality principles, while test code under **/src/test/** continues to follow CodeScene’s default thresholds.",
+      "rules": []
+    }
+  ],
+  "rule_sets": [
+    {
+      "thresholds": [],
+      "thresholds_doc": "The thresholds let you redefine the details of the code health issues. For example, specifying what a Complex Method means to you. Be restrictive with overrides.",
+      "matching_content_path": "**/tests/**",
+      "matching_content_path_doc": "Specify a glob pattern relative to this repository root. The pattern is limited to **/docs/**. Code under this path represents generated or semi-generated documentation (e.g. Spring REST Docs), where a higher level of verbosity, repetition, and structural similarity is often required for clarity and completeness. Therefore, selected CodeScene rules such as complexity- and duplication-related findings are deliberately disabled to avoid noise and false positives.",
+      "rules": []
+    }
+  ]
+}
