@@ -99,6 +99,38 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
+    It 'Get-NovaPackageUploadWorkflowContext falls back to project-info and upload-option resolution when explicit inputs are omitted' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{ProjectRoot = '/tmp/project'; ProjectName = 'PackageProject'}
+            }
+            Mock New-NovaPackageUploadOption {
+                [pscustomobject]@{
+                    PackagePath = @('/tmp/project/artifacts/packages/PackageProject.2.3.4.zip')
+                    PackageType = @('Zip')
+                    Url = 'https://packages.example/raw/'
+                    Repository = ''
+                    UploadPath = 'modules'
+                    Headers = [ordered]@{}
+                    Token = $null
+                    TokenEnvironmentVariable = $null
+                    AuthenticationScheme = $null
+                }
+            }
+            Mock Resolve-NovaPackageUploadInvocation {
+                @([pscustomobject]@{PackageFileName = 'PackageProject.2.3.4.zip'; UploadUrl = 'https://packages.example/raw/modules/PackageProject.2.3.4.zip'})
+            }
+
+            $result = Get-NovaPackageUploadWorkflowContext -BoundParameters @{Url = 'https://packages.example/raw/'}
+
+            $result.ProjectInfo.ProjectName | Should -Be 'PackageProject'
+            $result.UploadOption.Url | Should -Be 'https://packages.example/raw/'
+            $result.UploadArtifactList.Count | Should -Be 1
+            Assert-MockCalled Get-NovaProjectInfo -Times 1
+            Assert-MockCalled New-NovaPackageUploadOption -Times 1 -ParameterFilter {$BoundParameters.Url -eq 'https://packages.example/raw/'}
+        }
+    }
+
     It 'Invoke-NovaPackageUploadWorkflow uploads each approved artifact in order' {
         InModuleScope $script:moduleName {
             $script:steps = @()
@@ -123,6 +155,20 @@ Describe 'Nova command model - package upload behavior' {
             $script:steps | Should -Be @('PackageProject.2.3.4.nupkg', 'PackageProject.2.3.4.zip')
             $result.PackageFileName | Should -Be @('PackageProject.2.3.4.nupkg', 'PackageProject.2.3.4.zip')
             Assert-MockCalled Invoke-NovaPackageArtifactUpload -Times 2
+        }
+    }
+
+    It 'Invoke-NovaPackageUploadWorkflow returns an empty result when no approved or resolved artifacts exist' {
+        InModuleScope $script:moduleName {
+            $workflowContext = [pscustomobject]@{
+                UploadArtifactList = @()
+            }
+            Mock Invoke-NovaPackageArtifactUpload {throw 'should not upload'}
+
+            $result = @(Invoke-NovaPackageUploadWorkflow -WorkflowContext $workflowContext -UploadArtifactList @())
+
+            $result.Count | Should -Be 0
+            Assert-MockCalled Invoke-NovaPackageArtifactUpload -Times 0
         }
     }
 

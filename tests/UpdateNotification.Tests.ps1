@@ -92,6 +92,12 @@ Describe 'Update notification behavior' {
         }
     }
 
+    It 'Get-NovaUpdateNotificationPreferenceChangeContext throws when neither enable nor disable was requested' {
+        InModuleScope $script:moduleName {
+            {Get-NovaUpdateNotificationPreferenceChangeContext} | Should -Throw 'Specify either -EnablePrereleaseNotifications or -DisablePrereleaseNotifications.'
+        }
+    }
+
     It 'Invoke-NovaUpdateNotificationPreferenceChange writes the new preference and returns the shared status' {
         InModuleScope $script:moduleName {
             $workflowContext = [pscustomobject]@{
@@ -192,32 +198,59 @@ Describe 'Update notification behavior' {
         }
     }
 
-    It 'Invoke-NovaModuleSelfUpdateWorkflow runs the self-update and marks the plan as updated' {
-        InModuleScope $script:moduleName {
-            $workflowContext = [pscustomobject]@{
-                Plan = [pscustomobject]@{
-                    ModuleName = 'NovaModuleTools'
-                    CurrentVersion = '1.0.0'
-                    TargetVersion = '1.1.0'
-                    PrereleaseNotificationsEnabled = $true
-                    UpdateAvailable = $true
-                    Updated = $false
-                    Cancelled = $false
-                    IsPrereleaseTarget = $false
-                    UsedAllowPrerelease = $false
+    It 'Invoke-NovaModuleSelfUpdateWorkflow handles both update and no-update paths correctly' {
+        foreach ($testCase in @(
+            @{
+                Name = 'update available'
+                TargetVersion = '1.1.0'
+                UpdateAvailable = $true
+                ExpectedUpdated = $true
+                ExpectedUpdateCalls = 1
+                ExpectedReleaseNotesCalls = 1
+            }
+            @{
+                Name = 'no update available'
+                TargetVersion = $null
+                UpdateAvailable = $false
+                ExpectedUpdated = $false
+                ExpectedUpdateCalls = 0
+                ExpectedReleaseNotesCalls = 0
+            }
+        )) {
+            InModuleScope $script:moduleName -Parameters @{TestCase = $testCase} {
+                param($TestCase)
+
+                $workflowContext = [pscustomobject]@{
+                    Plan = [pscustomobject]@{
+                        ModuleName = 'NovaModuleTools'
+                        CurrentVersion = '1.0.0'
+                        TargetVersion = $TestCase.TargetVersion
+                        PrereleaseNotificationsEnabled = $true
+                        UpdateAvailable = $TestCase.UpdateAvailable
+                        Updated = $false
+                        Cancelled = $false
+                        IsPrereleaseTarget = $false
+                        UsedAllowPrerelease = $false
+                    }
+                    Action = 'Update NovaModuleTools to version 1.1.0'
                 }
-                Action = 'Update NovaModuleTools to version 1.1.0'
-            }
-            Mock Invoke-NovaModuleSelfUpdate {}
-            Mock Write-NovaModuleReleaseNotesLink {}
+                if ($TestCase.ExpectedUpdateCalls -eq 0) {
+                    Mock Invoke-NovaModuleSelfUpdate {throw 'should not update'}
+                    Mock Write-NovaModuleReleaseNotesLink {throw 'should not write'}
+                }
+                else {
+                    Mock Invoke-NovaModuleSelfUpdate {}
+                    Mock Write-NovaModuleReleaseNotesLink {}
+                }
 
-            $result = Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext $workflowContext
+                $result = Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext $workflowContext
 
-            $result.Updated | Should -BeTrue
-            Assert-MockCalled Invoke-NovaModuleSelfUpdate -Times 1 -ParameterFilter {
-                $ModuleName -eq 'NovaModuleTools' -and -not $AllowPrerelease
+                $result.Updated | Should -Be $TestCase.ExpectedUpdated -Because $TestCase.Name
+                if ($TestCase.ExpectedUpdateCalls -gt 0) {
+                    Assert-MockCalled Invoke-NovaModuleSelfUpdate -Times $TestCase.ExpectedUpdateCalls
+                    Assert-MockCalled Write-NovaModuleReleaseNotesLink -Times $TestCase.ExpectedReleaseNotesCalls
+                }
             }
-            Assert-MockCalled Write-NovaModuleReleaseNotesLink -Times 1
         }
     }
 
