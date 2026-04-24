@@ -1,14 +1,15 @@
 {
   "ProjectName": "NovaModuleTools",
   "Description": "NovaModuleTools is an enterprise-focused evolution of ModuleTools, designed for large-scale PowerShell projects with a strong emphasis on structure, maintainability, and automated CI/CD pipelines.",
-  "Version": "2.0.0-preview92",
+  "Version": "2.0.0-preview93",
   "Preamble": [
     "Set-StrictMode -Version Latest",
     "$ErrorActionPreference = 'Stop'"
   ],
   "Manifest": {
-    "Author": "Stiwi Gabriel Courage",
+    "Author": "Bravo Team",
     "CompanyName": "Terra Nova Community",
+    "Copyright": "Copyright (c) 2026 Terra Nova Community. All rights reserved.",
     "PowerShellHostVersion": "7.4",
     "GUID": "6b9202c8-0353-473b-b73c-afab632125a6",
     "RequiredModules": [
