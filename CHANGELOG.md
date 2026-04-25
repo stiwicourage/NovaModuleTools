@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     visible in one place so users can see the full supported configuration surface
 - Add native `-WhatIf` and `-Confirm` support across mutating Nova commands, including GNU-style routed CLI support for
   `--verbose`/`-v`, `--whatif`/`-w`, and `--confirm`/`-c` on `build`, `test`, `bump`, `publish`, and `release`.
+    - Routed CLI confirmation now stays inside the `nova` experience instead of exposing PowerShell's `Suspend` prompt.
+    - Entering `S` during CLI confirmation now cancels safely, returns a non-zero exit code, and returns directly to the
+      original shell.
 - Add `Update-NovaModuleTool` (with `Update-NovaModuleTools` as a compatibility alias) and `nova update` for
   self-updating the installed module.
     - Supports `Set-NovaUpdateNotificationPreference` / `Get-NovaUpdateNotificationPreference` for PowerShell usage.

@@ -238,11 +238,9 @@ function Add-NovaCliCommonOption {
 
     switch ($Argument) {
         '--confirm' {
-            $ForwardedParameters.Confirm = $true
             return $true
         }
         '-c' {
-            $ForwardedParameters.Confirm = $true
             return $true
         }
         '--verbose' {
@@ -276,6 +274,15 @@ function Test-NovaCliWhatIfOption {
     return $Argument -match '^(--whatif|-w)$'
 }
 
+function Test-NovaCliConfirmOption {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Argument
+    )
+
+    return $Argument -match '^(--confirm|-c)$'
+}
+
 function Get-NovaCliArgumentRoutingState {
     [CmdletBinding()]
     param(
@@ -287,11 +294,16 @@ function Get-NovaCliArgumentRoutingState {
     $remainingArguments = [System.Collections.Generic.List[string]]::new()
     $forwardedParameters = @{}
     $whatIfEnabled = $false
+    $cliConfirmEnabled = $false
 
     foreach ($argument in $Arguments) {
         if ((Test-NovaCliMutatingCommand -Command $normalizedCommand) -and (Add-NovaCliCommonOption -Argument $argument -ForwardedParameters $forwardedParameters)) {
             if (Test-NovaCliWhatIfOption -Argument $argument) {
                 $whatIfEnabled = $true
+            }
+
+            if (Test-NovaCliConfirmOption -Argument $argument) {
+                $cliConfirmEnabled = $true
             }
 
             continue
@@ -310,5 +322,6 @@ function Get-NovaCliArgumentRoutingState {
         Arguments = @($remainingArguments)
         ForwardedParameters = $forwardedParameters
         WhatIfEnabled = $whatIfEnabled
+        CliConfirmEnabled = $cliConfirmEnabled
     }
 }

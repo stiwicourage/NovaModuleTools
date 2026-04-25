@@ -23,12 +23,19 @@ function Get-NovaCliInvocationContext {
 
     Assert-NovaCliArgumentSyntax -Arguments (@($InvocationRequest.Command) + $normalizedArguments)
     $routingState = Get-NovaCliArgumentRoutingState -Command $InvocationRequest.Command -Arguments $normalizedArguments
+    $cliConfirmEnabled = $false
+
+    if ( $mutatingCommonParameters.ContainsKey('Confirm')) {
+        $cliConfirmEnabled = [bool]$mutatingCommonParameters.Confirm
+        $mutatingCommonParameters.Remove('Confirm')
+    }
 
     if ( $routingState.ForwardedParameters.ContainsKey('Verbose')) {
         $commonParameters.Verbose = $true
     }
 
     $mutatingCommonParameters = Merge-NovaCliParameterSet -BaseParameters $mutatingCommonParameters -AdditionalParameters $routingState.ForwardedParameters
+    $cliConfirmEnabled = $cliConfirmEnabled -or $routingState.CliConfirmEnabled
 
     return [pscustomobject]@{
         Command = $routingState.Command
@@ -38,5 +45,6 @@ function Get-NovaCliInvocationContext {
         IsHelpRequest = Test-NovaCliHelpRequest -Arguments $routingState.Arguments
         ModuleName = $ExecutionContext.SessionState.Module.Name
         WhatIfEnabled = $WhatIfEnabled.IsPresent -or $routingState.WhatIfEnabled -or $mutatingCommonParameters.ContainsKey('WhatIf')
+        CliConfirmEnabled = $cliConfirmEnabled
     }
 }

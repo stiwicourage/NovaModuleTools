@@ -230,17 +230,59 @@ function Invoke-TestInstalledNovaCommand {
     param(
         [Parameter(Mandatory)][string]$InstalledPath,
         [Parameter(Mandatory)][string]$WorkingDirectory,
-        [Parameter(Mandatory)][string[]]$Arguments
+        [Parameter(Mandatory)][string[]]$Arguments,
+        [hashtable]$EnvironmentVariables = @{}
     )
+
+    $originalEnvironment = @{}
+    foreach ($variableName in $EnvironmentVariables.Keys) {
+        $originalEnvironment[$variableName] = [System.Environment]::GetEnvironmentVariable($variableName, 'Process')
+        [System.Environment]::SetEnvironmentVariable($variableName, [string]$EnvironmentVariables[$variableName], 'Process')
+    }
 
     Push-Location $WorkingDirectory
     try {
         $output = & $InstalledPath @Arguments 2>&1
-        return [pscustomobject]@{Output = @($output); Text = @($output) -join [Environment]::NewLine; ExitCode = $LASTEXITCODE}
+        return [pscustomobject]@{
+            Output = @($output)
+            Text = (@($output) -join [Environment]::NewLine)
+            ExitCode = $LASTEXITCODE
+        }
     }
     finally {
         Pop-Location
+
+        foreach ($variableName in $EnvironmentVariables.Keys) {
+            [System.Environment]::SetEnvironmentVariable($variableName, $originalEnvironment[$variableName], 'Process')
+        }
     }
+}
+
+function Assert-TestNovaCliPublishConfirmationResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Result,
+        [Parameter(Mandatory)][string]$PublishManifestPath,
+        [Parameter(Mandatory)]$TestCase
+    )
+
+    if ($TestCase.ExpectSuccess) {
+        $Result.ExitCode | Should -Be 0
+        (Test-Path -LiteralPath $PublishManifestPath) | Should -BeTrue
+        $Result.Text | Should -Not -Match 'Suspend is not supported in nova CLI mode'
+        $Result.Text | Should -Not -Match 'Operation cancelled\.'
+        return
+    }
+
+    $Result.ExitCode | Should -Not -Be 0
+    (Test-Path -LiteralPath $PublishManifestPath) | Should -BeFalse
+
+    if ($TestCase.ExpectSuspendMessage) {
+        $Result.Text | Should -Match 'Suspend is not supported in nova CLI mode\. Operation cancelled\.'
+        return
+    }
+
+    $Result.Text | Should -Match 'Operation cancelled\.'
 }
 
 function New-TestPesterConfigStub {

@@ -67,6 +67,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                     Arguments = @('--help')
                     ForwardedParameters = @{}
                     WhatIfEnabled = $false
+                    CliConfirmEnabled = $false
                 }
             }
             Mock Merge-NovaCliParameterSet {$BaseParameters}
@@ -87,6 +88,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             $result.IsHelpRequest | Should -BeTrue
             $result.ModuleName | Should -Be 'NovaModuleTools'
             $result.WhatIfEnabled | Should -BeTrue
+            $result.CliConfirmEnabled | Should -BeFalse
             Assert-MockCalled Get-NovaCliForwardingParameterSet -Times 1 -ParameterFilter {
                 $BoundParameters.ContainsKey('Verbose') -and -not $IncludeShouldProcess
             }
@@ -170,8 +172,9 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             $buildContext.CommonParameters.Verbose | Should -BeTrue
             $buildContext.MutatingCommonParameters.Verbose | Should -BeTrue
             $buildContext.MutatingCommonParameters.WhatIf | Should -BeTrue
-            $buildContext.MutatingCommonParameters.Confirm | Should -BeTrue
+            $buildContext.MutatingCommonParameters.ContainsKey('Confirm') | Should -BeFalse
             $buildContext.WhatIfEnabled | Should -BeTrue
+            $buildContext.CliConfirmEnabled | Should -BeTrue
         }
     }
 

@@ -14,22 +14,6 @@ else {
     @()
 }
 
-$forwardCliConfirmForBump = $false
-
-if ($Command -eq 'bump' -and $Arguments.Count -gt 0) {
-    $remainingArguments = [System.Collections.Generic.List[string]]::new()
-    foreach ($argument in $Arguments) {
-        if ($argument -match '^(--confirm|-c)$') {
-            $forwardCliConfirmForBump = $true
-            continue
-        }
-
-        $remainingArguments.Add($argument)
-    }
-
-    $Arguments = @($remainingArguments)
-}
-
 Import-Module NovaModuleTools -Force -DisableNameChecking
 
 $invokeParameters = @{
@@ -37,20 +21,4 @@ $invokeParameters = @{
     Arguments = @($Arguments)
 }
 
-$originalCliConfirmSetting = $env:NOVA_CLI_CONFIRM_BUMP
-
-if ($forwardCliConfirmForBump) {
-    $env:NOVA_CLI_CONFIRM_BUMP = '1'
-}
-
-try {
-    Invoke-NovaCli @invokeParameters
-}
-finally {
-    if ($null -eq $originalCliConfirmSetting) {
-        Remove-Item Env:NOVA_CLI_CONFIRM_BUMP -ErrorAction SilentlyContinue
-    }
-    else {
-        $env:NOVA_CLI_CONFIRM_BUMP = $originalCliConfirmSetting
-    }
-}
+Invoke-NovaCli @invokeParameters

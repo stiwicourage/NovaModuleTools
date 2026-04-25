@@ -112,6 +112,18 @@ PS> nova -v
   the local module path
 - `nova --version` / `nova -v` shows the installed `NovaModuleTools` version
 
+### CLI confirmation behavior
+
+Use `nova <mutating-command> --confirm` / `nova <mutating-command> -c` when you want a CLI-safe confirmation prompt.
+
+- `Y` / `Yes` and `A` / `Yes to All` continue
+- `N` / `No` and `L` / `No to All` cancel with a non-zero exit code
+- `S` / `Suspend` is not supported in CLI mode and is treated as cancel so `nova` returns directly to your original
+  shell instead of opening a nested PowerShell prompt
+
+Direct PowerShell cmdlets such as `Publish-NovaModule` still keep their native `-Confirm` behavior. The CLI-safe
+confirmation flow only applies to routed `nova` / `Invoke-NovaCli` usage.
+
 ### Reload the built module while iterating
 
 Use the built output during development so you validate the same shape CI uses:

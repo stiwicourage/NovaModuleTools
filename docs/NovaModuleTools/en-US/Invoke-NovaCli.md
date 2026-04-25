@@ -42,11 +42,12 @@ as `nova package`,
 `nova deploy`, or `nova init`.
 
 Mutating routed commands (`build`, `test`, `package`, `deploy`, `bump`, `update`, `notification`, `publish`, and
-`release`) forward CLI `--verbose`/`-v`, `--whatif`/`-w`, and `--confirm`/`-c` to the underlying cmdlet.
+`release`) forward CLI `--verbose`/`-v` and `--whatif`/`-w` to the underlying cmdlet, while `--confirm`/`-c` is
+handled at the CLI layer so routed commands never expose PowerShell's interactive `Suspend` behavior.
 
-The scripted PowerShell entrypoint still exposes native `-Verbose`, `-WhatIf`, and `-Confirm` through
-`Invoke-NovaCli` itself. Use those only when you intentionally call the PowerShell command form rather than the
-CLI-style `nova` surface.
+The routed PowerShell cmdlets themselves still expose their native `-Verbose`, `-WhatIf`, and `-Confirm` behavior when
+you call those cmdlets directly from PowerShell. Use the CLI-style `nova` surface when you want the shell-safe CLI
+confirmation flow.
 
 Use `nova package` when you want to build, test, and package the current project into one or more configured package
 artifacts. By default it writes a `.nupkg` to `artifacts/packages/`, and you can override that with
@@ -88,9 +89,10 @@ releases. When it is enabled, `nova update` may target a prerelease, but it alwa
 before running a prerelease update. If no newer version is available, the standalone launcher prints a short
 `You're up to date!` summary that includes the installed version.
 
-For the standalone launcher, `nova bump --confirm` / `nova bump -c` uses a CLI-friendly confirmation prompt. Declined or
-suspended choices
-cancel the bump cleanly and return control to the shell without printing a version result.
+For routed CLI usage, `nova <mutating-command> --confirm` / `nova <mutating-command> -c` uses a CLI-friendly
+confirmation prompt. `Y` / `Yes` and `A` / `Yes to All` continue, `N` / `No` and `L` / `No to All` cancel with a
+non-zero exit code, and `S` / `Suspend` is treated as cancel because nested PowerShell prompts are not supported in
+CLI mode.
 
 Use `nova bump --preview` / `nova bump -p` when you want an explicit prerelease-continuation bump. Stable versions
 resolve to the normal
@@ -106,7 +108,8 @@ and also rejects `nova init --whatif` / `nova init -w` with a clear error.
 
 Inside an imported PowerShell session, `nova` is available through the cmdlet alias. To make `nova` available directly
 from zsh/bash on macOS or Linux, install the launcher once with `Install-NovaCli`. The standalone launcher also forwards
-`--verbose`/`-v`, `--whatif`/`-w`, and `--confirm`/`-c` for mutating commands.
+`--verbose`/`-v` and `--whatif`/`-w`, and it uses the same CLI-safe confirmation flow for `--confirm`/`-c` on
+mutating commands.
 
 ## EXAMPLES
 
