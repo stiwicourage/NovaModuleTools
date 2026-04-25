@@ -124,7 +124,7 @@ Describe 'Nova command model - package upload behavior' {
                 }
             }
             Mock Resolve-NovaPackageUploadInvocation {
-                @([pscustomobject]@{PackageFileName = 'PackageProject.2.3.4.zip'; UploadUrl = 'https://packages.example/raw/modules/PackageProject.2.3.4.zip'})
+                @([pscustomobject]@{Type = 'Zip'; PackageFileName = 'PackageProject.2.3.4.zip'; UploadUrl = 'https://packages.example/raw/modules/PackageProject.2.3.4.zip'})
             }
 
             $result = Get-NovaPackageUploadWorkflowContext -BoundParameters @{Url = 'https://packages.example/raw/'}
@@ -132,8 +132,34 @@ Describe 'Nova command model - package upload behavior' {
             $result.ProjectInfo.ProjectName | Should -Be 'PackageProject'
             $result.UploadOption.Url | Should -Be 'https://packages.example/raw/'
             $result.UploadArtifactList.Count | Should -Be 1
+            $result.Target | Should -Be 'https://packages.example/raw/modules/PackageProject.2.3.4.zip'
+            $result.Operation | Should -Be 'Upload Zip package artifact PackageProject.2.3.4.zip'
             Assert-MockCalled Get-NovaProjectInfo -Times 1
             Assert-MockCalled New-NovaPackageUploadOption -Times 1 -ParameterFilter {$BoundParameters.Url -eq 'https://packages.example/raw/'}
+        }
+    }
+
+    It 'Confirm-NovaPackageUploadAction returns the expected result for <Choice>' -ForEach (Get-TestNovaPackageUploadConfirmActionCases) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            $workflowContext = [pscustomobject]@{
+                Operation = 'Upload 2 package artifacts'
+                Target = 'https://packages.example/raw/PackageProject.2.3.4.zip, https://packages.example/raw/PackageProject.latest.zip'
+                UploadArtifactList = @(
+                    [pscustomobject]@{PackageFileName = 'PackageProject.2.3.4.zip'}
+                    [pscustomobject]@{PackageFileName = 'PackageProject.latest.zip'}
+                )
+            }
+
+            Mock Read-AwesomeChoicePrompt {$TestCase.Choice}
+            Mock Write-NovaPackageUploadSuspendNotSupportedWarning {}
+
+            $result = Confirm-NovaPackageUploadAction -WorkflowContext $workflowContext -HostUi ([pscustomobject]@{})
+
+            $result | Should -Be $TestCase.Expected
+            Assert-MockCalled Read-AwesomeChoicePrompt -Times 1 -ParameterFilter {$Ask.Caption -eq 'Confirm' -and $Ask.Default -eq 'Y'}
+            Assert-MockCalled Write-NovaPackageUploadSuspendNotSupportedWarning -Times (Get-TestNovaPackageUploadSuspendWarningCount -ExpectSuspendWarning $TestCase.ExpectSuspendWarning)
         }
     }
 
@@ -241,24 +267,7 @@ Describe 'Nova command model - package upload behavior' {
     It 'Resolve-NovaPackageUploadTarget resolves target precedence correctly when <Name>' -ForEach (Get-TestNovaPackageUploadTargetResolutionCases) {
         $testCase = $_
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive $testCase.ProjectRootName)
-        $repositoryList = @(
-            [ordered]@{
-                Name = 'LocalRaw'
-                Url = 'https://packages.example/raw/repository/'
-                UploadPath = 'repo-path'
-                Headers = [ordered]@{} + $( if ($null -ne $testCase.ExpectedTraceId) {
-                    [ordered]@{'X-Trace-Id' = 'repo-trace'}
-                } else {
-                    [ordered]@{}
-                } ) + [ordered]@{
-                    'X-Repo-Only' = 'repo-only'
-                }
-                Auth = [ordered]@{
-                    HeaderName = 'X-Repo-Token'
-                    TokenEnvironmentVariable = 'REPO_UPLOAD_TOKEN'
-                }
-            }
-        )
+        $repositoryList = Get-TestNovaPackageUploadRepositoryList -ExpectedTraceId $testCase.ExpectedTraceId
 
         InModuleScope $script:moduleName -Parameters @{
             ProjectInfo = (New-TestNovaPackageUploadProjectInfo -Layout $layout -Options @{
@@ -285,21 +294,7 @@ Describe 'Nova command model - package upload behavior' {
                 Resolve-NovaPackageUploadTarget -ProjectInfo $ProjectInfo -Repository 'localraw'
             }
 
-            $result.Repository | Should -Be 'LocalRaw'
-            $result.Url | Should -Be $TestCase.ExpectedUrl
-            $result.UploadPath | Should -Be $TestCase.ExpectedUploadPath
-            $result.Headers['X-Package-Only'] | Should -Be 'package-only'
-            $result.Headers['X-Repo-Only'] | Should -Be 'repo-only'
-            $result.Auth.HeaderName | Should -Be 'X-Repo-Token'
-            $result.Auth.TokenEnvironmentVariable | Should -Be 'REPO_UPLOAD_TOKEN'
-
-            if ($null -ne $TestCase.ExpectedTraceId) {
-                $result.Headers['X-Trace-Id'] | Should -Be $TestCase.ExpectedTraceId
-            }
-
-            if ($TestCase.ExpectPackageToken) {
-                $result.Auth.Token | Should -Be 'package-token'
-            }
+            Assert-TestNovaPackageUploadTargetResolutionResult -Result $result -TestCase $TestCase
         }
     }
 
@@ -349,6 +344,8 @@ Describe 'Nova command model - package upload behavior' {
         InModuleScope $script:moduleName {
             Mock Get-NovaPackageUploadWorkflowContext {
                 [pscustomobject]@{
+                    Target = 'https://packages.example/raw/PackageProject.2.3.4.zip'
+                    Operation = 'Upload Zip package artifact PackageProject.2.3.4.zip'
                     UploadArtifactList = @(
                         [pscustomobject]@{
                             Type = 'Zip'
@@ -378,6 +375,80 @@ Describe 'Nova command model - package upload behavior' {
                         $UploadArtifactList.Count -eq 1 -and
                         $UploadArtifactList[0].UploadUrl -eq 'https://packages.example/raw/PackageProject.2.3.4.zip'
             }
+        }
+    }
+
+    It 'Deploy-NovaPackage uses one explicit PowerShell confirmation for the full upload set and cancels cleanly when declined' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaPackageUploadWorkflowContext {
+                [pscustomobject]@{
+                    Target = 'https://packages.example/raw/PackageProject.2.3.4.zip, https://packages.example/raw/PackageProject.latest.zip'
+                    Operation = 'Upload 2 package artifacts'
+                    UploadArtifactList = @(
+                        [pscustomobject]@{
+                            Type = 'Zip'
+                            PackagePath = '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip'
+                            PackageFileName = 'PackageProject.2.3.4.zip'
+                            UploadUrl = 'https://packages.example/raw/PackageProject.2.3.4.zip'
+                        }
+                        [pscustomobject]@{
+                            Type = 'Zip'
+                            PackagePath = '/tmp/project/artifacts/packages/PackageProject.latest.zip'
+                            PackageFileName = 'PackageProject.latest.zip'
+                            UploadUrl = 'https://packages.example/raw/PackageProject.latest.zip'
+                        }
+                    )
+                }
+            }
+            Mock Confirm-NovaPackageUploadAction {$false}
+            Mock Invoke-NovaPackageUploadWorkflow {throw 'should not upload after confirmation cancellation'}
+
+            $result = @(Deploy-NovaPackage -Url 'https://packages.example/raw/' -Confirm)
+
+            $result.Count | Should -Be 0
+            Assert-MockCalled Confirm-NovaPackageUploadAction -Times 1 -ParameterFilter {
+                $WorkflowContext.UploadArtifactList.Count -eq 2 -and
+                        $WorkflowContext.Operation -eq 'Upload 2 package artifacts'
+            }
+            Assert-MockCalled Invoke-NovaPackageUploadWorkflow -Times 0
+        }
+    }
+
+    It 'Deploy-NovaPackage uses one explicit PowerShell confirmation for the full upload set before upload continues' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaPackageUploadWorkflowContext {
+                [pscustomobject]@{
+                    Target = 'https://packages.example/raw/PackageProject.2.3.4.zip, https://packages.example/raw/PackageProject.latest.zip'
+                    Operation = 'Upload 2 package artifacts'
+                    UploadArtifactList = @(
+                        [pscustomobject]@{
+                            Type = 'Zip'
+                            PackagePath = '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip'
+                            PackageFileName = 'PackageProject.2.3.4.zip'
+                            UploadUrl = 'https://packages.example/raw/PackageProject.2.3.4.zip'
+                        }
+                        [pscustomobject]@{
+                            Type = 'Zip'
+                            PackagePath = '/tmp/project/artifacts/packages/PackageProject.latest.zip'
+                            PackageFileName = 'PackageProject.latest.zip'
+                            UploadUrl = 'https://packages.example/raw/PackageProject.latest.zip'
+                        }
+                    )
+                }
+            }
+            Mock Confirm-NovaPackageUploadAction {$true}
+            Mock Invoke-NovaPackageUploadWorkflow {
+                @(
+                    [pscustomobject]@{PackageFileName = 'PackageProject.2.3.4.zip'; StatusCode = 200}
+                    [pscustomobject]@{PackageFileName = 'PackageProject.latest.zip'; StatusCode = 200}
+                )
+            }
+
+            $result = @(Deploy-NovaPackage -Url 'https://packages.example/raw/' -Confirm)
+
+            $result.PackageFileName | Should -Be @('PackageProject.2.3.4.zip', 'PackageProject.latest.zip')
+            Assert-MockCalled Confirm-NovaPackageUploadAction -Times 1
+            Assert-MockCalled Invoke-NovaPackageUploadWorkflow -Times 1 -ParameterFilter {$UploadArtifactList.Count -eq 2}
         }
     }
 

@@ -19,10 +19,14 @@ function Get-NovaPackageUploadWorkflowContext {
         New-NovaPackageUploadOption -BoundParameters $BoundParameters
     }
 
+    $uploadArtifactList = @(Resolve-NovaPackageUploadInvocation -ProjectInfo $resolvedProjectInfo -UploadOption $resolvedUploadOption)
+
     return [pscustomobject]@{
         ProjectInfo = $resolvedProjectInfo
         UploadOption = $resolvedUploadOption
-        UploadArtifactList = @(Resolve-NovaPackageUploadInvocation -ProjectInfo $resolvedProjectInfo -UploadOption $resolvedUploadOption)
+        UploadArtifactList = $uploadArtifactList
+        Target = Get-NovaPackageUploadWorkflowTarget -UploadArtifactList $uploadArtifactList
+        Operation = Get-NovaPackageUploadWorkflowOperation -UploadArtifactList $uploadArtifactList
     }
 }
 

@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Routed CLI confirmation now stays inside the `nova` experience instead of exposing PowerShell's `Suspend` prompt.
     - Entering `S` during CLI confirmation now cancels safely, returns a non-zero exit code, and returns directly to the
       original shell.
+  - `Deploy-NovaPackage -Confirm` now confirms the full resolved upload set once, cancels cleanly on `N`/`L`, and
+    treats `S` as cancel with a warning instead of opening a nested PowerShell prompt.
 - Add `Update-NovaModuleTool` (with `Update-NovaModuleTools` as a compatibility alias) and `nova update` for
   self-updating the installed module.
     - Supports `Set-NovaUpdateNotificationPreference` / `Get-NovaUpdateNotificationPreference` for PowerShell usage.

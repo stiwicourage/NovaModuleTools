@@ -15,18 +15,19 @@ function Deploy-NovaPackage {
         $projectInfo = Get-NovaProjectInfo
         $uploadOption = New-NovaPackageUploadOption -BoundParameters $PSBoundParameters
         $workflowContext = Get-NovaPackageUploadWorkflowContext -BoundParameters $PSBoundParameters -ProjectInfo $projectInfo -UploadOption $uploadOption
-        $approvedUploadArtifactList = @(
-        foreach ($uploadArtifact in $workflowContext.UploadArtifactList) {
-            $uploadAction = "Upload $( $uploadArtifact.Type ) package artifact $( $uploadArtifact.PackageFileName )"
-            if (-not $PSCmdlet.ShouldProcess($uploadArtifact.UploadUrl, $uploadAction)) {
-                continue
-            }
 
-            $uploadArtifact
+        $shouldRun = if (-not $WhatIfPreference -and (Test-NovaPackageUploadExplicitConfirmEnabled -BoundParameters $PSBoundParameters)) {
+            Confirm-NovaPackageUploadAction -WorkflowContext $workflowContext -HostUi $Host.UI
         }
-        )
+        else {
+            $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Operation)
+        }
 
-        return @(Invoke-NovaPackageUploadWorkflow -WorkflowContext $workflowContext -UploadArtifactList $approvedUploadArtifactList)
+        if (-not $shouldRun) {
+            return @()
+        }
+
+        return @(Invoke-NovaPackageUploadWorkflow -WorkflowContext $workflowContext -UploadArtifactList $workflowContext.UploadArtifactList)
     }
 }
 
