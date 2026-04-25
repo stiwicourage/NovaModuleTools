@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/19/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: Deploy-NovaPackage
 ---
@@ -58,13 +58,12 @@ PS> Deploy-NovaPackage -Repository LocalNexus
 ```
 
 Resolves the current project's package artifacts from the configured package output directory and uploads them to the
-raw
-repository named `LocalNexus` from `Package.Repositories`.
+raw repository named `LocalNexus` from `Package.Repositories`.
 
 ### EXAMPLE 2
 
 ```powershell
-PS> nova deploy --repository LocalNexus
+% nova deploy --repository LocalNexus
 ```
 
 Runs the same raw package upload flow through the Nova CLI.

@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   from zsh or bash.
 - Add optional `Preamble` support in `project.json` to write module-level setup lines at the top of generated `.psm1`
   files.
-- Add `Initialize-NovaModule -Example` and GNU-style `nova init --example` / `nova init -e` support to scaffold a full
+- Add `Initialize-NovaModule -Example` and GNU-style `% nova init --example` / `% nova init -e` support to scaffold a
+  full
   working project from the packaged
   example resources.
 - git initialization failures so more build and release paths now expose stable error ids and categories.
@@ -31,24 +32,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       original shell.
   - Direct PowerShell cmdlets such as `Deploy-NovaPackage`, `Publish-NovaModule`, and `Update-NovaModuleVersion`
     continue to use native PowerShell confirmation semantics.
-- Add `Update-NovaModuleTool` (with `Update-NovaModuleTools` as a compatibility alias) and `nova update` for
+- Add `Update-NovaModuleTool` (with `Update-NovaModuleTools` as a compatibility alias) and `% nova update` for
   self-updating the installed module.
     - Supports `Set-NovaUpdateNotificationPreference` / `Get-NovaUpdateNotificationPreference` for PowerShell usage.
-  - Supports `nova notification`, `nova notification --disable`/`-d`, and `nova notification --enable`/`-e` for CLI
+  - Supports `% nova notification`, `% nova notification --disable`/`-d`, and `% nova notification --enable`/`-e` for
+    CLI
     usage.
   - Uses the stored prerelease update preference to decide whether prerelease self-updates are eligible.
   - Requires explicit confirmation before a prerelease self-update proceeds.
-- Add `nova version --installed` / `nova version -i` so users can compare the locally installed version of the current
+- Add `% nova version --installed` / `% nova version -i` so users can compare the locally installed version of the
+  current
   project/module with
-  the current project version from `project.json`, while keeping `nova --version` / `nova -v` dedicated to the installed
+  the current project version from `project.json`, while keeping `% nova --version` / `% nova -v` dedicated to the
+  installed
   NovaModuleTools version.
-- Add an opt-in `-Preview` mode to `Update-NovaModuleVersion` / GNU-style `nova bump --preview` / `nova bump -p` for
+- Add an opt-in `-Preview` mode to `Update-NovaModuleVersion` / GNU-style `% nova bump --preview` / `% nova bump -p` for
   explicit preview iteration.
     - Stable versions still use the normal semantic bump target first, then append `-preview`.
     - Existing prerelease versions now stay on the same semantic core and preserve the current prerelease stem while
       appending or incrementing trailing digits, for example `preview -> preview01`, `preview09 -> preview10`,
       `rc -> rc01`, `rc1 -> rc2`, `SNAPSHOT -> SNAPSHOT01`, and `SNAPSHOT1 -> SNAPSHOT2`.
-- Add `New-NovaModulePackage` and `nova package` so projects can build, test, and package the built module output as a
+- Add `New-NovaModulePackage` and `% nova package` so projects can build, test, and package the built module output as a
   `.nupkg` artifact by using generic metadata from `project.json`, including repositories whose test runs reload or
   remove
   `NovaModuleTools` before the final package step.
@@ -60,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Setting `Package.Latest` to `true` also creates a companion `*.latest.*` artifact for each selected package type
     while keeping the normal versioned file.
       - Package output uses `Package.OutputDirectory.Path` with `Package.OutputDirectory.Clean` defaulting to `true`.
-  - Add `Deploy-NovaPackage` and `nova deploy` for raw HTTP package uploads that stay separate from PowerShell
+  - Add `Deploy-NovaPackage` and `% nova deploy` for raw HTTP package uploads that stay separate from PowerShell
     repository publishing.
       - Package upload resolves `-Url`, `Package.RepositoryUrl`, or named `Package.Repositories` targets and can merge
     generic headers/auth settings.
@@ -70,13 +74,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Change the project to a Nova command model, replacing the previous mixed MT/Nova workflow.
-    - All public commands are now Nova commands, and the `nova` CLI/Powershell alias is the primary entry point for all
+    - All public commands are now Nova commands, and the `nova` CLI / `Invoke-NovaCli` command surface is the primary
+      entry point for all
       operations.
 - **BREAKING CHANGE**: Rename the public Nova scaffold cmdlets to approved verbs.
     - `New-NovaModule` → `Initialize-NovaModule`
     - No compatibility aliases are exported for the retired cmdlet names or CLI subcommands.
 - Change `CopyResourcesToModuleRoot` to the canonical project setting name while keeping the default value `false`.
-- Change `Publish-NovaModule -Local` and `nova publish --local` so a successful local publish also reloads the published
+- Change `Publish-NovaModule -Local` and `% nova publish --local` so a successful local publish also reloads the
+  published
   module from the local install path into the active PowerShell session.
 
 ### Fixed
@@ -92,16 +98,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   commands, `project.json`, packaging/delivery, and versioning/update behavior.
     - Improve page spacing, card padding, code-block separation, and responsive layout density so the documentation is
       easier to scan and less visually cramped.
+  - The getting started and core workflows guides now let readers switch between PowerShell and command-line
+    examples, including the local-publish-plus-`pwsh` handoff for `Get-ExampleGreeting` and fresh-process `pwsh`
+    import/reload validation from the command-line path.
+  - The command reference, working-with-modules, packaging-and-delivery, versioning-and-updates, and troubleshooting
+    guides now use the same centered command-surface header and PowerShell/command-line example switching model.
+  - The command-surface toggle sits centered in the top navigation area on the switched guides, with the `Menu`
+    control aligned separately to the right and the header buttons tightened to match the menu height more closely.
+  - The home page now presents its recommended first-path command examples in PowerShell form to match the default
+    quickstart orientation.
+  - The shared docs layout now keeps the same readable content width in PowerShell and command-line modes, while long
+    command examples stay contained inside their own blocks instead of stretching the page.
+  - All public pages now use the wider large-screen shell, and the single-column release-notes and license layouts use
+    a broader centered content width that matches the updated site scale.
+  - The public docs header logo is now larger so the NovaModuleTools brand is more prominent across the site.
 - Refresh public `Get-Help` content and examples for the Nova commands, including CLI usage and preview/confirmation
   scenarios.
+    - Restore full parameter metadata for `Invoke-NovaCli` help so PlatyPS can generate command help without failing
+      during local builds.
 - Update the `nova` CLI documentation and help text to use POSIX/GNU-style long and short options while keeping
   PowerShell cmdlet examples in their native PowerShell form.
+- Clarify the documentation split between the `nova` launcher-oriented CLI surface and the explicit PowerShell
+  `Invoke-NovaCli` cmdlet entrypoint, and mark examples consistently with `PS>` for PowerShell and `%` for CLI.
 
 ### Removed
 
 - **BREAKING CHANGE**: Remove the legacy `MT` commands and MT-branded command documentation in favor of the Nova command
   model.
-    - All public commands are now Nova commands, and the `nova` CLI/Powershell alias is the primary entry point for all
+    - All public commands are now Nova commands, and the `nova` CLI / `Invoke-NovaCli` command surface is the primary
+      entry point for all
       operations.
 
 ## [1.9.0] - 2026-04-10

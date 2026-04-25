@@ -35,8 +35,9 @@
 - [ ] `Test-NovaBuild`
 - [ ] `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
 - [ ] `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
-- [ ] Targeted Nova workflow validated (`nova build`, `nova test`, `nova merge`, `nova deploy`, `nova publish`,
-  `nova release`, `nova update`, `nova notification`, or `nova init` as relevant)
+- [ ] Targeted Nova workflow validated (`% nova build`, `% nova test`, `% nova merge`, `% nova deploy`,
+  `% nova publish`,
+  `% nova release`, `% nova update`, `% nova notification`, or `% nova init` as relevant)
 - [ ] Docs/example only; executable validation not needed
 
 Validation notes:

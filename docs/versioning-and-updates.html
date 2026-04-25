@@ -32,33 +32,45 @@
         }
     </script>
 </head>
-<body>
+<body class="guide-page">
 <header class="site-header">
     <div class="site-header__inner">
         <a class="site-brand" href="./index.html">
             <img alt="" class="site-brand__icon" src="./assets/icon.png">
             <span class="site-brand__text">NovaModuleTools</span>
         </a>
-        <details class="site-menu">
-            <summary class="site-menu__button">
-                <span class="site-menu__button-label">Menu</span>
-                <span class="site-menu__current">Versioning &amp; Updates</span>
-            </summary>
-            <nav aria-label="Primary" class="site-menu__panel">
-                <a class="site-nav__link" href="./index.html">Home</a>
-                <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
-                <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
-                <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
-                <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
-                <a class="site-nav__link" href="./commands.html">Command Reference</a>
-                <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
-                <a aria-current="page" class="site-nav__link site-nav__link--active"
-                   href="./versioning-and-updates.html">Versioning &amp; Updates</a>
-                <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
-                <a class="site-nav__link" href="./advanced.html">Concepts</a>
-                <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
-            </nav>
-        </details>
+        <div aria-label="Command display mode" class="site-header__command-surface">
+            <div aria-label="Command display mode" class="surface-tabs" role="tablist">
+                <button aria-selected="true" class="surface-tabs__button" data-command-mode="powershell" role="tab"
+                        type="button">PowerShell
+                </button>
+                <button aria-selected="false" class="surface-tabs__button" data-command-mode="command-line" role="tab"
+                        type="button">Command-line
+                </button>
+            </div>
+        </div>
+        <div class="site-header__actions">
+            <details class="site-menu">
+                <summary class="site-menu__button">
+                    <span class="site-menu__button-label">Menu</span>
+                    <span class="site-menu__current">Versioning &amp; Updates</span>
+                </summary>
+                <nav aria-label="Primary" class="site-menu__panel">
+                    <a class="site-nav__link" href="./index.html">Home</a>
+                    <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+                    <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+                    <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
+                    <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
+                    <a class="site-nav__link" href="./commands.html">Command Reference</a>
+                    <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
+                    <a aria-current="page" class="site-nav__link site-nav__link--active"
+                       href="./versioning-and-updates.html">Versioning &amp; Updates</a>
+                    <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+                    <a class="site-nav__link" href="./advanced.html">Concepts</a>
+                    <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
+                </nav>
+            </details>
+        </div>
     </div>
 </header>
 
@@ -96,19 +108,19 @@
                         </thead>
                         <tbody>
                         <tr>
-                            <td><code>Get-NovaProjectInfo -Version</code> or <code>nova version</code></td>
+                            <td><code>Get-NovaProjectInfo -Version</code> or <code>% nova version</code></td>
                             <td>The current version stored in the active project's <code>project.json</code>.</td>
                             <td>Use this when you want to know what your project will build and publish as.</td>
                         </tr>
                         <tr>
-                            <td><code>nova version --installed</code> or <code>nova version -i</code></td>
+                            <td><code>% nova version --installed</code> or <code>% nova version -i</code></td>
                             <td>The version installed locally for the current project/module from the module path.</td>
                             <td>Use this when you want to compare the installed copy against the current working
                                 project.
                             </td>
                         </tr>
                         <tr>
-                            <td><code>nova --version</code></td>
+                            <td><code>% nova --version</code></td>
                             <td>The installed NovaModuleTools version.</td>
                             <td>Use this when you are troubleshooting Nova itself or checking whether the tool needs an
                                 update.
@@ -117,16 +129,35 @@
                         </tbody>
                     </table>
                 </div>
-                <pre><code>nova version
-nova version --installed
-nova version -i
-nova --version
-nova -v</code></pre>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Check versions from the surface you are using</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Get-NovaProjectInfo -Version</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova version
+% nova version --installed
+% nova version -i
+% nova --version
+% nova -v</code></pre>
+                    </div>
+                </div>
+                <div class="surface-note" data-command-visibility="powershell">
+                    <p><strong>PowerShell note:</strong> project version lookup has a direct cmdlet form. The installed
+                        module/tool version views remain launcher-oriented on this page, as shown in the comparison
+                        table
+                        above.</p>
+                </div>
             </section>
 
             <section class="content-section" id="bump">
                 <h2>Bump project versions</h2>
-                <p>Use <code>Update-NovaModuleVersion</code> or <code>nova bump</code> when you want Nova to choose the
+                <p>Use <code>Update-NovaModuleVersion</code> or <code>% nova bump</code> when you want Nova to choose
+                    the
                     next semantic version based on Git history.</p>
                 <h3>How Nova chooses the bump label</h3>
                 <ul class="plain-list">
@@ -147,7 +178,7 @@ nova -v</code></pre>
 1.3.0-preview7 + Minor -> 1.3.0
 1.2.4-preview7 + Patch -> 1.2.4
 1.2.3-preview7 + Minor -> 1.3.0</code></pre>
-                <p>Use <code>-Preview</code> or the CLI form <code>nova bump --preview</code> / <code>nova bump
+                <p>Use <code>-Preview</code> or the CLI form <code>% nova bump --preview</code> / <code>% nova bump
                     -p</code>
                     when you want that bump to stay explicitly in prerelease mode. Stable
                     versions first resolve the normal semantic target and then append <code>-preview</code>. Existing
@@ -163,25 +194,37 @@ nova -v</code></pre>
 1.5.3-SNAPSHOT1 + -Preview -> 1.5.3-SNAPSHOT2
 1.5.3-rc1 + -Preview -> 1.5.3-rc2
 1.5.3-rc + -Preview -> 1.5.3-rc01</code></pre>
-                <pre><code>Update-NovaModuleVersion -WhatIf
-Update-NovaModuleVersion -Preview -WhatIf
-nova bump --whatif
-nova bump --preview --whatif
-nova bump --confirm</code></pre>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Preview or confirm the next version bump</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Update-NovaModuleVersion -WhatIf
+PS&gt; Update-NovaModuleVersion -Preview -WhatIf</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova bump --whatif
+% nova bump --preview --whatif
+% nova bump --confirm</code></pre>
+                    </div>
+                </div>
                 <div class="notice notice--warning">
                     <strong>Empty repository rule.</strong>
                     <p>If your Git repository exists but has no commits yet, Nova throws: <code>Cannot bump version
                         because the repository has no commits yet. Create an initial commit first.</code></p>
                 </div>
-                <p>The standalone launcher uses a CLI-friendly confirmation flow for <code>nova bump --confirm</code> or
-                    <code>nova bump -c</code>. If
+                <p>The standalone launcher uses a CLI-friendly confirmation flow for <code>% nova bump --confirm</code>
+                    or
+                    <code>% nova bump -c</code>. If
                     you decline, Nova exits cleanly without writing a new version.</p>
             </section>
 
             <section class="content-section" id="self-update">
                 <h2>Self-update NovaModuleTools</h2>
                 <p>Use <code>Update-NovaModuleTool</code>, its compatibility alias <code>Update-NovaModuleTools</code>,
-                    or <code>nova update</code> to update the installed NovaModuleTools module itself.</p>
+                    or <code>% nova update</code> to update the installed NovaModuleTools module itself.</p>
                 <h3>What self-update does</h3>
                 <ol class="plain-list plain-list--ordered">
                     <li>Read the stored prerelease preference.</li>
@@ -189,9 +232,21 @@ nova bump --confirm</code></pre>
                     <li>Apply the update if one is available.</li>
                     <li>Print the release notes link after a successful update.</li>
                 </ol>
-                <pre><code>Update-NovaModuleTool
-nova update</code></pre>
-                <p>If no newer version is available, <code>nova update</code> prints a friendly “You're up to date!”
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Update NovaModuleTools itself</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Update-NovaModuleTool
+PS&gt; Update-NovaModuleTools</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova update</code></pre>
+                    </div>
+                </div>
+                <p>If no newer version is available, <code>% nova update</code> prints a friendly “You're up to date!”
                     message together with the installed NovaModuleTools version.</p>
                 <div class="table-scroll">
                     <table>
@@ -225,12 +280,23 @@ nova update</code></pre>
                 <h2>Manage prerelease eligibility</h2>
                 <p>The update preference commands do not update the module by themselves. They only control whether
                     prerelease self-update targets are eligible when you later run the update command.</p>
-                <pre><code>Get-NovaUpdateNotificationPreference
-Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
-Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
-nova notification
-nova notification --disable
-nova notification --enable</code></pre>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Inspect or change prerelease eligibility</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Get-NovaUpdateNotificationPreference
+PS&gt; Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
+PS&gt; Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova notification
+% nova notification --disable
+% nova notification --enable</code></pre>
+                    </div>
+                </div>
                 <h3>Recommended choices</h3>
                 <div class="table-scroll">
                     <table>
@@ -257,7 +323,7 @@ nova notification --enable</code></pre>
                         </tbody>
                     </table>
                 </div>
-                <p><code>Get-NovaUpdateNotificationPreference</code> and <code>nova notification</code> return the
+                <p><code>Get-NovaUpdateNotificationPreference</code> and <code>% nova notification</code> return the
                     current state and the settings path so you can confirm exactly what the stored preference is.</p>
             </section>
         </div>
@@ -279,5 +345,70 @@ nova notification --enable</code></pre>
             License</a>.</p>
     </div>
 </footer>
+<script>
+    (() => {
+        const storageKey = 'nova-doc-command-surface';
+        const supportedModes = ['powershell', 'command-line'];
+
+        function readStoredMode() {
+            try {
+                const stored = window.localStorage.getItem(storageKey);
+                return supportedModes.includes(stored) ? stored : 'powershell';
+            } catch {
+                return 'powershell';
+            }
+        }
+
+        function writeStoredMode(mode) {
+            try {
+                window.localStorage.setItem(storageKey, mode);
+            } catch {
+                // Ignore storage failures and keep the page interactive.
+            }
+        }
+
+        function getModeLabel(mode) {
+            return mode === 'command-line' ? 'Command-line' : 'PowerShell';
+        }
+
+        function applyMode(mode) {
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                const selected = button.dataset.commandMode === mode;
+                button.setAttribute('aria-selected', selected ? 'true' : 'false');
+            });
+
+            document.querySelectorAll('[data-command-example]').forEach((example) => {
+                example.querySelectorAll('[data-command-surface]').forEach((surface) => {
+                    surface.hidden = surface.dataset.commandSurface !== mode;
+                });
+            });
+
+            document.querySelectorAll('[data-command-surface-label]').forEach((label) => {
+                label.textContent = getModeLabel(mode);
+            });
+
+            document.querySelectorAll('[data-command-visibility]').forEach((element) => {
+                element.hidden = element.dataset.commandVisibility !== mode;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialMode = readStoredMode();
+            applyMode(initialMode);
+
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const nextMode = button.dataset.commandMode;
+                    if (!supportedModes.includes(nextMode)) {
+                        return;
+                    }
+
+                    applyMode(nextMode);
+                    writeStoredMode(nextMode);
+                });
+            });
+        });
+    })();
+</script>
 </body>
 </html>

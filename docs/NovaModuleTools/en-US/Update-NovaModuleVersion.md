@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/22/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: Update-NovaModuleVersion
 ---
@@ -19,7 +19,7 @@ Updates the project version in `project.json` based on git commit history.
 
 ### __AllParameterSets
 
-```powershell
+```text
 PS> Update-NovaModuleVersion [[-Path] <string>] [-Preview] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -55,7 +55,7 @@ When the current version is already a prerelease for the selected release line, 
 version instead of incrementing again. For example, a `Major` bump from `2.0.0-preview7` resolves to `2.0.0`, not
 `3.0.0-preview7`.
 
-From the routed `nova` CLI, `nova bump --confirm` / `nova bump -c` uses a CLI-friendly confirmation prompt. `Y` /
+From the routed `nova` CLI, `% nova bump --confirm` / `% nova bump -c` uses a CLI-friendly confirmation prompt. `Y` /
 `Yes` and `A` / `Yes to All` continue, while `N` / `No` and `L` / `No to All` cancel without changing `project.json`.
 `S` / `Suspend` is not supported in CLI mode; entering it cancels safely, returns a non-zero exit code, and never opens
 a nested PowerShell prompt.
@@ -64,7 +64,7 @@ a nested PowerShell prompt.
 
 ### EXAMPLE 1
 
-```powershell
+```text
 PS> Update-NovaModuleVersion
 ```
 
@@ -72,7 +72,7 @@ Updates the version in the current project using the release label inferred from
 
 ### EXAMPLE 2
 
-```powershell
+```text
 PS> Update-NovaModuleVersion -Path ./src/resources/example
 ```
 

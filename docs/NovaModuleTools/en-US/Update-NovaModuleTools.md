@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/18/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: Update-NovaModuleTool
 ---
@@ -19,7 +19,7 @@ Updates the installed `NovaModuleTools` module using the shared prerelease prefe
 
 ### __AllParameterSets
 
-```powershell
+```text
 PS> Update-NovaModuleTool [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -31,7 +31,7 @@ The cmdlet is also available through the compatibility alias `Update-NovaModuleT
 
 Before it runs `Update-Module`, it resolves the best available update candidate by using the stored prerelease
 preference exposed through `Get-NovaUpdateNotificationPreference`, `Set-NovaUpdateNotificationPreference`, and
-`nova notification`.
+`% nova notification`.
 
 When prerelease notifications are disabled, `Update-NovaModuleTool` only considers stable releases and never passes
 `-AllowPrerelease` to the update flow.
@@ -41,16 +41,16 @@ prerelease, the command always asks for explicit confirmation before it proceeds
 
 Stable updates do not require prerelease confirmation.
 
-After a successful update, `Update-NovaModuleTool` and `nova update` print the release notes link from the installed
+After a successful update, `Update-NovaModuleTool` and `% nova update` print the release notes link from the installed
 module manifest.
 
-Use `nova update` when you want the same behavior through the Nova CLI entrypoint.
+Use `% nova update` when you want the same behavior through the Nova CLI entrypoint.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-```powershell
+```text
 PS> Update-NovaModuleTool
 ```
 
@@ -59,7 +59,7 @@ candidate.
 
 ### EXAMPLE 2
 
-```powershell
+```text
 PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
 PS> Update-NovaModuleTool
 ```
@@ -68,8 +68,8 @@ Restricts self-update to stable releases only.
 
 ### EXAMPLE 3
 
-```powershell
-nova update
+```text
+% nova update
 ```
 
 Runs the same self-update flow from the Nova CLI. If the selected target is a prerelease, the CLI asks for explicit
@@ -77,12 +77,12 @@ confirmation before running the update.
 
 Successful updates print the release notes link from the installed module manifest.
 
-If no newer version is available, the standalone `nova update` launcher prints `You're up to date!` together with the
+If no newer version is available, the standalone `% nova update` launcher prints `You're up to date!` together with the
 installed `NovaModuleTools` version.
 
 ### EXAMPLE 4
 
-```powershell
+```text
 PS> Update-NovaModuleTool -WhatIf
 ```
 
@@ -157,8 +157,9 @@ update was available, whether the target was prerelease, and whether the update 
 If the PowerShell Gallery cannot be reached well enough to resolve an update candidate, the command stops before calling
 `Update-Module`.
 
-Use `Get-NovaUpdateNotificationPreference`, `Set-NovaUpdateNotificationPreference`, `nova notification`,
-`nova notification --disable` / `nova notification -d`, and `nova notification --enable` / `nova notification -e` to
+Use `Get-NovaUpdateNotificationPreference`, `Set-NovaUpdateNotificationPreference`, `% nova notification`,
+`% nova notification --disable` / `% nova notification -d`, and `% nova notification --enable` /
+`% nova notification -e` to
 inspect or change the same stored prerelease setting.
 
 ## RELATED LINKS

@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/14/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: Get-NovaProjectInfo
 ---
@@ -19,7 +19,7 @@ Reads `project.json` and returns resolved NovaModuleTools project metadata.
 
 ### __AllParameterSets
 
-```powershell
+```text
 PS> Get-NovaProjectInfo [[-Path] <string>] [-Version] [<CommonParameters>]
 ```
 
@@ -41,7 +41,7 @@ When you use `-Version`, the command returns only the project version string ins
 
 ### EXAMPLE 1
 
-```powershell
+```text
 PS> Get-NovaProjectInfo
 ```
 
@@ -49,7 +49,7 @@ Returns the full project information object for the current directory.
 
 ### EXAMPLE 2
 
-```powershell
+```text
 PS> Get-NovaProjectInfo -Path ./src/resources/example
 ```
 
@@ -57,7 +57,7 @@ Returns the full project information object for the packaged example project roo
 
 ### EXAMPLE 3
 
-```powershell
+```text
 PS> Get-NovaProjectInfo -Version
 ```
 

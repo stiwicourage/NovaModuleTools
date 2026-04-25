@@ -5,7 +5,7 @@ HelpInfoUri: ''
 Locale: en-US
 Module Guid: 6b9202c8-0353-473b-b73c-afab632125a6
 Module Name: NovaModuleTools
-ms.date: 04/18/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: NovaModuleTools Module
 ---
@@ -40,7 +40,7 @@ Builds the current NovaModuleTools project into a ready-to-import PowerShell mod
 
 ### `PS> Invoke-NovaCli`
 
-Routes the `nova` CLI experience through a single PowerShell command entrypoint.
+Routes Nova commands through the explicit PowerShell cmdlet entrypoint.
 
 ### `PS> Invoke-NovaRelease`
 
@@ -73,7 +73,7 @@ Builds, tests, and publishes the current project either locally or to a reposito
 
 ### `PS> Set-NovaUpdateNotificationPreference`
 
-Enables or disables whether prerelease self-updates are eligible for `Update-NovaModuleTool` and `nova update`.
+Enables or disables whether prerelease self-updates are eligible for `Update-NovaModuleTool` and `% nova update`.
 
 ### `PS> Update-NovaModuleVersion`
 

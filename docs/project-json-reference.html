@@ -218,7 +218,8 @@
                             <td><code>Version</code></td>
                             <td>Current semantic version stored for the project.</td>
                             <td>Required</td>
-                            <td>Used in package names, manifest metadata, <code>nova version</code>, and release flows.
+                            <td>Used in package names, manifest metadata, <code>% nova version</code>, and release
+                                flows.
                             </td>
                         </tr>
                         <tr>
@@ -354,10 +355,10 @@
                 <h2><code>Package</code> settings</h2>
                 <p>The <code>Package</code> section controls two related but different concerns:</p>
                 <ul class="plain-list">
-                    <li><strong>package creation</strong> via <code>New-NovaModulePackage</code> / <code>nova
+                    <li><strong>package creation</strong> via <code>New-NovaModulePackage</code> / <code>% nova
                         package</code>
                     </li>
-                    <li><strong>raw HTTP artifact upload</strong> via <code>Deploy-NovaPackage</code> / <code>nova
+                    <li><strong>raw HTTP artifact upload</strong> via <code>Deploy-NovaPackage</code> / <code>% nova
                         deploy</code></li>
                 </ul>
                 <div class="notice">
@@ -610,7 +611,8 @@
                             <td><code>Pester.Output.Verbosity</code></td>
                             <td>Controls Pester console verbosity.</td>
                             <td><code>Detailed</code> in the current project template</td>
-                            <td>Affects what you see during <code>Test-NovaBuild</code> and <code>nova test</code>.</td>
+                            <td>Affects what you see during <code>Test-NovaBuild</code> and <code>% nova test</code>.
+                            </td>
                         </tr>
                         </tbody>
                     </table>

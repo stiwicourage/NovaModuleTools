@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/14/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: Publish-NovaModule
 ---
@@ -19,13 +19,13 @@ Builds, tests, and publishes the current project either locally or to a PowerShe
 
 ### Local
 
-```powershell
+```text
 PS> Publish-NovaModule [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### Repository
 
-```powershell
+```text
 PS> Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -43,7 +43,8 @@ Use repository mode when you want to publish the built module to a registered Po
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
 resolved publish target and workflow without building, testing, or publishing.
 
-When you run the same workflow through `nova publish --confirm` / `nova publish -c`, the CLI handles confirmation before
+When you run the same workflow through `% nova publish --confirm` / `% nova publish -c`, the CLI handles confirmation
+before
 the routed publish starts. `Y` / `Yes` and `A` / `Yes to All` continue, `N` / `No` and `L` / `No to All` cancel the
 publish with a non-zero exit code, and `S` / `Suspend` is treated as cancel because nested PowerShell prompts are not
 supported in CLI mode.
@@ -52,7 +53,7 @@ supported in CLI mode.
 
 ### EXAMPLE 1
 
-```powershell
+```text
 PS> Publish-NovaModule -Local
 ```
 
@@ -61,7 +62,7 @@ When the copy succeeds, the published module is also imported from that local pa
 
 ### EXAMPLE 2
 
-```powershell
+```text
 PS> Publish-NovaModule -Local -ModuleDirectoryPath ~/Modules
 ```
 
@@ -70,7 +71,7 @@ When the copy succeeds, the published module is imported from `~/Modules/<Projec
 
 ### EXAMPLE 3
 
-```powershell
+```text
 PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
 ```
 
@@ -78,15 +79,15 @@ Builds, tests, and publishes the module to `PSGallery`.
 
 ### EXAMPLE 4
 
-```bash
-nova publish --repository PSGallery --api-key $PSGALLERY_API
+```text
+% nova publish --repository PSGallery --api-key $PSGALLERY_API
 ```
 
 Runs the same publish flow through the `nova` CLI.
 
 ### EXAMPLE 5
 
-```powershell
+```text
 PS> Publish-NovaModule -Local -WhatIf
 ```
 
@@ -214,7 +215,7 @@ source project or from `dist/`.
 `Publish-NovaModule` uses `SupportsShouldProcess`, so `Get-Help Publish-NovaModule -Full` should surface native
 `-WhatIf` and `-Confirm` support.
 
-The CLI-specific `nova publish --confirm` / `nova publish -c` prompt is separate from native PowerShell `-Confirm`.
+The CLI-specific `% nova publish --confirm` / `% nova publish -c` prompt is separate from native PowerShell `-Confirm`.
 It never opens a nested PowerShell `Suspend` prompt.
 
 ## RELATED LINKS

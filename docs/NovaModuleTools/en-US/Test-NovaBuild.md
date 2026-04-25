@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/14/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: Test-NovaBuild
 ---
@@ -19,7 +19,7 @@ Runs Pester tests for the current NovaModuleTools project.
 
 ### __AllParameterSets
 
-```powershell
+```text
 PS> Test-NovaBuild [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>] [[-OutputVerbosity] <string>]
 [[-OutputRenderMode] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
@@ -41,7 +41,7 @@ planned test run and XML output path without creating `artifacts/` or invoking P
 
 ### EXAMPLE 1
 
-```powershell
+```text
 PS> Test-NovaBuild
 ```
 
@@ -49,7 +49,7 @@ Runs the Pester tests for the current project.
 
 ### EXAMPLE 2
 
-```powershell
+```text
 PS> Test-NovaBuild -TagFilter unit,fast
 ```
 
@@ -57,7 +57,7 @@ Runs only tests tagged `unit` or `fast`.
 
 ### EXAMPLE 3
 
-```powershell
+```text
 PS> Test-NovaBuild -ExcludeTagFilter slow
 ```
 
@@ -65,7 +65,7 @@ Runs the test suite while excluding tests tagged `slow`.
 
 ### EXAMPLE 4
 
-```powershell
+```text
 PS> Test-NovaBuild -OutputVerbosity Normal -OutputRenderMode Ansi
 ```
 
@@ -73,7 +73,7 @@ Overrides the console output settings for the current test run while keeping col
 
 ### EXAMPLE 5
 
-```powershell
+```text
 PS> Test-NovaBuild -WhatIf
 ```
 
