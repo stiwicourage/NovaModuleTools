@@ -201,10 +201,10 @@ MyModule.latest.zip</code></pre>
                 </div>
                 <h3>Common ways to target artifacts</h3>
                 <pre><code>Deploy-NovaPackage -Repository LocalNexus
-nova deploy -repository LocalNexus</code></pre>
+nova deploy --repository LocalNexus</code></pre>
                 <p>Use a named repository from <code>Package.Repositories</code>.</p>
                 <pre><code>Deploy-NovaPackage -Url 'https://packages.example/raw/' -Token $env:NOVA_PACKAGE_TOKEN
-nova deploy -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN</code></pre>
+nova deploy --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN</code></pre>
                 <p>Use a direct URL when CI or a one-off script already knows the endpoint.</p>
                 <pre><code>Deploy-NovaPackage -PackageType Zip -Repository LocalNexus</code></pre>
                 <p>Filter to only one package type.</p>
@@ -267,13 +267,13 @@ nova deploy -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN</c
                     module itself either locally or to a PowerShell repository.</p>
                 <h3>Local publish</h3>
                 <pre><code>Publish-NovaModule -Local
-nova publish -local</code></pre>
+nova publish --local</code></pre>
                 <p>Local publish is useful when you want to validate a realistic install/import cycle without pushing to
                     a shared repository. After a successful local publish, Nova reloads the published module from the
                     local install path into the current PowerShell session.</p>
                 <h3>Repository publish</h3>
                 <pre><code>Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
-nova publish -repository PSGallery -apikey $env:PSGALLERY_API</code></pre>
+nova publish --repository PSGallery --api-key $env:PSGALLERY_API</code></pre>
                 <p>Repository mode is for registered PowerShell repositories such as PowerShell Gallery.</p>
                 <h3>Custom local path</h3>
                 <pre><code>Publish-NovaModule -Local -ModuleDirectoryPath ~/Modules</code></pre>
@@ -298,7 +298,7 @@ nova publish -repository PSGallery -apikey $env:PSGALLERY_API</code></pre>
                 <h3>Examples</h3>
                 <pre><code>Invoke-NovaRelease -PublishOption @{ Local = $true }
 Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API }
-nova release -repository PSGallery -apikey $env:PSGALLERY_API</code></pre>
+nova release --repository PSGallery --api-key $env:PSGALLERY_API</code></pre>
                 <h3>Important difference from local publish</h3>
                 <p>Local release does <strong>not</strong> import the published module into your current session
                     afterward. That behavior is specific to <code>Publish-NovaModule -Local</code>.</p>

@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   from zsh or bash.
 - Add optional `Preamble` support in `project.json` to write module-level setup lines at the top of generated `.psm1`
   files.
-- Add `Initialize-NovaModule -Example` and `nova init -Example` to scaffold a full working project from the packaged
+- Add `Initialize-NovaModule -Example` and GNU-style `nova init --example` / `nova init -e` support to scaffold a full
+  working project from the packaged
   example resources.
 - git initialization failures so more build and release paths now expose stable error ids and categories.
     - Runs the normal init flow
@@ -23,18 +24,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Always creates the example test structure without prompting to enable tests
   - The packaged example `project.json` now keeps the current project, manifest, package, and raw-upload settings
     visible in one place so users can see the full supported configuration surface
-- Add native `-WhatIf` and `-Confirm` support across mutating Nova commands, including routed CLI support for
-  `build`, `test`, `bump`, `publish`, and `release`.
+- Add native `-WhatIf` and `-Confirm` support across mutating Nova commands, including GNU-style routed CLI support for
+  `--verbose`/`-v`, `--whatif`/`-w`, and `--confirm`/`-c` on `build`, `test`, `bump`, `publish`, and `release`.
 - Add `Update-NovaModuleTool` (with `Update-NovaModuleTools` as a compatibility alias) and `nova update` for
   self-updating the installed module.
     - Supports `Set-NovaUpdateNotificationPreference` / `Get-NovaUpdateNotificationPreference` for PowerShell usage.
-    - Supports `nova notification`, `nova notification -disable`, and `nova notification -enable` for CLI usage.
+  - Supports `nova notification`, `nova notification --disable`/`-d`, and `nova notification --enable`/`-e` for CLI
+    usage.
   - Uses the stored prerelease update preference to decide whether prerelease self-updates are eligible.
   - Requires explicit confirmation before a prerelease self-update proceeds.
-- Add `nova version -Installed` so users can compare the locally installed version of the current project/module with
-  the current project version from `project.json`, while keeping `nova --version` dedicated to the installed
+- Add `nova version --installed` / `nova version -i` so users can compare the locally installed version of the current
+  project/module with
+  the current project version from `project.json`, while keeping `nova --version` / `nova -v` dedicated to the installed
   NovaModuleTools version.
-- Add an opt-in `-Preview` mode to `Update-NovaModuleVersion` / `nova bump` for explicit preview iteration.
+- Add an opt-in `-Preview` mode to `Update-NovaModuleVersion` / GNU-style `nova bump --preview` / `nova bump -p` for
+  explicit preview iteration.
     - Stable versions still use the normal semantic bump target first, then append `-preview`.
     - Existing prerelease versions now stay on the same semantic core and preserve the current prerelease stem while
       appending or incrementing trailing digits, for example `preview -> preview01`, `preview09 -> preview10`,
@@ -67,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `New-NovaModule` → `Initialize-NovaModule`
     - No compatibility aliases are exported for the retired cmdlet names or CLI subcommands.
 - Change `CopyResourcesToModuleRoot` to the canonical project setting name while keeping the default value `false`.
-- Change `Publish-NovaModule -Local` and `nova publish -local` so a successful local publish also reloads the published
+- Change `Publish-NovaModule -Local` and `nova publish --local` so a successful local publish also reloads the published
   module from the local install path into the active PowerShell session.
 
 ### Fixed
@@ -85,6 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       easier to scan and less visually cramped.
 - Refresh public `Get-Help` content and examples for the Nova commands, including CLI usage and preview/confirmation
   scenarios.
+- Update the `nova` CLI documentation and help text to use POSIX/GNU-style long and short options while keeping
+  PowerShell cmdlet examples in their native PowerShell form.
 
 ### Removed
 

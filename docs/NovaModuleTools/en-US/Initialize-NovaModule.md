@@ -74,7 +74,7 @@ prompt flow to the copied `project.json`.
 ### EXAMPLE 4
 
 ```bash
-nova init -Example -Path ~/Work
+nova init --example --path ~/Work
 ```
 
 Runs the same example-based scaffold flow through the `nova` CLI.

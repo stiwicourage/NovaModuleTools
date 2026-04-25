@@ -61,7 +61,7 @@ repository named `LocalNexus` from `Package.Repositories`.
 ### EXAMPLE 2
 
 ```powershell
-PS> nova deploy -repository LocalNexus
+PS> nova deploy --repository LocalNexus
 ```
 
 Runs the same raw package upload flow through the Nova CLI.

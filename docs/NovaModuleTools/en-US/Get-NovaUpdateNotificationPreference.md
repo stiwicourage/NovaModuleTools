@@ -77,10 +77,12 @@ Returns the prerelease self-update state, the always-available stable-update sta
 
 ## NOTES
 
-Use `PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications` or `nova notification -disable` to stop
+Use `PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications` or `nova notification --disable` /
+`nova notification -d` to stop
 prerelease self-updates from being eligible.
 
-Use `PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications` or `nova notification -enable` to allow
+Use `PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications` or `nova notification --enable` /
+`nova notification -e` to allow
 prerelease self-updates again.
 
 When prerelease notifications are enabled again, `Update-NovaModuleTool` / `Update-NovaModuleTools` and `nova update`

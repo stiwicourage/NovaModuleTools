@@ -101,7 +101,7 @@
                             <td>Use this when you want to know what your project will build and publish as.</td>
                         </tr>
                         <tr>
-                            <td><code>nova version -Installed</code></td>
+                            <td><code>nova version --installed</code> or <code>nova version -i</code></td>
                             <td>The version installed locally for the current project/module from the module path.</td>
                             <td>Use this when you want to compare the installed copy against the current working
                                 project.
@@ -118,8 +118,10 @@
                     </table>
                 </div>
                 <pre><code>nova version
-nova version -Installed
-nova --version</code></pre>
+nova version --installed
+nova version -i
+nova --version
+nova -v</code></pre>
             </section>
 
             <section class="content-section" id="bump">
@@ -145,7 +147,9 @@ nova --version</code></pre>
 1.3.0-preview7 + Minor -> 1.3.0
 1.2.4-preview7 + Patch -> 1.2.4
 1.2.3-preview7 + Minor -> 1.3.0</code></pre>
-                <p>Use <code>-Preview</code> when you want that bump to stay explicitly in prerelease mode. Stable
+                <p>Use <code>-Preview</code> or the CLI form <code>nova bump --preview</code> / <code>nova bump
+                    -p</code>
+                    when you want that bump to stay explicitly in prerelease mode. Stable
                     versions first resolve the normal semantic target and then append <code>-preview</code>. Existing
                     prerelease versions keep the same semantic core and preserve the current prerelease stem while
                     appending or incrementing trailing digits instead of finalizing. Any bare prerelease stem now
@@ -161,15 +165,16 @@ nova --version</code></pre>
 1.5.3-rc + -Preview -> 1.5.3-rc01</code></pre>
                 <pre><code>Update-NovaModuleVersion -WhatIf
 Update-NovaModuleVersion -Preview -WhatIf
-nova bump -WhatIf
-nova bump -Preview -WhatIf
-nova bump -Confirm</code></pre>
+nova bump --whatif
+nova bump --preview --whatif
+nova bump --confirm</code></pre>
                 <div class="notice notice--warning">
                     <strong>Empty repository rule.</strong>
                     <p>If your Git repository exists but has no commits yet, Nova throws: <code>Cannot bump version
                         because the repository has no commits yet. Create an initial commit first.</code></p>
                 </div>
-                <p>The standalone launcher uses a CLI-friendly confirmation flow for <code>nova bump -Confirm</code>. If
+                <p>The standalone launcher uses a CLI-friendly confirmation flow for <code>nova bump --confirm</code> or
+                    <code>nova bump -c</code>. If
                     you decline, Nova exits cleanly without writing a new version.</p>
             </section>
 
@@ -224,8 +229,8 @@ nova update</code></pre>
 Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
 Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
 nova notification
-nova notification -disable
-nova notification -enable</code></pre>
+nova notification --disable
+nova notification --enable</code></pre>
                 <h3>Recommended choices</h3>
                 <div class="table-scroll">
                     <table>

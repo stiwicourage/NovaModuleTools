@@ -40,7 +40,8 @@ when they decide whether a prerelease self-update can be selected.
 
 Stable self-updates remain available and do not require prerelease eligibility.
 
-If you prefer the Nova CLI surface, use `nova notification -disable` and `nova notification -enable` for the same
+If you prefer the Nova CLI surface, use `nova notification --disable`/`nova notification -d` and
+`nova notification --enable`/`nova notification -e` for the same
 stored preference.
 
 ## EXAMPLES
@@ -66,7 +67,7 @@ Turns prerelease self-update eligibility back on, which allows `Update-NovaModul
 ### EXAMPLE 3
 
 ```powershell
-nova notification -disable
+nova notification --disable
 ```
 
 Uses the Nova CLI entrypoint to disable prerelease self-update eligibility.
@@ -74,7 +75,7 @@ Uses the Nova CLI entrypoint to disable prerelease self-update eligibility.
 ### EXAMPLE 4
 
 ```powershell
-nova notification -enable
+nova notification --enable
 ```
 
 Uses the Nova CLI entrypoint to re-enable prerelease self-update eligibility.

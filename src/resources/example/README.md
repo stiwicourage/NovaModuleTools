@@ -90,7 +90,7 @@ That means you can inspect the example configuration and then adapt it for eithe
 
 ```powershell
 PS> Deploy-NovaPackage -Repository ExampleRaw
-PS> nova deploy -repository ExampleRaw
+PS> nova deploy --repository ExampleRaw
 ```
 
 For real projects, prefer environment-variable-backed tokens over committing literal secrets in source control.
@@ -120,4 +120,4 @@ This example is intentionally small, but it demonstrates the most important Nova
 
 If you want a new project scaffold, use `Initialize-NovaModule` (`nova init`). If you want a concrete project you can
 inspect,
-run, or copy through `nova init -Example`, use this example folder.
+run, or copy through `nova init --example` / `nova init -e`, use this example folder.

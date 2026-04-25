@@ -1,4 +1,4 @@
-usage: nova [--version] [--help] <command> [<args>]
+usage: nova [--version|-v] [--help|-h] <command> [<args>]
 
 These are common Nova commands used in various situations:
 
@@ -7,7 +7,7 @@ start a new module project
 
 work with the current project
    info       Show project information
-   version    Show the current project version, or use -Installed for the locally installed project module version
+   version    Show the current project version, or use --installed/-i for the locally installed project module version
    build      Build the module into the dist folder
    test       Run Pester tests for the project
    package    Build, test, and package the module as configured package artifact(s)
@@ -21,34 +21,47 @@ publish and release
    release    Run the full release flow (build, test, version bump, rebuild, publish)
 
 global options
-   --help     Show this help message
-   --version  Show the installed NovaModuleTools module name and version, including prerelease label when present
-   -Verbose   Show verbose output for the routed PowerShell command
-   -WhatIf    Preview build, test, deploy, bump, update, notification, publish, and release without changing files
-   -Confirm   Request confirmation before mutating routed commands; nova bump cancels cleanly on No/No to All/Suspend
+   --help, -h     Show this help message
+   --version, -v  Show the installed NovaModuleTools module name and version, including prerelease label when present
+
+routed command options
+   --verbose, -v  Show verbose output for build, test, package, deploy, bump, update, notification, publish, and release
+   --whatif, -w   Preview build, test, deploy, bump, update, notification, publish, and release without changing files
+   --confirm, -c  Request confirmation before mutating routed commands; nova bump keeps its CLI-friendly confirmation prompt
 
 Examples:
    nova init
-   nova init -Path ~/Work
-   nova init -Example
-   nova init -Example -Path ~/Work
+   nova init --path ~/Work
+   nova init -p ~/Work
+   nova init --example
+   nova init -e --path ~/Work
    nova info
    nova version
-   nova version -Installed
+   nova version --installed
+   nova version -i
    nova build
+   nova build --verbose
+   nova build -v
+   nova build --whatif
+   nova build -w
+   nova build --confirm
+   nova build -c
    nova test
    nova package
-   nova deploy -repository LocalNexus
-   nova deploy -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN
-   nova bump -WhatIf
+   nova deploy --repository LocalNexus
+   nova deploy -r LocalNexus
+   nova deploy --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN
+   nova publish --local
+   nova publish --repository PSGallery --api-key <key>
+   nova bump --preview --whatif
    nova update
    nova notification
-   nova notification -disable
-   nova notification -enable
-   nova publish -local
-   nova publish -repository PSGallery -apikey <key>
+   nova notification --disable
+   nova notification -d
+   nova notification --enable
+   nova notification -e
    nova bump
-   nova release -repository PSGallery -apikey <key>
+   nova release --repository PSGallery --api-key <key>
 
 After installing the module on macOS/Linux, run Install-NovaCli once if you want
 the standalone 'nova' command available from zsh/bash.
@@ -60,11 +73,11 @@ Use 'nova <command> --help' to show the routed PowerShell help for commands such
 'nova package', 'nova deploy', and 'nova init'.
 
 Use 'nova notification' to show the current prerelease self-update preference,
-'nova notification -disable' to keep 'nova update' on stable releases only,
-and 'nova notification -enable' to allow prerelease self-update targets again.
+'nova notification --disable' or 'nova notification -d' to keep 'nova update' on stable releases only,
+and 'nova notification --enable' or 'nova notification -e' to allow prerelease self-update targets again.
 
 Use 'nova version' for the current project version from project.json,
-'nova version -Installed' for the locally installed version of the current project/module,
+'nova version --installed' or 'nova version -i' for the locally installed version of the current project/module,
 and 'nova --version' for the installed NovaModuleTools version.
 
 Use 'nova update' to self-update NovaModuleTools. It uses the stored prerelease
@@ -74,8 +87,8 @@ normally, while prerelease targets require explicit confirmation before the upda
 Use 'nova deploy' when you want to push existing package
 artifacts from the configured package output directory to a raw repository endpoint.
 
-Inside PowerShell, 'nova publish -local' also reloads the published module from the
+Inside PowerShell, 'nova publish --local' also reloads the published module from the
 local install path after a successful publish.
 
-Note: 'nova init' is interactive. Use 'nova init -Path <path>' for an explicit destination,
-'nova init -Example' for the packaged example scaffold, and do not use 'nova init -WhatIf'.
+Note: 'nova init' is interactive. Use 'nova init --path <path>' or 'nova init -p <path>' for an explicit destination,
+'nova init --example' or 'nova init -e' for the packaged example scaffold, and do not use 'nova init --whatif' or 'nova init -w'.

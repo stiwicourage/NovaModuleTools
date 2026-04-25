@@ -12,17 +12,17 @@ function ConvertFrom-NovaCliArgument {
         $token = $Arguments[$index]
 
         switch -Regex ($token) {
-            '^(--local|-Local)$' {
+            '^(--local|-l)$' {
                 $options.Local = $true
             }
-            '^(--repository|-Repository)$' {
+            '^(--repository|-r)$' {
                 $options.Repository = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--repository'
             }
-            '^(--path|-Path|-ModuleDirectoryPath)$' {
+            '^(--path|-p)$' {
                 $options.ModuleDirectoryPath = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--path'
             }
-            '^(--apikey|-ApiKey)$' {
-                $options.ApiKey = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--apikey'
+            '^(--api-key|-k)$' {
+                $options.ApiKey = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--api-key'
             }
             default {
                 Stop-NovaOperation -Message "Unknown argument: $token" -ErrorId 'Nova.Validation.UnknownCliArgument' -Category InvalidArgument -TargetObject $token

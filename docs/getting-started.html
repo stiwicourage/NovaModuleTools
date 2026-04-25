@@ -153,17 +153,19 @@ source ~/.zshrc</code></pre>
                 <p>The fastest way to understand Nova is to start from the packaged example, because it already contains
                     a real public command, a private helper, a resource file, tests, and a complete
                     <code>project.json</code>.</p>
-                <pre><code>nova init -Example -Path ~/Work</code></pre>
+                <pre><code>nova init --example --path ~/Work</code></pre>
                 <p>Nova asks for the project name, description, version, author, minimum PowerShell version, and whether
                     Git should be initialized. It then creates a project folder under the path you selected.</p>
                 <div class="notice">
                     <strong>CLI caveat:</strong>
-                    <p>Use <code>nova init -Path ~/Work</code>, not positional path syntax such as <code>nova init
+                    <p>Use <code>nova init --path ~/Work</code> or <code>nova init -p ~/Work</code>, not positional path
+                        syntax such as <code>nova init
                         ~/Work</code>. Positional paths are intentionally rejected with migration guidance.</p>
                 </div>
                 <div class="notice notice--warning">
                     <strong>Another important caveat:</strong>
-                    <p><code>nova init -WhatIf</code> is intentionally rejected. If you want preview support, use the
+                    <p><code>nova init --whatif</code> / <code>nova init -w</code> is intentionally rejected. If you
+                        want preview support, use the
                         PowerShell cmdlet form <code>Initialize-NovaModule -WhatIf</code>.</p>
                 </div>
                 <p><strong>Expected result:</strong> a new project folder that contains <code>src/</code>,
@@ -203,7 +205,7 @@ Get-ExampleGreeting -Name 'Nova user' -AsObject</code></pre>
                 <h2>7. Start from the minimal scaffold instead</h2>
                 <p>Use the minimal scaffold when you already understand the Nova project shape and want a clean starting
                     point rather than the full working example.</p>
-                <pre><code>nova init -Path ~/Work</code></pre>
+                <pre><code>nova init --path ~/Work</code></pre>
                 <p>The minimal scaffold still asks for the same core project metadata, but it gives you a smaller
                     starter layout than the example project.</p>
                 <p>Use the example scaffold when you want the fastest learning path. Use the minimal scaffold when you

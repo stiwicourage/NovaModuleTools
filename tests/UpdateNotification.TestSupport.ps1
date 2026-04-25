@@ -82,8 +82,8 @@ function Invoke-TestNotificationPreferenceToggle {
 
             if ($UseCli) {
                 $status = Invoke-NovaCli notification
-                $disabled = Invoke-NovaCli notification -disable -Confirm:$false
-                $enabled = Invoke-NovaCli notification -enable -Confirm:$false
+                $disabled = Invoke-NovaCli notification --disable -Confirm:$false
+                $enabled = Invoke-NovaCli notification --enable -Confirm:$false
             }
             else {
                 $status = Get-NovaUpdateNotificationPreference

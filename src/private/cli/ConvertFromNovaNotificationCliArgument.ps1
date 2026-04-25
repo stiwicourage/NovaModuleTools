@@ -10,14 +10,14 @@ function ConvertFrom-NovaNotificationCliArgument {
     }
 
     if ($Arguments.Count -ne 1) {
-        Stop-NovaOperation -Message "Unsupported 'nova notification' usage. Use 'nova notification', 'nova notification -enable', or 'nova notification -disable'." -ErrorId 'Nova.Validation.UnsupportedNotificationCliUsage' -Category InvalidArgument -TargetObject $Arguments
+        Stop-NovaOperation -Message "Unsupported 'nova notification' usage. Use 'nova notification', 'nova notification --enable'/'nova notification -e', or 'nova notification --disable'/'nova notification -d'." -ErrorId 'Nova.Validation.UnsupportedNotificationCliUsage' -Category InvalidArgument -TargetObject $Arguments
     }
 
     switch -Regex ($Arguments[0]) {
-        '^(--enable|-Enable)$' {
+        '^(--enable|-e)$' {
             return 'enable'
         }
-        '^(--disable|-Disable)$' {
+        '^(--disable|-d)$' {
             return 'disable'
         }
         default {
