@@ -4,8 +4,6 @@ $global:novaCommandModelPackageUploadTestSupportFunctionNameList = @(
     'New-TestNovaPackageUploadProjectInfo'
     'New-TestNovaPackageArtifactFile'
     'New-TestNovaPackageArtifactSet'
-    'Get-TestNovaPackageUploadConfirmActionCases'
-    'Get-TestNovaPackageUploadSuspendWarningCount'
     'Get-TestNovaPackageUploadTargetResolutionCases'
     'Get-TestNovaPackageUploadRepositoryList'
     'Assert-TestNovaPackageUploadTargetResolutionResult'
@@ -120,31 +118,6 @@ function New-TestNovaPackageArtifactSet {
     )
 }
 
-function Get-TestNovaPackageUploadConfirmActionCases {
-    [CmdletBinding()]
-    param()
-
-    return @(
-        @{Choice = 'Y'; Expected = $true; ExpectSuspendWarning = $false}
-        @{Choice = 'A'; Expected = $true; ExpectSuspendWarning = $false}
-        @{Choice = 'N'; Expected = $false; ExpectSuspendWarning = $false}
-        @{Choice = 'L'; Expected = $false; ExpectSuspendWarning = $false}
-        @{Choice = 'S'; Expected = $false; ExpectSuspendWarning = $true}
-    )
-}
-
-function Get-TestNovaPackageUploadSuspendWarningCount {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][bool]$ExpectSuspendWarning
-    )
-
-    if ($ExpectSuspendWarning) {
-        return 1
-    }
-
-    return 0
-}
 
 function Get-TestNovaPackageUploadTargetResolutionCases {
     [CmdletBinding()]

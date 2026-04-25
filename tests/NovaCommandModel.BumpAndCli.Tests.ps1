@@ -128,7 +128,6 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
                     Action = 'Update module version using Minor release label'
                 }
             }
-            Mock Test-NovaCliBumpConfirmationIsEnabled {$false}
             Mock Invoke-NovaVersionUpdateWorkflow {
                 [pscustomobject]@{NewVersion = '1.1.0'}
             }
@@ -334,44 +333,55 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
-    It 'Update-NovaModuleVersion returns no output when the CLI confirm prompt declines the bump' {
+    It 'Update-NovaModuleVersion keeps native PowerShell Confirm support for direct cmdlet usage and does not route through the CLI helper' {
         InModuleScope $script:moduleName {
-            $originalCliConfirm = $env:NOVA_CLI_CONFIRM_BUMP
-            $env:NOVA_CLI_CONFIRM_BUMP = '1'
+            $command = Get-Command -Name 'Update-NovaModuleVersion' -CommandType Function -ErrorAction Stop
 
-            Mock Get-NovaProjectInfo {
+            Mock Confirm-NovaCliCommandAction {throw 'direct PowerShell bump should not use the CLI confirmation helper'}
+            Mock Get-NovaVersionUpdateWorkflowContext {
                 [pscustomobject]@{
-                    Version = '1.0.0'
-                    ProjectJSON = '/tmp/project.json'
+                    Target = 'project.json'
+                    Action = 'Update module version using Minor release label'
                 }
             }
-            Mock Get-GitCommitMessageForVersionBump {@('feat: add change')}
-            Mock Get-VersionLabelFromCommitSet {'Minor'}
-            Mock Get-NovaVersionUpdatePlan {
+            Mock Invoke-NovaVersionUpdateWorkflow {
+                [pscustomobject]@{NewVersion = '1.1.0'}
+            }
+
+            $result = Update-NovaModuleVersion -Path (Get-Location).Path -Confirm:$false
+
+            $command.Parameters.ContainsKey('Confirm') | Should -BeTrue
+            $command.Parameters.ContainsKey('WhatIf') | Should -BeTrue
+            $result.NewVersion | Should -Be '1.1.0'
+            Assert-MockCalled Confirm-NovaCliCommandAction -Times 0
+        }
+    }
+
+    It 'Invoke-NovaCli bump uses the shared CLI confirmation wrapper for --confirm and -c without forwarding raw Confirm' {
+        InModuleScope $script:moduleName {
+            Mock Confirm-NovaCliCommandAction {}
+            Mock Update-NovaModuleVersion {
+                param([switch]$Preview, [switch]$WhatIf, [bool]$Confirm)
+
                 [pscustomobject]@{
-                    ProjectFile = '/tmp/project.json'
-                    CurrentVersion = [semver]'1.0.0'
-                    NewVersion = [semver]'1.1.0'
-                }
-            }
-            Mock Confirm-NovaCliBumpAction {$false}
-            Mock Set-NovaModuleVersion {}
-
-            try {
-                $result = Update-NovaModuleVersion -Path (Get-Location).Path
-            }
-            finally {
-                if ($null -eq $originalCliConfirm) {
-                    Remove-Item Env:NOVA_CLI_CONFIRM_BUMP -ErrorAction SilentlyContinue
-                }
-                else {
-                    $env:NOVA_CLI_CONFIRM_BUMP = $originalCliConfirm
+                    Preview = $Preview.IsPresent
+                    WhatIf = $WhatIf.IsPresent
+                    Confirm = $Confirm
                 }
             }
 
-            $result | Should -BeNullOrEmpty
-            Assert-MockCalled Confirm-NovaCliBumpAction -Times 1
-            Assert-MockCalled Set-NovaModuleVersion -Times 0
+            foreach ($arguments in @(
+                @('bump', '--confirm'),
+                @('bump', '-c')
+            )) {
+                $result = Invoke-NovaCli @arguments
+
+                $result.Preview | Should -BeFalse
+                $result.WhatIf | Should -BeFalse
+                $result.Confirm | Should -BeFalse
+            }
+
+            Assert-MockCalled Confirm-NovaCliCommandAction -Times 2 -ParameterFilter {$Command -eq 'bump'}
         }
     }
 }

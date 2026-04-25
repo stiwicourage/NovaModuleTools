@@ -121,12 +121,8 @@ Use `nova <mutating-command> --confirm` / `nova <mutating-command> -c` when you 
 - `S` / `Suspend` is not supported in CLI mode and is treated as cancel so `nova` returns directly to your original
   shell instead of opening a nested PowerShell prompt
 
-Direct PowerShell cmdlets such as `Publish-NovaModule` still keep their native `-Confirm` behavior. The CLI-safe
-confirmation flow only applies to routed `nova` / `Invoke-NovaCli` usage.
-
-`Deploy-NovaPackage -Confirm` is the exception for direct PowerShell usage because package upload can resolve multiple
-artifacts. It now asks once for the full resolved upload set, cancels cleanly on `N` / `L`, and treats `S` as cancel
-with a warning instead of opening a nested PowerShell prompt.
+Direct PowerShell cmdlets such as `Publish-NovaModule`, `Deploy-NovaPackage`, and `Update-NovaModuleVersion` keep their
+native `-Confirm` behavior. The CLI-safe confirmation flow only applies to routed `nova` / `Invoke-NovaCli` usage.
 
 ### Reload the built module while iterating
 

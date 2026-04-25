@@ -54,6 +54,28 @@ BeforeAll {
 }
 
 Describe 'Nova command model - project, help, and build behavior' {
+    It 'public mutating Nova commands expose native PowerShell Confirm and WhatIf parameters' {
+        foreach ($commandName in @(
+            'Deploy-NovaPackage'
+            'Initialize-NovaModule'
+            'Install-NovaCli'
+            'Invoke-NovaBuild'
+            'Invoke-NovaCli'
+            'Invoke-NovaRelease'
+            'New-NovaModulePackage'
+            'Publish-NovaModule'
+            'Set-NovaUpdateNotificationPreference'
+            'Test-NovaBuild'
+            'Update-NovaModuleTool'
+            'Update-NovaModuleVersion'
+        )) {
+            $command = Get-Command -Name $commandName -CommandType Function -ErrorAction Stop
+
+            $command.Parameters.ContainsKey('Confirm') | Should -BeTrue -Because "$commandName should keep native PowerShell confirmation support"
+            $command.Parameters.ContainsKey('WhatIf') | Should -BeTrue -Because "$commandName should keep native PowerShell preview support"
+        }
+    }
+
     It 'Get-NovaProjectInfoContext resolves the project root, project.json path, and JSON data' {
         InModuleScope $script:moduleName {
             $projectRoot = Join-Path $TestDrive 'project-info-context'

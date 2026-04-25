@@ -139,30 +139,6 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
-    It 'Confirm-NovaPackageUploadAction returns the expected result for <Choice>' -ForEach (Get-TestNovaPackageUploadConfirmActionCases) {
-        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
-            param($TestCase)
-
-            $workflowContext = [pscustomobject]@{
-                Operation = 'Upload 2 package artifacts'
-                Target = 'https://packages.example/raw/PackageProject.2.3.4.zip, https://packages.example/raw/PackageProject.latest.zip'
-                UploadArtifactList = @(
-                    [pscustomobject]@{PackageFileName = 'PackageProject.2.3.4.zip'}
-                    [pscustomobject]@{PackageFileName = 'PackageProject.latest.zip'}
-                )
-            }
-
-            Mock Read-AwesomeChoicePrompt {$TestCase.Choice}
-            Mock Write-NovaPackageUploadSuspendNotSupportedWarning {}
-
-            $result = Confirm-NovaPackageUploadAction -WorkflowContext $workflowContext -HostUi ([pscustomobject]@{})
-
-            $result | Should -Be $TestCase.Expected
-            Assert-MockCalled Read-AwesomeChoicePrompt -Times 1 -ParameterFilter {$Ask.Caption -eq 'Confirm' -and $Ask.Default -eq 'Y'}
-            Assert-MockCalled Write-NovaPackageUploadSuspendNotSupportedWarning -Times (Get-TestNovaPackageUploadSuspendWarningCount -ExpectSuspendWarning $TestCase.ExpectSuspendWarning)
-        }
-    }
-
     It 'Invoke-NovaPackageUploadWorkflow uploads each approved artifact in order' {
         InModuleScope $script:moduleName {
             $script:steps = @()
@@ -378,44 +354,18 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
-    It 'Deploy-NovaPackage uses one explicit PowerShell confirmation for the full upload set and cancels cleanly when declined' {
+    It 'Deploy-NovaPackage keeps native PowerShell Confirm support for direct cmdlet usage' {
         InModuleScope $script:moduleName {
-            Mock Get-NovaPackageUploadWorkflowContext {
-                [pscustomobject]@{
-                    Target = 'https://packages.example/raw/PackageProject.2.3.4.zip, https://packages.example/raw/PackageProject.latest.zip'
-                    Operation = 'Upload 2 package artifacts'
-                    UploadArtifactList = @(
-                        [pscustomobject]@{
-                            Type = 'Zip'
-                            PackagePath = '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip'
-                            PackageFileName = 'PackageProject.2.3.4.zip'
-                            UploadUrl = 'https://packages.example/raw/PackageProject.2.3.4.zip'
-                        }
-                        [pscustomobject]@{
-                            Type = 'Zip'
-                            PackagePath = '/tmp/project/artifacts/packages/PackageProject.latest.zip'
-                            PackageFileName = 'PackageProject.latest.zip'
-                            UploadUrl = 'https://packages.example/raw/PackageProject.latest.zip'
-                        }
-                    )
-                }
-            }
-            Mock Confirm-NovaPackageUploadAction {$false}
-            Mock Invoke-NovaPackageUploadWorkflow {throw 'should not upload after confirmation cancellation'}
+            $command = Get-Command -Name 'Deploy-NovaPackage' -CommandType Function -ErrorAction Stop
 
-            $result = @(Deploy-NovaPackage -Url 'https://packages.example/raw/' -Confirm)
-
-            $result.Count | Should -Be 0
-            Assert-MockCalled Confirm-NovaPackageUploadAction -Times 1 -ParameterFilter {
-                $WorkflowContext.UploadArtifactList.Count -eq 2 -and
-                        $WorkflowContext.Operation -eq 'Upload 2 package artifacts'
-            }
-            Assert-MockCalled Invoke-NovaPackageUploadWorkflow -Times 0
+            $command.Parameters.ContainsKey('Confirm') | Should -BeTrue
+            $command.Parameters.ContainsKey('WhatIf') | Should -BeTrue
         }
     }
 
-    It 'Deploy-NovaPackage uses one explicit PowerShell confirmation for the full upload set before upload continues' {
+    It 'Deploy-NovaPackage direct cmdlet usage does not route through the CLI confirmation helper' {
         InModuleScope $script:moduleName {
+            Mock Confirm-NovaCliCommandAction {throw 'direct PowerShell deploy should not use the CLI confirmation helper'}
             Mock Get-NovaPackageUploadWorkflowContext {
                 [pscustomobject]@{
                     Target = 'https://packages.example/raw/PackageProject.2.3.4.zip, https://packages.example/raw/PackageProject.latest.zip'
@@ -436,7 +386,6 @@ Describe 'Nova command model - package upload behavior' {
                     )
                 }
             }
-            Mock Confirm-NovaPackageUploadAction {$true}
             Mock Invoke-NovaPackageUploadWorkflow {
                 @(
                     [pscustomobject]@{PackageFileName = 'PackageProject.2.3.4.zip'; StatusCode = 200}
@@ -444,10 +393,10 @@ Describe 'Nova command model - package upload behavior' {
                 )
             }
 
-            $result = @(Deploy-NovaPackage -Url 'https://packages.example/raw/' -Confirm)
+            $result = @(Deploy-NovaPackage -Url 'https://packages.example/raw/' -Confirm:$false)
 
             $result.PackageFileName | Should -Be @('PackageProject.2.3.4.zip', 'PackageProject.latest.zip')
-            Assert-MockCalled Confirm-NovaPackageUploadAction -Times 1
+            Assert-MockCalled Confirm-NovaCliCommandAction -Times 0
             Assert-MockCalled Invoke-NovaPackageUploadWorkflow -Times 1 -ParameterFilter {$UploadArtifactList.Count -eq 2}
         }
     }

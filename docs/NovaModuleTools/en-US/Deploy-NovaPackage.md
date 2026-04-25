@@ -46,9 +46,8 @@ as `Package.RepositoryUrl`, `Package.UploadPath`, `Package.Headers`, and `Packag
 This command is intentionally separate from `Publish-NovaModule`. `Deploy-NovaPackage` performs raw HTTP artifact
 uploads, while `Publish-NovaModule` remains focused on PowerShell repository publishing.
 
-When you run `Deploy-NovaPackage -Confirm`, Nova asks once for the full resolved upload set instead of prompting once
-per artifact. `N` and `L` cancel the full upload cleanly, and `S` is treated as cancel with a warning instead of
-opening a nested PowerShell prompt.
+When you run `Deploy-NovaPackage -Confirm`, PowerShell uses its native confirmation prompt against the full resolved
+upload set instead of prompting once per artifact.
 
 ## EXAMPLES
 
@@ -109,7 +108,7 @@ Previews which package artifacts would be uploaded and which destination URLs wo
 PS> Deploy-NovaPackage -Repository LocalNexus -Confirm
 ```
 
-Prompts once for the full resolved upload set before any raw package upload starts.
+Uses PowerShell's native confirmation prompt for the full resolved upload set before any raw package upload starts.
 
 ## PARAMETERS
 

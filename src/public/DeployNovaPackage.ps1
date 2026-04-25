@@ -16,12 +16,7 @@ function Deploy-NovaPackage {
         $uploadOption = New-NovaPackageUploadOption -BoundParameters $PSBoundParameters
         $workflowContext = Get-NovaPackageUploadWorkflowContext -BoundParameters $PSBoundParameters -ProjectInfo $projectInfo -UploadOption $uploadOption
 
-        $shouldRun = if (-not $WhatIfPreference -and (Test-NovaPackageUploadExplicitConfirmEnabled -BoundParameters $PSBoundParameters)) {
-            Confirm-NovaPackageUploadAction -WorkflowContext $workflowContext -HostUi $Host.UI
-        }
-        else {
-            $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Operation)
-        }
+        $shouldRun = $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Operation)
 
         if (-not $shouldRun) {
             return @()
