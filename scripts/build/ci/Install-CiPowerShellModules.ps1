@@ -1,8 +1,6 @@
 param(
     [string[]]$ModuleName = @(
-    'Pester',
-    'NovaModuleTools',
-    'Microsoft.PowerShell.PlatyPS'
+    'NovaModuleTools'
 )
 )
 
