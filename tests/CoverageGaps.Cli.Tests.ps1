@@ -303,6 +303,16 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             }
         },
         [pscustomobject]@{
+            CommandName = 'ConvertFrom-NovaInitCliArgument'
+            Arguments = @('--bogus')
+            ExpectedError = [pscustomobject]@{
+                Message = 'Unknown argument: --bogus'
+                ErrorId = 'Nova.Validation.UnknownCliArgument'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '--bogus'
+            }
+        },
+        [pscustomobject]@{
             CommandName = 'ConvertFrom-NovaNotificationCliArgument'
             Arguments = @('--enable', '--disable')
             ExpectedError = [pscustomobject]@{
@@ -375,6 +385,26 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'ConvertFrom-NovaDeployCliArgument parses extended upload options and headers' {
+        InModuleScope $script:moduleName {
+            $options = ConvertFrom-NovaDeployCliArgument -Arguments @(
+                '--path', '/tmp/package-a.nupkg',
+                '--upload-path', 'modules/releases/',
+                '--token', 'secret-token',
+                '--token-env', 'NOVA_TOKEN',
+                '--auth-scheme', 'Bearer',
+                '--header', 'X-Trace-Id=trace-123'
+            )
+
+            $options.PackagePath | Should -Be @('/tmp/package-a.nupkg')
+            $options.UploadPath | Should -Be 'modules/releases/'
+            $options.Token | Should -Be 'secret-token'
+            $options.TokenEnvironmentVariable | Should -Be 'NOVA_TOKEN'
+            $options.AuthenticationScheme | Should -Be 'Bearer'
+            $options.Headers['X-Trace-Id'] | Should -Be 'trace-123'
+        }
+    }
+
     It 'ConvertFrom-NovaVersionCliArgument resolves default and installed version modes' {
         InModuleScope $script:moduleName {
             (ConvertFrom-NovaVersionCliArgument).Installed | Should -BeFalse
@@ -431,6 +461,85 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 TargetObject = '=value'
             })
+        }
+    }
+
+    It 'Get-NovaCliCommandHelp maps the remaining routed commands to the expected help targets' {
+        InModuleScope $script:moduleName {
+            Mock Get-Help {"help:$Name"}
+
+            $expectedTargets = @{
+                info = 'Get-NovaProjectInfo'
+                version = 'Invoke-NovaCli'
+                build = 'Invoke-NovaBuild'
+                test = 'Test-NovaBuild'
+                bump = 'Update-NovaModuleVersion'
+                update = 'Update-NovaModuleTool'
+                notification = 'Set-NovaUpdateNotificationPreference'
+                publish = 'Publish-NovaModule'
+                release = 'Invoke-NovaRelease'
+            }
+
+            foreach ($commandName in $expectedTargets.Keys) {
+                $result = Get-NovaCliCommandHelp -Command $commandName
+
+                $result | Should -Be "help:$( $expectedTargets[$commandName] )"
+            }
+        }
+    }
+
+    It 'CLI routing helpers cover normalized root help, alias invocation fallback, token parsing, and generic syntax guidance' {
+        InModuleScope $script:moduleName {
+            (Get-NovaCliNormalizedRootCommand -Command '-h') | Should -Be '--help'
+
+            $nonAliasInvocation = [pscustomobject]@{
+                InvocationName = 'Invoke-NovaCli'
+                InvocationStatement = $null
+                Command = 'build'
+                Arguments = @('--verbose')
+                BoundParameters = @{}
+            }
+            $aliasInvocation = [pscustomobject]@{
+                InvocationName = 'nova'
+                InvocationStatement = $null
+                Command = 'build'
+                Arguments = @('--verbose')
+                BoundParameters = @{}
+            }
+
+            (Get-NovaCliAliasInvocationStatement -Invocation $nonAliasInvocation) | Should -BeNullOrEmpty
+            (Get-NovaCliAliasInvocationStatement -Invocation $aliasInvocation) | Should -Be 'nova build --verbose'
+            (Get-NovaCliInvocationParameterTokenSet -InvocationStatement '') | Should -Be @()
+            (Get-NovaCliBoundCommonParameterToken -ParameterName 'Confirm' -ParameterTokens @('-Verbose', '-WhatIf')) | Should -BeNullOrEmpty
+
+            $genericSyntaxError = $null
+            try {
+                Assert-NovaCliArgumentSyntax -Arguments @('-legacy')
+            }
+            catch {
+                $genericSyntaxError = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $genericSyntaxError -ExpectedError ([pscustomobject]@{
+                Message = "Unsupported CLI option syntax: -legacy. Use long options with '--' or single-character short options."
+                ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '-legacy'
+            })
+        }
+    }
+
+    It 'Get-NovaCliAliasRootCommandOverride returns nothing when root alias verbose binding did not come from -v' {
+        InModuleScope $script:moduleName {
+            $result = Get-NovaCliAliasRootCommandOverride -Invocation ([pscustomobject]@{
+                InvocationName = 'nova'
+                Command = '--help'
+                BoundParameters = @{Verbose = $true}
+                Arguments = @()
+                InvocationStatement = 'nova -Verbose'
+            })
+
+            $result | Should -BeNullOrEmpty
         }
     }
 
@@ -673,6 +782,30 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
 '@ | Set-Content -LiteralPath $manifestPath -Encoding utf8
 
             Get-NovaInstalledProjectVersion -ProjectInfo $projectInfo | Should -Be 'AzureDevOpsAgentInstaller 1.12.1'
+        }
+    }
+
+    It 'Get-NovaInstalledProjectVersion resolves the default project info when none is supplied' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'AzureDevOpsAgentInstaller'
+                    Version = '1.12.1'
+                }
+            }
+            Mock Get-NovaInstalledProjectManifestPath {'/tmp/local-modules/AzureDevOpsAgentInstaller/AzureDevOpsAgentInstaller.psd1'}
+            Mock Test-Path {$true}
+            Mock Test-ModuleManifest {
+                [pscustomobject]@{
+                    Version = [version]'1.12.0'
+                }
+            }
+
+            $result = Get-NovaInstalledProjectVersion
+
+            $result | Should -Be 'AzureDevOpsAgentInstaller 1.12.0'
+            Assert-MockCalled Get-NovaProjectInfo -Times 1
+            Assert-MockCalled Get-NovaInstalledProjectManifestPath -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'AzureDevOpsAgentInstaller'}
         }
     }
 
