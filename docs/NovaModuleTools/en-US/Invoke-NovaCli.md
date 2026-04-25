@@ -40,6 +40,9 @@ Mutating routed commands forward CLI `--verbose`/`-v` and `--whatif`/`-w` to the
 `--confirm`/`-c` is handled by the shared CLI confirmation flow so the launcher never exposes PowerShell's interactive
 `Suspend` prompt.
 
+Only the supported mutating `nova` commands accept `--confirm`/`-c`. Read-only routes and `% nova init` reject the CLI
+confirm flag with a clear validation error.
+
 Direct PowerShell cmdlets such as `Invoke-NovaBuild`, `Publish-NovaModule`, `Deploy-NovaPackage`,
 `Update-NovaModuleVersion`, and `Invoke-NovaRelease` keep their native `-WhatIf` and `-Confirm` behavior when called
 directly.

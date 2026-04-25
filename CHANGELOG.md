@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       original shell.
   - Direct PowerShell cmdlets such as `Deploy-NovaPackage`, `Publish-NovaModule`, and `Update-NovaModuleVersion`
     continue to use native PowerShell confirmation semantics.
+  - Non-confirmable `nova` routes such as `info`, `version`, `--help`, `--version`, and `init` now reject
+    `--confirm`/`-c` consistently instead of silently accepting a PowerShell-style confirmation concept.
 - Add `Update-NovaModuleTool` (with `Update-NovaModuleTools` as a compatibility alias) and `% nova update` for
   self-updating the installed module.
     - Supports `Set-NovaUpdateNotificationPreference` / `Get-NovaUpdateNotificationPreference` for PowerShell usage.

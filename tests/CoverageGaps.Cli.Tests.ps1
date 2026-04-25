@@ -169,6 +169,46 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'Get-NovaCliArgumentRoutingState enables CLI confirmation only for supported mutating commands' {
+        InModuleScope $script:moduleName {
+            $supportedCommandList = @('build', 'test', 'package', 'deploy', 'bump', 'update', 'notification', 'publish', 'release')
+
+            foreach ($command in $supportedCommandList) {
+                foreach ($option in @('--confirm', '-c')) {
+                    $state = Get-NovaCliArgumentRoutingState -Command $command -Arguments @($option)
+
+                    $state.Command | Should -Be $command
+                    $state.Arguments | Should -Be @()
+                    $state.CliConfirmEnabled | Should -BeTrue
+                    $state.ForwardedParameters.ContainsKey('Confirm') | Should -BeFalse
+                }
+            }
+        }
+    }
+
+    It 'Get-NovaCliArgumentRoutingState rejects CLI confirmation for non-confirmable commands' {
+        InModuleScope $script:moduleName {
+            foreach ($command in @('--help', '--version', 'info', 'version', 'init')) {
+                foreach ($option in @('--confirm', '-c')) {
+                    $thrown = $null
+                    try {
+                        Get-NovaCliArgumentRoutingState -Command $command -Arguments @($option)
+                    }
+                    catch {
+                        $thrown = $_
+                    }
+
+                    Assert-TestStructuredCliError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                        Message = "The 'nova $command' CLI command does not support '--confirm'/'-c'."
+                        ErrorId = 'Nova.Validation.UnsupportedCliConfirm'
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                        TargetObject = 'Confirm'
+                    })
+                }
+            }
+        }
+    }
+
     It 'Get-NovaCliInvocationContext rejects legacy PowerShell-style CLI options passed through routed arguments' {
         InModuleScope $script:moduleName {
             $thrown = $null

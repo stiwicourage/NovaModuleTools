@@ -123,6 +123,9 @@ Use `% nova <mutating-command> --confirm` / `% nova <mutating-command> -c` when 
 - `S` / `Suspend` is not supported in CLI mode and is treated as cancel so `nova` returns directly to your original
   shell instead of opening a nested PowerShell prompt
 
+Only the supported mutating `nova` commands accept `--confirm` / `-c`. Read-only routes and `% nova init` now reject the
+CLI confirm flag with a clear validation error instead of silently treating it as a PowerShell-style concept.
+
 Direct PowerShell cmdlets such as `Publish-NovaModule`, `Deploy-NovaPackage`, and `Update-NovaModuleVersion` keep their
 native `-Confirm` behavior. The CLI-safe confirmation flow applies to `nova` CLI usage, while `Invoke-NovaCli` remains
 the explicit PowerShell cmdlet entrypoint for routed command dispatch.

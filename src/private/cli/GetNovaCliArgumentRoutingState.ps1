@@ -40,6 +40,15 @@ function Test-NovaCliMutatingCommand {
     return @('build', 'test', 'package', 'deploy', 'bump', 'update', 'notification', 'publish', 'release') -contains $Command
 }
 
+function Test-NovaCliConfirmSupportedCommand {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Command
+    )
+
+    return Test-NovaCliMutatingCommand -Command $Command
+}
+
 function Get-NovaCliLegacyOptionReplacement {
     [CmdletBinding()]
     param(
@@ -161,6 +170,24 @@ function Test-NovaCliConfirmOption {
     return $Argument -match '^(--confirm|-c)$'
 }
 
+function Assert-NovaCliConfirmSupportedCommand {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Command,
+        [Parameter(Mandatory)][string]$Argument
+    )
+
+    if (-not (Test-NovaCliConfirmOption -Argument $Argument)) {
+        return
+    }
+
+    if (Test-NovaCliConfirmSupportedCommand -Command $Command) {
+        return
+    }
+
+    Stop-NovaOperation -Message "The 'nova $Command' CLI command does not support '--confirm'/'-c'." -ErrorId 'Nova.Validation.UnsupportedCliConfirm' -Category InvalidOperation -TargetObject 'Confirm'
+}
+
 function Get-NovaCliArgumentRoutingState {
     [CmdletBinding()]
     param(
@@ -175,6 +202,8 @@ function Get-NovaCliArgumentRoutingState {
     $cliConfirmEnabled = $false
 
     foreach ($argument in $Arguments) {
+        Assert-NovaCliConfirmSupportedCommand -Command $normalizedCommand -Argument $argument
+
         if ((Test-NovaCliMutatingCommand -Command $normalizedCommand) -and (Add-NovaCliCommonOption -Argument $argument -ForwardedParameters $forwardedParameters)) {
             if (Test-NovaCliWhatIfOption -Argument $argument) {
                 $whatIfEnabled = $true
