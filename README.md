@@ -127,6 +127,9 @@ Direct PowerShell cmdlets such as `Publish-NovaModule`, `Deploy-NovaPackage`, an
 native `-Confirm` behavior. The CLI-safe confirmation flow applies to `nova` CLI usage, while `Invoke-NovaCli` remains
 the explicit PowerShell cmdlet entrypoint for routed command dispatch.
 
+The module does not export a PowerShell alias named `nova`. Install the bundled launcher with `Install-NovaCli` when you
+want `% nova ...` available directly from your shell.
+
 ### Reload the built module while iterating
 
 Use the built output during development so you validate the same shape CI uses:

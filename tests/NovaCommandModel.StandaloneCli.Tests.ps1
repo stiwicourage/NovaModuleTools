@@ -482,14 +482,7 @@ Describe '$projectName tests' {
             }
 
             foreach ($arguments in @(@('--verbose', '--confirm'), @('-v', '-c'))) {
-                $invocationContext = Get-NovaCliInvocationContext -InvocationRequest ([pscustomobject]@{
-                    Command = 'build'
-                    BoundParameters = @{Arguments = @($arguments)}
-                    Arguments = $arguments
-                    InvocationName = 'nova'
-                    InvocationStatement = "nova build $( $arguments -join ' ' )"
-                })
-                $result = Invoke-NovaCliCommandRoute -InvocationContext $invocationContext
+                $result = Invoke-NovaCli build @arguments
 
                 $result.Verbose | Should -BeTrue
                 $result.WhatIf | Should -BeFalse

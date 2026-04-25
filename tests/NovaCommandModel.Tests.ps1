@@ -54,6 +54,11 @@ BeforeAll {
 }
 
 Describe 'Nova command model - project, help, and build behavior' {
+    It 'Invoke-NovaCli stays explicit and does not export a nova PowerShell alias' {
+        {Get-Alias -Name 'nova' -ErrorAction Stop} | Should -Throw
+        (Get-Command -Name 'Invoke-NovaCli' -CommandType Function -ErrorAction Stop).Name | Should -Be 'Invoke-NovaCli'
+    }
+
     It 'public mutating Nova commands expose native PowerShell Confirm and WhatIf parameters' {
         foreach ($commandName in @(
             'Deploy-NovaPackage'

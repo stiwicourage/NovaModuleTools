@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `Install-NovaCli` and a packaged `nova` launcher so macOS and Linux users can install and run `nova` directly
   from zsh or bash.
+    - `nova` now remains the launcher-facing CLI surface, while `Invoke-NovaCli` stays the explicit PowerShell cmdlet
+      entrypoint instead of exporting a `nova` PowerShell alias.
 - Add optional `Preamble` support in `project.json` to write module-level setup lines at the top of generated `.psm1`
   files.
 - Add `Initialize-NovaModule -Example` and GNU-style `% nova init --example` / `% nova init -e` support to scaffold a
@@ -114,8 +116,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The public docs header logo is now larger so the NovaModuleTools brand is more prominent across the site.
 - Refresh public `Get-Help` content and examples for the Nova commands, including CLI usage and preview/confirmation
   scenarios.
-    - Restore full parameter metadata for `Invoke-NovaCli` help so PlatyPS can generate command help without failing
-      during local builds.
+    - Simplify `Invoke-NovaCli` help so it matches the launcher-vs-cmdlet split cleanly and PlatyPS can generate command
+      help without failing during local builds.
 - Update the `nova` CLI documentation and help text to use POSIX/GNU-style long and short options while keeping
   PowerShell cmdlet examples in their native PowerShell form.
 - Clarify the documentation split between the `nova` launcher-oriented CLI surface and the explicit PowerShell

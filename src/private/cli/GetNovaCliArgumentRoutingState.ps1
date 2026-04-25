@@ -83,81 +83,6 @@ function Test-NovaCliLegacySingleHyphenOption {
     return $Argument -match '^-[^-].+$'
 }
 
-function Get-NovaCliAliasInvocationStatement {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][pscustomobject]$Invocation
-    )
-
-    if (-not [string]::IsNullOrWhiteSpace($Invocation.InvocationStatement)) {
-        return $Invocation.InvocationStatement
-    }
-
-    if ($Invocation.InvocationName -ne 'nova') {
-        return $null
-    }
-
-    return (@($Invocation.InvocationName, $Invocation.Command) + @($Invocation.Arguments)) -join ' '
-}
-
-function Get-NovaCliInvocationParameterTokenSet {
-    [CmdletBinding()]
-    param(
-        [AllowEmptyString()][string]$InvocationStatement
-    )
-
-    if ( [string]::IsNullOrWhiteSpace($InvocationStatement)) {
-        return @()
-    }
-
-    $errors = $null
-    $tokens = [System.Management.Automation.PSParser]::Tokenize($InvocationStatement, [ref]$errors)
-    return @($tokens | Where-Object Type -eq 'CommandParameter' | Select-Object -ExpandProperty Content)
-}
-
-function Get-NovaCliBoundCommonParameterToken {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$ParameterName,
-        [AllowEmptyCollection()][string[]]$ParameterTokens = @()
-    )
-
-    foreach ($token in $ParameterTokens) {
-        if ($token -ieq '-v') {
-            return $token
-        }
-
-        $normalizedToken = $token.TrimStart('-')
-        if ( $ParameterName.StartsWith($normalizedToken, [System.StringComparison]::OrdinalIgnoreCase)) {
-            return $token
-        }
-    }
-
-    return $null
-}
-
-function Get-NovaCliAliasParameterTokenSet {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][pscustomobject]$Invocation
-    )
-
-    $statement = Get-NovaCliAliasInvocationStatement -Invocation $Invocation
-    return Get-NovaCliInvocationParameterTokenSet -InvocationStatement $statement
-}
-
-function Test-NovaCliAliasRootVersionShortcut {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][pscustomobject]$Invocation
-    )
-
-    return $Invocation.InvocationName -eq 'nova' -and
-            $Invocation.Command -eq '--help' -and
-            -not $Invocation.BoundParameters.ContainsKey('Command') -and
-            $Invocation.BoundParameters.ContainsKey('Verbose')
-}
-
 function Assert-NovaCliArgumentSyntax {
     [CmdletBinding()]
     param(
@@ -181,53 +106,6 @@ function Assert-NovaCliArgumentSyntax {
     }
 }
 
-function Assert-NovaCliAliasCommonParameterSyntax {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][pscustomobject]$Invocation
-    )
-
-    if ($Invocation.InvocationName -ne 'nova') {
-        return
-    }
-
-    $parameterTokens = Get-NovaCliAliasParameterTokenSet -Invocation $Invocation
-
-    foreach ($parameterName in @('Verbose', 'WhatIf', 'Confirm')) {
-        if (-not $Invocation.BoundParameters.ContainsKey($parameterName)) {
-            continue
-        }
-
-        $parameterToken = Get-NovaCliBoundCommonParameterToken -ParameterName $parameterName -ParameterTokens $parameterTokens
-        if ($parameterToken -ieq '-v') {
-            continue
-        }
-
-        Assert-NovaCliArgumentSyntax -Arguments @($( if ($null -ne $parameterToken) {
-            $parameterToken
-        } else {
-            "-$parameterName"
-        } ))
-    }
-}
-
-function Get-NovaCliAliasRootCommandOverride {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][pscustomobject]$Invocation
-    )
-
-    if (-not (Test-NovaCliAliasRootVersionShortcut -Invocation $Invocation)) {
-        return $null
-    }
-
-    $parameterTokens = Get-NovaCliAliasParameterTokenSet -Invocation $Invocation
-    if ($parameterTokens -icontains '-v') {
-        return '-v'
-    }
-
-    return $null
-}
 
 function Add-NovaCliCommonOption {
     [CmdletBinding()]
