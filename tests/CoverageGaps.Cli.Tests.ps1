@@ -527,7 +527,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             (Get-NovaCliNormalizedRootCommand -Command 'build') | Should -Be 'build'
             (Test-NovaCliLegacySingleHyphenOption -Argument '-legacy') | Should -BeTrue
             (Test-NovaCliLegacySingleHyphenOption -Argument '--legacy') | Should -BeFalse
-            (Test-NovaCliWhatIfOption -Argument '--whatif') | Should -BeTrue
+            (Test-NovaCliWhatIfOption -Argument '--what-if') | Should -BeTrue
             (Test-NovaCliConfirmOption -Argument '-c') | Should -BeTrue
 
             $genericSyntaxError = $null
@@ -543,6 +543,21 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 TargetObject = '-legacy'
+            })
+
+            $deprecatedWhatIfError = $null
+            try {
+                Assert-NovaCliArgumentSyntax -Arguments @('--whatif')
+            }
+            catch {
+                $deprecatedWhatIfError = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $deprecatedWhatIfError -ExpectedError ([pscustomobject]@{
+                Message = "Unsupported CLI option syntax: --whatif. Use '--what-if' or '-w' instead."
+                ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '--whatif'
             })
         }
     }
@@ -615,7 +630,7 @@ catch {
 
     It 'Add-NovaCliCommonOption maps WhatIf long and short options into forwarded parameters' {
         InModuleScope $script:moduleName {
-            foreach ($option in @('--whatif', '-w')) {
+            foreach ($option in @('--what-if', '-w')) {
                 $forwardedParameters = @{}
 
                 $result = Add-NovaCliCommonOption -Argument $option -ForwardedParameters $forwardedParameters
@@ -708,7 +723,7 @@ catch {
             }
 
             Assert-TestStructuredCliError -ThrownError $unsupportedWhatIfError -ExpectedError ([pscustomobject]@{
-                Message = "The 'nova init' CLI command does not support '--whatif'/'-w'.*"
+                Message = "The 'nova init' CLI command does not support '--what-if'/'-w'.*"
                 ErrorId = 'Nova.Validation.UnsupportedInitCliWhatIf'
                 Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                 TargetObject = 'WhatIf'

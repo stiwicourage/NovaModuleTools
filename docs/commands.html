@@ -225,7 +225,7 @@ PS&gt; Get-NovaProjectInfo -Version</code></pre>
                                 package, or publish
                             </li>
                             <li><strong>Key switches:</strong> <code>-WhatIf</code>, <code>-Confirm</code>, or the CLI
-                                forms <code>--whatif</code> / <code>-w</code> and <code>--confirm</code> /
+                                forms <code>--what-if</code> / <code>-w</code> and <code>--confirm</code> /
                                 <code>-c</code></li>
                             <li><strong>Notable behavior:</strong> respects <code>SetSourcePath</code>,
                                 <code>Preamble</code>, and duplicate function validation
@@ -243,7 +243,7 @@ PS&gt; Invoke-NovaBuild -WhatIf</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
                                 <pre><code>% nova build
-% nova build --whatif</code></pre>
+% nova build --what-if</code></pre>
                             </div>
                         </div>
                         <p><a class="text-link" href="./core-workflows.html#build">See the build workflow</a></p>
@@ -275,7 +275,7 @@ PS&gt; Test-NovaBuild -TagFilter unit,fast</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
                                 <pre><code>% nova test
-% nova test --whatif</code></pre>
+% nova test --what-if</code></pre>
                             </div>
                         </div>
                         <div class="surface-note" data-command-visibility="command-line" hidden>
@@ -454,7 +454,7 @@ PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $
                                 <pre><code>PS&gt; Update-NovaModuleVersion -Preview -WhatIf</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
-                                <pre><code>% nova bump --preview --whatif
+                                <pre><code>% nova bump --preview --what-if
 % nova bump --preview --confirm</code></pre>
                             </div>
                         </div>

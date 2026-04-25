@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The packaged example `project.json` now keeps the current project, manifest, package, and raw-upload settings
     visible in one place so users can see the full supported configuration surface
 - Add native `-WhatIf` and `-Confirm` support across mutating Nova commands, including GNU-style routed CLI support for
-  `--verbose`/`-v`, `--whatif`/`-w`, and `--confirm`/`-c` on `build`, `test`, `bump`, `publish`, and `release`.
+  `--verbose`/`-v`, `--what-if`/`-w`, and `--confirm`/`-c` on `build`, `test`, `bump`, `publish`, and `release`.
     - Routed CLI confirmation now stays inside the `nova` experience instead of exposing PowerShell's `Suspend` prompt.
     - Entering `S` during CLI confirmation now cancels safely, returns a non-zero exit code, and returns directly to the
       original shell.

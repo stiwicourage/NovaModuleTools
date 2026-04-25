@@ -26,7 +26,7 @@ global options
 
 routed command options
    --verbose, -v  Show verbose output for build, test, package, deploy, bump, update, notification, publish, and release
-   --whatif, -w   Preview build, test, deploy, bump, update, notification, publish, and release without changing files
+   --what-if, -w  Preview build, test, deploy, bump, update, notification, publish, and release without changing files
    --confirm, -c  Request confirmation before mutating routed commands; nova bump keeps its CLI-friendly confirmation prompt
 
 Examples:
@@ -42,7 +42,7 @@ Examples:
    nova build
    nova build --verbose
    nova build -v
-   nova build --whatif
+   nova build --what-if
    nova build -w
    nova build --confirm
    nova build -c
@@ -53,7 +53,7 @@ Examples:
    nova deploy --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN
    nova publish --local
    nova publish --repository PSGallery --api-key <key>
-   nova bump --preview --whatif
+   nova bump --preview --what-if
    nova update
    nova notification
    nova notification --disable
@@ -91,4 +91,4 @@ Inside PowerShell, 'nova publish --local' also reloads the published module from
 local install path after a successful publish.
 
 Note: 'nova init' is interactive. Use 'nova init --path <path>' or 'nova init -p <path>' for an explicit destination,
-'nova init --example' or 'nova init -e' for the packaged example scaffold, and do not use 'nova init --whatif' or 'nova init -w'.
+'nova init --example' or 'nova init -e' for the packaged example scaffold, and do not use 'nova init --what-if' or 'nova init -w'.

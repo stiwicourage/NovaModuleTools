@@ -174,7 +174,7 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Install-NovaCli forwards --whatif and -w from the standalone launcher without mutating build, bump, or publish state' {
+    It 'Install-NovaCli forwards --what-if and -w from the standalone launcher without mutating build, test, bump, or publish state' {
         $targetDirectory = Join-Path $TestDrive 'whatif-bin'
         $installedPath = Join-Path $targetDirectory 'nova'
         $projectRoot = Join-Path $TestDrive 'CliWhatIfProject'
@@ -196,17 +196,31 @@ function Invoke-TestCliVerbose {
 
             Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
 
-            $buildResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('build', '--whatif')
+            @'
+Describe 'CLI WhatIf test project' {
+    It 'passes' {
+        $true | Should -BeTrue
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $projectRoot 'tests/CliWhatIf.Tests.ps1') -Encoding utf8
+
+            $buildResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('build', '--what-if')
+            $shortTestResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('test', '-w')
+            $longTestResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('test', '--what-if')
             $publishResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('publish', '--local', '-w')
             $bumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '-w')
-            $previewBumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '--preview', '--whatif')
+            $previewBumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '--preview', '--what-if')
             $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
 
             $buildResult.ExitCode | Should -Be 0
+            $shortTestResult.ExitCode | Should -Be 0
+            $longTestResult.ExitCode | Should -Be 0
             $publishResult.ExitCode | Should -Be 0
             $bumpResult.ExitCode | Should -Be 0
             $previewBumpResult.ExitCode | Should -Be 0
             $buildResult.Text | Should -Match 'What if:'
+            $shortTestResult.Text | Should -Match 'What if:'
+            $longTestResult.Text | Should -Match 'What if:'
             $publishResult.Text | Should -Match 'What if:'
             $publishResult.Text | Should -Not -Match 'Unknown argument:'
             $bumpResult.Text | Should -Match 'What if:'
@@ -219,6 +233,37 @@ function Invoke-TestCliVerbose {
             $versionAfterBump | Should -Be '0.0.1'
             (Test-Path -LiteralPath $builtModulePath) | Should -BeFalse
             (Test-Path -LiteralPath $testResultPath) | Should -BeFalse
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+    }
+
+    It 'Install-NovaCli rejects deprecated nova test what-if spellings with migration guidance' -ForEach @(
+        @{Arguments = @('test', '--whatif'); ExpectedPattern = "Unsupported CLI option syntax: --whatif. Use '--what-if' or '-w' instead."}
+        @{Arguments = @('test', '-whatif'); ExpectedPattern = "Unsupported CLI option syntax: -whatif. Use '--what-if' or '-w' instead."}
+    ) {
+        $testCase = $_
+        $targetDirectory = Join-Path $TestDrive "deprecated-whatif-bin-$($testCase.Arguments[1].Replace('-', '') )"
+        $installedPath = Join-Path $targetDirectory 'nova'
+        $projectRoot = Join-Path $TestDrive "CliDeprecatedWhatIf$($testCase.Arguments[1].Replace('-', '') )"
+        $originalModulePath = $env:PSModulePath
+        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
+        $distParent = Split-Path -Parent $script:distModuleDir
+
+        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
+        Initialize-TestNovaCliProjectLayout -ProjectRoot $projectRoot
+        Write-TestNovaCliProjectJson -ProjectRoot $projectRoot -ProjectName ([System.IO.Path]::GetFileName($projectRoot)) -ProjectGuid ([guid]::NewGuid().Guid)
+        Write-TestNovaCliPublicFunction -ProjectRoot $projectRoot -FunctionName 'Invoke-TestCliDeprecatedWhatIf'
+
+        try {
+            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
+
+            $result = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments $testCase.Arguments
+            $expectedPattern = [regex]::Escape($testCase.ExpectedPattern)
+
+            $result.ExitCode | Should -Not -Be 0
+            $result.Text | Should -Match $expectedPattern
         }
         finally {
             $env:PSModulePath = $originalModulePath
@@ -292,7 +337,7 @@ Describe '$projectName tests' {
 
             Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
 
-            $previewBumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '--preview', '--whatif')
+            $previewBumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '--preview', '--what-if')
             $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
 
             $previewBumpResult.ExitCode | Should -Be 0
@@ -312,8 +357,8 @@ Describe '$projectName tests' {
             Name = 'WhatIf'
             TargetDirectory = 'init-whatif-bin'
             WorkspaceRoot = 'CliInitWhatIfRoot'
-            Arguments = @('init', '--whatif')
-            ExpectedPatterns = @('does not support ''--whatif''/''-w''')
+            Arguments = @('init', '--what-if')
+            ExpectedPatterns = @('does not support ''--what-if''/''-w''')
             UnexpectedPatterns = @('Not a valid path')
         }
         @{
@@ -521,10 +566,10 @@ Describe '$projectName tests' {
         @{
             Name = 'unsupported init WhatIf usage'
             Action = {
-                Invoke-NovaCli init --whatif
+                Invoke-NovaCli init --what-if
             }
             ExpectedError = [pscustomobject]@{
-                Message = "The 'nova init' CLI command does not support '--whatif'/'-w'. Run 'nova init' or 'nova init --path <path>' without preview mode."
+                Message = "The 'nova init' CLI command does not support '--what-if'/'-w'. Run 'nova init' or 'nova init --path <path>' without preview mode."
                 ErrorId = 'Nova.Validation.UnsupportedInitCliWhatIf'
                 Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                 TargetObject = 'WhatIf'
@@ -548,7 +593,7 @@ Describe '$projectName tests' {
                 Invoke-NovaCli -Command build -Arguments @('-WhatIf')
             }
             ExpectedError = [pscustomobject]@{
-                Message = "Unsupported CLI option syntax: -WhatIf. Use '--whatif' or '-w' instead."
+                Message = "Unsupported CLI option syntax: -WhatIf. Use '--what-if' or '-w' instead."
                 ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 TargetObject = '-WhatIf'
