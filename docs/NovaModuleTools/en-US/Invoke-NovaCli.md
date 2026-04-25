@@ -36,7 +36,7 @@ PowerShell alias.
 version`, `% nova --version`, `% nova --help`, `% nova build`, `% nova test`, `% nova package`, `% nova deploy`, `% nova
 init`, `% nova bump`, `% nova update`, `% nova notification`, `% nova publish`, and `% nova release`.
 
-Mutating routed commands forward CLI `--verbose`/`-v` and `--whatif`/`-w` to the underlying cmdlet. Routed CLI
+Mutating routed commands forward CLI `--verbose`/`-v` and `--what-if`/`-w` to the underlying cmdlet. Routed CLI
 `--confirm`/`-c` is handled by the shared CLI confirmation flow so the launcher never exposes PowerShell's interactive
 `Suspend` prompt.
 

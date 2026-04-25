@@ -77,7 +77,7 @@ function Get-NovaCliLegacyOptionReplacement {
         '-uploadpath' = "'--upload-path' or '-o'"
         '-url' = "'--url' or '-u'"
         '-verbose' = "'--verbose' or '-v'"
-        '-whatif' = "'--whatif' or '-w'"
+        '-whatif' = "'--what-if' or '-w'"
     }
 
     return $replacementMap[$Option.ToLowerInvariant()]
@@ -99,6 +99,10 @@ function Assert-NovaCliArgumentSyntax {
     )
 
     foreach ($argument in $Arguments) {
+        if ($argument.ToLowerInvariant() -eq '--whatif') {
+            Stop-NovaOperation -Message "Unsupported CLI option syntax: $argument. Use '--what-if' or '-w' instead." -ErrorId 'Nova.Validation.UnsupportedCliOptionSyntax' -Category InvalidArgument -TargetObject $argument
+        }
+
         if (-not (Test-NovaCliLegacySingleHyphenOption -Argument $argument)) {
             continue
         }
@@ -138,7 +142,7 @@ function Add-NovaCliCommonOption {
             $ForwardedParameters.Verbose = $true
             return $true
         }
-        '--whatif' {
+        '--what-if' {
             $ForwardedParameters.WhatIf = $true
             return $true
         }
@@ -158,7 +162,7 @@ function Test-NovaCliWhatIfOption {
         [Parameter(Mandatory)][string]$Argument
     )
 
-    return $Argument -match '^(--whatif|-w)$'
+    return $Argument -match '^(--what-if|-w)$'
 }
 
 function Test-NovaCliConfirmOption {
