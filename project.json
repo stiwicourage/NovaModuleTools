@@ -34,15 +34,6 @@
     "IconUri": "https://www.novamoduletools.com/assets/icon.png",
     "LicenseUri": "https://www.novamoduletools.com/license.html"
   },
-  "Package": {
-    "Types": [
-      "NuGet"
-    ],
-    "OutputDirectory": {
-      "Path": "artifacts/packages",
-      "Clean": true
-    }
-  },
   "Pester": {
     "TestResult": {
       "Enabled": true,
