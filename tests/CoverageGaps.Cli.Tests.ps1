@@ -547,6 +547,19 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'Read-NovaCliConsoleKeyChar returns the key character from the console read result' {
+        InModuleScope $script:moduleName {
+            Mock Invoke-NovaCliConsoleReadKey {
+                [pscustomobject]@{KeyChar = [char]'y'}
+            }
+
+            $result = Read-NovaCliConsoleKeyChar
+
+            $result | Should -Be ([char]'y')
+            Assert-MockCalled Invoke-NovaCliConsoleReadKey -Times 1
+        }
+    }
+
     It 'Add-NovaCliCommonOption returns false for non-common routed options' {
         InModuleScope $script:moduleName {
             $forwardedParameters = @{}
