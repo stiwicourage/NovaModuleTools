@@ -10,12 +10,16 @@ function global:Get-TestSupportFunctionNameList {
     param()
 
     return @(
+        'Publish-TestSupportFunctions'
         'Get-TestRegexMatchGroup'
         'ConvertTo-TestNormalizedText'
+        'Assert-TestModuleIsBuilt'
         'Get-TestModuleDisplayVersion'
         'Get-TestHelpLocaleFromMarkdownFiles'
         'Get-CommandHelpActivationTestCase'
         'Get-CommandHelpActivationTestCases'
+        'Get-TestModuleContextInfo'
+        'Initialize-TestModuleContext'
         'Initialize-TestNovaCliProjectLayout'
         'Write-TestNovaCliProjectJson'
         'Write-TestNovaCliPublicFunction'
@@ -23,18 +27,6 @@ function global:Get-TestSupportFunctionNameList {
         'Invoke-TestInstalledNovaCommand'
         'New-TestPesterConfigStub'
     )
-}
-
-function global:Publish-TestSupportFunctions {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string[]]$FunctionNameList
-    )
-
-    foreach ($functionName in $FunctionNameList) {
-        $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
-        Set-Item -Path "function:global:$functionName" -Value $scriptBlock
-    }
 }
 
 function global:Import-TestSupportFunctions {
@@ -57,236 +49,49 @@ function global:Initialize-TestSupportEnvironment {
     Import-TestSupportFunctions -SupportPath $script:testSupportPath -FunctionNameList $global:novaCommandModelTestSupportFunctionNameList
 }
 
-function global:Initialize-TestModuleContext {
-    [CmdletBinding()]
-    param()
-
-    $testSupportPath = Get-TestSupportPath
-    $here = Split-Path -Parent $PSCommandPath
-    $repoRoot = Split-Path -Parent $here
-    $script:moduleName = (Get-Content -LiteralPath (Join-Path $repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
-    $script:distModuleDir = Join-Path $repoRoot "dist/$script:moduleName"
-
-    if (-not (Test-Path -LiteralPath $script:distModuleDir)) {
-        throw "Expected built $script:moduleName module at: $script:distModuleDir. Run Invoke-NovaBuild in the repo root first."
-    }
-
-    Remove-Module $script:moduleName -ErrorAction SilentlyContinue
-    Import-Module $script:distModuleDir -Force
-    Import-TestSupportFunctions -SupportPath $testSupportPath -FunctionNameList $global:novaCommandModelTestSupportFunctionNameList
-}
-
-function global:Invoke-ReadNovaCliPromptKeyAssertion {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$ModuleName,
-        [Parameter(Mandatory)][hashtable]$TestCase
-    )
-
-    InModuleScope $ModuleName -Parameters @{TestCase = $TestCase} {
-        param($TestCase)
-
-        if ($TestCase.Throws) {
-            Mock Read-NovaCliConsoleKeyChar {throw 'console unavailable'}
-        }
-        else {
-            Mock Read-NovaCliConsoleKeyChar {[char]'y'}
-        }
-
-        $result = Read-NovaCliPromptKey
-
-        $result | Should -Be $TestCase.Expected
-        Assert-MockCalled Read-NovaCliConsoleKeyChar -Times 1
-    }
-}
-
-function global:Invoke-GetNovaCliCommandPromptKeyAssertion {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$ModuleName,
-        [Parameter(Mandatory)][hashtable]$TestCase
-    )
-
-    InModuleScope $ModuleName -Parameters @{TestCase = $TestCase} {
-        param($TestCase)
-
-        $originalResponse = $env:NOVA_CLI_CONFIRM_RESPONSE
-        try {
-            $env:NOVA_CLI_CONFIRM_RESPONSE = $TestCase.EnvironmentResponse
-            Mock Write-Host {}
-            Mock Read-NovaCliPromptKey {[char]'n'}
-
-            $result = Get-NovaCliCommandPromptKey -Message "Continue with 'nova build'?"
-
-            $result | Should -Be $TestCase.Expected
-            Assert-MockCalled Read-NovaCliPromptKey -Times $TestCase.PromptReadCount
-        }
-        finally {
-            $env:NOVA_CLI_CONFIRM_RESPONSE = $originalResponse
-        }
-    }
-}
-
-function global:Invoke-GetNovaCliCommandCancellationInfoAssertion {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$ModuleName,
-        [Parameter(Mandatory)][hashtable]$TestCase
-    )
-
-    InModuleScope $ModuleName -Parameters @{TestCase = $TestCase} {
-        param($TestCase)
-
-        $result = Get-NovaCliCommandCancellationInfo -Command 'build' -KeyChar ([char]$TestCase.Key)
-
-        $result.Command | Should -Be 'build'
-        $result.Message | Should -Be $TestCase.ExpectedMessage
-        $result.ErrorId | Should -Be $TestCase.ExpectedErrorId
-    }
-}
-
-function global:Invoke-UpdateNovaModuleVersionDefaultPathAssertion {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$ModuleName
-    )
-
-    InModuleScope $ModuleName {
-        Mock Get-Location {[pscustomobject]@{Path = '/tmp/current-project'}}
-        Mock Resolve-Path {[pscustomobject]@{Path = '/tmp/current-project'}} -ParameterFilter {$LiteralPath -eq '/tmp/current-project'}
-        Mock Get-NovaVersionUpdateWorkflowContext {
-            [pscustomobject]@{
-                Target = 'project.json'
-                Action = 'Update module version using Minor release label'
-            }
-        }
-        Mock Invoke-NovaVersionUpdateWorkflow {
-            [pscustomobject]@{NewVersion = '1.1.0'}
-        }
-
-        $result = Update-NovaModuleVersion -Confirm:$false
-
-        $result.NewVersion | Should -Be '1.1.0'
-        Assert-MockCalled Get-NovaVersionUpdateWorkflowContext -Times 1 -ParameterFilter {
-            $ProjectRoot -eq '/tmp/current-project' -and -not $PreviewRelease
-        }
-    }
-}
-
-function global:Invoke-ConfirmNovaCliCommandActionEnterAssertion {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$ModuleName
-    )
-
-    InModuleScope $ModuleName {
-        Mock Get-NovaCliCommandPromptKey {[char]13}
-        Mock Write-Host {}
-        Mock Stop-NovaOperation {}
-
-        Confirm-NovaCliCommandAction -Command 'build'
-
-        Assert-MockCalled Get-NovaCliCommandPromptKey -Times 1 -ParameterFilter {$Message -eq "Continue with 'nova build'?"}
-        Assert-MockCalled Stop-NovaOperation -Times 0
-    }
-}
-
-function global:Invoke-ConfirmNovaCliCommandActionRetryAssertion {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$ModuleName
-    )
-
-    InModuleScope $ModuleName {
-        $script:promptKeyList = @([char]'?', [char]'Y')
-        $script:promptKeyIndex = 0
-        Mock Get-NovaCliCommandPromptKey {
-            $result = $script:promptKeyList[$script:promptKeyIndex]
-            $script:promptKeyIndex += 1
-            return $result
-        }
-        Mock Write-Host {}
-        Mock Stop-NovaOperation {}
-
-        Confirm-NovaCliCommandAction -Command 'build'
-
-        Assert-MockCalled Get-NovaCliCommandPromptKey -Times 2 -ParameterFilter {$Message -eq "Continue with 'nova build'?"}
-        Assert-MockCalled Write-Host -Times 1 -ParameterFilter {$Object -eq ([char]'Y')}
-        Assert-MockCalled Stop-NovaOperation -Times 0
-    }
-}
-
-function global:Invoke-ConfirmNovaCliCommandActionCancellationAssertion {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$ModuleName,
-        [Parameter(Mandatory)][hashtable]$TestCase
-    )
-
-    InModuleScope $ModuleName -Parameters @{TestCase = $TestCase} {
-        param($TestCase)
-
-        Mock Get-NovaCliCommandPromptKey {[char]$TestCase.Key}
-        Mock Write-Host {}
-        Mock Stop-NovaOperation {}
-
-        Confirm-NovaCliCommandAction -Command 'build'
-
-        Assert-MockCalled Write-Host -Times 1 -ParameterFilter {$Object -eq ([char]$TestCase.Key)}
-        Assert-MockCalled Stop-NovaOperation -Times 1 -ParameterFilter {
-            $Message -eq $TestCase.ExpectedMessage -and
-                    $ErrorId -eq $TestCase.ExpectedErrorId -and
-                    $Category -eq 'OperationStopped' -and
-                    $TargetObject -eq 'build'
-        }
-    }
-}
-
 Initialize-TestSupportEnvironment
 
 BeforeAll {
-    Initialize-TestModuleContext
+    $testSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.ps1')).Path
+    . $testSupportPath
+    $script:assertTestNovaCliConfirmDecisions = (Get-Command -Name 'Assert-TestNovaCliConfirmDecisions' -CommandType Function -ErrorAction Stop).ScriptBlock
+    $script:invokeReadNovaCliPromptKeyAssertion = (Get-Command -Name 'Invoke-ReadNovaCliPromptKeyAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
+    $script:invokeGetNovaCliCommandPromptKeyAssertion = (Get-Command -Name 'Invoke-GetNovaCliCommandPromptKeyAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
+    $script:invokeGetNovaCliCommandCancellationInfoAssertion = (Get-Command -Name 'Invoke-GetNovaCliCommandCancellationInfoAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
+    $script:invokeUpdateNovaModuleVersionDefaultPathAssertion = (Get-Command -Name 'Invoke-UpdateNovaModuleVersionDefaultPathAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
+    $script:invokeConfirmNovaCliCommandActionEnterAssertion = (Get-Command -Name 'Invoke-ConfirmNovaCliCommandActionEnterAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
+    $script:invokeConfirmNovaCliCommandActionRetryAssertion = (Get-Command -Name 'Invoke-ConfirmNovaCliCommandActionRetryAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
+    $script:invokeConfirmNovaCliCommandActionCancellationAssertion = (Get-Command -Name 'Invoke-ConfirmNovaCliCommandActionCancellationAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
+    Publish-TestSupportFunctions -FunctionNameList $global:novaCommandModelTestSupportFunctionNameList
+    $moduleContext = Initialize-TestModuleContext -CommandPath $PSCommandPath -SupportPath $testSupportPath -FunctionNameList $global:novaCommandModelTestSupportFunctionNameList
+    $script:moduleName = $moduleContext.ModuleName
+    $script:distModuleDir = $moduleContext.DistModuleDir
 }
 
 Describe 'Nova command model - bump and CLI confirmation behavior' {
     It 'Get-NovaCliConfirmDecision approves Yes and Yes to All, and cancels No, No to All, and Suspend' {
-        InModuleScope $script:moduleName {
-            foreach ($testCase in @(
-                @{Key = 'Y'; Expected = $true},
-                @{Key = 'A'; Expected = $true},
-                @{Key = 'N'; Expected = $false},
-                @{Key = 'L'; Expected = $false},
-                @{Key = 'S'; Expected = $false},
-                @{Key = 'y'; Expected = $true},
-                @{Key = 'n'; Expected = $false}
-            )) {
-                $result = Get-NovaCliConfirmDecision -KeyChar ([char]$testCase.Key)
-                $result | Should -Be $testCase.Expected
-            }
-
-            Get-NovaCliConfirmDecision -KeyChar ([char]'?') | Should -BeNullOrEmpty
-        }
+        & $script:assertTestNovaCliConfirmDecisions -ModuleName $script:moduleName
     }
 
     It 'Read-NovaCliPromptKey returns the expected result when console input <Name>' -ForEach @(
-        @{Name = 'is available'; Expected = [char]'y'; Throws = $false}
-        @{Name = 'fails'; Expected = [char]0; Throws = $true}
+        @{Name = 'is available'; Expected = [char]'y'; ConsoleKeyChar = [char]'y'; Throws = $false}
+        @{Name = 'fails'; Expected = [char]0; ConsoleKeyChar = [char]0; Throws = $true}
     ) {
-        Invoke-ReadNovaCliPromptKeyAssertion -ModuleName $script:moduleName -TestCase $_
+        & $script:invokeReadNovaCliPromptKeyAssertion -ModuleName $script:moduleName -TestCase $_
     }
 
     It 'Get-NovaCliCommandPromptKey returns the expected key when prompt input <Name>' -ForEach @(
         @{Name = 'uses the NOVA_CLI_CONFIRM_RESPONSE override'; EnvironmentResponse = 'later'; Expected = [char]'l'; PromptReadCount = 0}
         @{Name = 'must be read from the interactive prompt'; EnvironmentResponse = ''; Expected = [char]'n'; PromptReadCount = 1}
     ) {
-        Invoke-GetNovaCliCommandPromptKeyAssertion -ModuleName $script:moduleName -TestCase $_
+        & $script:invokeGetNovaCliCommandPromptKeyAssertion -ModuleName $script:moduleName -TestCase $_
     }
 
     It 'Get-NovaCliCommandCancellationInfo returns the expected cancellation metadata for <Name>' -ForEach @(
         @{Name = 'Suspend'; Key = 'S'; ExpectedMessage = 'Suspend is not supported in nova CLI mode. Operation cancelled.'; ExpectedErrorId = 'Nova.Workflow.CliSuspendNotSupported'}
         @{Name = 'No'; Key = 'N'; ExpectedMessage = 'Operation cancelled.'; ExpectedErrorId = 'Nova.Workflow.CliOperationCancelled'}
     ) {
-        Invoke-GetNovaCliCommandCancellationInfoAssertion -ModuleName $script:moduleName -TestCase $_
+        & $script:invokeGetNovaCliCommandCancellationInfoAssertion -ModuleName $script:moduleName -TestCase $_
     }
 
     It 'Get-NovaVersionUpdateWorkflowContext prepares version bump state from project info and commit history' {
@@ -374,7 +179,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
     }
 
     It 'Update-NovaModuleVersion defaults Path to the current location when Path is omitted' {
-        Invoke-UpdateNovaModuleVersionDefaultPathAssertion -ModuleName $script:moduleName
+        & $script:invokeUpdateNovaModuleVersionDefaultPathAssertion -ModuleName $script:moduleName
     }
 
     It 'Update-NovaModuleVersion -WhatIf returns the expected next version without persisting it when <Name>' -ForEach @(
@@ -415,8 +220,9 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $result.NewVersion | Should -Be $TestCase.NewVersion
             $result.Label | Should -Be $TestCase.Label
             Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {$Label -eq $TestCase.Label}
-            if ($TestCase.Preview) {
-                Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {$Label -eq $TestCase.Label -and $PreviewRelease}
+            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
+                $Label -eq $TestCase.Label -and
+                        ([bool]$PreviewRelease) -eq ([bool]$TestCase.Preview)
             }
 
             Assert-MockCalled Set-NovaModuleVersion -Times 0
@@ -525,12 +331,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
-    It 'Update-NovaModuleVersion -WhatIf throws a clear error when the repository has no commits yet' {
-        if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-            Set-ItResult -Skipped -Because 'git is not available in this environment'
-            return
-        }
-
+    It 'Update-NovaModuleVersion -WhatIf throws a clear error when the repository has no commits yet' -Skip:(-not [bool](Get-Command git -ErrorAction SilentlyContinue)) {
         InModuleScope $script:moduleName {
             $projectRoot = Join-Path $TestDrive 'empty-git-bump-project'
             New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
@@ -590,8 +391,13 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
-    It 'Invoke-NovaCli bump uses the shared CLI confirmation wrapper for --confirm and -c without forwarding raw Confirm' {
-        InModuleScope $script:moduleName {
+    It 'Invoke-NovaCli bump uses the shared CLI confirmation wrapper for <Name> without forwarding raw Confirm' -ForEach @(
+        @{Name = '--confirm'; Arguments = @('bump', '--confirm')}
+        @{Name = '-c'; Arguments = @('bump', '-c')}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{Arguments = $_.Arguments} {
+            param($Arguments)
+
             Mock Confirm-NovaCliCommandAction {}
             Mock Update-NovaModuleVersion {
                 param([switch]$Preview, [switch]$WhatIf, [bool]$Confirm)
@@ -603,33 +409,36 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
                 }
             }
 
-            foreach ($arguments in @(
-                @('bump', '--confirm'),
-                @('bump', '-c')
-            )) {
-                $result = Invoke-NovaCli @arguments
+            $result = Invoke-NovaCli @Arguments
 
-                $result.Preview | Should -BeFalse
-                $result.WhatIf | Should -BeFalse
-                $result.Confirm | Should -BeFalse
-            }
-
-            Assert-MockCalled Confirm-NovaCliCommandAction -Times 2 -ParameterFilter {$Command -eq 'bump'}
+            $result.Preview | Should -BeFalse
+            $result.WhatIf | Should -BeFalse
+            $result.Confirm | Should -BeFalse
+            Assert-MockCalled Confirm-NovaCliCommandAction -Times 1 -ParameterFilter {$Command -eq 'bump'}
         }
     }
 
     It 'Confirm-NovaCliCommandAction accepts Enter as the default confirmation response' {
-        Invoke-ConfirmNovaCliCommandActionEnterAssertion -ModuleName $script:moduleName
+        & $script:invokeConfirmNovaCliCommandActionEnterAssertion -ModuleName $script:moduleName
     }
 
     It 'Confirm-NovaCliCommandAction retries after invalid input and returns after an accepted response' {
-        Invoke-ConfirmNovaCliCommandActionRetryAssertion -ModuleName $script:moduleName
+        & $script:invokeConfirmNovaCliCommandActionRetryAssertion -ModuleName $script:moduleName
     }
 
-    It 'Confirm-NovaCliCommandAction stops the operation with the expected CLI cancellation result for <Name>' -ForEach @(
-        @{Name = 'No'; Key = 'N'; ExpectedMessage = 'Operation cancelled.'; ExpectedErrorId = 'Nova.Workflow.CliOperationCancelled'}
-        @{Name = 'Suspend'; Key = 'S'; ExpectedMessage = 'Suspend is not supported in nova CLI mode. Operation cancelled.'; ExpectedErrorId = 'Nova.Workflow.CliSuspendNotSupported'}
-    ) {
-        Invoke-ConfirmNovaCliCommandActionCancellationAssertion -ModuleName $script:moduleName -TestCase $_
+    It 'Confirm-NovaCliCommandAction stops the operation with the expected CLI cancellation result for No' {
+        & $script:invokeConfirmNovaCliCommandActionCancellationAssertion -ModuleName $script:moduleName -TestCase @{
+            Key = 'N'
+            ExpectedMessage = 'Operation cancelled.'
+            ExpectedErrorId = 'Nova.Workflow.CliOperationCancelled'
+        }
+    }
+
+    It 'Confirm-NovaCliCommandAction stops the operation with the expected CLI cancellation result for Suspend' {
+        & $script:invokeConfirmNovaCliCommandActionCancellationAssertion -ModuleName $script:moduleName -TestCase @{
+            Key = 'S'
+            ExpectedMessage = 'Suspend is not supported in nova CLI mode. Operation cancelled.'
+            ExpectedErrorId = 'Nova.Workflow.CliSuspendNotSupported'
+        }
     }
 }
