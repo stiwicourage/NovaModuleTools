@@ -26,12 +26,19 @@ function Get-NovaCliConfirmDecision {
     }
 }
 
+function Read-NovaCliConsoleKeyChar {
+    [CmdletBinding()]
+    param()
+
+    return [Console]::ReadKey($true).KeyChar
+}
+
 function Read-NovaCliPromptKey {
     [CmdletBinding()]
     param()
 
     try {
-        return [Console]::ReadKey($true).KeyChar
+        return Read-NovaCliConsoleKeyChar
     }
     catch {
         return [char]0

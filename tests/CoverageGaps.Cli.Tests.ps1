@@ -557,6 +557,19 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'Add-NovaCliCommonOption maps WhatIf long and short options into forwarded parameters' {
+        InModuleScope $script:moduleName {
+            foreach ($option in @('--whatif', '-w')) {
+                $forwardedParameters = @{}
+
+                $result = Add-NovaCliCommonOption -Argument $option -ForwardedParameters $forwardedParameters
+
+                $result | Should -BeTrue
+                $forwardedParameters.WhatIf | Should -BeTrue
+            }
+        }
+    }
+
     It 'ConvertFrom-NovaCliArgument parses local, path, and api key options' {
         InModuleScope $script:moduleName {
             $options = ConvertFrom-NovaCliArgument -Arguments @('--local', '--path', '/tmp/modules', '--api-key', 'secret')
