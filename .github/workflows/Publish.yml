@@ -69,3 +69,25 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
         run: npx semantic-release
+
+      - name: Prepare next prerelease version on develop
+        if: github.ref_name == 'main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin main
+          git fetch origin develop
+
+          git checkout develop
+          git pull origin develop
+
+          # Bring the released main state back into develop first
+          git merge origin/main --no-edit -m "chore: merge main back into develop [skip ci]"
+
+          # Bump develop to next prerelease version
+          Update-NovaModuleVersion -Preview
+
+          git add .
+          git commit -m "chore: prepare next prerelease version [skip ci]" || echo "No changes to commit"
+          git push origin develop

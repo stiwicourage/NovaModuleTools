@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/18/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: Get-NovaUpdateNotificationPreference
 ---
@@ -19,28 +19,28 @@ Shows the current prerelease update preference used by Nova self-update commands
 
 ### __AllParameterSets
 
-```powershell
+```text
 PS> Get-NovaUpdateNotificationPreference [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
 `Get-NovaUpdateNotificationPreference` returns the current user preference that controls whether
-`Update-NovaModuleTool` / `Update-NovaModuleTools` and `nova update` may select prerelease versions of
+`Update-NovaModuleTool` / `Update-NovaModuleTools` and `% nova update` may select prerelease versions of
 `NovaModuleTools`.
 
-The same stored preference is also used by `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) and `nova update`
+The same stored preference is also used by `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) and `% nova update`
 when they decide whether a prerelease self-update is eligible.
 
 Stable self-updates remain available and do not require prerelease eligibility.
 
-If you prefer the Nova CLI surface, run `nova notification` to view the same preference.
+If you prefer the Nova CLI surface, run `% nova notification` to view the same preference.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-```powershell
+```text
 PS> Get-NovaUpdateNotificationPreference
 ```
 
@@ -49,8 +49,8 @@ preference is stored.
 
 ### EXAMPLE 2
 
-```powershell
-nova notification
+```text
+% nova notification
 ```
 
 Shows the same prerelease self-update state from the Nova CLI entrypoint.
@@ -77,15 +77,13 @@ Returns the prerelease self-update state, the always-available stable-update sta
 
 ## NOTES
 
-Use `PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications` or `nova notification --disable` /
-`nova notification -d` to stop
-prerelease self-updates from being eligible.
+Use `PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications` or `$ nova notification --disable` /
+`$ nova notification -d` to stop prerelease self-updates from being eligible.
 
-Use `PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications` or `nova notification --enable` /
-`nova notification -e` to allow
-prerelease self-updates again.
+Use `PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications` or `$ nova notification --enable` /
+`$ nova notification -e` to allow prerelease self-updates again.
 
-When prerelease notifications are enabled again, `Update-NovaModuleTool` / `Update-NovaModuleTools` and `nova update`
+When prerelease notifications are enabled again, `Update-NovaModuleTool` / `Update-NovaModuleTools` and `% nova update`
 may again select a prerelease target. Prerelease self-updates still require explicit confirmation before the update
 proceeds.
 

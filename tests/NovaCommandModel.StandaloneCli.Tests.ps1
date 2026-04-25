@@ -225,6 +225,49 @@ function Invoke-TestCliVerbose {
         }
     }
 
+    It 'Install-NovaCli handles publish CLI confirmation safely for <Option> with <Response>' -ForEach @(
+        @{Option = '--confirm'; Response = 'Y'; ExpectSuccess = $true; ExpectSuspendMessage = $false}
+        @{Option = '--confirm'; Response = 'N'; ExpectSuccess = $false; ExpectSuspendMessage = $false}
+        @{Option = '--confirm'; Response = 'S'; ExpectSuccess = $false; ExpectSuspendMessage = $true}
+        @{Option = '-c'; Response = 'Y'; ExpectSuccess = $true; ExpectSuspendMessage = $false}
+        @{Option = '-c'; Response = 'N'; ExpectSuccess = $false; ExpectSuspendMessage = $false}
+        @{Option = '-c'; Response = 'S'; ExpectSuccess = $false; ExpectSuspendMessage = $true}
+    ) {
+        $testCase = $_
+        $targetDirectory = Join-Path $TestDrive "confirm-bin-$($testCase.Option.Replace('-', '') )-$( $testCase.Response )"
+        $installedPath = Join-Path $targetDirectory 'nova'
+        $projectName = "CliPublishConfirm$($testCase.Option.Replace('-', '') )$( $testCase.Response )"
+        $projectRoot = Join-Path $TestDrive $projectName
+        $publishDir = Join-Path $TestDrive "publish-output-$($testCase.Option.Replace('-', '') )-$( $testCase.Response )"
+        $publishManifestPath = Join-Path $publishDir "$projectName/$projectName.psd1"
+        $originalModulePath = $env:PSModulePath
+        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
+        $distParent = Split-Path -Parent $script:distModuleDir
+
+        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
+
+        Initialize-TestNovaCliProjectLayout -ProjectRoot $projectRoot
+        Write-TestNovaCliProjectJson -ProjectRoot $projectRoot -ProjectName $projectName -ProjectGuid ([guid]::NewGuid().Guid)
+        Write-TestNovaCliPublicFunction -ProjectRoot $projectRoot -FunctionName "Invoke-$projectName"
+        @'
+Describe '$projectName tests' {
+    It 'passes' {
+        $true | Should -BeTrue
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $projectRoot 'tests/PublishConfirm.Tests.ps1') -Encoding utf8
+
+        try {
+            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
+
+            $result = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('publish', '--local', '--path', $publishDir, $testCase.Option) -EnvironmentVariables @{NOVA_CLI_CONFIRM_RESPONSE = $testCase.Response}
+            Assert-TestNovaCliPublishConfirmationResult -Result $result -PublishManifestPath $publishManifestPath -TestCase $testCase
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+    }
+
     It 'Install-NovaCli forwards --preview so prerelease bumps keep the same semantic core and increment the current prerelease label' {
         $targetDirectory = Join-Path $TestDrive 'preview-bump-bin'
         $installedPath = Join-Path $targetDirectory 'nova'
@@ -425,8 +468,9 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Invoke-NovaCli maps routed GNU-style common options to the underlying PowerShell command parameters' {
+    It 'Invoke-NovaCli maps routed GNU-style common options while keeping CLI confirm out of the underlying PowerShell command parameters' {
         InModuleScope $script:moduleName {
+            Mock Confirm-NovaCliCommandAction {}
             Mock Invoke-NovaBuild {
                 param([switch]$Verbose, [switch]$WhatIf, [bool]$Confirm)
 
@@ -437,20 +481,15 @@ function Invoke-TestCliVerbose {
                 }
             }
 
-            foreach ($arguments in @(@('--verbose', '--whatif', '--confirm'), @('-v', '-w', '-c'))) {
-                $invocationContext = Get-NovaCliInvocationContext -InvocationRequest ([pscustomobject]@{
-                    Command = 'build'
-                    BoundParameters = @{Arguments = @($arguments)}
-                    Arguments = $arguments
-                    InvocationName = 'nova'
-                    InvocationStatement = "nova build $( $arguments -join ' ' )"
-                })
-                $result = Invoke-NovaCliCommandRoute -InvocationContext $invocationContext
+            foreach ($arguments in @(@('--verbose', '--confirm'), @('-v', '-c'))) {
+                $result = Invoke-NovaCli build @arguments
 
                 $result.Verbose | Should -BeTrue
-                $result.WhatIf | Should -BeTrue
-                $result.Confirm | Should -BeTrue
+                $result.WhatIf | Should -BeFalse
+                $result.Confirm | Should -BeFalse
             }
+
+            Assert-MockCalled Confirm-NovaCliCommandAction -Times 2 -ParameterFilter {$Command -eq 'build'}
         }
     }
 
@@ -548,6 +587,34 @@ function Invoke-TestCliVerbose {
 
             $result.Repository | Should -Be 'PSGallery'
             $result.ApiKey | Should -Be 'key123'
+        }
+    }
+
+    It 'Invoke-NovaCli publish uses the CLI confirmation wrapper for --confirm and -c without forwarding raw Confirm' {
+        InModuleScope $script:moduleName {
+            Mock Confirm-NovaCliCommandAction {}
+            Mock Publish-NovaModule {
+                param([bool]$Confirm = $false)
+
+                [pscustomobject]@{
+                    Repository = $Repository
+                    ApiKey = $ApiKey
+                    Confirm = $Confirm
+                }
+            }
+
+            foreach ($arguments in @(
+                @('publish', '--repository', 'PSGallery', '--api-key', 'key123', '--confirm'),
+                @('publish', '--repository', 'PSGallery', '--api-key', 'key123', '-c')
+            )) {
+                $result = Invoke-NovaCli @arguments
+
+                $result.Repository | Should -Be 'PSGallery'
+                $result.ApiKey | Should -Be 'key123'
+                $result.Confirm | Should -BeFalse
+            }
+
+            Assert-MockCalled Confirm-NovaCliCommandAction -Times 2 -ParameterFilter {$Command -eq 'publish'}
         }
     }
 

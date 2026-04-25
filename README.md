@@ -68,7 +68,7 @@ PS> Invoke-NovaBuild
 
 This creates the built module under `dist/NovaModuleTools/`.
 
-NovaModuleTools can self-update the installed module from PowerShell or the `nova` CLI.
+NovaModuleTools can self-update the installed module from PowerShell or the `nova` CLI launcher.
 
 - Stable self-updates are always available.
 - Prerelease self-updates are optional and can be managed with:
@@ -79,38 +79,59 @@ PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
 PS> Get-NovaUpdateNotificationPreference
 PS> Update-NovaModuleTool
 PS> Update-NovaModuleTools   # alias
-PS> nova notification --disable
-PS> nova notification --enable
-PS> nova notification
-PS> nova update
+% nova notification --disable
+% nova notification --enable
+% nova notification
+% nova update
 ```
 
-Use `nova notification` when you want the CLI-oriented workflow and the `Set-` / `Get-` cmdlets when you want the
+Use `% nova notification` when you want the CLI-oriented workflow and the `Set-` / `Get-` cmdlets when you want the
 PowerShell function form in scripts.
 
-`Update-NovaModuleTool` (and its `Update-NovaModuleTools` alias) / `nova update` use that stored prerelease
+`Update-NovaModuleTool` (and its `Update-NovaModuleTools` alias), CLI:`% nova update` use that stored prerelease
 preference to decide whether prerelease self-updates are eligible. When prerelease self-updates are disabled,
 self-update stays on stable releases. When they are enabled, self-update may target a prerelease, but it asks for
 explicit confirmation before proceeding.
 
-Successful `Update-NovaModuleTool`, `nova update`, and `Install-NovaCli` runs print the release notes link from the
+Successful `Update-NovaModuleTool`, CLI:`% nova update`, and `Install-NovaCli` runs print the release notes link from
+the
 installed module manifest. When `Invoke-NovaBuild` detects a newer `NovaModuleTools` version after a build, the update
 warning also includes that same release notes link.
 
 To compare the current project version with what is installed locally for that same module, use:
 
 ```powershell
-PS> nova version
-PS> nova version --installed
-PS> nova version -i
-PS> nova --version
-PS> nova -v
+% nova version
+% nova version --installed
+% nova version -i
+% nova --version
+% nova -v
 ```
 
-- `nova version` shows the version from the current project's `project.json`
-- `nova version --installed` / `nova version -i` shows the locally installed version of the current project/module from
+- `% nova version` shows the version from the current project's `project.json`
+- `% nova version --installed` / `% nova version -i` shows the locally installed version of the current project/module
+  from
   the local module path
-- `nova --version` / `nova -v` shows the installed `NovaModuleTools` version
+- `% nova --version` / `% nova -v` shows the installed `NovaModuleTools` version
+
+### Confirmation behavior
+
+Use `% nova <mutating-command> --confirm` / `% nova <mutating-command> -c` when you want a CLI-safe confirmation prompt.
+
+- `Y` / `Yes` and `A` / `Yes to All` continue
+- `N` / `No` and `L` / `No to All` cancel with a non-zero exit code
+- `S` / `Suspend` is not supported in CLI mode and is treated as cancel so `nova` returns directly to your original
+  shell instead of opening a nested PowerShell prompt
+
+Only the supported mutating `nova` commands accept `--confirm` / `-c`. Read-only routes and `% nova init` now reject the
+CLI confirm flag with a clear validation error instead of silently treating it as a PowerShell-style concept.
+
+Direct PowerShell cmdlets such as `Publish-NovaModule`, `Deploy-NovaPackage`, and `Update-NovaModuleVersion` keep their
+native `-Confirm` behavior. The CLI-safe confirmation flow applies to `nova` CLI usage, while `Invoke-NovaCli` remains
+the explicit PowerShell cmdlet entrypoint for routed command dispatch.
+
+The module does not export a PowerShell alias named `nova`. Install the bundled launcher with `Install-NovaCli` when you
+want `% nova ...` available directly from your shell.
 
 ### Reload the built module while iterating
 
@@ -182,7 +203,7 @@ PowerShell repository:
 
 ```powershell
 PS> New-NovaModulePackage
-PS> nova package
+% nova package
 ```
 
 The package command runs the normal build and test flow, then writes the generated package artifacts to
@@ -230,8 +251,8 @@ PowerShell repository:
 
 ```powershell
 PS> Deploy-NovaPackage -Repository LocalNexus
-PS> nova deploy --repository LocalNexus
-PS> nova deploy --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN
+% nova deploy --repository LocalNexus
+% nova deploy --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN
 ```
 
 Use this `project.json` shape when you want Nova to resolve upload targets from named repositories:
@@ -255,7 +276,7 @@ Use this `project.json` shape when you want Nova to resolve upload targets from 
 ```
 
 - `Deploy-NovaPackage` uploads existing package files only; it does not build, test, or create packages.
-- `nova deploy` is the CLI entrypoint for the same raw upload workflow and uses POSIX/GNU-style options such as
+- `% nova deploy` is the CLI entrypoint for the same raw upload workflow and uses POSIX/GNU-style options such as
   `--repository`, `--url`, and `--token`.
 - `-Url` overrides repository or package-level upload settings and is the simplest CI/CD path for the PowerShell cmdlet
   form.

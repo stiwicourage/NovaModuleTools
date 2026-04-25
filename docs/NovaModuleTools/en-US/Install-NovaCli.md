@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/18/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: Install-NovaCli
 ---
@@ -19,7 +19,7 @@ Installs the bundled `nova` launcher so it can be run directly from zsh/bash on 
 
 ### __AllParameterSets
 
-```powershell
+```text
 PS> Install-NovaCli [[-DestinationDirectory] <string>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -33,14 +33,14 @@ By default, the launcher is installed to `~/.local/bin/nova` on macOS and Linux.
 
 After a successful install, `Install-NovaCli` also prints the release notes link from the installed module manifest.
 
-This command is currently intended for macOS and Linux. On Windows, use the `nova` alias inside `pwsh` after importing
-NovaModuleTools.
+Use this command when you want `nova` to be available as a launcher-oriented CLI entrypoint instead of invoking
+`Invoke-NovaCli` directly from PowerShell.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-```powershell
+```text
 PS> Install-NovaCli
 ```
 
@@ -48,7 +48,7 @@ Installs `nova` to `~/.local/bin/nova` and prints the release notes link for the
 
 ### EXAMPLE 2
 
-```powershell
+```text
 PS> Install-NovaCli -DestinationDirectory ~/bin -Force
 ```
 
@@ -56,7 +56,7 @@ Installs or overwrites `nova` in a custom directory.
 
 ### EXAMPLE 3
 
-```powershell
+```text
 PS> Install-NovaCli -WhatIf
 ```
 
@@ -173,7 +173,6 @@ currently on `PATH`.
 
 After running `Install-NovaCli`, add the destination directory to your shell `PATH` if needed.
 
-On Windows, keep using the `nova` alias inside `pwsh` instead of this command.
 
 ## RELATED LINKS
 

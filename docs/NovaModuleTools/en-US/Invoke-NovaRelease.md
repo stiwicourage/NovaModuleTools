@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/14/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-NovaRelease
 ---
@@ -19,7 +19,7 @@ Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
 
 ### __AllParameterSets
 
-```powershell
+```text
 PS> Invoke-NovaRelease [[-PublishOption] <hashtable>] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -46,7 +46,7 @@ entire release workflow and resolved publish target without building, testing, v
 
 ### EXAMPLE 1
 
-```powershell
+```text
 PS> Invoke-NovaRelease -PublishOption @{ Local = $true }
 ```
 
@@ -55,7 +55,7 @@ The command returns the version result and does not reload the published module 
 
 ### EXAMPLE 2
 
-```powershell
+```text
 PS> Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API }
 ```
 
@@ -63,7 +63,7 @@ Runs release flow and publishes to the specified repository.
 
 ### EXAMPLE 3
 
-```powershell
+```text
 PS> Invoke-NovaRelease -Path ./src/resources/example -PublishOption @{Local = $true}
 ```
 
@@ -71,7 +71,7 @@ Runs the release workflow from the project rooted at `./src/resources/example`.
 
 ### EXAMPLE 4
 
-```powershell
+```text
 PS> Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API} -WhatIf
 ```
 

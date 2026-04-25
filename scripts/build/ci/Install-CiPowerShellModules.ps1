@@ -1,8 +1,6 @@
 param(
     [string[]]$ModuleName = @(
-    'Pester',
-    'NovaModuleTools',
-    'Microsoft.PowerShell.PlatyPS'
+    'NovaModuleTools'
 )
 )
 
@@ -14,7 +12,7 @@ function Install-CiModule {
     )
 
     Write-Host "Installing PowerShell module '$Name'..."
-    Install-Module -Name $Name -Scope CurrentUser -Force -ErrorAction Stop | Out-Null
+    Install-Module -Name $Name -AllowPrerelease -Scope CurrentUser -Force -ErrorAction Stop | Out-Null
 
     $installedModule = Get-InstalledModule -Name $Name -ErrorAction Stop |
             Sort-Object Version -Descending |

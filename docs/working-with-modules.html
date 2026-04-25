@@ -34,33 +34,46 @@
         }
     </script>
 </head>
-<body>
+<body class="guide-page">
 <header class="site-header">
     <div class="site-header__inner">
         <a class="site-brand" href="./index.html">
             <img alt="" class="site-brand__icon" src="./assets/icon.png">
             <span class="site-brand__text">NovaModuleTools</span>
         </a>
-        <details class="site-menu">
-            <summary class="site-menu__button">
-                <span class="site-menu__button-label">Menu</span>
-                <span class="site-menu__current">Working with Modules</span>
-            </summary>
-            <nav aria-label="Primary" class="site-menu__panel">
-                <a class="site-nav__link" href="./index.html">Home</a>
-                <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
-                <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
-                <a aria-current="page" class="site-nav__link site-nav__link--active" href="./working-with-modules.html">Working
-                    with Modules</a>
-                <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
-                <a class="site-nav__link" href="./commands.html">Command Reference</a>
-                <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
-                <a class="site-nav__link" href="./versioning-and-updates.html">Versioning &amp; Updates</a>
-                <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
-                <a class="site-nav__link" href="./advanced.html">Concepts</a>
-                <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
-            </nav>
-        </details>
+        <div aria-label="Command display mode" class="site-header__command-surface">
+            <div aria-label="Command display mode" class="surface-tabs" role="tablist">
+                <button aria-selected="true" class="surface-tabs__button" data-command-mode="powershell" role="tab"
+                        type="button">PowerShell
+                </button>
+                <button aria-selected="false" class="surface-tabs__button" data-command-mode="command-line" role="tab"
+                        type="button">Command-line
+                </button>
+            </div>
+        </div>
+        <div class="site-header__actions">
+            <details class="site-menu">
+                <summary class="site-menu__button">
+                    <span class="site-menu__button-label">Menu</span>
+                    <span class="site-menu__current">Working with Modules</span>
+                </summary>
+                <nav aria-label="Primary" class="site-menu__panel">
+                    <a class="site-nav__link" href="./index.html">Home</a>
+                    <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+                    <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+                    <a aria-current="page" class="site-nav__link site-nav__link--active"
+                       href="./working-with-modules.html">Working
+                        with Modules</a>
+                    <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
+                    <a class="site-nav__link" href="./commands.html">Command Reference</a>
+                    <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
+                    <a class="site-nav__link" href="./versioning-and-updates.html">Versioning &amp; Updates</a>
+                    <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+                    <a class="site-nav__link" href="./advanced.html">Concepts</a>
+                    <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
+                </nav>
+            </details>
+        </div>
     </div>
 </header>
 
@@ -102,9 +115,27 @@
 
             <section class="content-section" id="import-built">
                 <h2>Import the built module</h2>
-                <pre><code>nova build
-$project = Get-NovaProjectInfo
-Import-Module $project.OutputModuleDir -Force</code></pre>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Import the built module from dist</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Invoke-NovaBuild
+PS&gt; $project = Get-NovaProjectInfo
+PS&gt; Import-Module $project.OutputModuleDir -Force</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova build
+pwsh -NoLogo -Command 'Import-Module (Get-NovaProjectInfo).OutputModuleDir -Force; Get-Command -Module (Get-NovaProjectInfo).ProjectName'</code></pre>
+                    </div>
+                </div>
+                <div class="surface-note" data-command-visibility="command-line" hidden>
+                    <p><strong>Command-line note:</strong> importing from <code>dist/</code> still happens inside
+                        PowerShell, so the command-line flow hands off to a fresh <code>pwsh</code> process for the
+                        import step.</p>
+                </div>
                 <p>Use this after a successful build when you want the session to use the generated module exactly as
                     Nova produced it.</p>
                 <p><strong>Expected result:</strong> the module imports from <code>dist/&lt;ProjectName&gt;</code>, not
@@ -114,10 +145,29 @@ Import-Module $project.OutputModuleDir -Force</code></pre>
             <section class="content-section" id="reload">
                 <h2>Reload after changes</h2>
                 <p>PowerShell can keep an older version of the module loaded in memory. The safe pattern is:</p>
-                <pre><code>$project = Get-NovaProjectInfo
-Remove-Module $project.ProjectName -ErrorAction SilentlyContinue
-nova build
-Import-Module $project.OutputModuleDir -Force</code></pre>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Reload after source changes</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; $project = Get-NovaProjectInfo
+PS&gt; Remove-Module $project.ProjectName -ErrorAction SilentlyContinue
+PS&gt; Invoke-NovaBuild
+PS&gt; Import-Module $project.OutputModuleDir -Force</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova build
+pwsh -NoLogo -Command 'Import-Module (Get-NovaProjectInfo).OutputModuleDir -Force; Get-Command -Module (Get-NovaProjectInfo).ProjectName'</code></pre>
+                    </div>
+                </div>
+                <div class="surface-note" data-command-visibility="command-line" hidden>
+                    <p><strong>Command-line note:</strong> a fresh <code>pwsh -Command</code> process starts clean, so
+                        you normally do not need the explicit <code>Remove-Module</code> step unless you are already in
+                        a
+                        long-lived interactive PowerShell session.</p>
+                </div>
                 <p>Use this every time you edit functions, resources, or manifest-related settings and want to validate
                     the current state.</p>
                 <p>If you skip the remove/rebuild/import cycle, you can think you are testing current code when you are
@@ -126,8 +176,20 @@ Import-Module $project.OutputModuleDir -Force</code></pre>
 
             <section class="content-section" id="local-publish">
                 <h2>Use local publish intentionally</h2>
-                <pre><code>nova publish --local
-Publish-NovaModule -Local</code></pre>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Run a local publish</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Publish-NovaModule -Local</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova publish --local
+% nova publish -l</code></pre>
+                    </div>
+                </div>
                 <p>Local publish is different from the normal build/import loop:</p>
                 <ul class="plain-list">
                     <li>Nova builds the project</li>
@@ -161,13 +223,29 @@ Publish-NovaModule -Local</code></pre>
                     </li>
                 </ul>
                 <h3>How to learn from it</h3>
-                <pre><code>nova init --example --path ~/Work
-Set-Location ~/Work/&lt;YourProjectName&gt;
-nova build
-nova test
-$project = Get-NovaProjectInfo
-Import-Module $project.OutputModuleDir -Force
-Get-ExampleGreeting</code></pre>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Walk the example project end to end</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Initialize-NovaModule -Example -Path ~/Work
+PS&gt; Set-Location ~/Work/&lt;YourProjectName&gt;
+PS&gt; Invoke-NovaBuild
+PS&gt; Test-NovaBuild
+PS&gt; $project = Get-NovaProjectInfo
+PS&gt; Import-Module $project.OutputModuleDir -Force
+PS&gt; Get-ExampleGreeting</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova init --example --path ~/Work
+% cd ~/Work/&lt;YourProjectName&gt;
+% nova build
+% nova test
+pwsh -NoLogo -Command "Import-Module (Get-NovaProjectInfo).OutputModuleDir -Force; Get-ExampleGreeting"</code></pre>
+                    </div>
+                </div>
                 <p>Once you understand the example, copy the patterns you want into your own project instead of copying
                     the whole project blindly.</p>
                 <p><a class="text-link" href="./project-json-reference.html#example">See the example configuration
@@ -192,5 +270,70 @@ Get-ExampleGreeting</code></pre>
             License</a>.</p>
     </div>
 </footer>
+<script>
+    (() => {
+        const storageKey = 'nova-doc-command-surface';
+        const supportedModes = ['powershell', 'command-line'];
+
+        function readStoredMode() {
+            try {
+                const stored = window.localStorage.getItem(storageKey);
+                return supportedModes.includes(stored) ? stored : 'powershell';
+            } catch {
+                return 'powershell';
+            }
+        }
+
+        function writeStoredMode(mode) {
+            try {
+                window.localStorage.setItem(storageKey, mode);
+            } catch {
+                // Ignore storage failures and keep the page interactive.
+            }
+        }
+
+        function getModeLabel(mode) {
+            return mode === 'command-line' ? 'Command-line' : 'PowerShell';
+        }
+
+        function applyMode(mode) {
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                const selected = button.dataset.commandMode === mode;
+                button.setAttribute('aria-selected', selected ? 'true' : 'false');
+            });
+
+            document.querySelectorAll('[data-command-example]').forEach((example) => {
+                example.querySelectorAll('[data-command-surface]').forEach((surface) => {
+                    surface.hidden = surface.dataset.commandSurface !== mode;
+                });
+            });
+
+            document.querySelectorAll('[data-command-surface-label]').forEach((label) => {
+                label.textContent = getModeLabel(mode);
+            });
+
+            document.querySelectorAll('[data-command-visibility]').forEach((element) => {
+                element.hidden = element.dataset.commandVisibility !== mode;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialMode = readStoredMode();
+            applyMode(initialMode);
+
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const nextMode = button.dataset.commandMode;
+                    if (!supportedModes.includes(nextMode)) {
+                        return;
+                    }
+
+                    applyMode(nextMode);
+                    writeStoredMode(nextMode);
+                });
+            });
+        });
+    })();
+</script>
 </body>
 </html>

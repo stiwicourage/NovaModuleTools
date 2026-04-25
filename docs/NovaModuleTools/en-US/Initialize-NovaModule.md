@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/14/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: Initialize-NovaModule
 ---
@@ -19,7 +19,7 @@ Creates a new NovaModuleTools project scaffold through an interactive prompt flo
 
 ### __AllParameterSets
 
-```powershell
+```text
 PS> Initialize-NovaModule [-Path <string>] [-Example] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -48,7 +48,7 @@ initializing Git.
 
 ### EXAMPLE 1
 
-```powershell
+```text
 PS> Initialize-NovaModule -Path ~/Work
 ```
 
@@ -56,7 +56,7 @@ Starts the interactive scaffold flow and creates the new module under `~/Work`.
 
 ### EXAMPLE 2
 
-```powershell
+```text
 PS> Initialize-NovaModule -Path ~/Work -WhatIf
 ```
 
@@ -64,7 +64,7 @@ Shows what would be created without writing the scaffold.
 
 ### EXAMPLE 3
 
-```powershell
+```text
 PS> Initialize-NovaModule -Example -Path ~/Work
 ```
 
@@ -73,8 +73,8 @@ prompt flow to the copied `project.json`.
 
 ### EXAMPLE 4
 
-```bash
-nova init --example --path ~/Work
+```text
+% nova init --example --path ~/Work
 ```
 
 Runs the same example-based scaffold flow through the `nova` CLI.

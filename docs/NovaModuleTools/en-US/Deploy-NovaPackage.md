@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/19/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: Deploy-NovaPackage
 ---
@@ -46,6 +46,9 @@ as `Package.RepositoryUrl`, `Package.UploadPath`, `Package.Headers`, and `Packag
 This command is intentionally separate from `Publish-NovaModule`. `Deploy-NovaPackage` performs raw HTTP artifact
 uploads, while `Publish-NovaModule` remains focused on PowerShell repository publishing.
 
+When you run `Deploy-NovaPackage -Confirm`, PowerShell uses its native confirmation prompt against the full resolved
+upload set instead of prompting once per artifact.
+
 ## EXAMPLES
 
 ### EXAMPLE 1
@@ -55,13 +58,12 @@ PS> Deploy-NovaPackage -Repository LocalNexus
 ```
 
 Resolves the current project's package artifacts from the configured package output directory and uploads them to the
-raw
-repository named `LocalNexus` from `Package.Repositories`.
+raw repository named `LocalNexus` from `Package.Repositories`.
 
 ### EXAMPLE 2
 
 ```powershell
-PS> nova deploy --repository LocalNexus
+% nova deploy --repository LocalNexus
 ```
 
 Runs the same raw package upload flow through the Nova CLI.
@@ -98,6 +100,14 @@ PS> Deploy-NovaPackage -Repository LocalNexus -WhatIf
 ```
 
 Previews which package artifacts would be uploaded and which destination URLs would be used.
+
+### EXAMPLE 7
+
+```powershell
+PS> Deploy-NovaPackage -Repository LocalNexus -Confirm
+```
+
+Uses PowerShell's native confirmation prompt for the full resolved upload set before any raw package upload starts.
 
 ## PARAMETERS
 

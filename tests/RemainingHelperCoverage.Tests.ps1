@@ -303,12 +303,12 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
     }
 
     It 'Get-AliasInFunctionFromFile returns aliases declared on the function' {
-        $filePath = Join-Path $script:repoRoot 'src/public/InvokeNovaCli.ps1'
+        $filePath = Join-Path $script:repoRoot 'src/public/UpdateNovaModuleTools.ps1'
 
         InModuleScope $script:moduleName -Parameters @{FilePath = $filePath} {
             param($FilePath)
 
-            @(Get-AliasInFunctionFromFile -filePath $FilePath) | Should -Be @('nova')
+            @(Get-AliasInFunctionFromFile -filePath $FilePath) | Should -Be @('Update-NovaModuleTools')
         }
     }
 

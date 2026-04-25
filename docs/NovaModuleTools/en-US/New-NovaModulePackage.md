@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/19/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: New-NovaModulePackage
 ---
@@ -19,7 +19,7 @@ Builds, tests, and packages the current project as one or more configured packag
 
 ### __AllParameterSets
 
-```powershell
+```text
 PS> New-NovaModulePackage [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -52,14 +52,12 @@ Use this `project.json` shape when you want to control package types and the pac
 ```
 
 `Package.Types` is optional. When it is missing, empty, or null, `New-NovaModulePackage` defaults to `NuGet` and creates
-a
-`.nupkg` file.
+a `.nupkg` file.
 
 Supported `Package.Types` values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
 
 `Package.Latest` is optional and defaults to `false`. When set to `true`, `New-NovaModulePackage` also writes a
-companion
-`*.latest.*` artifact for each selected package type while keeping the normal versioned file.
+companion `*.latest.*` artifact for each selected package type while keeping the normal versioned file.
 
 `Package.PackageFileName` lets you override the base package file name.
 
@@ -79,7 +77,7 @@ PowerShell Gallery.
 
 ### EXAMPLE 1
 
-```powershell
+```text
 PS> New-NovaModulePackage
 ```
 
@@ -88,15 +86,15 @@ when `Package.Types` is omitted or resolves to `NuGet`.
 
 ### EXAMPLE 2
 
-```powershell
-PS> nova package
+```text
+% nova package
 ```
 
 Runs the same packaging workflow through the `nova` CLI.
 
 ### EXAMPLE 3
 
-```powershell
+```text
 PS> New-NovaModulePackage
 ```
 
@@ -105,7 +103,7 @@ package output directory.
 
 ### EXAMPLE 4
 
-```powershell
+```text
 PS> New-NovaModulePackage
 ```
 
@@ -114,7 +112,7 @@ file such as `NovaModuleTools.latest.nupkg`.
 
 ### EXAMPLE 5
 
-```powershell
+```text
 PS> New-NovaModulePackage
 ```
 
@@ -123,7 +121,7 @@ package files such as `AgentInstaller.2.3.4.nupkg` and `AgentInstaller.latest.nu
 
 ### EXAMPLE 6
 
-```powershell
+```text
 PS> New-NovaModulePackage -WhatIf
 ```
 
@@ -131,7 +129,7 @@ Previews the build, test, and package workflow without writing a package artifac
 
 ### EXAMPLE 7
 
-```powershell
+```text
 PS> New-NovaModulePackage -Confirm
 ```
 

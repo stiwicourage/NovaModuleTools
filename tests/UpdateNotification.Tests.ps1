@@ -369,7 +369,7 @@ Describe 'Update notification behavior' {
         }
     }
 
-    It 'nova update prints a friendly message in PowerShell when no newer version is available' {
+    It 'Invoke-NovaCli update prints a friendly message in PowerShell when no newer version is available' {
         InModuleScope $script:moduleName {
             Mock Update-NovaModuleTool {
                 [pscustomobject]@{
@@ -385,7 +385,7 @@ Describe 'Update notification behavior' {
                 }
             }
 
-            $result = @(nova update)
+            $result = @(Invoke-NovaCli update)
 
             $result | Should -HaveCount 2
             $result[0] | Should -Be "You're up to date!"
@@ -594,9 +594,9 @@ throw 'offline'
             }
         },
         @{
-            Name = 'nova update'
+            Name = 'Invoke-NovaCli update'
             Invoke = {
-                nova update
+                Invoke-NovaCli update
             }
         }
     ) {

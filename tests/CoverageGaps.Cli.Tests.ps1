@@ -59,7 +59,6 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             }
             Mock ConvertTo-NovaCliArgumentArray {@('--help')}
             Mock Test-NovaCliHelpRequest {$true}
-            Mock Assert-NovaCliAliasCommonParameterSyntax {}
             Mock Assert-NovaCliArgumentSyntax {}
             Mock Get-NovaCliArgumentRoutingState {
                 [pscustomobject]@{
@@ -67,17 +66,15 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                     Arguments = @('--help')
                     ForwardedParameters = @{}
                     WhatIfEnabled = $false
+                    CliConfirmEnabled = $false
                 }
             }
             Mock Merge-NovaCliParameterSet {$BaseParameters}
-            Mock Get-NovaCliAliasRootCommandOverride {$null}
 
             $result = Get-NovaCliInvocationContext -InvocationRequest ([pscustomobject]@{
                 Command = 'publish'
                 BoundParameters = @{Verbose = $true; Arguments = @('--help')}
                 Arguments = @('--help')
-                InvocationName = 'Invoke-NovaCli'
-                InvocationStatement = 'Invoke-NovaCli publish --help'
             }) -WhatIfEnabled
 
             $result.Command | Should -Be 'publish'
@@ -87,6 +84,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             $result.IsHelpRequest | Should -BeTrue
             $result.ModuleName | Should -Be 'NovaModuleTools'
             $result.WhatIfEnabled | Should -BeTrue
+            $result.CliConfirmEnabled | Should -BeFalse
             Assert-MockCalled Get-NovaCliForwardingParameterSet -Times 1 -ParameterFilter {
                 $BoundParameters.ContainsKey('Verbose') -and -not $IncludeShouldProcess
             }
@@ -137,8 +135,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             Assert-MockCalled Get-NovaCliInvocationContext -Times 1 -ParameterFilter {
                 $InvocationRequest.Command -eq 'build' -and
                         $InvocationRequest.BoundParameters.ContainsKey('WhatIf') -and
-                        $WhatIfEnabled -and
-                        $InvocationRequest.InvocationName -eq 'Invoke-NovaCli'
+                        $WhatIfEnabled
             }
             Assert-MockCalled Invoke-NovaCliCommandRoute -Times 1 -ParameterFilter {
                 $InvocationContext.Command -eq 'build' -and $InvocationContext.WhatIfEnabled
@@ -146,21 +143,17 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
-    It 'Get-NovaCliInvocationContext normalizes root alias -v and routed alias -v correctly' {
+    It 'Get-NovaCliInvocationContext normalizes explicit root and routed GNU-style options correctly' {
         InModuleScope $script:moduleName {
             $rootContext = Get-NovaCliInvocationContext -InvocationRequest ([pscustomobject]@{
-                Command = '--help'
-                BoundParameters = @{Verbose = $true}
+                Command = '-v'
+                BoundParameters = @{Command = '-v'}
                 Arguments = @()
-                InvocationName = 'nova'
-                InvocationStatement = 'nova -v'
             })
             $buildContext = Get-NovaCliInvocationContext -InvocationRequest ([pscustomobject]@{
                 Command = 'build'
-                BoundParameters = @{Command = 'build'; Verbose = $true; Arguments = @('-w', '-c')}
-                Arguments = @('-w', '-c')
-                InvocationName = 'nova'
-                InvocationStatement = 'nova build -v -w -c'
+                BoundParameters = @{Command = 'build'; Arguments = @('-v', '-w', '-c')}
+                Arguments = @('-v', '-w', '-c')
             })
 
             $rootContext.Command | Should -Be '--version'
@@ -170,21 +163,60 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             $buildContext.CommonParameters.Verbose | Should -BeTrue
             $buildContext.MutatingCommonParameters.Verbose | Should -BeTrue
             $buildContext.MutatingCommonParameters.WhatIf | Should -BeTrue
-            $buildContext.MutatingCommonParameters.Confirm | Should -BeTrue
+            $buildContext.MutatingCommonParameters.ContainsKey('Confirm') | Should -BeFalse
             $buildContext.WhatIfEnabled | Should -BeTrue
+            $buildContext.CliConfirmEnabled | Should -BeTrue
         }
     }
 
-    It 'Get-NovaCliInvocationContext rejects alias-bound legacy PowerShell-style common parameters' {
+    It 'Get-NovaCliArgumentRoutingState enables CLI confirmation only for supported mutating commands' {
+        InModuleScope $script:moduleName {
+            $supportedCommandList = @('build', 'test', 'package', 'deploy', 'bump', 'update', 'notification', 'publish', 'release')
+
+            foreach ($command in $supportedCommandList) {
+                foreach ($option in @('--confirm', '-c')) {
+                    $state = Get-NovaCliArgumentRoutingState -Command $command -Arguments @($option)
+
+                    $state.Command | Should -Be $command
+                    $state.Arguments | Should -Be @()
+                    $state.CliConfirmEnabled | Should -BeTrue
+                    $state.ForwardedParameters.ContainsKey('Confirm') | Should -BeFalse
+                }
+            }
+        }
+    }
+
+    It 'Get-NovaCliArgumentRoutingState rejects CLI confirmation for non-confirmable commands' {
+        InModuleScope $script:moduleName {
+            foreach ($command in @('--help', '--version', 'info', 'version', 'init')) {
+                foreach ($option in @('--confirm', '-c')) {
+                    $thrown = $null
+                    try {
+                        Get-NovaCliArgumentRoutingState -Command $command -Arguments @($option)
+                    }
+                    catch {
+                        $thrown = $_
+                    }
+
+                    Assert-TestStructuredCliError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                        Message = "The 'nova $command' CLI command does not support '--confirm'/'-c'."
+                        ErrorId = 'Nova.Validation.UnsupportedCliConfirm'
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                        TargetObject = 'Confirm'
+                    })
+                }
+            }
+        }
+    }
+
+    It 'Get-NovaCliInvocationContext rejects legacy PowerShell-style CLI options passed through routed arguments' {
         InModuleScope $script:moduleName {
             $thrown = $null
             try {
                 Get-NovaCliInvocationContext -InvocationRequest ([pscustomobject]@{
                     Command = 'build'
-                    BoundParameters = @{Command = 'build'; Verbose = $true}
-                    Arguments = @()
-                    InvocationName = 'nova'
-                    InvocationStatement = 'nova build -Verbose'
+                    BoundParameters = @{Command = 'build'; Arguments = @('-Verbose')}
+                    Arguments = @('-Verbose')
                 })
             }
             catch {
@@ -488,29 +520,15 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
-    It 'CLI routing helpers cover normalized root help, alias invocation fallback, token parsing, and generic syntax guidance' {
+    It 'CLI routing helpers cover normalized root help, option classification, and generic syntax guidance' {
         InModuleScope $script:moduleName {
             (Get-NovaCliNormalizedRootCommand -Command '-h') | Should -Be '--help'
-
-            $nonAliasInvocation = [pscustomobject]@{
-                InvocationName = 'Invoke-NovaCli'
-                InvocationStatement = $null
-                Command = 'build'
-                Arguments = @('--verbose')
-                BoundParameters = @{}
-            }
-            $aliasInvocation = [pscustomobject]@{
-                InvocationName = 'nova'
-                InvocationStatement = $null
-                Command = 'build'
-                Arguments = @('--verbose')
-                BoundParameters = @{}
-            }
-
-            (Get-NovaCliAliasInvocationStatement -Invocation $nonAliasInvocation) | Should -BeNullOrEmpty
-            (Get-NovaCliAliasInvocationStatement -Invocation $aliasInvocation) | Should -Be 'nova build --verbose'
-            (Get-NovaCliInvocationParameterTokenSet -InvocationStatement '') | Should -Be @()
-            (Get-NovaCliBoundCommonParameterToken -ParameterName 'Confirm' -ParameterTokens @('-Verbose', '-WhatIf')) | Should -BeNullOrEmpty
+            (Get-NovaCliNormalizedRootCommand -Command '-v') | Should -Be '--version'
+            (Get-NovaCliNormalizedRootCommand -Command 'build') | Should -Be 'build'
+            (Test-NovaCliLegacySingleHyphenOption -Argument '-legacy') | Should -BeTrue
+            (Test-NovaCliLegacySingleHyphenOption -Argument '--legacy') | Should -BeFalse
+            (Test-NovaCliWhatIfOption -Argument '--whatif') | Should -BeTrue
+            (Test-NovaCliConfirmOption -Argument '-c') | Should -BeTrue
 
             $genericSyntaxError = $null
             try {
@@ -529,17 +547,82 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
-    It 'Get-NovaCliAliasRootCommandOverride returns nothing when root alias verbose binding did not come from -v' {
+    It 'Read-NovaCliConsoleKeyChar returns the key character from the console read result' {
         InModuleScope $script:moduleName {
-            $result = Get-NovaCliAliasRootCommandOverride -Invocation ([pscustomobject]@{
-                InvocationName = 'nova'
-                Command = '--help'
-                BoundParameters = @{Verbose = $true}
-                Arguments = @()
-                InvocationStatement = 'nova -Verbose'
-            })
+            Mock Invoke-NovaCliConsoleReadKey {
+                [pscustomobject]@{KeyChar = [char]'y'}
+            }
 
-            $result | Should -BeNullOrEmpty
+            $result = Read-NovaCliConsoleKeyChar
+
+            $result | Should -Be ([char]'y')
+            Assert-MockCalled Invoke-NovaCliConsoleReadKey -Times 1
+        }
+    }
+
+    It 'Invoke-NovaCliConsoleReadKey executes the console read path when standard input is redirected' {
+        $runnerPath = Join-Path $TestDrive 'Invoke-NovaCliConsoleReadKey.Runner.ps1'
+        $stdinPath = Join-Path $TestDrive 'Invoke-NovaCliConsoleReadKey.stdin.txt'
+        $stdoutPath = Join-Path $TestDrive 'Invoke-NovaCliConsoleReadKey.stdout.txt'
+        $stderrPath = Join-Path $TestDrive 'Invoke-NovaCliConsoleReadKey.stderr.txt'
+        Set-Content -LiteralPath $stdinPath -Value '' -Encoding utf8 -NoNewline
+        Set-Content -LiteralPath $runnerPath -Encoding utf8 -Value @"
+`$module = Import-Module '$script:distModuleDir' -Force -PassThru
+
+try {
+    & `$module {
+        Invoke-NovaCliConsoleReadKey | Out-Null
+    }
+
+    Write-Output 'NO_THROW'
+    exit 1
+}
+catch {
+    Write-Output `$_.FullyQualifiedErrorId
+    Write-Output `$_.Exception.Message
+    exit 0
+}
+"@
+
+        $process = Start-Process pwsh -ArgumentList @('-NoLogo', '-NoProfile', '-File', $runnerPath) `
+            -RedirectStandardInput $stdinPath `
+            -RedirectStandardOutput $stdoutPath `
+            -RedirectStandardError $stderrPath `
+            -Wait `
+            -PassThru
+        $output = @(
+        if (Test-Path -LiteralPath $stdoutPath) {
+            Get-Content -LiteralPath $stdoutPath
+        }
+        if (Test-Path -LiteralPath $stderrPath) {
+            Get-Content -LiteralPath $stderrPath
+        }
+        )
+
+        $process.ExitCode | Should -Be 0 -Because ($output -join [Environment]::NewLine)
+        ($output -join [Environment]::NewLine) | Should -Match 'Cannot read keys when either application does not have a console or when console input has been redirected'
+    }
+
+    It 'Add-NovaCliCommonOption returns false for non-common routed options' {
+        InModuleScope $script:moduleName {
+            $forwardedParameters = @{}
+            $result = Add-NovaCliCommonOption -Argument '--repository' -ForwardedParameters $forwardedParameters
+
+            $result | Should -BeFalse
+            $forwardedParameters.Count | Should -Be 0
+        }
+    }
+
+    It 'Add-NovaCliCommonOption maps WhatIf long and short options into forwarded parameters' {
+        InModuleScope $script:moduleName {
+            foreach ($option in @('--whatif', '-w')) {
+                $forwardedParameters = @{}
+
+                $result = Add-NovaCliCommonOption -Argument $option -ForwardedParameters $forwardedParameters
+
+                $result | Should -BeTrue
+                $forwardedParameters.WhatIf | Should -BeTrue
+            }
         }
     }
 

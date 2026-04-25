@@ -1,7 +1,6 @@
 function Invoke-NovaCli {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '', Justification = 'The public CLI entrypoint forwards WhatIf/Confirm semantics to the routed commands that own the actual ShouldProcess decisions.')]
     [CmdletBinding(SupportsShouldProcess = $true)]
-    [Alias('nova')]
     param(
         [Parameter(Position = 0)]
         [string]$Command = '--help',
@@ -13,8 +12,6 @@ function Invoke-NovaCli {
         Command = $Command
         BoundParameters = $PSBoundParameters
         Arguments = $Arguments
-        InvocationName = $MyInvocation.InvocationName
-        InvocationStatement = $MyInvocation.Statement
     }
 
     $invocationContext = Get-NovaCliInvocationContext -InvocationRequest $invocationRequest -WhatIfEnabled:$WhatIfPreference

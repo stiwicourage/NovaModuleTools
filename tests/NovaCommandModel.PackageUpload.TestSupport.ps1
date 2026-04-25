@@ -5,6 +5,8 @@ $global:novaCommandModelPackageUploadTestSupportFunctionNameList = @(
     'New-TestNovaPackageArtifactFile'
     'New-TestNovaPackageArtifactSet'
     'Get-TestNovaPackageUploadTargetResolutionCases'
+    'Get-TestNovaPackageUploadRepositoryList'
+    'Assert-TestNovaPackageUploadTargetResolutionResult'
     'Get-TestNovaPackageUploadHeaderResolutionCases'
     'Get-TestNovaPackageUploadArtifactResolutionCases'
     'Get-TestNovaPackageUploadFailureCases'
@@ -116,6 +118,7 @@ function New-TestNovaPackageArtifactSet {
     )
 }
 
+
 function Get-TestNovaPackageUploadTargetResolutionCases {
     [CmdletBinding()]
     param()
@@ -140,6 +143,59 @@ function Get-TestNovaPackageUploadTargetResolutionCases {
             ExpectPackageToken = $false
         }
     )
+}
+
+function Get-TestNovaPackageUploadRepositoryList {
+    [CmdletBinding()]
+    param(
+        [AllowNull()][string]$ExpectedTraceId
+    )
+
+    $traceHeaders = if ($null -ne $ExpectedTraceId) {
+        [ordered]@{'X-Trace-Id' = 'repo-trace'}
+    }
+    else {
+        [ordered]@{}
+    }
+
+    return @(
+        [ordered]@{
+            Name = 'LocalRaw'
+            Url = 'https://packages.example/raw/repository/'
+            UploadPath = 'repo-path'
+            Headers = [ordered]@{} + $traceHeaders + [ordered]@{
+                'X-Repo-Only' = 'repo-only'
+            }
+            Auth = [ordered]@{
+                HeaderName = 'X-Repo-Token'
+                TokenEnvironmentVariable = 'REPO_UPLOAD_TOKEN'
+            }
+        }
+    )
+}
+
+function Assert-TestNovaPackageUploadTargetResolutionResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Result,
+        [Parameter(Mandatory)][pscustomobject]$TestCase
+    )
+
+    $Result.Repository | Should -Be 'LocalRaw'
+    $Result.Url | Should -Be $TestCase.ExpectedUrl
+    $Result.UploadPath | Should -Be $TestCase.ExpectedUploadPath
+    $Result.Headers['X-Package-Only'] | Should -Be 'package-only'
+    $Result.Headers['X-Repo-Only'] | Should -Be 'repo-only'
+    $Result.Auth.HeaderName | Should -Be 'X-Repo-Token'
+    $Result.Auth.TokenEnvironmentVariable | Should -Be 'REPO_UPLOAD_TOKEN'
+
+    if ($null -ne $TestCase.ExpectedTraceId) {
+        $Result.Headers['X-Trace-Id'] | Should -Be $TestCase.ExpectedTraceId
+    }
+
+    if ($TestCase.ExpectPackageToken) {
+        $Result.Auth.Token | Should -Be 'package-token'
+    }
 }
 
 function Get-TestNovaPackageUploadHeaderResolutionCases {

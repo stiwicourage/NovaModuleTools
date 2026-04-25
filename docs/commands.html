@@ -32,33 +32,45 @@
         }
     </script>
 </head>
-<body>
+<body class="guide-page">
 <header class="site-header">
     <div class="site-header__inner">
         <a class="site-brand" href="./index.html">
             <img alt="" class="site-brand__icon" src="./assets/icon.png">
             <span class="site-brand__text">NovaModuleTools</span>
         </a>
-        <details class="site-menu">
-            <summary class="site-menu__button">
-                <span class="site-menu__button-label">Menu</span>
-                <span class="site-menu__current">Command Reference</span>
-            </summary>
-            <nav aria-label="Primary" class="site-menu__panel">
-                <a class="site-nav__link" href="./index.html">Home</a>
-                <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
-                <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
-                <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
-                <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
-                <a aria-current="page" class="site-nav__link site-nav__link--active" href="./commands.html">Command
-                    Reference</a>
-                <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
-                <a class="site-nav__link" href="./versioning-and-updates.html">Versioning &amp; Updates</a>
-                <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
-                <a class="site-nav__link" href="./advanced.html">Concepts</a>
-                <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
-            </nav>
-        </details>
+        <div aria-label="Command display mode" class="site-header__command-surface">
+            <div aria-label="Command display mode" class="surface-tabs" role="tablist">
+                <button aria-selected="true" class="surface-tabs__button" data-command-mode="powershell" role="tab"
+                        type="button">PowerShell
+                </button>
+                <button aria-selected="false" class="surface-tabs__button" data-command-mode="command-line" role="tab"
+                        type="button">Command-line
+                </button>
+            </div>
+        </div>
+        <div class="site-header__actions">
+            <details class="site-menu">
+                <summary class="site-menu__button">
+                    <span class="site-menu__button-label">Menu</span>
+                    <span class="site-menu__current">Command Reference</span>
+                </summary>
+                <nav aria-label="Primary" class="site-menu__panel">
+                    <a class="site-nav__link" href="./index.html">Home</a>
+                    <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+                    <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+                    <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
+                    <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
+                    <a aria-current="page" class="site-nav__link site-nav__link--active" href="./commands.html">Command
+                        Reference</a>
+                    <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
+                    <a class="site-nav__link" href="./versioning-and-updates.html">Versioning &amp; Updates</a>
+                    <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+                    <a class="site-nav__link" href="./advanced.html">Concepts</a>
+                    <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
+                </nav>
+            </details>
+        </div>
     </div>
 </header>
 
@@ -102,8 +114,11 @@
                         <tbody>
                         <tr>
                             <td>Interactive local development inside <code>pwsh</code></td>
-                            <td><code>nova</code> alias or cmdlets</td>
-                            <td>After you import the module, both are available in the same session.</td>
+                            <td>PowerShell cmdlets</td>
+                            <td>After you import the module, the cmdlets are available directly. Use
+                                <code>Invoke-NovaCli</code> only when you explicitly want the routed CLI surface from
+                                PowerShell.
+                            </td>
                         </tr>
                         <tr>
                             <td>Shell use on macOS/Linux</td>
@@ -127,35 +142,48 @@
                         </tbody>
                     </table>
                 </div>
-                <p class="tiny-note">Important: <code>nova</code> inside PowerShell is an alias for
-                    <code>Invoke-NovaCli</code>. On macOS/Linux you can also install the standalone launcher with <code>Install-NovaCli</code>.
-                </p>
+                <p class="tiny-note">Important: <code>nova</code> refers to the standalone launcher-oriented CLI
+                    experience. Inside PowerShell, use the native cmdlets for normal work, or call
+                    <code>Invoke-NovaCli</code> explicitly when you want routed CLI dispatch.</p>
             </section>
 
             <section class="content-section" id="project-and-scaffold">
                 <h2>Project and scaffold commands</h2>
                 <div class="command-card-grid">
                     <article class="command-card">
-                        <h3><code>Initialize-NovaModule</code> / <code>nova init</code></h3>
+                        <h3><code>Initialize-NovaModule</code> / <code>% nova init</code></h3>
                         <p>Create a new project scaffold. Use <code>-Example</code> or the CLI form
-                            <code>nova init --example</code> / <code>nova init -e</code> when you want a complete
+                            <code>% nova init --example</code> / <code>% nova init -e</code> when you want a complete
                             working
                             sample instead of the minimal starter layout.</p>
                         <ul class="plain-list">
                             <li><strong>Best for:</strong> creating a new project</li>
                             <li><strong>Key parameters:</strong> <code>-Path</code>, <code>-Example</code></li>
-                            <li><strong>Important CLI caveat:</strong> use <code>nova init --path ~/Work</code> or
-                                <code>nova init -p ~/Work</code>;
+                            <li><strong>Important CLI caveat:</strong> use <code>% nova init --path ~/Work</code> or
+                                <code>% nova init -p ~/Work</code>;
                                 positional paths are intentionally rejected
                             </li>
                         </ul>
-                        <pre><code>Initialize-NovaModule -Path ~/Work
-nova init --example --path ~/Work</code></pre>
+                        <div class="surface-example" data-command-example>
+                            <div class="surface-example__meta">
+                                <p class="surface-example__title">Create a new scaffold</p>
+                                <p class="surface-example__status">Showing: <span
+                                        data-command-surface-label>PowerShell</span></p>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="powershell">
+                                <pre><code>PS&gt; Initialize-NovaModule -Path ~/Work
+PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                                <pre><code>% nova init --path ~/Work
+% nova init --example --path ~/Work</code></pre>
+                            </div>
+                        </div>
                         <p><a class="text-link" href="./getting-started.html">See the scaffold tutorial</a></p>
                     </article>
 
                     <article class="command-card">
-                        <h3><code>Get-NovaProjectInfo</code> / <code>nova info</code></h3>
+                        <h3><code>Get-NovaProjectInfo</code> / <code>% nova info</code></h3>
                         <p>Read the current <code>project.json</code> and return resolved project metadata, defaults,
                             and important paths such as <code>dist/</code> and <code>tests/</code>.</p>
                         <ul class="plain-list">
@@ -165,9 +193,21 @@ nova init --example --path ~/Work</code></pre>
                             <li><strong>Output:</strong> a project object, or just the version string when you use
                                 <code>-Version</code></li>
                         </ul>
-                        <pre><code>Get-NovaProjectInfo
-Get-NovaProjectInfo -Version
-nova info</code></pre>
+                        <div class="surface-example" data-command-example>
+                            <div class="surface-example__meta">
+                                <p class="surface-example__title">Inspect project metadata</p>
+                                <p class="surface-example__status">Showing: <span
+                                        data-command-surface-label>PowerShell</span></p>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="powershell">
+                                <pre><code>PS&gt; Get-NovaProjectInfo
+PS&gt; Get-NovaProjectInfo -Version</code></pre>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                                <pre><code>% nova info
+% nova version</code></pre>
+                            </div>
+                        </div>
                         <p><a class="text-link" href="./project-json-reference.html">See project.json behavior</a></p>
                     </article>
                 </div>
@@ -177,7 +217,7 @@ nova info</code></pre>
                 <h2>Build and test commands</h2>
                 <div class="command-card-grid">
                     <article class="command-card">
-                        <h3><code>Invoke-NovaBuild</code> / <code>nova build</code></h3>
+                        <h3><code>Invoke-NovaBuild</code> / <code>% nova build</code></h3>
                         <p>Build the current project into <code>dist/&lt;ProjectName&gt;</code>, generate the manifest,
                             generate external help, and copy project resources.</p>
                         <ul class="plain-list">
@@ -191,13 +231,26 @@ nova info</code></pre>
                                 <code>Preamble</code>, and duplicate function validation
                             </li>
                         </ul>
-                        <pre><code>Invoke-NovaBuild
-nova build --whatif</code></pre>
+                        <div class="surface-example" data-command-example>
+                            <div class="surface-example__meta">
+                                <p class="surface-example__title">Build the current project</p>
+                                <p class="surface-example__status">Showing: <span
+                                        data-command-surface-label>PowerShell</span></p>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="powershell">
+                                <pre><code>PS&gt; Invoke-NovaBuild
+PS&gt; Invoke-NovaBuild -WhatIf</code></pre>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                                <pre><code>% nova build
+% nova build --whatif</code></pre>
+                            </div>
+                        </div>
                         <p><a class="text-link" href="./core-workflows.html#build">See the build workflow</a></p>
                     </article>
 
                     <article class="command-card">
-                        <h3><code>Test-NovaBuild</code> / <code>nova test</code></h3>
+                        <h3><code>Test-NovaBuild</code> / <code>% nova test</code></h3>
                         <p>Run Pester against the current project configuration and write test results to <code>artifacts/TestResults.xml</code>.
                         </p>
                         <ul class="plain-list">
@@ -210,8 +263,26 @@ nova build --whatif</code></pre>
                                 nested test discovery
                             </li>
                         </ul>
-                        <pre><code>Test-NovaBuild -TagFilter unit,fast
-nova test --whatif</code></pre>
+                        <div class="surface-example" data-command-example>
+                            <div class="surface-example__meta">
+                                <p class="surface-example__title">Run the test workflow</p>
+                                <p class="surface-example__status">Showing: <span
+                                        data-command-surface-label>PowerShell</span></p>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="powershell">
+                                <pre><code>PS&gt; Test-NovaBuild
+PS&gt; Test-NovaBuild -TagFilter unit,fast</code></pre>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                                <pre><code>% nova test
+% nova test --whatif</code></pre>
+                            </div>
+                        </div>
+                        <div class="surface-note" data-command-visibility="command-line" hidden>
+                            <p><strong>Command-line note:</strong> advanced test filters such as <code>-TagFilter</code>,
+                                <code>-ExcludeTagFilter</code>, and render-mode overrides stay on the PowerShell cmdlet
+                                surface.</p>
+                        </div>
                         <p><a class="text-link" href="./core-workflows.html#test">See the test workflow</a></p>
                     </article>
                 </div>
@@ -221,7 +292,7 @@ nova test --whatif</code></pre>
                 <h2>Packaging and delivery commands</h2>
                 <div class="command-card-grid">
                     <article class="command-card">
-                        <h3><code>New-NovaModulePackage</code> / <code>nova package</code></h3>
+                        <h3><code>New-NovaModulePackage</code> / <code>% nova package</code></h3>
                         <p>Build, test, and package the module. By default it creates a <code>.nupkg</code> in <code>artifacts/packages/</code>.
                             Use <code>Package.Types</code> and related settings to customize the output.</p>
                         <ul class="plain-list">
@@ -230,13 +301,24 @@ nova test --whatif</code></pre>
                                 <code>Package.OutputDirectory</code></li>
                             <li><strong>Output:</strong> one object per generated artifact</li>
                         </ul>
-                        <pre><code>New-NovaModulePackage
-nova package</code></pre>
+                        <div class="surface-example" data-command-example>
+                            <div class="surface-example__meta">
+                                <p class="surface-example__title">Create package artifacts</p>
+                                <p class="surface-example__status">Showing: <span
+                                        data-command-surface-label>PowerShell</span></p>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="powershell">
+                                <pre><code>PS&gt; New-NovaModulePackage</code></pre>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                                <pre><code>% nova package</code></pre>
+                            </div>
+                        </div>
                         <p><a class="text-link" href="./packaging-and-delivery.html#pack">See packaging details</a></p>
                     </article>
 
                     <article class="command-card">
-                        <h3><code>Deploy-NovaPackage</code> / <code>nova deploy</code></h3>
+                        <h3><code>Deploy-NovaPackage</code> / <code>% nova deploy</code></h3>
                         <p>Upload existing package artifacts to a raw HTTP endpoint. This command does not build, test,
                             or package anything first.</p>
                         <ul class="plain-list">
@@ -250,14 +332,27 @@ nova package</code></pre>
                                 <code>latest</code> artifact it resolves
                             </li>
                         </ul>
-                        <pre><code>Deploy-NovaPackage -Repository LocalNexus
-nova deploy --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN</code></pre>
+                        <div class="surface-example" data-command-example>
+                            <div class="surface-example__meta">
+                                <p class="surface-example__title">Upload package artifacts</p>
+                                <p class="surface-example__status">Showing: <span
+                                        data-command-surface-label>PowerShell</span></p>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="powershell">
+                                <pre><code>PS&gt; Deploy-NovaPackage -Repository LocalNexus
+PS&gt; Deploy-NovaPackage -Url 'https://packages.example/raw/' -Token $env:NOVA_PACKAGE_TOKEN</code></pre>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                                <pre><code>% nova deploy --repository LocalNexus
+% nova deploy --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN</code></pre>
+                            </div>
+                        </div>
                         <p><a class="text-link" href="./packaging-and-delivery.html#upload">See raw upload details</a>
                         </p>
                     </article>
 
                     <article class="command-card">
-                        <h3><code>Publish-NovaModule</code> / <code>nova publish</code></h3>
+                        <h3><code>Publish-NovaModule</code> / <code>% nova publish</code></h3>
                         <p>Build, test, and publish the module either locally or to a registered PowerShell
                             repository.</p>
                         <ul class="plain-list">
@@ -270,13 +365,26 @@ nova deploy --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN<
                                 current PowerShell session
                             </li>
                         </ul>
-                        <pre><code>Publish-NovaModule -Local
-nova publish --repository PSGallery --api-key $env:PSGALLERY_API</code></pre>
+                        <div class="surface-example" data-command-example>
+                            <div class="surface-example__meta">
+                                <p class="surface-example__title">Publish the module</p>
+                                <p class="surface-example__status">Showing: <span
+                                        data-command-surface-label>PowerShell</span></p>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="powershell">
+                                <pre><code>PS&gt; Publish-NovaModule -Local
+PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API</code></pre>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                                <pre><code>% nova publish --local
+% nova publish --repository PSGallery --api-key $env:PSGALLERY_API</code></pre>
+                            </div>
+                        </div>
                         <p><a class="text-link" href="./packaging-and-delivery.html#publish">See publish details</a></p>
                     </article>
 
                     <article class="command-card">
-                        <h3><code>Invoke-NovaRelease</code> / <code>nova release</code></h3>
+                        <h3><code>Invoke-NovaRelease</code> / <code>% nova release</code></h3>
                         <p>Run the full release flow: build, test, bump version, build again, and then publish.</p>
                         <ul class="plain-list">
                             <li><strong>Best for:</strong> an orchestrated release command when you want one workflow
@@ -287,8 +395,25 @@ nova publish --repository PSGallery --api-key $env:PSGALLERY_API</code></pre>
                                 module into the session after publishing
                             </li>
                         </ul>
-                        <pre><code>Invoke-NovaRelease -PublishOption @{ Local = $true }
-nova release --repository PSGallery --api-key $env:PSGALLERY_API</code></pre>
+                        <div class="surface-example" data-command-example>
+                            <div class="surface-example__meta">
+                                <p class="surface-example__title">Run the release flow</p>
+                                <p class="surface-example__status">Showing: <span
+                                        data-command-surface-label>PowerShell</span></p>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="powershell">
+                                <pre><code>PS&gt; Invoke-NovaRelease -PublishOption @{ Local = $true }
+PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API }</code></pre>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                                <pre><code>% nova release --repository PSGallery --api-key $env:PSGALLERY_API</code></pre>
+                            </div>
+                        </div>
+                        <div class="surface-note" data-command-visibility="command-line" hidden>
+                            <p><strong>Command-line note:</strong> repository-oriented release is exposed on the
+                                launcher.
+                                Advanced PowerShell hashtable publish options stay on the cmdlet surface.</p>
+                        </div>
                         <p><a class="text-link" href="./packaging-and-delivery.html#release">See release details</a></p>
                     </article>
                 </div>
@@ -298,7 +423,7 @@ nova release --repository PSGallery --api-key $env:PSGALLERY_API</code></pre>
                 <h2>Versioning and release commands</h2>
                 <div class="command-card-grid">
                     <article class="command-card">
-                        <h3><code>Update-NovaModuleVersion</code> / <code>nova bump</code></h3>
+                        <h3><code>Update-NovaModuleVersion</code> / <code>% nova bump</code></h3>
                         <p>Read Git history, choose the semantic version label, and update <code>project.json</code>.
                         </p>
                         <ul class="plain-list">
@@ -319,31 +444,61 @@ nova release --repository PSGallery --api-key $env:PSGALLERY_API</code></pre>
                                 core
                             </li>
                         </ul>
-                        <pre><code>Update-NovaModuleVersion -Preview -WhatIf
-nova bump --preview --confirm</code></pre>
+                        <div class="surface-example" data-command-example>
+                            <div class="surface-example__meta">
+                                <p class="surface-example__title">Preview or confirm a version bump</p>
+                                <p class="surface-example__status">Showing: <span
+                                        data-command-surface-label>PowerShell</span></p>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="powershell">
+                                <pre><code>PS&gt; Update-NovaModuleVersion -Preview -WhatIf</code></pre>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                                <pre><code>% nova bump --preview --whatif
+% nova bump --preview --confirm</code></pre>
+                            </div>
+                        </div>
                         <p><a class="text-link" href="./versioning-and-updates.html#bump">See versioning rules</a></p>
                     </article>
 
                     <article class="command-card">
-                        <h3><code>nova version</code>, <code>nova version --installed</code>, and <code>nova
+                        <h3><code>% nova version</code>, <code>% nova version --installed</code>, and <code>% nova
                             --version</code></h3>
                         <p>These commands answer different questions, so use the one that matches your intent.</p>
                         <ul class="plain-list">
-                            <li><strong><code>nova version</code>:</strong> current project version from <code>project.json</code>
+                            <li><strong><code>% nova version</code>:</strong> current project version from <code>project.json</code>
                             </li>
-                            <li><strong><code>nova version --installed</code> / <code>nova version -i</code>:</strong>
+                            <li><strong><code>% nova version --installed</code> / <code>% nova version
+                                -i</code>:</strong>
                                 locally installed version of the
                                 current project/module
                             </li>
-                            <li><strong><code>nova --version</code> / <code>nova -v</code>:</strong> installed
+                            <li><strong><code>% nova --version</code> / <code>% nova -v</code>:</strong> installed
                                 NovaModuleTools version
                             </li>
                         </ul>
-                        <pre><code>nova version
-nova version --installed
-nova version -i
-nova --version
-nova -v</code></pre>
+                        <div class="surface-example" data-command-example>
+                            <div class="surface-example__meta">
+                                <p class="surface-example__title">Check the version you actually care about</p>
+                                <p class="surface-example__status">Showing: <span
+                                        data-command-surface-label>PowerShell</span></p>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="powershell">
+                                <pre><code>PS&gt; Get-NovaProjectInfo -Version</code></pre>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                                <pre><code>% nova version
+% nova version --installed
+% nova version -i
+% nova --version
+% nova -v</code></pre>
+                            </div>
+                        </div>
+                        <div class="surface-note" data-command-visibility="powershell">
+                            <p><strong>PowerShell note:</strong> the cmdlet surface covers the project version directly.
+                                Installed-module and installed-tool version views stay on the launcher flow described in
+                                the linked guide.</p>
+                        </div>
                         <p><a class="text-link" href="./versioning-and-updates.html#version-views">See version view
                             differences</a></p>
                     </article>
@@ -354,7 +509,7 @@ nova -v</code></pre>
                 <h2>Update and preference commands</h2>
                 <div class="command-card-grid">
                     <article class="command-card">
-                        <h3><code>Update-NovaModuleTool</code> / <code>Update-NovaModuleTools</code> / <code>nova
+                        <h3><code>Update-NovaModuleTool</code> / <code>Update-NovaModuleTools</code> / <code>% nova
                             update</code></h3>
                         <p>Self-update the installed NovaModuleTools module by using the stored prerelease
                             preference.</p>
@@ -367,28 +522,55 @@ nova -v</code></pre>
                                 success
                             </li>
                         </ul>
-                        <pre><code>Update-NovaModuleTool
-nova update</code></pre>
+                        <div class="surface-example" data-command-example>
+                            <div class="surface-example__meta">
+                                <p class="surface-example__title">Update NovaModuleTools itself</p>
+                                <p class="surface-example__status">Showing: <span
+                                        data-command-surface-label>PowerShell</span></p>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="powershell">
+                                <pre><code>PS&gt; Update-NovaModuleTool
+PS&gt; Update-NovaModuleTools</code></pre>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                                <pre><code>% nova update</code></pre>
+                            </div>
+                        </div>
                         <p><a class="text-link" href="./versioning-and-updates.html#self-update">See self-update
                             behavior</a></p>
                     </article>
 
                     <article class="command-card">
                         <h3><code>Get-NovaUpdateNotificationPreference</code>, <code>Set-NovaUpdateNotificationPreference</code>,
-                            and <code>nova notification</code></h3>
+                            and <code>% nova notification</code></h3>
                         <p>Inspect or change whether prerelease self-updates are eligible.</p>
                         <ul class="plain-list">
                             <li><strong>Best for:</strong> keeping production systems on stable releases, or opting into
                                 prerelease self-update targets on purpose
                             </li>
-                            <li><strong>Key commands:</strong> <code>nova notification</code>, <code>nova notification
-                                --disable</code>, <code>nova notification --enable</code></li>
+                            <li><strong>Key commands:</strong> <code>% nova notification</code>, <code>% nova
+                                notification
+                                --disable</code>, <code>% nova notification --enable</code></li>
                             <li><strong>Output:</strong> a preference object with the stored state and settings path
                             </li>
                         </ul>
-                        <pre><code>Get-NovaUpdateNotificationPreference
-Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
-nova notification --enable</code></pre>
+                        <div class="surface-example" data-command-example>
+                            <div class="surface-example__meta">
+                                <p class="surface-example__title">Inspect or change prerelease eligibility</p>
+                                <p class="surface-example__status">Showing: <span
+                                        data-command-surface-label>PowerShell</span></p>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="powershell">
+                                <pre><code>PS&gt; Get-NovaUpdateNotificationPreference
+PS&gt; Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
+PS&gt; Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications</code></pre>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                                <pre><code>% nova notification
+% nova notification --disable
+% nova notification --enable</code></pre>
+                            </div>
+                        </div>
                         <p><a class="text-link" href="./versioning-and-updates.html#notification-preferences">See update
                             preference guidance</a></p>
                     </article>
@@ -413,5 +595,70 @@ nova notification --enable</code></pre>
                 class="legal-link" href="./license.html">MIT License</a>.</p>
     </div>
 </footer>
+<script>
+    (() => {
+        const storageKey = 'nova-doc-command-surface';
+        const supportedModes = ['powershell', 'command-line'];
+
+        function readStoredMode() {
+            try {
+                const stored = window.localStorage.getItem(storageKey);
+                return supportedModes.includes(stored) ? stored : 'powershell';
+            } catch {
+                return 'powershell';
+            }
+        }
+
+        function writeStoredMode(mode) {
+            try {
+                window.localStorage.setItem(storageKey, mode);
+            } catch {
+                // Ignore storage failures and keep the page interactive.
+            }
+        }
+
+        function getModeLabel(mode) {
+            return mode === 'command-line' ? 'Command-line' : 'PowerShell';
+        }
+
+        function applyMode(mode) {
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                const selected = button.dataset.commandMode === mode;
+                button.setAttribute('aria-selected', selected ? 'true' : 'false');
+            });
+
+            document.querySelectorAll('[data-command-example]').forEach((example) => {
+                example.querySelectorAll('[data-command-surface]').forEach((surface) => {
+                    surface.hidden = surface.dataset.commandSurface !== mode;
+                });
+            });
+
+            document.querySelectorAll('[data-command-surface-label]').forEach((label) => {
+                label.textContent = getModeLabel(mode);
+            });
+
+            document.querySelectorAll('[data-command-visibility]').forEach((element) => {
+                element.hidden = element.dataset.commandVisibility !== mode;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialMode = readStoredMode();
+            applyMode(initialMode);
+
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const nextMode = button.dataset.commandMode;
+                    if (!supportedModes.includes(nextMode)) {
+                        return;
+                    }
+
+                    applyMode(nextMode);
+                    writeStoredMode(nextMode);
+                });
+            });
+        });
+    })();
+</script>
 </body>
 </html>

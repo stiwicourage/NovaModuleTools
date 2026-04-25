@@ -304,6 +304,15 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
+    It 'Publish-NovaModule keeps native PowerShell Confirm support for direct cmdlet usage' {
+        InModuleScope $script:moduleName {
+            $command = Get-Command -Name 'Publish-NovaModule' -CommandType Function -ErrorAction Stop
+
+            $command.Parameters.ContainsKey('Confirm') | Should -BeTrue
+            $command.Parameters.ContainsKey('WhatIf') | Should -BeTrue
+        }
+    }
+
     It 'Get-NovaPackageWorkflowContext resolves package metadata, target, and operation for all requested package types' {
         InModuleScope $script:moduleName {
             $projectInfo = [pscustomobject]@{

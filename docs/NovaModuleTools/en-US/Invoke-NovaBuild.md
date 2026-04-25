@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/18/2026
+ms.date: 04/25/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-NovaBuild
 ---
@@ -19,7 +19,7 @@ Builds the current NovaModuleTools project into a ready-to-import PowerShell mod
 
 ### __AllParameterSets
 
-```powershell
+```text
 PS> Invoke-NovaBuild [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -40,9 +40,9 @@ The command:
 6. copies project resources into the built module output
 
 To update the installed `NovaModuleTools` module itself, use `Update-NovaModuleTool` (alias:
-`Update-NovaModuleTools`) or `nova update`.
+`Update-NovaModuleTools`) or `% nova update`.
 
-Use `Set-NovaUpdateNotificationPreference`, `Get-NovaUpdateNotificationPreference`, or the `nova notification`
+Use `Set-NovaUpdateNotificationPreference`, `Get-NovaUpdateNotificationPreference`, or the `% nova notification`
 commands when you want to control whether prerelease self-updates are eligible.
 
 If `Invoke-NovaBuild` detects that a newer `NovaModuleTools` release or prerelease is available after the build, the
@@ -58,7 +58,7 @@ module content.
 
 ### EXAMPLE 1
 
-```powershell
+```text
 PS> Invoke-NovaBuild
 ```
 
@@ -66,7 +66,7 @@ Builds the current project into `dist/<ProjectName>/`.
 
 ### EXAMPLE 2
 
-```powershell
+```text
 PS> Invoke-NovaBuild -Verbose
 ```
 
@@ -74,7 +74,7 @@ Builds the current project and writes verbose progress for the build workflow.
 
 ### EXAMPLE 3
 
-```powershell
+```text
 PS> Invoke-NovaBuild -WhatIf
 ```
 
@@ -82,7 +82,7 @@ Previews the build action without resetting `dist/` or generating module output.
 
 ### EXAMPLE 4
 
-```powershell
+```text
 PS> Invoke-NovaBuild -Confirm
 ```
 

@@ -33,32 +33,44 @@
         }
     </script>
 </head>
-<body>
+<body class="guide-page">
 <header class="site-header">
     <div class="site-header__inner">
         <a class="site-brand" href="./index.html">
             <img alt="" class="site-brand__icon" src="./assets/icon.png">
             <span class="site-brand__text">NovaModuleTools</span>
         </a>
-        <details class="site-menu">
-            <summary class="site-menu__button">
-                <span class="site-menu__button-label">Menu</span>
-                <span class="site-menu__current">Troubleshooting</span>
-            </summary>
-            <nav aria-label="Primary" class="site-menu__panel">
-                <a class="site-nav__link" href="./index.html">Home</a>
-                <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
-                <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
-                <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
-                <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
-                <a class="site-nav__link" href="./commands.html">Command Reference</a>
-                <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
-                <a class="site-nav__link" href="./versioning-and-updates.html">Versioning &amp; Updates</a>
-                <a aria-current="page" class="site-nav__link site-nav__link--active" href="./troubleshooting.html">Troubleshooting</a>
-                <a class="site-nav__link" href="./advanced.html">Concepts</a>
-                <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
-            </nav>
-        </details>
+        <div aria-label="Command display mode" class="site-header__command-surface">
+            <div aria-label="Command display mode" class="surface-tabs" role="tablist">
+                <button aria-selected="true" class="surface-tabs__button" data-command-mode="powershell" role="tab"
+                        type="button">PowerShell
+                </button>
+                <button aria-selected="false" class="surface-tabs__button" data-command-mode="command-line" role="tab"
+                        type="button">Command-line
+                </button>
+            </div>
+        </div>
+        <div class="site-header__actions">
+            <details class="site-menu">
+                <summary class="site-menu__button">
+                    <span class="site-menu__button-label">Menu</span>
+                    <span class="site-menu__current">Troubleshooting</span>
+                </summary>
+                <nav aria-label="Primary" class="site-menu__panel">
+                    <a class="site-nav__link" href="./index.html">Home</a>
+                    <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+                    <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+                    <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
+                    <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
+                    <a class="site-nav__link" href="./commands.html">Command Reference</a>
+                    <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
+                    <a class="site-nav__link" href="./versioning-and-updates.html">Versioning &amp; Updates</a>
+                    <a aria-current="page" class="site-nav__link site-nav__link--active" href="./troubleshooting.html">Troubleshooting</a>
+                    <a class="site-nav__link" href="./advanced.html">Concepts</a>
+                    <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
+                </nav>
+            </details>
+        </div>
     </div>
 </header>
 
@@ -94,21 +106,39 @@
                 <p><strong>Likely cause:</strong> you are not running the command from a Nova project root, or the path
                     you supplied does not point at a folder that contains <code>project.json</code>.</p>
                 <p><strong>Fix:</strong></p>
-                <pre><code>Set-Location ~/Work/&lt;YourProjectName&gt;
-Get-NovaProjectInfo</code></pre>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Check the current project root</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Set-Location ~/Work/&lt;YourProjectName&gt;
+PS&gt; Get-NovaProjectInfo</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% cd ~/Work/&lt;YourProjectName&gt;
+% nova info</code></pre>
+                    </div>
+                </div>
                 <p>If you are targeting a different location explicitly, use:</p>
-                <pre><code>Get-NovaProjectInfo -Path ~/Work/&lt;YourProjectName&gt;</code></pre>
+                <pre><code>PS&gt; Get-NovaProjectInfo -Path ~/Work/&lt;YourProjectName&gt;</code></pre>
+                <div class="surface-note" data-command-visibility="command-line" hidden>
+                    <p><strong>Command-line note:</strong> the explicit <code>-Path</code> lookup is a PowerShell cmdlet
+                        scenario. In launcher mode, switch into the project folder first and then run <code>% nova
+                            info</code>.</p>
+                </div>
                 <p><strong>Success looks like:</strong> <code>Get-NovaProjectInfo</code> returns a project object
                     instead of throwing <code>Not a project folder. project.json not found</code>.</p>
                 <p><a class="text-link" href="./project-json-reference.html">See the project.json reference</a></p>
             </section>
 
             <section class="content-section" id="nova-init-path">
-                <h2><code>nova init some/path</code> does not work</h2>
+                <h2><code>% nova init some/path</code> does not work</h2>
                 <p><strong>Likely cause:</strong> positional paths are intentionally rejected by the CLI.</p>
                 <p><strong>Fix:</strong></p>
-                <pre><code>nova init --path some/path
-nova init --example --path some/path</code></pre>
+                <pre><code>% nova init --path some/path
+% nova init --example --path some/path</code></pre>
                 <p><strong>Success looks like:</strong> Nova accepts the command, prompts for project details, and
                     creates the new scaffold under the specified parent directory.</p>
                 <p><a class="text-link" href="./getting-started.html#scaffold-example">See the scaffold quickstart</a>
@@ -116,14 +146,15 @@ nova init --example --path some/path</code></pre>
             </section>
 
             <section class="content-section" id="bump-no-commits">
-                <h2><code>nova bump</code> says the repository has no commits yet</h2>
+                <h2><code>% nova bump</code> says the repository has no commits yet</h2>
                 <p><strong>Likely cause:</strong> the current folder is a Git repository, but it has not recorded its
                     first commit yet.</p>
                 <p><strong>Fix:</strong></p>
-                <pre><code>git add .
-git commit -m "feat: initial project scaffold"
-nova bump --whatif</code></pre>
-                <p><strong>Success looks like:</strong> <code>nova bump --whatif</code> shows a planned semantic version
+                <pre><code>% git add .
+% git commit -m "feat: initial project scaffold"
+% nova bump --whatif</code></pre>
+                <p><strong>Success looks like:</strong> <code>% nova bump --whatif</code> shows a planned semantic
+                    version
                     update instead of throwing the “repository has no commits yet” error.</p>
                 <p><a class="text-link" href="./versioning-and-updates.html#bump">See version bump rules</a></p>
             </section>
@@ -132,10 +163,27 @@ nova bump --whatif</code></pre>
                 <h2>The module does not reload after build</h2>
                 <p><strong>Likely cause:</strong> PowerShell still has the older module loaded in memory.</p>
                 <p><strong>Fix:</strong></p>
-                <pre><code>$project = Get-NovaProjectInfo
-Remove-Module $project.ProjectName -ErrorAction SilentlyContinue
-nova build
-Import-Module $project.OutputModuleDir -Force</code></pre>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Reload the module safely after a build</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; $project = Get-NovaProjectInfo
+PS&gt; Remove-Module $project.ProjectName -ErrorAction SilentlyContinue
+PS&gt; Invoke-NovaBuild
+PS&gt; Import-Module $project.OutputModuleDir -Force</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova build
+pwsh -NoLogo -Command 'Import-Module (Get-NovaProjectInfo).OutputModuleDir -Force; Get-Command -Module (Get-NovaProjectInfo).ProjectName'</code></pre>
+                    </div>
+                </div>
+                <div class="surface-note" data-command-visibility="command-line" hidden>
+                    <p><strong>Command-line note:</strong> if you are already inside an interactive PowerShell session,
+                        switch to the PowerShell view and use the explicit remove/build/import cycle there.</p>
+                </div>
                 <p><strong>Success looks like:</strong> the imported module reflects your latest source changes.</p>
                 <p><a class="text-link" href="./working-with-modules.html#reload">See the reload guide</a></p>
             </section>
@@ -147,7 +195,7 @@ Import-Module $project.OutputModuleDir -Force</code></pre>
                 <p><strong>Fix:</strong> use the Nova workflow and check:</p>
                 <pre><code>artifacts/TestResults.xml</code></pre>
                 <p><strong>Success looks like:</strong> the file exists after a successful <code>Test-NovaBuild</code>
-                    or <code>nova test</code> run.</p>
+                    or <code>% nova test</code> run.</p>
                 <p><a class="text-link" href="./core-workflows.html#test">See the test workflow</a></p>
             </section>
 
@@ -169,10 +217,11 @@ Import-Module $project.OutputModuleDir -Force</code></pre>
                 <h2><code>Install-NovaCli</code> says it is for macOS/Linux only</h2>
                 <p><strong>Likely cause:</strong> that is the current intended behavior. The standalone launcher is for
                     macOS/Linux shell use.</p>
-                <p><strong>Fix:</strong> on Windows, import the module and use the <code>nova</code> alias inside
-                    PowerShell instead.</p>
-                <pre><code>Import-Module NovaModuleTools
-nova --help</code></pre>
+                <p><strong>Fix:</strong> on Windows, import the module and use the PowerShell cmdlets directly. If you
+                    explicitly need the routed CLI surface from PowerShell, call <code>Invoke-NovaCli</code>.</p>
+                <pre><code>PS&gt; Import-Module NovaModuleTools
+PS&gt; Get-NovaProjectInfo
+PS&gt; Invoke-NovaCli version</code></pre>
                 <p><strong>Success looks like:</strong> you can run Nova commands from PowerShell on Windows without
                     installing the standalone launcher.</p>
                 <p><a class="text-link" href="./getting-started.html#entrypoints">See entrypoint guidance</a></p>
@@ -184,9 +233,22 @@ nova --help</code></pre>
                     without package or repository upload settings that resolve to a target URL.</p>
                 <p><strong>Fix:</strong> either pass <code>-Url</code> directly or configure
                     <code>Package.RepositoryUrl</code> or <code>Package.Repositories[].Url</code>.</p>
-                <pre><code>Deploy-NovaPackage -Url 'https://packages.example/raw/'
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Provide the upload target directly</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Deploy-NovaPackage -Url 'https://packages.example/raw/'</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova deploy --url https://packages.example/raw/</code></pre>
+                    </div>
+                </div>
 
-# or in project.json
+                <pre><code># or in project.json
+
 {
   "Package": {
     "RepositoryUrl": "https://packages.example/raw/"
@@ -268,5 +330,70 @@ nova --help</code></pre>
             the <a class="legal-link" href="./license.html">MIT License</a>.</p>
     </div>
 </footer>
+<script>
+    (() => {
+        const storageKey = 'nova-doc-command-surface';
+        const supportedModes = ['powershell', 'command-line'];
+
+        function readStoredMode() {
+            try {
+                const stored = window.localStorage.getItem(storageKey);
+                return supportedModes.includes(stored) ? stored : 'powershell';
+            } catch {
+                return 'powershell';
+            }
+        }
+
+        function writeStoredMode(mode) {
+            try {
+                window.localStorage.setItem(storageKey, mode);
+            } catch {
+                // Ignore storage failures and keep the page interactive.
+            }
+        }
+
+        function getModeLabel(mode) {
+            return mode === 'command-line' ? 'Command-line' : 'PowerShell';
+        }
+
+        function applyMode(mode) {
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                const selected = button.dataset.commandMode === mode;
+                button.setAttribute('aria-selected', selected ? 'true' : 'false');
+            });
+
+            document.querySelectorAll('[data-command-example]').forEach((example) => {
+                example.querySelectorAll('[data-command-surface]').forEach((surface) => {
+                    surface.hidden = surface.dataset.commandSurface !== mode;
+                });
+            });
+
+            document.querySelectorAll('[data-command-surface-label]').forEach((label) => {
+                label.textContent = getModeLabel(mode);
+            });
+
+            document.querySelectorAll('[data-command-visibility]').forEach((element) => {
+                element.hidden = element.dataset.commandVisibility !== mode;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialMode = readStoredMode();
+            applyMode(initialMode);
+
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const nextMode = button.dataset.commandMode;
+                    if (!supportedModes.includes(nextMode)) {
+                        return;
+                    }
+
+                    applyMode(nextMode);
+                    writeStoredMode(nextMode);
+                });
+            });
+        });
+    })();
+</script>
 </body>
 </html>
