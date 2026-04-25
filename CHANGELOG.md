@@ -96,6 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
+- Fix the CI PowerShell module install helper so it unloads already loaded dependency modules such as `Pester` before
+  reinstalling `NovaModuleTools`, reducing warning noise in GitHub Actions.
 
 ### Documentation
 
