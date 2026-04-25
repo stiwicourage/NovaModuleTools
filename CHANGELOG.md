@@ -81,6 +81,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - All public commands are now Nova commands, and the `nova` CLI / `Invoke-NovaCli` command surface is the primary
       entry point for all
       operations.
+- Refactor `tests/NovaCommandModel.TestSupport.ps1` into smaller, focused support scripts so the shared Nova command
+  model
+  test helpers are easier to maintain without changing test behavior.
 - **BREAKING CHANGE**: Rename the public Nova scaffold cmdlets to approved verbs.
     - `New-NovaModule` → `Initialize-NovaModule`
     - No compatibility aliases are exported for the retired cmdlet names or CLI subcommands.
