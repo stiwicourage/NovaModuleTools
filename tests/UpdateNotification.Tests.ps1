@@ -385,7 +385,7 @@ Describe 'Update notification behavior' {
                 }
             }
 
-            $result = @(nova update -Confirm:$false)
+            $result = @(nova update)
 
             $result | Should -HaveCount 2
             $result[0] | Should -Be "You're up to date!"
@@ -480,7 +480,7 @@ throw 'offline'
         $result.Warnings[0] | Should -Match 'Update-Module NovaModuleTools -AllowPrerelease'
         $result.Warnings[0] | Should -Match 'nova update'
         $result.Warnings[0] | Should -Match 'Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications'
-        $result.Warnings[0] | Should -Match 'nova notification -disable'
+        $result.Warnings[0] | Should -Match 'nova notification --disable'
     }
 
     It 'Write-NovaAvailableModuleUpdateWarning preserves host rendering so warning text can stay colored' {
@@ -596,7 +596,7 @@ throw 'offline'
         @{
             Name = 'nova update'
             Invoke = {
-                nova update -Confirm:$false
+                nova update
             }
         }
     ) {

@@ -9,9 +9,9 @@ function ConvertFrom-NovaVersionCliArgument {
         return @{Installed = $false}
     }
 
-    if ($Arguments.Count -eq 1 -and $Arguments[0] -match '^(--installed|-Installed)$') {
+    if ($Arguments.Count -eq 1 -and $Arguments[0] -match '^(--installed|-i)$') {
         return @{Installed = $true}
     }
 
-    Stop-NovaOperation -Message "Unsupported 'nova version' usage. Use 'nova version' or 'nova version -Installed'." -ErrorId 'Nova.Validation.UnsupportedVersionCliUsage' -Category InvalidArgument -TargetObject $Arguments
+    Stop-NovaOperation -Message "Unsupported 'nova version' usage. Use 'nova version' or 'nova version --installed'/'nova version -i'." -ErrorId 'Nova.Validation.UnsupportedVersionCliUsage' -Category InvalidArgument -TargetObject $Arguments
 }

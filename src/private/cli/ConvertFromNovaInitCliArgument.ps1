@@ -12,10 +12,10 @@ function ConvertFrom-NovaInitCliArgument {
         $token = $Arguments[$index]
 
         switch -Regex ($token) {
-            '^(--path|-Path)$' {
+            '^(--path|-p)$' {
                 $options.Path = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--path'
             }
-            '^(--example|-Example)$' {
+            '^(--example|-e)$' {
                 $options.Example = $true
             }
             default {
@@ -23,7 +23,7 @@ function ConvertFrom-NovaInitCliArgument {
                     Stop-NovaOperation -Message "Unknown argument: $token" -ErrorId 'Nova.Validation.UnknownCliArgument' -Category InvalidArgument -TargetObject $token
                 }
 
-                Stop-NovaOperation -Message "Unsupported 'nova init' usage: positional paths are no longer accepted. Use 'nova init -Path $token' instead." -ErrorId 'Nova.Validation.UnsupportedInitCliUsage' -Category InvalidArgument -TargetObject $token
+                Stop-NovaOperation -Message "Unsupported 'nova init' usage: positional paths are no longer accepted. Use 'nova init --path $token' or 'nova init -p $token' instead." -ErrorId 'Nova.Validation.UnsupportedInitCliUsage' -Category InvalidArgument -TargetObject $token
             }
         }
 

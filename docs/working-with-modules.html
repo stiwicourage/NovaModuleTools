@@ -126,7 +126,7 @@ Import-Module $project.OutputModuleDir -Force</code></pre>
 
             <section class="content-section" id="local-publish">
                 <h2>Use local publish intentionally</h2>
-                <pre><code>nova publish -local
+                <pre><code>nova publish --local
 Publish-NovaModule -Local</code></pre>
                 <p>Local publish is different from the normal build/import loop:</p>
                 <ul class="plain-list">
@@ -161,7 +161,7 @@ Publish-NovaModule -Local</code></pre>
                     </li>
                 </ul>
                 <h3>How to learn from it</h3>
-                <pre><code>nova init -Example -Path ~/Work
+                <pre><code>nova init --example --path ~/Work
 Set-Location ~/Work/&lt;YourProjectName&gt;
 nova build
 nova test

@@ -137,17 +137,20 @@
                 <div class="command-card-grid">
                     <article class="command-card">
                         <h3><code>Initialize-NovaModule</code> / <code>nova init</code></h3>
-                        <p>Create a new project scaffold. Use <code>-Example</code> when you want a complete working
+                        <p>Create a new project scaffold. Use <code>-Example</code> or the CLI form
+                            <code>nova init --example</code> / <code>nova init -e</code> when you want a complete
+                            working
                             sample instead of the minimal starter layout.</p>
                         <ul class="plain-list">
                             <li><strong>Best for:</strong> creating a new project</li>
                             <li><strong>Key parameters:</strong> <code>-Path</code>, <code>-Example</code></li>
-                            <li><strong>Important CLI caveat:</strong> use <code>nova init -Path ~/Work</code>;
+                            <li><strong>Important CLI caveat:</strong> use <code>nova init --path ~/Work</code> or
+                                <code>nova init -p ~/Work</code>;
                                 positional paths are intentionally rejected
                             </li>
                         </ul>
                         <pre><code>Initialize-NovaModule -Path ~/Work
-nova init -Example -Path ~/Work</code></pre>
+nova init --example --path ~/Work</code></pre>
                         <p><a class="text-link" href="./getting-started.html">See the scaffold tutorial</a></p>
                     </article>
 
@@ -181,13 +184,15 @@ nova info</code></pre>
                             <li><strong>Best for:</strong> producing the real module you intend to import, test,
                                 package, or publish
                             </li>
-                            <li><strong>Key switches:</strong> <code>-WhatIf</code>, <code>-Confirm</code></li>
+                            <li><strong>Key switches:</strong> <code>-WhatIf</code>, <code>-Confirm</code>, or the CLI
+                                forms <code>--whatif</code> / <code>-w</code> and <code>--confirm</code> /
+                                <code>-c</code></li>
                             <li><strong>Notable behavior:</strong> respects <code>SetSourcePath</code>,
                                 <code>Preamble</code>, and duplicate function validation
                             </li>
                         </ul>
                         <pre><code>Invoke-NovaBuild
-nova build -WhatIf</code></pre>
+nova build --whatif</code></pre>
                         <p><a class="text-link" href="./core-workflows.html#build">See the build workflow</a></p>
                     </article>
 
@@ -206,7 +211,7 @@ nova build -WhatIf</code></pre>
                             </li>
                         </ul>
                         <pre><code>Test-NovaBuild -TagFilter unit,fast
-nova test -WhatIf</code></pre>
+nova test --whatif</code></pre>
                         <p><a class="text-link" href="./core-workflows.html#test">See the test workflow</a></p>
                     </article>
                 </div>
@@ -246,7 +251,7 @@ nova package</code></pre>
                             </li>
                         </ul>
                         <pre><code>Deploy-NovaPackage -Repository LocalNexus
-nova deploy -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN</code></pre>
+nova deploy --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN</code></pre>
                         <p><a class="text-link" href="./packaging-and-delivery.html#upload">See raw upload details</a>
                         </p>
                     </article>
@@ -266,7 +271,7 @@ nova deploy -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN</c
                             </li>
                         </ul>
                         <pre><code>Publish-NovaModule -Local
-nova publish -repository PSGallery -apikey $env:PSGALLERY_API</code></pre>
+nova publish --repository PSGallery --api-key $env:PSGALLERY_API</code></pre>
                         <p><a class="text-link" href="./packaging-and-delivery.html#publish">See publish details</a></p>
                     </article>
 
@@ -283,7 +288,7 @@ nova publish -repository PSGallery -apikey $env:PSGALLERY_API</code></pre>
                             </li>
                         </ul>
                         <pre><code>Invoke-NovaRelease -PublishOption @{ Local = $true }
-nova release -repository PSGallery -apikey $env:PSGALLERY_API</code></pre>
+nova release --repository PSGallery --api-key $env:PSGALLERY_API</code></pre>
                         <p><a class="text-link" href="./packaging-and-delivery.html#release">See release details</a></p>
                     </article>
                 </div>
@@ -298,7 +303,8 @@ nova release -repository PSGallery -apikey $env:PSGALLERY_API</code></pre>
                         </p>
                         <ul class="plain-list">
                             <li><strong>Best for:</strong> Git-driven semantic version updates</li>
-                            <li><strong>Key parameters:</strong> <code>-Path</code>, <code>-Preview</code></li>
+                            <li><strong>Key parameters:</strong> <code>-Path</code>, <code>-Preview</code>, or the CLI
+                                form <code>--preview</code> / <code>-p</code></li>
                             <li><strong>Notable behavior:</strong> falls back to a patch bump when the folder is not a
                                 Git repository, but throws when the repository exists and has no commits yet
                             </li>
@@ -314,25 +320,30 @@ nova release -repository PSGallery -apikey $env:PSGALLERY_API</code></pre>
                             </li>
                         </ul>
                         <pre><code>Update-NovaModuleVersion -Preview -WhatIf
-nova bump -Preview -Confirm</code></pre>
+nova bump --preview --confirm</code></pre>
                         <p><a class="text-link" href="./versioning-and-updates.html#bump">See versioning rules</a></p>
                     </article>
 
                     <article class="command-card">
-                        <h3><code>nova version</code>, <code>nova version -Installed</code>, and <code>nova
+                        <h3><code>nova version</code>, <code>nova version --installed</code>, and <code>nova
                             --version</code></h3>
                         <p>These commands answer different questions, so use the one that matches your intent.</p>
                         <ul class="plain-list">
                             <li><strong><code>nova version</code>:</strong> current project version from <code>project.json</code>
                             </li>
-                            <li><strong><code>nova version -Installed</code>:</strong> locally installed version of the
+                            <li><strong><code>nova version --installed</code> / <code>nova version -i</code>:</strong>
+                                locally installed version of the
                                 current project/module
                             </li>
-                            <li><strong><code>nova --version</code>:</strong> installed NovaModuleTools version</li>
+                            <li><strong><code>nova --version</code> / <code>nova -v</code>:</strong> installed
+                                NovaModuleTools version
+                            </li>
                         </ul>
                         <pre><code>nova version
-nova version -Installed
-nova --version</code></pre>
+nova version --installed
+nova version -i
+nova --version
+nova -v</code></pre>
                         <p><a class="text-link" href="./versioning-and-updates.html#version-views">See version view
                             differences</a></p>
                     </article>
@@ -371,13 +382,13 @@ nova update</code></pre>
                                 prerelease self-update targets on purpose
                             </li>
                             <li><strong>Key commands:</strong> <code>nova notification</code>, <code>nova notification
-                                -disable</code>, <code>nova notification -enable</code></li>
+                                --disable</code>, <code>nova notification --enable</code></li>
                             <li><strong>Output:</strong> a preference object with the stored state and settings path
                             </li>
                         </ul>
                         <pre><code>Get-NovaUpdateNotificationPreference
 Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
-nova notification -enable</code></pre>
+nova notification --enable</code></pre>
                         <p><a class="text-link" href="./versioning-and-updates.html#notification-preferences">See update
                             preference guidance</a></p>
                     </article>

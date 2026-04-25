@@ -74,7 +74,7 @@ Builds, tests, and publishes the module to `PSGallery`.
 ### EXAMPLE 4
 
 ```bash
-nova publish -repository PSGallery -apikey $PSGALLERY_API
+nova publish --repository PSGallery --api-key $PSGALLERY_API
 ```
 
 Runs the same publish flow through the `nova` CLI.

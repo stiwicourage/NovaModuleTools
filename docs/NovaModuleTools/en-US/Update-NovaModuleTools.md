@@ -158,7 +158,8 @@ If the PowerShell Gallery cannot be reached well enough to resolve an update can
 `Update-Module`.
 
 Use `Get-NovaUpdateNotificationPreference`, `Set-NovaUpdateNotificationPreference`, `nova notification`,
-`nova notification -disable`, and `nova notification -enable` to inspect or change the same stored prerelease setting.
+`nova notification --disable` / `nova notification -d`, and `nova notification --enable` / `nova notification -e` to
+inspect or change the same stored prerelease setting.
 
 ## RELATED LINKS
 

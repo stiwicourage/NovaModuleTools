@@ -9,6 +9,14 @@ function Invoke-NovaCli {
         [string[]]$Arguments
     )
 
-    $invocationContext = Get-NovaCliInvocationContext -Command $Command -BoundParameters $PSBoundParameters -Arguments $Arguments -WhatIfEnabled:$WhatIfPreference
+    $invocationRequest = [pscustomobject]@{
+        Command = $Command
+        BoundParameters = $PSBoundParameters
+        Arguments = $Arguments
+        InvocationName = $MyInvocation.InvocationName
+        InvocationStatement = $MyInvocation.Statement
+    }
+
+    $invocationContext = Get-NovaCliInvocationContext -InvocationRequest $invocationRequest -WhatIfEnabled:$WhatIfPreference
     return Invoke-NovaCliCommandRoute -InvocationContext $invocationContext
 }

@@ -61,6 +61,9 @@ Describe 'Nova command model - standalone CLI behavior' {
             $versionOutput = & $installedPath --version 2>&1
             $versionText = @($versionOutput) -join [Environment]::NewLine
             $versionExitCode = $LASTEXITCODE
+            $shortVersionOutput = & $installedPath -v 2>&1
+            $shortVersionText = @($shortVersionOutput) -join [Environment]::NewLine
+            $shortVersionExitCode = $LASTEXITCODE
             Push-Location $script:projectInfo.ProjectRoot
             try {
                 $projectVersionOutput = & $installedPath version 2>&1
@@ -77,14 +80,18 @@ Describe 'Nova command model - standalone CLI behavior' {
             (Test-Path -LiteralPath $installedPath) | Should -BeTrue
             $helpExitCode | Should -Be 0
             $versionExitCode | Should -Be 0
+            $shortVersionExitCode | Should -Be 0
             $projectVersionExitCode | Should -Be 0
-            $helpText | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
+            $helpText | Should -Match 'usage: nova \[--version\|-v\] \[--help\|-h\] <command> \[<args>\]'
             ($helpText -match 'notification\s+Show or change prerelease self-update eligibility') | Should -BeTrue
-            $helpText | Should -Match 'version\s+Show the current project version, or use -Installed for the locally installed project module version'
+            $helpText | Should -Match 'version\s+Show the current project version, or use --installed/-i for the locally installed project module version'
             $helpText | Should -Match 'package\s+Build, test, and package the module as configured package artifact\(s\)'
-            $helpText | Should -Match 'nova deploy -repository LocalNexus'
+            $helpText | Should -Match 'nova deploy --repository LocalNexus'
+            $helpText | Should -Not -Match 'nova build -Verbose'
+            $helpText | Should -Not -Match 'nova deploy -repository'
             $helpText | Should -Not -Match 'nova deploy package'
             $versionText | Should -Be "$script:moduleName $installedModuleVersion"
+            $shortVersionText | Should -Be "$script:moduleName $installedModuleVersion"
             $projectVersionText | Should -Be $expectedProjectVersionText
         }
         finally {
@@ -92,7 +99,7 @@ Describe 'Nova command model - standalone CLI behavior' {
         }
     }
 
-    It 'Install-NovaCli forwards -Verbose from the standalone launcher to build output' {
+    It 'Install-NovaCli forwards --verbose and -v from the standalone launcher to build output' {
         $targetDirectory = Join-Path $TestDrive 'verbose-bin'
         $installedPath = Join-Path $targetDirectory 'nova'
         $projectRoot = Join-Path $TestDrive 'CliVerboseBuildProject'
@@ -143,17 +150,23 @@ function Invoke-TestCliVerbose {
 
             Push-Location $projectRoot
             try {
-                $buildOutput = & $installedPath build -Verbose 2>&1
-                $buildText = @($buildOutput) -join [Environment]::NewLine
-                $buildExitCode = $LASTEXITCODE
+                $longBuildOutput = & $installedPath build --verbose 2>&1
+                $longBuildText = @($longBuildOutput) -join [Environment]::NewLine
+                $longBuildExitCode = $LASTEXITCODE
+                $shortBuildOutput = & $installedPath build -v 2>&1
+                $shortBuildText = @($shortBuildOutput) -join [Environment]::NewLine
+                $shortBuildExitCode = $LASTEXITCODE
             }
             finally {
                 Pop-Location
             }
 
-            $buildExitCode | Should -Be 0
-            $buildText | Should -Match 'VERBOSE: Running NovaModuleTools Version:'
-            $buildText | Should -Match 'VERBOSE: Buidling module psm1 file'
+            $longBuildExitCode | Should -Be 0
+            $shortBuildExitCode | Should -Be 0
+            $longBuildText | Should -Match 'VERBOSE: Running NovaModuleTools Version:'
+            $longBuildText | Should -Match 'VERBOSE: Buidling module psm1 file'
+            $shortBuildText | Should -Match 'VERBOSE: Running NovaModuleTools Version:'
+            $shortBuildText | Should -Match 'VERBOSE: Buidling module psm1 file'
             (Test-Path -LiteralPath (Join-Path $projectRoot 'dist/CliVerboseBuildProject/CliVerboseBuildProject.psm1')) | Should -BeTrue
         }
         finally {
@@ -161,7 +174,7 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Install-NovaCli forwards -WhatIf from the standalone launcher without mutating build, bump, or publish state' {
+    It 'Install-NovaCli forwards --whatif and -w from the standalone launcher without mutating build, bump, or publish state' {
         $targetDirectory = Join-Path $TestDrive 'whatif-bin'
         $installedPath = Join-Path $targetDirectory 'nova'
         $projectRoot = Join-Path $TestDrive 'CliWhatIfProject'
@@ -183,10 +196,10 @@ function Invoke-TestCliVerbose {
 
             Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
 
-            $buildResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('build', '-WhatIf')
-            $publishResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('publish', '--local', '-WhatIf')
-            $bumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '-WhatIf')
-            $previewBumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '-Preview', '-WhatIf')
+            $buildResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('build', '--whatif')
+            $publishResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('publish', '--local', '-w')
+            $bumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '-w')
+            $previewBumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '--preview', '--whatif')
             $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
 
             $buildResult.ExitCode | Should -Be 0
@@ -212,7 +225,7 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Install-NovaCli forwards -Preview so prerelease bumps keep the same semantic core and increment the current prerelease label' {
+    It 'Install-NovaCli forwards --preview so prerelease bumps keep the same semantic core and increment the current prerelease label' {
         $targetDirectory = Join-Path $TestDrive 'preview-bump-bin'
         $installedPath = Join-Path $targetDirectory 'nova'
         $projectRoot = Join-Path $TestDrive 'CliPreviewBumpProject'
@@ -236,7 +249,7 @@ function Invoke-TestCliVerbose {
 
             Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
 
-            $previewBumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '-Preview', '-WhatIf')
+            $previewBumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '--preview', '--whatif')
             $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
 
             $previewBumpResult.ExitCode | Should -Be 0
@@ -256,8 +269,8 @@ function Invoke-TestCliVerbose {
             Name = 'WhatIf'
             TargetDirectory = 'init-whatif-bin'
             WorkspaceRoot = 'CliInitWhatIfRoot'
-            Arguments = @('init', '-WhatIf')
-            ExpectedPatterns = @('does not support -WhatIf')
+            Arguments = @('init', '--whatif')
+            ExpectedPatterns = @('does not support ''--whatif''/''-w''')
             UnexpectedPatterns = @('Not a valid path')
         }
         @{
@@ -265,7 +278,7 @@ function Invoke-TestCliVerbose {
             TargetDirectory = 'init-positional-bin'
             WorkspaceRoot = 'CliInitPositionalRoot'
             Arguments = @('init', 'some/path')
-            ExpectedPatterns = @('positional paths are no longer accepted', 'nova init -Path some/path')
+            ExpectedPatterns = @('positional paths are no longer accepted', 'nova init --path some/path')
             UnexpectedPatterns = @()
         }
     ) {
@@ -306,7 +319,7 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Invoke-NovaCli --version formats stable and prerelease installed versions correctly' {
+    It 'Invoke-NovaCli --version and -v format stable and prerelease installed versions correctly' {
         InModuleScope $script:moduleName -Parameters @{ModuleName = $script:moduleName} {
             param($ModuleName)
 
@@ -317,7 +330,8 @@ function Invoke-TestCliVerbose {
                 Mock Get-NovaCliInstalledVersion {$testCase.InstalledVersion}
 
                 Invoke-NovaCli --version | Should -Be $testCase.Expected
-                Assert-MockCalled Get-NovaCliInstalledVersion -Times 1 -Scope It
+                Invoke-NovaCli -Command '-v' | Should -Be $testCase.Expected
+                Assert-MockCalled Get-NovaCliInstalledVersion -Times 2 -Scope It
             }
         }
     }
@@ -326,15 +340,17 @@ function Invoke-TestCliVerbose {
         InModuleScope $script:moduleName {
             $result = Invoke-NovaCli --help
 
-            $result | Should -Match 'usage: nova \[--version\] \[--help\] <command> \[<args>\]'
+            $result | Should -Match 'usage: nova \[--version\|-v\] \[--help\|-h\] <command> \[<args>\]'
             $result | Should -Match 'init\s+Create a new Nova module scaffold'
-            (($result -match 'notification\s+Show or change prerelease self-update eligibility') -and ($result -match 'nova notification -disable') -and ($result -match 'nova notification -enable')) | Should -BeTrue
-            $result | Should -Match 'version\s+Show the current project version, or use -Installed for the locally installed project module version'
-            $result | Should -Match 'nova version -Installed'
-            $result | Should -Match '--version\s+Show the installed NovaModuleTools module name and version'
+            (($result -match 'notification\s+Show or change prerelease self-update eligibility') -and ($result -match 'nova notification --disable') -and ($result -match 'nova notification --enable')) | Should -BeTrue
+            $result | Should -Match 'version\s+Show the current project version, or use --installed/-i for the locally installed project module version'
+            $result | Should -Match 'nova version --installed'
+            $result | Should -Match '--version, -v\s+Show the installed NovaModuleTools module name and version'
             $result | Should -Match 'package\s+Build, test, and package the module as configured package artifact\(s\)'
             $result | Should -Match 'deploy\s+Upload generated package artifact\(s\) to a raw HTTP endpoint'
             $result | Should -Match 'publish\s+Build, test, and publish the module locally or to a repository'
+            $result | Should -Not -Match 'nova build -Verbose'
+            $result | Should -Not -Match 'nova publish -repository PSGallery -apikey'
         }
     }
 
@@ -409,6 +425,35 @@ function Invoke-TestCliVerbose {
         }
     }
 
+    It 'Invoke-NovaCli maps routed GNU-style common options to the underlying PowerShell command parameters' {
+        InModuleScope $script:moduleName {
+            Mock Invoke-NovaBuild {
+                param([switch]$Verbose, [switch]$WhatIf, [bool]$Confirm)
+
+                [pscustomobject]@{
+                    Verbose = $Verbose.IsPresent
+                    WhatIf = $WhatIf.IsPresent
+                    Confirm = $Confirm
+                }
+            }
+
+            foreach ($arguments in @(@('--verbose', '--whatif', '--confirm'), @('-v', '-w', '-c'))) {
+                $invocationContext = Get-NovaCliInvocationContext -InvocationRequest ([pscustomobject]@{
+                    Command = 'build'
+                    BoundParameters = @{Arguments = @($arguments)}
+                    Arguments = $arguments
+                    InvocationName = 'nova'
+                    InvocationStatement = "nova build $( $arguments -join ' ' )"
+                })
+                $result = Invoke-NovaCliCommandRoute -InvocationContext $invocationContext
+
+                $result.Verbose | Should -BeTrue
+                $result.WhatIf | Should -BeTrue
+                $result.Confirm | Should -BeTrue
+            }
+        }
+    }
+
     It 'Invoke-NovaCli surfaces structured CLI errors for <Name>' -ForEach @(
         @{
             Name = 'the removed deploy package subcommand token'
@@ -437,10 +482,10 @@ function Invoke-TestCliVerbose {
         @{
             Name = 'unsupported init WhatIf usage'
             Action = {
-                Invoke-NovaCli init -WhatIf
+                Invoke-NovaCli init --whatif
             }
             ExpectedError = [pscustomobject]@{
-                Message = "The 'nova init' CLI command does not support -WhatIf. Run 'nova init' or 'nova init -Path <path>' without -WhatIf."
+                Message = "The 'nova init' CLI command does not support '--whatif'/'-w'. Run 'nova init' or 'nova init --path <path>' without preview mode."
                 ErrorId = 'Nova.Validation.UnsupportedInitCliWhatIf'
                 Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                 TargetObject = 'WhatIf'
@@ -452,10 +497,22 @@ function Invoke-TestCliVerbose {
                 Invoke-NovaCli init 'some/path'
             }
             ExpectedError = [pscustomobject]@{
-                Message = "Unsupported 'nova init' usage: positional paths are no longer accepted. Use 'nova init -Path some/path' instead."
+                Message = "Unsupported 'nova init' usage: positional paths are no longer accepted. Use 'nova init --path some/path' or 'nova init -p some/path' instead."
                 ErrorId = 'Nova.Validation.UnsupportedInitCliUsage'
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 TargetObject = 'some/path'
+            }
+        }
+        @{
+            Name = 'unsupported PowerShell-style CLI option syntax'
+            Action = {
+                Invoke-NovaCli -Command build -Arguments @('-WhatIf')
+            }
+            ExpectedError = [pscustomobject]@{
+                Message = "Unsupported CLI option syntax: -WhatIf. Use '--whatif' or '-w' instead."
+                ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '-WhatIf'
             }
         }
     ) {
@@ -487,20 +544,20 @@ function Invoke-TestCliVerbose {
                 }
             }
 
-            $result = Invoke-NovaCli publish --repository PSGallery --apikey key123
+            $result = Invoke-NovaCli publish --repository PSGallery --api-key key123
 
             $result.Repository | Should -Be 'PSGallery'
             $result.ApiKey | Should -Be 'key123'
         }
     }
 
-    It 'Invoke-NovaCli publish -local routes the local publish flow' {
+    It 'Invoke-NovaCli publish --local routes the local publish flow' {
         InModuleScope $script:moduleName {
             Mock Publish-NovaModule {
                 [pscustomobject]@{Local = $Local}
             }
 
-            $result = Invoke-NovaCli publish -local
+            $result = Invoke-NovaCli publish --local
 
             $result.Local | Should -BeTrue
         }
@@ -512,7 +569,7 @@ function Invoke-TestCliVerbose {
                 [pscustomobject]@{WhatIfSeen = $WhatIfPreference}
             }
 
-            $result = Invoke-NovaCli publish --repository PSGallery --apikey key123 -WhatIf
+            $result = Invoke-NovaCli publish --repository PSGallery --api-key key123 -WhatIf
 
             $result.WhatIfSeen | Should -BeTrue
         }

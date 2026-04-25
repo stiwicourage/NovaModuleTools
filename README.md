@@ -79,8 +79,8 @@ PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
 PS> Get-NovaUpdateNotificationPreference
 PS> Update-NovaModuleTool
 PS> Update-NovaModuleTools   # alias
-PS> nova notification -disable
-PS> nova notification -enable
+PS> nova notification --disable
+PS> nova notification --enable
 PS> nova notification
 PS> nova update
 ```
@@ -101,13 +101,16 @@ To compare the current project version with what is installed locally for that s
 
 ```powershell
 PS> nova version
-PS> nova version -Installed
+PS> nova version --installed
+PS> nova version -i
 PS> nova --version
+PS> nova -v
 ```
 
 - `nova version` shows the version from the current project's `project.json`
-- `nova version -Installed` shows the locally installed version of the current project/module from the local module path
-- `nova --version` shows the installed `NovaModuleTools` version
+- `nova version --installed` / `nova version -i` shows the locally installed version of the current project/module from
+  the local module path
+- `nova --version` / `nova -v` shows the installed `NovaModuleTools` version
 
 ### Reload the built module while iterating
 
@@ -227,8 +230,8 @@ PowerShell repository:
 
 ```powershell
 PS> Deploy-NovaPackage -Repository LocalNexus
-PS> nova deploy -repository LocalNexus
-PS> nova deploy -url https://packages.example/raw/ -token $env:NOVA_PACKAGE_TOKEN
+PS> nova deploy --repository LocalNexus
+PS> nova deploy --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN
 ```
 
 Use this `project.json` shape when you want Nova to resolve upload targets from named repositories:
@@ -252,8 +255,10 @@ Use this `project.json` shape when you want Nova to resolve upload targets from 
 ```
 
 - `Deploy-NovaPackage` uploads existing package files only; it does not build, test, or create packages.
-- `nova deploy` is the CLI entrypoint for the same raw upload workflow.
-- `-Url` overrides repository or package-level upload settings and is the simplest CI/CD path.
+- `nova deploy` is the CLI entrypoint for the same raw upload workflow and uses POSIX/GNU-style options such as
+  `--repository`, `--url`, and `--token`.
+- `-Url` overrides repository or package-level upload settings and is the simplest CI/CD path for the PowerShell cmdlet
+  form.
 - When `-PackagePath` is omitted, Nova resolves package files from `Package.OutputDirectory.Path`.
 - `Package.FileNamePattern` overrides the default upload discovery pattern. When omitted, Nova falls back to
   `<Package.Id>*` and then applies the selected package type extension.

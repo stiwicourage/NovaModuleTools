@@ -91,8 +91,8 @@
                     <li><strong>minimal scaffold</strong> for a clean new module</li>
                     <li><strong>example scaffold</strong> for a working sample you can inspect and adapt</li>
                 </ul>
-                <pre><code>nova init -Path ~/Work
-nova init -Example -Path ~/Work</code></pre>
+                <pre><code>nova init --path ~/Work
+nova init --example --path ~/Work</code></pre>
                 <p>Use the example scaffold when you want the shortest path to understanding a real project layout, test
                     suite, and package configuration. Use the minimal scaffold when you already know the structure you
                     want.</p>
@@ -153,7 +153,7 @@ Import-Module $project.OutputModuleDir -Force</code></pre>
                 <p>This avoids stale function definitions and stale resource loading.</p>
                 <div class="notice">
                     <strong>When local publish changes the story.</strong>
-                    <p><code>Publish-NovaModule -Local</code> and <code>nova publish -local</code> reload the published
+                    <p><code>Publish-NovaModule -Local</code> and <code>nova publish --local</code> reload the published
                         module from the local install path after a successful publish. That is different from the normal
                         build/import loop, which works from <code>dist/</code>.</p>
                 </div>

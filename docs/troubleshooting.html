@@ -107,8 +107,8 @@ Get-NovaProjectInfo</code></pre>
                 <h2><code>nova init some/path</code> does not work</h2>
                 <p><strong>Likely cause:</strong> positional paths are intentionally rejected by the CLI.</p>
                 <p><strong>Fix:</strong></p>
-                <pre><code>nova init -Path some/path
-nova init -Example -Path some/path</code></pre>
+                <pre><code>nova init --path some/path
+nova init --example --path some/path</code></pre>
                 <p><strong>Success looks like:</strong> Nova accepts the command, prompts for project details, and
                     creates the new scaffold under the specified parent directory.</p>
                 <p><a class="text-link" href="./getting-started.html#scaffold-example">See the scaffold quickstart</a>
@@ -122,8 +122,8 @@ nova init -Example -Path some/path</code></pre>
                 <p><strong>Fix:</strong></p>
                 <pre><code>git add .
 git commit -m "feat: initial project scaffold"
-nova bump -WhatIf</code></pre>
-                <p><strong>Success looks like:</strong> <code>nova bump -WhatIf</code> shows a planned semantic version
+nova bump --whatif</code></pre>
+                <p><strong>Success looks like:</strong> <code>nova bump --whatif</code> shows a planned semantic version
                     update instead of throwing the “repository has no commits yet” error.</p>
                 <p><a class="text-link" href="./versioning-and-updates.html#bump">See version bump rules</a></p>
             </section>

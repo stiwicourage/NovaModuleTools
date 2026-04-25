@@ -7,7 +7,7 @@ function Invoke-NovaCliInitCommand {
     )
 
     if ($WhatIfEnabled) {
-        Stop-NovaOperation -Message "The 'nova init' CLI command does not support -WhatIf. Run 'nova init' or 'nova init -Path <path>' without -WhatIf." -ErrorId 'Nova.Validation.UnsupportedInitCliWhatIf' -Category InvalidOperation -TargetObject 'WhatIf'
+        Stop-NovaOperation -Message "The 'nova init' CLI command does not support '--whatif'/'-w'. Run 'nova init' or 'nova init --path <path>' without preview mode." -ErrorId 'Nova.Validation.UnsupportedInitCliWhatIf' -Category InvalidOperation -TargetObject 'WhatIf'
     }
 
     $options = ConvertFrom-NovaInitCliArgument -Arguments $Arguments

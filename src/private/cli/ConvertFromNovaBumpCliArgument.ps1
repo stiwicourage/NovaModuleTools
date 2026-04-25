@@ -9,7 +9,7 @@ function ConvertFrom-NovaBumpCliArgument {
 
     foreach ($token in $Arguments) {
         switch -Regex ($token) {
-            '^(--preview|-Preview)$' {
+            '^(--preview|-p)$' {
                 $options.Preview = $true
             }
             default {

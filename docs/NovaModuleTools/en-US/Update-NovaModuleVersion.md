@@ -55,7 +55,8 @@ When the current version is already a prerelease for the selected release line, 
 version instead of incrementing again. For example, a `Major` bump from `2.0.0-preview7` resolves to `2.0.0`, not
 `3.0.0-preview7`.
 
-From the standalone `nova` launcher on macOS/Linux, `nova bump -Confirm` uses a CLI-friendly confirmation prompt. If you
+From the standalone `nova` launcher on macOS/Linux, `nova bump --confirm` / `nova bump -c` uses a CLI-friendly
+confirmation prompt. If you
 choose `No`, `No to All`, or `Suspend`, the command exits without changing `project.json` and without returning a
 version
 result object.

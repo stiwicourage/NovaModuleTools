@@ -28,7 +28,8 @@ PS> Invoke-NovaCli [[-Command] <string>] [[-Arguments] <string[]>] [-WhatIf] [-C
 `Invoke-NovaCli` is the cmdlet behind the `nova` alias. In day-to-day usage, the intended experience is to run the
 `nova` CLI rather than call `Invoke-NovaCli` directly.
 
-It dispatches high-level commands such as `nova info`, `nova version`, `nova --version`, `nova --help`, `nova build`,
+It dispatches high-level commands such as `nova info`, `nova version`, `nova --version`, `nova -v`, `nova --help`,
+`nova -h`, `nova build`,
 `nova test`, `nova package`, `nova deploy`, `nova init`, `nova update`, `nova notification`, `nova publish`,
 `nova bump`, and `nova release`
 to the matching Nova cmdlet.
@@ -36,13 +37,16 @@ to the matching Nova cmdlet.
 Use `Invoke-NovaCli` when you need a scriptable PowerShell command entrypoint. Use `nova` when you want the
 user-focused CLI experience.
 
-Use `nova <command> --help` when you want the routed PowerShell help for a specific command such as `nova package`,
+Use `nova <command> --help` or `nova <command> -h` when you want the routed PowerShell help for a specific command such
+as `nova package`,
 `nova deploy`, or `nova init`.
 
 Mutating routed commands (`build`, `test`, `package`, `deploy`, `bump`, `update`, `notification`, `publish`, and
-`release`) forward PowerShell
-`-WhatIf`/`-Confirm` to the underlying cmdlet. That means `nova build -WhatIf` and
-`Invoke-NovaCli -Command build -WhatIf` both preview the build instead of running it.
+`release`) forward CLI `--verbose`/`-v`, `--whatif`/`-w`, and `--confirm`/`-c` to the underlying cmdlet.
+
+The scripted PowerShell entrypoint still exposes native `-Verbose`, `-WhatIf`, and `-Confirm` through
+`Invoke-NovaCli` itself. Use those only when you intentionally call the PowerShell command form rather than the
+CLI-style `nova` surface.
 
 Use `nova package` when you want to build, test, and package the current project into one or more configured package
 artifacts. By default it writes a `.nupkg` to `artifacts/packages/`, and you can override that with
@@ -59,21 +63,24 @@ Set `Package.AddVersionToFileName` to `true` when `Package.PackageFileName` is a
 
 Use `nova deploy` when you want to push existing package artifacts from the configured package output directory to a raw
 HTTP endpoint. It can upload all matching artifacts for the configured package types, including versioned and `latest`
-files, and it resolves the upload target from `-url`, `Package.RepositoryUrl`, or `Package.Repositories`.
+files, and it resolves the upload target from `--url`, `Package.RepositoryUrl`, or `Package.Repositories`.
 
-For local publish inside an imported PowerShell session, `nova publish -local` now reloads the published module from the
+For local publish inside an imported PowerShell session, `nova publish --local` now reloads the published module from
+the
 resolved local install path after the copy succeeds. Preview or cancelled runs do not import anything.
 
 Use `nova notification` to show the current prerelease self-update preference,
-`nova notification -disable` to keep `nova update` on stable releases only, and
-`nova notification -enable` to allow prerelease self-update targets again.
+`nova notification --disable` / `nova notification -d` to keep `nova update` on stable releases only, and
+`nova notification --enable` / `nova notification -e` to allow prerelease self-update targets again.
 
 Use `nova version` to show the current project version from `project.json`.
 
-Use `nova version -Installed` to show the locally installed version of the current project/module from the local
+Use `nova version --installed` / `nova version -i` to show the locally installed version of the current project/module
+from the local
 PowerShell module path.
 
-Use `nova --version` to show the installed `NovaModuleTools` version. Those are intentionally separate version views.
+Use `nova --version` / `nova -v` to show the installed `NovaModuleTools` version. Those are intentionally separate
+version views.
 
 Use `nova update` to self-update the installed `NovaModuleTools` module. It uses the stored prerelease preference to
 decide whether a prerelease target is eligible. When that preference is disabled, `nova update` only targets stable
@@ -81,21 +88,25 @@ releases. When it is enabled, `nova update` may target a prerelease, but it alwa
 before running a prerelease update. If no newer version is available, the standalone launcher prints a short
 `You're up to date!` summary that includes the installed version.
 
-For the standalone launcher, `nova bump -Confirm` uses a CLI-friendly confirmation prompt. Declined or suspended choices
+For the standalone launcher, `nova bump --confirm` / `nova bump -c` uses a CLI-friendly confirmation prompt. Declined or
+suspended choices
 cancel the bump cleanly and return control to the shell without printing a version result.
 
-Use `nova bump -Preview` when you want an explicit prerelease-continuation bump. Stable versions resolve to the normal
+Use `nova bump --preview` / `nova bump -p` when you want an explicit prerelease-continuation bump. Stable versions
+resolve to the normal
 semantic target plus `-preview`, while existing prerelease versions stay on the same semantic core and preserve the
 current prerelease stem while appending or incrementing trailing digits such as `preview -> preview01`,
 `preview09 -> preview10`, `rc -> rc01`, `rc1 -> rc2`, or `SNAPSHOT -> SNAPSHOT01`.
 
-`nova init` remains interactive. Use `nova init -Path <path>` when you want an explicit destination and
-`nova init -Example` when you want the packaged example scaffold. The CLI rejects positional `nova init <path>` usage
-and also rejects `nova init -WhatIf` with a clear error.
+`nova init` remains interactive. Use `nova init --path <path>` / `nova init -p <path>` when you want an explicit
+destination and
+`nova init --example` / `nova init -e` when you want the packaged example scaffold. The CLI rejects positional
+`nova init <path>` usage
+and also rejects `nova init --whatif` / `nova init -w` with a clear error.
 
 Inside an imported PowerShell session, `nova` is available through the cmdlet alias. To make `nova` available directly
 from zsh/bash on macOS or Linux, install the launcher once with `Install-NovaCli`. The standalone launcher also forwards
-`-Verbose`, `-WhatIf`, and `-Confirm` for mutating commands.
+`--verbose`/`-v`, `--whatif`/`-w`, and `--confirm`/`-c` for mutating commands.
 
 ## EXAMPLES
 
@@ -103,6 +114,7 @@ from zsh/bash on macOS or Linux, install the launcher once with `Install-NovaCli
 
 ```powershell
 nova --version
+nova -v
 ```
 
 Returns the installed `NovaModuleTools` module version.
@@ -136,10 +148,10 @@ Shows the full help for `Initialize-NovaModule` through the CLI without starting
 ### EXAMPLE 16
 
 ```powershell
-nova bump -Preview -WhatIf
+nova bump --preview --whatif
 ```
 
-Previews an explicit preview bump by routing `-Preview` through `Update-NovaModuleVersion`.
+Previews an explicit preview bump by routing `--preview` through `Update-NovaModuleVersion`.
 
 ### EXAMPLE 17
 
@@ -153,7 +165,7 @@ The output format is `<ProjectName> <Version>`.
 ### EXAMPLE 3
 
 ```powershell
-nova version -Installed
+nova version --installed
 ```
 
 Returns the version currently installed locally for the current project/module.
@@ -194,12 +206,12 @@ Uploads the matching package artifacts directly to the provided raw endpoint by 
 ### EXAMPLE 8
 
 ```powershell
-nova publish --repository PSGallery --apikey $env:PSGALLERY_API
+nova publish --repository PSGallery --api-key $env:PSGALLERY_API
 ```
 
 Parses CLI arguments and publishes using `Publish-NovaModule`.
 
-When routed inside PowerShell with `-local`, the published module is reloaded from the local install path.
+When routed inside PowerShell with `--local`, the published module is reloaded from the local install path.
 
 ### EXAMPLE 9
 
@@ -220,7 +232,7 @@ Shows the equivalent scripted PowerShell form behind `nova build`.
 ### EXAMPLE 11
 
 ```powershell
-PS> Invoke-NovaCli -Command publish -Arguments @('-local') -WhatIf
+PS> Invoke-NovaCli -Command publish -Arguments @('--local') -WhatIf
 ```
 
 Previews the routed local publish flow without rebuilding, testing, or copying the module.
@@ -228,7 +240,7 @@ Previews the routed local publish flow without rebuilding, testing, or copying t
 ### EXAMPLE 12
 
 ```powershell
-PS> Invoke-NovaCli -Command init -Arguments @('-Path', '~/Work')
+PS> Invoke-NovaCli -Command init -Arguments @('--path', '~/Work')
 ```
 
 Runs the interactive init flow and creates the project under `~/Work`.
@@ -236,7 +248,7 @@ Runs the interactive init flow and creates the project under `~/Work`.
 ### EXAMPLE 13
 
 ```powershell
-PS> Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '~/Work')
+PS> Invoke-NovaCli -Command init -Arguments @('--example', '--path', '~/Work')
 ```
 
 Runs the interactive init flow, scaffolds from the packaged example project, and creates the project under `~/Work`.
@@ -269,7 +281,7 @@ Shows whether prerelease self-updates are enabled and where the preference is st
 ### EXAMPLE 20
 
 ```powershell
-nova notification -disable
+nova notification --disable
 ```
 
 Disables prerelease self-update targets so `nova update` stays on stable releases.
@@ -277,7 +289,7 @@ Disables prerelease self-update targets so `nova update` stays on stable release
 ### EXAMPLE 21
 
 ```powershell
-PS> Invoke-NovaCli -Command notification -Arguments @('-enable')
+PS> Invoke-NovaCli -Command notification -Arguments @('--enable')
 ```
 
 Re-enables prerelease self-update targets from the routed PowerShell entrypoint.
@@ -286,7 +298,8 @@ Re-enables prerelease self-update targets from the routed PowerShell entrypoint.
 
 ### -Command
 
-The command to execute. Supported values: `info`, `version`, `--version`, `--help`, `build`, `test`, `package`,
+The command to execute. Supported values: `info`, `version`, `--version`, `-v`, `--help`, `-h`, `build`, `test`,
+`package`,
 `deploy`,
 `init`, `update`, `notification`, `publish`, `bump`, `release`.
 
@@ -303,7 +316,7 @@ ParameterSets:
     ValueFromPipelineByPropertyName: false
     ValueFromRemainingArguments: false
 DontShow: false
-AcceptedValues: [ info, version, --version, --help, build, test, package, deploy, init, update, notification, publish, bump, release ]
+AcceptedValues: [ info, version, --version, -v, --help, -h, build, test, package, deploy, init, update, notification, publish, bump, release ]
 HelpMessage: ''
 ```
 
@@ -340,7 +353,7 @@ This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`, `-ErrorVar
 
 ### System.String
 
-Returned for text-oriented commands such as `nova --help`, `nova version`, `nova version -Installed`, and
+Returned for text-oriented commands such as `nova --help`, `nova version`, `nova version --installed`, and
 `nova --version`.
 
 ### PSCustomObject

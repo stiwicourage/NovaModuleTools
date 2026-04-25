@@ -59,8 +59,26 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             }
             Mock ConvertTo-NovaCliArgumentArray {@('--help')}
             Mock Test-NovaCliHelpRequest {$true}
+            Mock Assert-NovaCliAliasCommonParameterSyntax {}
+            Mock Assert-NovaCliArgumentSyntax {}
+            Mock Get-NovaCliArgumentRoutingState {
+                [pscustomobject]@{
+                    Command = 'publish'
+                    Arguments = @('--help')
+                    ForwardedParameters = @{}
+                    WhatIfEnabled = $false
+                }
+            }
+            Mock Merge-NovaCliParameterSet {$BaseParameters}
+            Mock Get-NovaCliAliasRootCommandOverride {$null}
 
-            $result = Get-NovaCliInvocationContext -Command 'publish' -BoundParameters @{Verbose = $true; Arguments = @('--help')} -Arguments @('--help') -WhatIfEnabled
+            $result = Get-NovaCliInvocationContext -InvocationRequest ([pscustomobject]@{
+                Command = 'publish'
+                BoundParameters = @{Verbose = $true; Arguments = @('--help')}
+                Arguments = @('--help')
+                InvocationName = 'Invoke-NovaCli'
+                InvocationStatement = 'Invoke-NovaCli publish --help'
+            }) -WhatIfEnabled
 
             $result.Command | Should -Be 'publish'
             $result.Arguments | Should -Be @('--help')
@@ -117,13 +135,68 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
 
             $result | Should -Be 'delegated-build'
             Assert-MockCalled Get-NovaCliInvocationContext -Times 1 -ParameterFilter {
-                $Command -eq 'build' -and
-                        $BoundParameters.ContainsKey('WhatIf') -and
-                        $WhatIfEnabled
+                $InvocationRequest.Command -eq 'build' -and
+                        $InvocationRequest.BoundParameters.ContainsKey('WhatIf') -and
+                        $WhatIfEnabled -and
+                        $InvocationRequest.InvocationName -eq 'Invoke-NovaCli'
             }
             Assert-MockCalled Invoke-NovaCliCommandRoute -Times 1 -ParameterFilter {
                 $InvocationContext.Command -eq 'build' -and $InvocationContext.WhatIfEnabled
             }
+        }
+    }
+
+    It 'Get-NovaCliInvocationContext normalizes root alias -v and routed alias -v correctly' {
+        InModuleScope $script:moduleName {
+            $rootContext = Get-NovaCliInvocationContext -InvocationRequest ([pscustomobject]@{
+                Command = '--help'
+                BoundParameters = @{Verbose = $true}
+                Arguments = @()
+                InvocationName = 'nova'
+                InvocationStatement = 'nova -v'
+            })
+            $buildContext = Get-NovaCliInvocationContext -InvocationRequest ([pscustomobject]@{
+                Command = 'build'
+                BoundParameters = @{Command = 'build'; Verbose = $true; Arguments = @('-w', '-c')}
+                Arguments = @('-w', '-c')
+                InvocationName = 'nova'
+                InvocationStatement = 'nova build -v -w -c'
+            })
+
+            $rootContext.Command | Should -Be '--version'
+            $rootContext.Arguments | Should -Be @()
+            $buildContext.Command | Should -Be 'build'
+            $buildContext.Arguments | Should -Be @()
+            $buildContext.CommonParameters.Verbose | Should -BeTrue
+            $buildContext.MutatingCommonParameters.Verbose | Should -BeTrue
+            $buildContext.MutatingCommonParameters.WhatIf | Should -BeTrue
+            $buildContext.MutatingCommonParameters.Confirm | Should -BeTrue
+            $buildContext.WhatIfEnabled | Should -BeTrue
+        }
+    }
+
+    It 'Get-NovaCliInvocationContext rejects alias-bound legacy PowerShell-style common parameters' {
+        InModuleScope $script:moduleName {
+            $thrown = $null
+            try {
+                Get-NovaCliInvocationContext -InvocationRequest ([pscustomobject]@{
+                    Command = 'build'
+                    BoundParameters = @{Command = 'build'; Verbose = $true}
+                    Arguments = @()
+                    InvocationName = 'nova'
+                    InvocationStatement = 'nova build -Verbose'
+                })
+            }
+            catch {
+                $thrown = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                Message = "Unsupported CLI option syntax: -Verbose. Use '--verbose' or '-v' instead."
+                ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '-Verbose'
+            })
         }
     }
 
@@ -162,15 +235,15 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             Invoke-NovaCli build | Should -Be 'build-value'
             Invoke-NovaCli test | Should -Be 'test-value'
             Invoke-NovaCli init | Should -Be 'init-default'
-            Invoke-NovaCli -Command init -Arguments @('-Path', '/tmp/demo') | Should -Be 'init:/tmp/demo'
-            Invoke-NovaCli -Command init -Arguments @('-Example') | Should -Be 'init-example-default'
-            Invoke-NovaCli -Command init -Arguments @('-Example', '-Path', '/tmp/demo') | Should -Be 'init-example:/tmp/demo'
+            Invoke-NovaCli -Command init -Arguments @('--path', '/tmp/demo') | Should -Be 'init:/tmp/demo'
+            Invoke-NovaCli -Command init -Arguments @('--example') | Should -Be 'init-example-default'
+            Invoke-NovaCli -Command init -Arguments @('--example', '--path', '/tmp/demo') | Should -Be 'init-example:/tmp/demo'
             Invoke-NovaCli bump | Should -Be 'bump-value'
-            Invoke-NovaCli bump -Preview | Should -Be 'bump-value'
+            Invoke-NovaCli bump --preview | Should -Be 'bump-value'
             (Invoke-NovaCli notification).Mode | Should -Be 'status'
-            (Invoke-NovaCli notification -disable).Disabled | Should -BeTrue
-            (Invoke-NovaCli notification -enable).Enabled | Should -BeTrue
-            (Invoke-NovaCli release --repository PSGallery --apikey key123).Repository | Should -Be 'PSGallery'
+            (Invoke-NovaCli notification --disable).Disabled | Should -BeTrue
+            (Invoke-NovaCli notification --enable).Enabled | Should -BeTrue
+            (Invoke-NovaCli release --repository PSGallery --api-key key123).Repository | Should -Be 'PSGallery'
 
             Assert-MockCalled Update-NovaModuleVersion -Times 1 -ParameterFilter {-not $Preview}
             Assert-MockCalled Update-NovaModuleVersion -Times 1 -ParameterFilter {$Preview}
@@ -180,7 +253,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
     It 'ConvertFrom-NovaBumpCliArgument parses the preview switch and rejects unsupported bump arguments' {
         InModuleScope $script:moduleName {
             (ConvertFrom-NovaBumpCliArgument -Arguments @('--preview')).Preview | Should -BeTrue
-            (ConvertFrom-NovaBumpCliArgument -Arguments @('-Preview')).Preview | Should -BeTrue
+            (ConvertFrom-NovaBumpCliArgument -Arguments @('-p')).Preview | Should -BeTrue
 
             $unknownArgumentError = $null
             try {
@@ -218,7 +291,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 TargetObject = 'some/path'
             }
-        }
+        },
         [pscustomobject]@{
             CommandName = 'ConvertFrom-NovaInitCliArgument'
             Arguments = @('--path')
@@ -228,16 +301,16 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 TargetObject = '--path'
             }
-        }
+        },
         [pscustomobject]@{
             CommandName = 'ConvertFrom-NovaNotificationCliArgument'
-            Arguments = @('-enable', '-disable')
+            Arguments = @('--enable', '--disable')
             ExpectedError = [pscustomobject]@{
                 Message = "Unsupported 'nova notification' usage*"
                 ErrorId = 'Nova.Validation.UnsupportedNotificationCliUsage'
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
             }
-        }
+        },
         [pscustomobject]@{
             CommandName = 'ConvertFrom-NovaNotificationCliArgument'
             Arguments = @('--bogus')
@@ -247,7 +320,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 TargetObject = '--bogus'
             }
-        }
+        },
         [pscustomobject]@{
             CommandName = 'ConvertFrom-NovaDeployCliArgument'
             Arguments = @('--url')
@@ -257,7 +330,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 TargetObject = '--url'
             }
-        }
+        },
         [pscustomobject]@{
             CommandName = 'ConvertFrom-NovaDeployCliArgument'
             Arguments = @('--bogus')
@@ -297,7 +370,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
     It 'ConvertFrom-NovaNotificationCliArgument resolves status, enable, and disable actions' {
         InModuleScope $script:moduleName {
             (ConvertFrom-NovaNotificationCliArgument).ToString() | Should -Be 'status'
-            (ConvertFrom-NovaNotificationCliArgument -Arguments @('-enable')).ToString() | Should -Be 'enable'
+            (ConvertFrom-NovaNotificationCliArgument -Arguments @('-e')).ToString() | Should -Be 'enable'
             (ConvertFrom-NovaNotificationCliArgument -Arguments @('--disable')).ToString() | Should -Be 'disable'
         }
     }
@@ -305,7 +378,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
     It 'ConvertFrom-NovaVersionCliArgument resolves default and installed version modes' {
         InModuleScope $script:moduleName {
             (ConvertFrom-NovaVersionCliArgument).Installed | Should -BeFalse
-            (ConvertFrom-NovaVersionCliArgument -Arguments @('-Installed')).Installed | Should -BeTrue
+            (ConvertFrom-NovaVersionCliArgument -Arguments @('-i')).Installed | Should -BeTrue
 
             $unsupportedUsageError = $null
             try {
@@ -363,7 +436,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
 
     It 'ConvertFrom-NovaCliArgument parses local, path, and api key options' {
         InModuleScope $script:moduleName {
-            $options = ConvertFrom-NovaCliArgument -Arguments @('--local', '--path', '/tmp/modules', '--apikey', 'secret')
+            $options = ConvertFrom-NovaCliArgument -Arguments @('--local', '--path', '/tmp/modules', '--api-key', 'secret')
 
             $options.Local | Should -BeTrue
             $options.ModuleDirectoryPath | Should -Be '/tmp/modules'
@@ -376,7 +449,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             TestCases = @(
                 @{Arguments = @('--repository'); ExpectedMessage = 'Missing value for --repository'; Target = '--repository'}
                 @{Arguments = @('--path'); ExpectedMessage = 'Missing value for --path'; Target = '--path'}
-                @{Arguments = @('--apikey'); ExpectedMessage = 'Missing value for --apikey'; Target = '--apikey'}
+                @{Arguments = @('--api-key'); ExpectedMessage = 'Missing value for --api-key'; Target = '--api-key'}
             )
         } {
             param($TestCases)
@@ -443,7 +516,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             }
 
             Assert-TestStructuredCliError -ThrownError $unsupportedWhatIfError -ExpectedError ([pscustomobject]@{
-                Message = "The 'nova init' CLI command does not support -WhatIf*"
+                Message = "The 'nova init' CLI command does not support '--whatif'/'-w'.*"
                 ErrorId = 'Nova.Validation.UnsupportedInitCliWhatIf'
                 Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                 TargetObject = 'WhatIf'
@@ -618,7 +691,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             }
 
             Assert-TestStructuredCliError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
-                Message = 'Local module install not found for AzureDevOpsAgentInstaller*Run ''nova publish -local'' first*'
+                Message = 'Local module install not found for AzureDevOpsAgentInstaller*Run ''nova publish --local'' or ''nova publish -l'' first*'
                 ErrorId = 'Nova.Environment.LocalModuleInstallNotFound'
                 Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                 TargetObject = '/tmp/local-modules/AzureDevOpsAgentInstaller/AzureDevOpsAgentInstaller.psd1'

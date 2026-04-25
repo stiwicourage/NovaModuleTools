@@ -12,31 +12,31 @@ function ConvertFrom-NovaDeployCliArgument {
         $token = $Arguments[$index]
 
         switch -Regex ($token) {
-            '^(--repository|-Repository)$' {
+            '^(--repository|-r)$' {
                 $options.Repository = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--repository'
             }
-            '^(--url|-Url)$' {
+            '^(--url|-u)$' {
                 $options.Url = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--url'
             }
-            '^(--path|-Path|-PackagePath)$' {
+            '^(--path|-p)$' {
                 Add-NovaCliOptionValue -Options $options -Name 'PackagePath' -Value (Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--path')
             }
-            '^(--type|-Type|-PackageType)$' {
+            '^(--type|-t)$' {
                 Add-NovaCliOptionValue -Options $options -Name 'PackageType' -Value (Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--type')
             }
-            '^(--uploadpath|-UploadPath)$' {
-                $options.UploadPath = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--uploadpath'
+            '^(--upload-path|-o)$' {
+                $options.UploadPath = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--upload-path'
             }
-            '^(--token|-Token)$' {
+            '^(--token|-k)$' {
                 $options.Token = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--token'
             }
-            '^(--tokenenv|-TokenEnvironmentVariable)$' {
-                $options.TokenEnvironmentVariable = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--tokenenv'
+            '^(--token-env|-e)$' {
+                $options.TokenEnvironmentVariable = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--token-env'
             }
-            '^(--authscheme|-AuthenticationScheme)$' {
-                $options.AuthenticationScheme = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--authscheme'
+            '^(--auth-scheme|-a)$' {
+                $options.AuthenticationScheme = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--auth-scheme'
             }
-            '^(--header|-Header)$' {
+            '^(--header|-H)$' {
                 Add-NovaCliHeaderOption -Options $options -HeaderArgument (Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--header')
             }
             default {

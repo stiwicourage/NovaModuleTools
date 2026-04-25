@@ -14,32 +14,21 @@ else {
     @()
 }
 
-$forwardVerbose = $false
-$forwardWhatIf = $false
-$forwardConfirm = $false
-$remainingArguments = New-Object 'System.Collections.Generic.List[string]'
+$forwardCliConfirmForBump = $false
 
-foreach ($argument in $Arguments) {
-    switch -Regex ($argument) {
-        '^(--verbose|-Verbose)$' {
-            $forwardVerbose = $true
+if ($Command -eq 'bump' -and $Arguments.Count -gt 0) {
+    $remainingArguments = [System.Collections.Generic.List[string]]::new()
+    foreach ($argument in $Arguments) {
+        if ($argument -match '^(--confirm|-c)$') {
+            $forwardCliConfirmForBump = $true
             continue
         }
-        '^-WhatIf$' {
-            $forwardWhatIf = $true
-            continue
-        }
-        '^-Confirm$' {
-            $forwardConfirm = $true
-            continue
-        }
-        default {
-            $remainingArguments.Add($argument)
-        }
+
+        $remainingArguments.Add($argument)
     }
-}
 
-$Arguments = @($remainingArguments)
+    $Arguments = @($remainingArguments)
+}
 
 Import-Module NovaModuleTools -Force -DisableNameChecking
 
@@ -50,19 +39,8 @@ $invokeParameters = @{
 
 $originalCliConfirmSetting = $env:NOVA_CLI_CONFIRM_BUMP
 
-if ($forwardVerbose) {
-    $invokeParameters.Verbose = $true
-}
-
-if ($forwardWhatIf) {
-    $invokeParameters.WhatIf = $true
-}
-
-if ($forwardConfirm -and $Command -eq 'bump') {
+if ($forwardCliConfirmForBump) {
     $env:NOVA_CLI_CONFIRM_BUMP = '1'
-}
-elseif ($forwardConfirm) {
-    $invokeParameters.Confirm = $true
 }
 
 try {

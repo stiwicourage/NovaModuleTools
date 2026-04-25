@@ -4,7 +4,7 @@ function Test-NovaCliHelpRequest {
         [string[]]$Arguments
     )
 
-    return $Arguments.Count -eq 1 -and $Arguments[0] -match '^(--help|-Help)$'
+    return $Arguments.Count -eq 1 -and $Arguments[0] -match '^(--help|-h)$'
 }
 
 function Get-NovaCliCommandHelp {

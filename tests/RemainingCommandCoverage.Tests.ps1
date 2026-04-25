@@ -499,47 +499,47 @@ Describe 'Coverage for remaining command and filesystem branches' {
         }
     }
 
-    It 'Invoke-NovaCli version -Installed returns the locally installed version for the current project' {
+    It 'Invoke-NovaCli version --installed returns the locally installed version for the current project' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {throw 'should not read project metadata'}
             Mock Get-NovaInstalledProjectVersion {'AzureDevOpsAgentInstaller 1.2.0'}
 
-            Invoke-NovaCli version -Installed | Should -Be 'AzureDevOpsAgentInstaller 1.2.0'
+            Invoke-NovaCli version --installed | Should -Be 'AzureDevOpsAgentInstaller 1.2.0'
             Assert-MockCalled Get-NovaInstalledProjectVersion -Times 1
             Assert-MockCalled Get-NovaProjectInfo -Times 0 -ParameterFilter {-not $Version}
         }
     }
 
-    It 'Invoke-NovaCli version and version -Installed can differ until a local publish updates the installed module' {
+    It 'Invoke-NovaCli version and version --installed can differ until a local publish updates the installed module' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectName = 'AzureDevOpsAgentInstaller'; Version = '1.12.1'}}
             Mock Get-NovaInstalledProjectVersion {'AzureDevOpsAgentInstaller 1.12.0'}
 
             (Invoke-NovaCli version) | Should -Be 'AzureDevOpsAgentInstaller 1.12.1'
-            (Invoke-NovaCli version -Installed) | Should -Be 'AzureDevOpsAgentInstaller 1.12.0'
+            (Invoke-NovaCli version --installed) | Should -Be 'AzureDevOpsAgentInstaller 1.12.0'
         }
     }
 
-    It 'Invoke-NovaCli version -Installed throws a clear structured error when the current project is not installed locally' {
+    It 'Invoke-NovaCli version --installed throws a clear structured error when the current project is not installed locally' {
         InModuleScope $script:moduleName -Parameters @{
             ExpectedManifestPath = '/tmp/modules/AzureDevOpsAgentInstaller/AzureDevOpsAgentInstaller.psd1'
         } {
             param($ExpectedManifestPath)
 
             Mock Get-NovaInstalledProjectVersion {
-                Stop-NovaOperation -Message "Local module install not found for AzureDevOpsAgentInstaller. Expected manifest at: $ExpectedManifestPath. Run 'nova publish -local' first." -ErrorId 'Nova.Environment.LocalModuleInstallNotFound' -Category ObjectNotFound -TargetObject $ExpectedManifestPath
+                Stop-NovaOperation -Message "Local module install not found for AzureDevOpsAgentInstaller. Expected manifest at: $ExpectedManifestPath. Run 'nova publish --local' or 'nova publish -l' first." -ErrorId 'Nova.Environment.LocalModuleInstallNotFound' -Category ObjectNotFound -TargetObject $ExpectedManifestPath
             }
 
             $thrown = $null
             try {
-                Invoke-NovaCli version -Installed
+                Invoke-NovaCli version --installed
             }
             catch {
                 $thrown = $_
             }
 
             $thrown | Should -Not -BeNullOrEmpty
-            $thrown.Exception.Message | Should -Be "Local module install not found for AzureDevOpsAgentInstaller. Expected manifest at: $ExpectedManifestPath. Run 'nova publish -local' first."
+            $thrown.Exception.Message | Should -Be "Local module install not found for AzureDevOpsAgentInstaller. Expected manifest at: $ExpectedManifestPath. Run 'nova publish --local' or 'nova publish -l' first."
             $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.LocalModuleInstallNotFound'
             $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
             $thrown.TargetObject | Should -Be $ExpectedManifestPath
