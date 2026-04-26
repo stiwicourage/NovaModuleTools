@@ -102,8 +102,6 @@ jobs:
 
           ./scripts/build/ci/Import-BuiltCiModule.ps1 | Out-Null
 
-          Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
-
           Update-NovaModuleVersion -Preview -Verbose
         env:
           PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
