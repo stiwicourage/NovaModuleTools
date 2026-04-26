@@ -42,7 +42,11 @@ function Invoke-NovaCliCommandRoute {
     )
 
     if ($InvocationContext.IsHelpRequest) {
-        return Get-NovaCliCommandHelp -Command $InvocationContext.Command
+        if ($InvocationContext.HelpRequest.TargetType -eq 'Root') {
+            return Get-NovaCliHelp
+        }
+
+        return Get-NovaCliCommandHelp -Command $InvocationContext.HelpRequest.Command -View $InvocationContext.HelpRequest.View
     }
 
     $command = $InvocationContext.Command

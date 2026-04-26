@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
 
   workflow_dispatch:
 
@@ -65,12 +66,13 @@ jobs:
           Write-Output $report
 
       - name: Run semantic-release
+        if: github.ref_name == 'main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
         run: npx semantic-release
 
-      - name: Prepare next prerelease version on develop
+      - name: Prepare next prerelease version on main -> develop
         if: github.ref_name == 'main'
         run: |
           git fetch origin main
@@ -79,27 +81,80 @@ jobs:
           git checkout develop
           git reset --hard origin/main
 
-          Update-NovaModuleVersion -Preview
+          Update-NovaModuleVersion -Preview -Verbose
+
+      - name: Prepare next prerelease version on develop
+        if: github.ref_name == 'develop'
+        run: |
+          git fetch origin develop
+          git checkout develop
+          
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -Verbose
+          Update-NovaModuleVersion -Preview -Verbose
+        env:
+          PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
 
       - name: Commit and push (verified)
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs')
-            const path = require('path')
+            const { execSync } = require('child_process')
 
             const owner = context.repo.owner
             const repo = context.repo.repo
-            const branch = "develop"
+            const sourceBranch = context.ref.replace('refs/heads/', '')
+            const targetBranch = 'develop'
 
-            // Find changed files
-            const { execSync } = require('child_process')
             const files = execSync('git diff --name-only', { encoding: 'utf-8' })
               .split('\n')
-              .filter(f => f)
+              .filter(Boolean)
 
             if (files.length === 0) {
-              console.log("No changes to commit")
+              console.log('No changes to commit')
+              return
+            }
+
+            let parentSha
+            let baseTreeSha
+
+            if (sourceBranch === 'main') {
+              // main release: make develop continue directly from released main
+              const mainRef = await github.rest.git.getRef({
+                owner,
+                repo,
+                ref: 'heads/main'
+              })
+
+              const mainCommit = await github.rest.git.getCommit({
+                owner,
+                repo,
+                commit_sha: mainRef.data.object.sha
+              })
+
+              parentSha = mainRef.data.object.sha
+              baseTreeSha = mainCommit.data.tree.sha
+            }
+            else if (sourceBranch === 'develop') {
+              // develop prerelease: bump version on top of current develop
+              const developRef = await github.rest.git.getRef({
+                owner,
+                repo,
+                ref: 'heads/develop'
+              })
+
+              const developCommit = await github.rest.git.getCommit({
+                owner,
+                repo,
+                commit_sha: developRef.data.object.sha
+              })
+
+              parentSha = developRef.data.object.sha
+              baseTreeSha = developCommit.data.tree.sha
+            }
+            else {
+              core.setFailed(`Unsupported source branch: ${sourceBranch}`)
               return
             }
 
@@ -123,42 +178,32 @@ jobs:
               })
             }
 
-            // Get latest commit on develop
-            const ref = await github.rest.git.getRef({
-              owner,
-              repo,
-              ref: `heads/${branch}`
-            })
-
-            const commit = await github.rest.git.getCommit({
-              owner,
-              repo,
-              commit_sha: ref.data.object.sha
-            })
-
-            // Create tree
             const tree = await github.rest.git.createTree({
               owner,
               repo,
-              base_tree: commit.data.tree.sha,
+              base_tree: baseTreeSha,
               tree: blobs
             })
 
-            // Create commit (THIS becomes VERIFIED)
+            const message =
+              sourceBranch === 'main'
+                ? 'chore: prepare develop for next prerelease [skip ci]'
+                : 'chore: prepare next prerelease version [skip ci]'
+
             const newCommit = await github.rest.git.createCommit({
               owner,
               repo,
-              message: "chore: prepare next prerelease version [skip ci]",
+              message,
               tree: tree.data.sha,
-              parents: [ref.data.object.sha]
+              parents: [parentSha]
             })
 
-            // Update branch
             await github.rest.git.updateRef({
               owner,
               repo,
-              ref: `heads/${branch}`,
-              sha: newCommit.data.sha
+              ref: `heads/${targetBranch}`,
+              sha: newCommit.data.sha,
+              force: sourceBranch === 'main'
             })
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

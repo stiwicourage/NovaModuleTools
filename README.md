@@ -114,6 +114,24 @@ To compare the current project version with what is installed locally for that s
   the local module path
 - `% nova --version` / `% nova -v` shows the installed `NovaModuleTools` version
 
+### CLI help
+
+Use the launcher-oriented help forms when you want CLI syntax instead of PowerShell cmdlet help:
+
+```powershell
+% nova --help
+% nova build --help
+% nova build -h
+% nova --help build
+% nova -h build
+```
+
+- `% nova <command> --help` / `% nova <command> -h` shows short command help
+- `% nova --help <command>` / `% nova -h <command>` shows long command help
+- CLI help is launcher-native and uses CLI option spellings such as `--repository` and `-r`
+- Use PowerShell `Get-Help` when you want cmdlet help such as `Get-Help Publish-NovaModule -Full`
+- Root `% nova -v` means version, while command-level `% nova build -v` means verbose for supported routed commands
+
 ### Confirmation behavior
 
 Use `% nova <mutating-command> --confirm` / `% nova <mutating-command> -c` when you want a CLI-safe confirmation prompt.

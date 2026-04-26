@@ -31,6 +31,8 @@ routed command options
 
 Examples:
    nova init
+   nova init --help
+   nova -h init
    nova init --path ~/Work
    nova init -p ~/Work
    nova init --example
@@ -69,8 +71,12 @@ the standalone 'nova' command available from zsh/bash.
 Use 'nova <command>' to run a command, or call the underlying PowerShell cmdlet directly
 when you want a scriptable function interface.
 
-Use 'nova <command> --help' to show the routed PowerShell help for commands such as
-'nova package', 'nova deploy', and 'nova init'.
+Use 'nova <command> --help' or 'nova <command> -h' for short command help.
+
+Use 'nova --help <command>' or 'nova -h <command>' for long command help.
+
+CLI help is launcher-native and uses CLI syntax only. Use PowerShell 'Get-Help' when you want
+PowerShell cmdlet help instead.
 
 Use 'nova notification' to show the current prerelease self-update preference,
 'nova notification --disable' or 'nova notification -d' to keep 'nova update' on stable releases only,
@@ -79,6 +85,9 @@ and 'nova notification --enable' or 'nova notification -e' to allow prerelease s
 Use 'nova version' for the current project version from project.json,
 'nova version --installed' or 'nova version -i' for the locally installed version of the current project/module,
 and 'nova --version' for the installed NovaModuleTools version.
+
+Root '-v' means '--version', while command-level '-v' means '--verbose' for supported routed commands such as
+'nova build -v' and 'nova publish -v'.
 
 Use 'nova update' to self-update NovaModuleTools. It uses the stored prerelease
 preference to decide whether a prerelease target is eligible. Stable updates proceed

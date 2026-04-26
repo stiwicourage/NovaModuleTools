@@ -47,7 +47,12 @@ Direct PowerShell cmdlets such as `Invoke-NovaBuild`, `Publish-NovaModule`, `Dep
 `Update-NovaModuleVersion`, and `Invoke-NovaRelease` keep their native `-WhatIf` and `-Confirm` behavior when called
 directly.
 
-Use `% nova <command> --help` or `% nova <command> -h` when you want the routed help for a specific command.
+Use `% nova <command> --help` or `% nova <command> -h` when you want short CLI help for a specific command.
+
+Use `% nova --help <command>` or `% nova -h <command>` when you want long CLI help for a specific command.
+
+The launcher help is CLI-native and uses CLI option spellings such as `--repository` and `-r`. Use PowerShell
+`Get-Help` when you want cmdlet help instead.
 
 ## EXAMPLES
 

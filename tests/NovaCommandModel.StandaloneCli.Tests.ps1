@@ -1,5 +1,7 @@
 $script:testSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.ps1')).Path
-$global:novaCommandModelTestSupportFunctionNameList = @(
+. $script:testSupportPath
+
+Publish-TestSupportFunctions -FunctionNameList @(
     'Get-TestRegexMatchGroup'
     'ConvertTo-TestNormalizedText'
     'Get-TestModuleDisplayVersion'
@@ -12,13 +14,9 @@ $global:novaCommandModelTestSupportFunctionNameList = @(
     'Initialize-TestNovaCliGitRepository'
     'Invoke-TestInstalledNovaCommand'
     'New-TestPesterConfigStub'
+    'Get-TestInstalledNovaCliSnapshot'
+    'Assert-TestInstalledNovaCliSnapshot'
 )
-. $script:testSupportPath
-
-foreach ($functionName in $global:novaCommandModelTestSupportFunctionNameList) {
-    $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
-    Set-Item -Path "function:global:$functionName" -Value $scriptBlock
-}
 
 BeforeAll {
     $testSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.ps1')).Path
@@ -35,10 +33,22 @@ BeforeAll {
     Remove-Module $script:moduleName -ErrorAction SilentlyContinue
     Import-Module $script:distModuleDir -Force
     . $testSupportPath
-    foreach ($functionName in $global:novaCommandModelTestSupportFunctionNameList) {
-        $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
-        Set-Item -Path "function:global:$functionName" -Value $scriptBlock
-    }
+    Publish-TestSupportFunctions -FunctionNameList @(
+        'Get-TestRegexMatchGroup'
+        'ConvertTo-TestNormalizedText'
+        'Get-TestModuleDisplayVersion'
+        'Get-TestHelpLocaleFromMarkdownFiles'
+        'Get-CommandHelpActivationTestCase'
+        'Get-CommandHelpActivationTestCases'
+        'Initialize-TestNovaCliProjectLayout'
+        'Write-TestNovaCliProjectJson'
+        'Write-TestNovaCliPublicFunction'
+        'Initialize-TestNovaCliGitRepository'
+        'Invoke-TestInstalledNovaCommand'
+        'New-TestPesterConfigStub'
+        'Get-TestInstalledNovaCliSnapshot'
+        'Assert-TestInstalledNovaCliSnapshot'
+    )
 }
 
 Describe 'Nova command model - standalone CLI behavior' {
@@ -55,44 +65,13 @@ Describe 'Nova command model - standalone CLI behavior' {
 
         try {
             $result = Install-NovaCli -DestinationDirectory $targetDirectory -Force
-            $helpOutput = & $installedPath --help 2>&1
-            $helpText = @($helpOutput) -join [Environment]::NewLine
-            $helpExitCode = $LASTEXITCODE
-            $versionOutput = & $installedPath --version 2>&1
-            $versionText = @($versionOutput) -join [Environment]::NewLine
-            $versionExitCode = $LASTEXITCODE
-            $shortVersionOutput = & $installedPath -v 2>&1
-            $shortVersionText = @($shortVersionOutput) -join [Environment]::NewLine
-            $shortVersionExitCode = $LASTEXITCODE
-            Push-Location $script:projectInfo.ProjectRoot
-            try {
-                $projectVersionOutput = & $installedPath version 2>&1
-                $projectVersionText = @($projectVersionOutput) -join [Environment]::NewLine
-                $projectVersionExitCode = $LASTEXITCODE
-            }
-            finally {
-                Pop-Location
-            }
+            $snapshot = Get-TestInstalledNovaCliSnapshot -InstalledPath $installedPath -ProjectRoot $script:projectInfo.ProjectRoot
 
             $result.CommandName | Should -Be 'nova'
             $result.InstalledPath | Should -Be $installedPath
             $result.DestinationDirectory | Should -Be $targetDirectory
             (Test-Path -LiteralPath $installedPath) | Should -BeTrue
-            $helpExitCode | Should -Be 0
-            $versionExitCode | Should -Be 0
-            $shortVersionExitCode | Should -Be 0
-            $projectVersionExitCode | Should -Be 0
-            $helpText | Should -Match 'usage: nova \[--version\|-v\] \[--help\|-h\] <command> \[<args>\]'
-            ($helpText -match 'notification\s+Show or change prerelease self-update eligibility') | Should -BeTrue
-            $helpText | Should -Match 'version\s+Show the current project version, or use --installed/-i for the locally installed project module version'
-            $helpText | Should -Match 'package\s+Build, test, and package the module as configured package artifact\(s\)'
-            $helpText | Should -Match 'nova deploy --repository LocalNexus'
-            $helpText | Should -Not -Match 'nova build -Verbose'
-            $helpText | Should -Not -Match 'nova deploy -repository'
-            $helpText | Should -Not -Match 'nova deploy package'
-            $versionText | Should -Be "$script:moduleName $installedModuleVersion"
-            $shortVersionText | Should -Be "$script:moduleName $installedModuleVersion"
-            $projectVersionText | Should -Be $expectedProjectVersionText
+            Assert-TestInstalledNovaCliSnapshot -Snapshot $snapshot -ModuleName $script:moduleName -InstalledModuleVersion $installedModuleVersion -ExpectedProjectVersionText $expectedProjectVersionText
         }
         finally {
             $env:PSModulePath = $originalModulePath
@@ -434,6 +413,8 @@ Describe '$projectName tests' {
             $result | Should -Match 'version\s+Show the current project version, or use --installed/-i for the locally installed project module version'
             $result | Should -Match 'nova version --installed'
             $result | Should -Match '--version, -v\s+Show the installed NovaModuleTools module name and version'
+            $result | Should -Match 'nova --help <command>'
+            $result | Should -Match "Root '-v' means '--version', while command-level '-v' means '--verbose'"
             $result | Should -Match 'package\s+Build, test, and package the module as configured package artifact\(s\)'
             $result | Should -Match 'deploy\s+Upload generated package artifact\(s\) to a raw HTTP endpoint'
             $result | Should -Match 'publish\s+Build, test, and publish the module locally or to a repository'
@@ -442,17 +423,71 @@ Describe '$projectName tests' {
         }
     }
 
-    It 'Invoke-NovaCli <CommandName> --help returns routed command help' -ForEach @(
-        @{CommandName = 'package'; ExpectedPattern = 'New-NovaModulePackage'},
-        @{CommandName = 'deploy'; ExpectedPattern = 'Deploy-NovaPackage'},
-        @{CommandName = 'init'; ExpectedPattern = 'Initialize-NovaModule'}
+    It 'Invoke-NovaCli <CommandName> --help returns CLI-native short help' -ForEach @(
+        @{CommandName = 'init'; Usage = 'usage: nova init [<options>]'; ExpectedPattern = '-p, --path <path>'},
+        @{CommandName = 'info'; Usage = 'usage: nova info'; ExpectedPattern = '\(none\)'},
+        @{CommandName = 'version'; Usage = 'usage: nova version [<options>]'; ExpectedPattern = '-i, --installed'},
+        @{CommandName = 'build'; Usage = 'usage: nova build [<options>]'; ExpectedPattern = '-v, --verbose'},
+        @{CommandName = 'test'; Usage = 'usage: nova test [<options>]'; ExpectedPattern = '-w, --what-if'},
+        @{CommandName = 'package'; Usage = 'usage: nova package [<options>]'; ExpectedPattern = '-c, --confirm'},
+        @{CommandName = 'deploy'; Usage = 'usage: nova deploy [<options>]'; ExpectedPattern = '-r, --repository <name>'},
+        @{CommandName = 'bump'; Usage = 'usage: nova bump [<options>]'; ExpectedPattern = '-p, --preview'},
+        @{CommandName = 'update'; Usage = 'usage: nova update [<options>]'; ExpectedPattern = '-w, --what-if'},
+        @{CommandName = 'notification'; Usage = 'usage: nova notification [<options>]'; ExpectedPattern = '-e, --enable'},
+        @{CommandName = 'publish'; Usage = 'usage: nova publish [<options>]'; ExpectedPattern = '-l, --local'},
+        @{CommandName = 'release'; Usage = 'usage: nova release [<options>]'; ExpectedPattern = '-r, --repository <name>'}
     ) {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
             param($TestCase)
 
-            $result = Invoke-NovaCli -Command $TestCase.CommandName -Arguments @('--help') | Out-String
+            $result = Invoke-NovaCli -Command $TestCase.CommandName -Arguments @('--help')
 
+            $result | Should -Match ([regex]::Escape($TestCase.Usage))
+            $result | Should -Match 'Options:'
             $result | Should -Match $TestCase.ExpectedPattern
+            $result | Should -Not -Match '(?<!-)-Repository\b'
+            $result | Should -Not -Match 'PS>'
+        }
+    }
+
+    It 'Invoke-NovaCli root help syntax returns CLI-native long help for <CommandName>' -ForEach @(
+        @{CommandName = 'init'}
+        @{CommandName = 'info'}
+        @{CommandName = 'version'}
+        @{CommandName = 'build'}
+        @{CommandName = 'test'}
+        @{CommandName = 'package'}
+        @{CommandName = 'deploy'}
+        @{CommandName = 'bump'}
+        @{CommandName = 'update'}
+        @{CommandName = 'notification'}
+        @{CommandName = 'publish'}
+        @{CommandName = 'release'}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{CommandName = $_.CommandName} {
+            param($CommandName)
+
+            $result = Invoke-NovaCli -Command '--help' -Arguments @($CommandName)
+
+            $result | Should -Match '^NAME'
+            $result | Should -Match "nova $CommandName -"
+            $result | Should -Match 'SYNOPSIS'
+            $result | Should -Match 'DESCRIPTION'
+            $result | Should -Match 'OPTIONS'
+            $result | Should -Match 'EXAMPLES'
+            $result | Should -Not -Match '(?<!-)-Repository\b'
+            $result | Should -Not -Match 'PS>'
+        }
+    }
+
+    It 'Invoke-NovaCli CLI help never delegates to PowerShell Get-Help' {
+        InModuleScope $script:moduleName {
+            Mock Get-Help {throw 'CLI help should not call Get-Help'}
+
+            {Invoke-NovaCli build --help} | Should -Not -Throw
+            {Invoke-NovaCli -Command '--help' -Arguments @('build')} | Should -Not -Throw
+
+            Assert-MockCalled Get-Help -Times 0
         }
     }
 

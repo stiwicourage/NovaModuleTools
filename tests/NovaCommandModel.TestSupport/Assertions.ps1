@@ -205,6 +205,78 @@ function Invoke-ConfirmNovaCliCommandActionCancellationAssertion {
     }
 }
 
+function Get-TestInstalledNovaCliSnapshot {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$InstalledPath,
+        [Parameter(Mandatory)][string]$ProjectRoot
+    )
+
+    $snapshot = [ordered]@{
+        HelpText = @((& $InstalledPath --help 2>&1)) -join [Environment]::NewLine
+        HelpExitCode = $LASTEXITCODE
+        CommandHelpText = @((& $InstalledPath build --help 2>&1)) -join [Environment]::NewLine
+        CommandHelpExitCode = $LASTEXITCODE
+        LongHelpText = @((& $InstalledPath -h build 2>&1)) -join [Environment]::NewLine
+        LongHelpExitCode = $LASTEXITCODE
+        VersionText = @((& $InstalledPath --version 2>&1)) -join [Environment]::NewLine
+        VersionExitCode = $LASTEXITCODE
+        ShortVersionText = @((& $InstalledPath -v 2>&1)) -join [Environment]::NewLine
+        ShortVersionExitCode = $LASTEXITCODE
+    }
+
+    Push-Location $ProjectRoot
+    try {
+        $snapshot.ProjectVersionText = @((& $InstalledPath version 2>&1)) -join [Environment]::NewLine
+        $snapshot.ProjectVersionExitCode = $LASTEXITCODE
+    }
+    finally {
+        Pop-Location
+    }
+
+    return [pscustomobject]$snapshot
+}
+
+function Assert-TestInstalledNovaCliSnapshot {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Snapshot,
+        [Parameter(Mandatory)][string]$ModuleName,
+        [Parameter(Mandatory)][string]$InstalledModuleVersion,
+        [Parameter(Mandatory)][string]$ExpectedProjectVersionText
+    )
+
+    $Snapshot.HelpExitCode | Should -Be 0
+    $Snapshot.CommandHelpExitCode | Should -Be 0
+    $Snapshot.LongHelpExitCode | Should -Be 0
+    $Snapshot.VersionExitCode | Should -Be 0
+    $Snapshot.ShortVersionExitCode | Should -Be 0
+    $Snapshot.ProjectVersionExitCode | Should -Be 0
+    $Snapshot.HelpText | Should -Match 'usage: nova \[--version\|-v\] \[--help\|-h\] <command> \[<args>\]'
+    $Snapshot.HelpText | Should -Match 'Use ''nova <command> --help'' or ''nova <command> -h'' for short command help\.'
+    $Snapshot.HelpText | Should -Match 'Use ''nova --help <command>'' or ''nova -h <command>'' for long command help\.'
+    $Snapshot.HelpText | Should -Match "Root '-v' means '--version', while command-level '-v' means '--verbose'"
+    ($Snapshot.HelpText -match 'notification\s+Show or change prerelease self-update eligibility') | Should -BeTrue
+    $Snapshot.HelpText | Should -Match 'version\s+Show the current project version, or use --installed/-i for the locally installed project module version'
+    $Snapshot.HelpText | Should -Match 'package\s+Build, test, and package the module as configured package artifact\(s\)'
+    $Snapshot.HelpText | Should -Match 'nova deploy --repository LocalNexus'
+    $Snapshot.HelpText | Should -Not -Match 'nova build -Verbose'
+    $Snapshot.HelpText | Should -Not -Match 'nova deploy -repository'
+    $Snapshot.HelpText | Should -Not -Match 'nova deploy package'
+    $Snapshot.CommandHelpText | Should -Match '^usage: nova build \[<options>\]'
+    $Snapshot.CommandHelpText | Should -Match 'Options:'
+    $Snapshot.CommandHelpText | Should -Match '-v, --verbose'
+    $Snapshot.LongHelpText | Should -Match '^NAME'
+    $Snapshot.LongHelpText | Should -Match 'SYNOPSIS'
+    $Snapshot.LongHelpText | Should -Match 'DESCRIPTION'
+    $Snapshot.LongHelpText | Should -Match 'OPTIONS'
+    $Snapshot.LongHelpText | Should -Match 'EXAMPLES'
+    $Snapshot.LongHelpText | Should -Not -Match '(?<!-)-Verbose\b'
+    $Snapshot.VersionText | Should -Be "$ModuleName $InstalledModuleVersion"
+    $Snapshot.ShortVersionText | Should -Be "$ModuleName $InstalledModuleVersion"
+    $Snapshot.ProjectVersionText | Should -Be $ExpectedProjectVersionText
+}
+
 function Assert-TestNovaCliPublishConfirmationResult {
     [CmdletBinding()]
     param(

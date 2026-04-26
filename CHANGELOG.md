@@ -81,6 +81,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - All public commands are now Nova commands, and the `nova` CLI / `Invoke-NovaCli` command surface is the primary
       entry point for all
       operations.
+- Change `nova` help to a dedicated CLI-native help system with both short and long command help forms.
+    - `% nova <command> --help` and `% nova <command> -h` now show short CLI help.
+    - `% nova --help <command>` and `% nova -h <command>` now show long CLI help.
+    - CLI help no longer delegates to PowerShell `Get-Help` and now consistently shows CLI option spellings such as
+      `--repository` and `-r`.
 - Refactor `tests/NovaCommandModel.TestSupport.ps1` into smaller, focused support scripts so the shared Nova command
   model
   test helpers are easier to maintain without changing test behavior.
@@ -125,6 +130,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       help without failing during local builds.
 - Update the `nova` CLI documentation and help text to use POSIX/GNU-style long and short options while keeping
   PowerShell cmdlet examples in their native PowerShell form.
+- Document the CLI-native short-help and long-help forms in the root help text, README, and `Invoke-NovaCli`
+  reference.
 - Clarify the documentation split between the `nova` launcher-oriented CLI surface and the explicit PowerShell
   `Invoke-NovaCli` cmdlet entrypoint, and mark examples consistently with `PS>` for PowerShell and `%` for CLI.
 

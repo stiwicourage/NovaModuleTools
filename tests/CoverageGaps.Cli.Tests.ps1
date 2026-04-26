@@ -58,18 +58,15 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 return @{Verbose = $true}
             }
             Mock ConvertTo-NovaCliArgumentArray {@('--help')}
-            Mock Test-NovaCliHelpRequest {$true}
-            Mock Assert-NovaCliArgumentSyntax {}
-            Mock Get-NovaCliArgumentRoutingState {
+            Mock Get-NovaCliHelpRequest {
                 [pscustomobject]@{
                     Command = 'publish'
-                    Arguments = @('--help')
-                    ForwardedParameters = @{}
-                    WhatIfEnabled = $false
-                    CliConfirmEnabled = $false
+                    View = 'Short'
+                    TargetType = 'Command'
+                    IsHelpRequest = $true
                 }
             }
-            Mock Merge-NovaCliParameterSet {$BaseParameters}
+            Mock Assert-NovaCliArgumentSyntax {}
 
             $result = Get-NovaCliInvocationContext -InvocationRequest ([pscustomobject]@{
                 Command = 'publish'
@@ -78,10 +75,12 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             }) -WhatIfEnabled
 
             $result.Command | Should -Be 'publish'
-            $result.Arguments | Should -Be @('--help')
+            $result.Arguments | Should -Be @()
             $result.CommonParameters.Verbose | Should -BeTrue
             $result.MutatingCommonParameters.WhatIf | Should -BeTrue
             $result.IsHelpRequest | Should -BeTrue
+            $result.HelpRequest.View | Should -Be 'Short'
+            $result.HelpRequest.TargetType | Should -Be 'Command'
             $result.ModuleName | Should -Be 'NovaModuleTools'
             $result.WhatIfEnabled | Should -BeTrue
             $result.CliConfirmEnabled | Should -BeFalse
@@ -98,10 +97,15 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         InModuleScope $script:moduleName {
             $invocationContext = [pscustomobject]@{
                 Command = 'package'
-                Arguments = @('--help')
+                Arguments = @()
                 CommonParameters = @{}
                 MutatingCommonParameters = @{}
                 IsHelpRequest = $true
+                HelpRequest = [pscustomobject]@{
+                    Command = 'package'
+                    View = 'Long'
+                    TargetType = 'Command'
+                }
                 ModuleName = 'NovaModuleTools'
                 WhatIfEnabled = $false
             }
@@ -110,7 +114,22 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             $result = Invoke-NovaCliCommandRoute -InvocationContext $invocationContext
 
             $result | Should -Be 'package-help'
-            Assert-MockCalled Get-NovaCliCommandHelp -Times 1 -ParameterFilter {$Command -eq 'package'}
+            Assert-MockCalled Get-NovaCliCommandHelp -Times 1 -ParameterFilter {$Command -eq 'package' -and $View -eq 'Long'}
+        }
+    }
+
+    It 'Get-NovaCliHelpRequest resolves root short help, command short help, and command long help' {
+        InModuleScope $script:moduleName {
+            $rootHelp = Get-NovaCliHelpRequest -Command '--help' -Arguments @()
+            $shortHelp = Get-NovaCliHelpRequest -Command 'build' -Arguments @('-h')
+            $longHelp = Get-NovaCliHelpRequest -Command '-h' -Arguments @('build')
+
+            $rootHelp.TargetType | Should -Be 'Root'
+            $rootHelp.View | Should -Be 'Short'
+            $shortHelp.Command | Should -Be 'build'
+            $shortHelp.View | Should -Be 'Short'
+            $longHelp.Command | Should -Be 'build'
+            $longHelp.View | Should -Be 'Long'
         }
     }
 
@@ -496,27 +515,18 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
-    It 'Get-NovaCliCommandHelp maps the remaining routed commands to the expected help targets' {
+    It 'Get-NovaCliCommandHelp renders CLI-native command help without calling Get-Help' {
         InModuleScope $script:moduleName {
-            Mock Get-Help {"help:$Name"}
+            Mock Get-Help {throw 'CLI help should not call Get-Help'}
 
-            $expectedTargets = @{
-                info = 'Get-NovaProjectInfo'
-                version = 'Invoke-NovaCli'
-                build = 'Invoke-NovaBuild'
-                test = 'Test-NovaBuild'
-                bump = 'Update-NovaModuleVersion'
-                update = 'Update-NovaModuleTool'
-                notification = 'Set-NovaUpdateNotificationPreference'
-                publish = 'Publish-NovaModule'
-                release = 'Invoke-NovaRelease'
-            }
-
-            foreach ($commandName in $expectedTargets.Keys) {
+            foreach ($commandName in @('info', 'version', 'build', 'test', 'bump', 'update', 'notification', 'publish', 'release')) {
                 $result = Get-NovaCliCommandHelp -Command $commandName
 
-                $result | Should -Be "help:$( $expectedTargets[$commandName] )"
+                $result | Should -Match '^usage: '
+                $result | Should -Match 'Options:'
             }
+
+            Assert-MockCalled Get-Help -Times 0
         }
     }
 
