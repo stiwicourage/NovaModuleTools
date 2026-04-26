@@ -86,11 +86,24 @@ jobs:
       - name: Prepare next prerelease version on develop
         if: github.ref_name == 'develop'
         run: |
+          $ErrorActionPreference = 'Stop'
+
           git fetch origin develop
           git checkout develop
-          
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-          Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
+
+          $psResourcePath = Join-Path $HOME '.local/share/PSResourceGet'
+          New-Item -ItemType Directory -Path $psResourcePath -Force | Out-Null
+
+          if (-not (Get-PSResourceRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
+            Register-PSResourceRepository -PSGallery
+          }
+
+          Publish-NovaModule `
+            -Repository PSGallery `
+            -ApiKey $env:PSGALLERY_API `
+            -SkipTests `
+            -Verbose
+
           Update-NovaModuleVersion -Preview -Verbose
         env:
           PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
