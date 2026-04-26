@@ -36,8 +36,11 @@ jobs:
       - name: Install required modules from PSGallery
         run: ./scripts/build/ci/Install-CiPowerShellModules.ps1
 
-      - name: Run NovaModuleTools CI test and coverage workflow
-        run: ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts
+      - name: Build Module
+        run: Invoke-NovaBuild -Verbose
+
+      - name: Run Pester Tests
+        run: Test-NovaBuild
 
       - name: Generate Report
         continue-on-error: true
@@ -87,7 +90,7 @@ jobs:
           git checkout develop
           
           Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-          Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -Verbose
+          Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
           Update-NovaModuleVersion -Preview -Verbose
         env:
           PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
