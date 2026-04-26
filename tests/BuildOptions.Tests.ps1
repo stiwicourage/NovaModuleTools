@@ -311,6 +311,18 @@ Describe 'Invoke-NovaBuild options' {
         }
     }
 
+    It 'Test-NovaBuild -Build rebuilds the project before running tests' {
+        $project = New-TestProjectWithMarkerTests -TestDriveRoot $TestDrive -Name 'TestsWithBuildFlag' -BuildRecursiveFolders $true
+        $builtModulePath = Join-Path $project.Root 'dist/TestsWithBuildFlag/TestsWithBuildFlag.psm1'
+
+        $result = Invoke-TestProjectTests -ProjectRoot $project.Root -ModulePath $distModuleDir -BuildBeforeTest
+
+        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
+        (Test-Path -LiteralPath $builtModulePath) | Should -BeTrue
+        (Test-Path -LiteralPath $project.TopMarker) | Should -BeTrue
+        (Test-Path -LiteralPath $project.NestedMarker) | Should -BeTrue
+    }
+
     It 'missing FailOnDuplicateFunctionNames defaults to true and fails on duplicate top-level function names' {
         $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupDefault' -Options @{ ProjectName = 'DupDefault'; BuildRecursiveFolders = $false; SetSourcePath = $false }
         $expectedModulePath = Get-BuiltModuleFilePath -ProjectRoot $root

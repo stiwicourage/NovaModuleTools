@@ -7,6 +7,8 @@ $global:gitTestSupportFunctionNameList = @(
 )
 $global:coverageGapsCliTestSupportFunctionNameList = @(
     'Assert-TestStructuredCliError'
+    'Resolve-TestPublicDocsUrl'
+    'Assert-TestPublicDocsUrlExists'
 )
 . $script:gitTestSupportPath
 . $script:coverageGapsCliTestSupportPath
@@ -323,6 +325,28 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'ConvertFrom-NovaTestCliArgument parses the build switch and rejects unsupported test arguments' {
+        InModuleScope $script:moduleName {
+            (ConvertFrom-NovaTestCliArgument -Arguments @('--build')).Build | Should -BeTrue
+            (ConvertFrom-NovaTestCliArgument -Arguments @('-b')).Build | Should -BeTrue
+
+            $unknownArgumentError = $null
+            try {
+                ConvertFrom-NovaTestCliArgument -Arguments @('--bogus')
+            }
+            catch {
+                $unknownArgumentError = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $unknownArgumentError -ExpectedError ([pscustomobject]@{
+                Message = 'Unknown argument: --bogus'
+                ErrorId = 'Nova.Validation.UnknownCliArgument'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '--bogus'
+            })
+        }
+    }
+
     It 'ConvertFrom-NovaInitCliArgument parses explicit path and example switches' {
         InModuleScope $script:moduleName {
             $options = ConvertFrom-NovaInitCliArgument -Arguments @('--example', '--path', 'tmp/project/root')
@@ -515,6 +539,38 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'Invoke-NovaCliCommandRoute forwards the parsed test build flag to Test-NovaBuild' {
+        InModuleScope $script:moduleName {
+            $invocationContext = [pscustomobject]@{
+                Command = 'test'
+                Arguments = @('--build')
+                CommonParameters = @{}
+                MutatingCommonParameters = @{WhatIf = $true}
+                IsHelpRequest = $false
+                HelpRequest = $null
+                ModuleName = 'NovaModuleTools'
+                WhatIfEnabled = $true
+                CliConfirmEnabled = $false
+            }
+            Mock ConvertFrom-NovaTestCliArgument {@{Build = $true}}
+            Mock Test-NovaBuild {
+                param(
+                    [switch]$Build,
+                    [switch]$WhatIf
+                )
+
+                [pscustomobject]@{Build = $Build.IsPresent; WhatIf = $WhatIf.IsPresent}
+            }
+
+            $result = Invoke-NovaCliCommandRoute -InvocationContext $invocationContext
+
+            $result.Build | Should -BeTrue
+            $result.WhatIf | Should -BeTrue
+            Assert-MockCalled ConvertFrom-NovaTestCliArgument -Times 1 -ParameterFilter {$Arguments -eq @('--build')}
+            Assert-MockCalled Test-NovaBuild -Times 1 -ParameterFilter {$Build -and $WhatIf}
+        }
+    }
+
     It 'Get-NovaCliCommandHelp renders CLI-native command help without calling Get-Help' {
         InModuleScope $script:moduleName {
             Mock Get-Help {throw 'CLI help should not call Get-Help'}
@@ -527,6 +583,40 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             }
 
             Assert-MockCalled Get-Help -Times 0
+        }
+    }
+
+    It 'Get-NovaCliCommandHelp includes docs URLs only in long help descriptions' {
+        InModuleScope $script:moduleName -Parameters @{DocsRoot = (Join-Path $script:repoRoot 'docs')} {
+            param($DocsRoot)
+
+            $docsLinkPrefix = 'For more information, documentation, and examples, visit:'
+            $docsUrlMap = @{
+                'init' = 'https://www.novamoduletools.com/core-workflows.html#scaffold'
+                'info' = 'https://www.novamoduletools.com/project-json-reference.html'
+                'version' = 'https://www.novamoduletools.com/versioning-and-updates.html#version-views'
+                'build' = 'https://www.novamoduletools.com/core-workflows.html#build'
+                'test' = 'https://www.novamoduletools.com/core-workflows.html#test'
+                'package' = 'https://www.novamoduletools.com/packaging-and-delivery.html#pack'
+                'deploy' = 'https://www.novamoduletools.com/packaging-and-delivery.html#upload'
+                'bump' = 'https://www.novamoduletools.com/versioning-and-updates.html#bump'
+                'update' = 'https://www.novamoduletools.com/versioning-and-updates.html#self-update'
+                'notification' = 'https://www.novamoduletools.com/versioning-and-updates.html#notification-preferences'
+                'publish' = 'https://www.novamoduletools.com/packaging-and-delivery.html#publish'
+                'release' = 'https://www.novamoduletools.com/packaging-and-delivery.html#release'
+            }
+
+            foreach ($commandName in $docsUrlMap.Keys) {
+                $docsUrl = $docsUrlMap[$commandName]
+                $shortHelp = Get-NovaCliCommandHelp -Command $commandName -View 'Short'
+                $longHelp = Get-NovaCliCommandHelp -Command $commandName -View 'Long'
+
+                $shortHelp | Should -Not -Match ([regex]::Escape($docsLinkPrefix))
+                $shortHelp | Should -Not -Match ([regex]::Escape($docsUrl))
+                $longHelp | Should -Match ([regex]::Escape($docsLinkPrefix))
+                $longHelp | Should -Match ([regex]::Escape($docsUrl))
+                Assert-TestPublicDocsUrlExists -Url $docsUrl -DocsRoot $docsRoot | Out-Null
+            }
         }
     }
 
@@ -568,6 +658,21 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 TargetObject = '--whatif'
+            })
+
+            $deprecatedBuildError = $null
+            try {
+                Assert-NovaCliArgumentSyntax -Arguments @('-build')
+            }
+            catch {
+                $deprecatedBuildError = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $deprecatedBuildError -ExpectedError ([pscustomobject]@{
+                Message = "Unsupported CLI option syntax: -build. Use '--build' or '-b' instead."
+                ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '-build'
             })
         }
     }

@@ -4,7 +4,9 @@
     Usage = 'nova notification [<options>]'
     Description = @(
         'Show or change prerelease self-update eligibility for NovaModuleTools self-updates.',
-        'Run without options to show the current preference, or use --enable/--disable when you want to change it.'
+        'Run without options to show the current preference, or use --enable/--disable when you want to change it.',
+        'For more information, documentation, and examples, visit:',
+        'https://www.novamoduletools.com/versioning-and-updates.html#notification-preferences'
     )
     Options = @(
         @{

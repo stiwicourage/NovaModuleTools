@@ -68,6 +68,14 @@ PS> Invoke-NovaBuild
 
 This creates the built module under `dist/NovaModuleTools/`.
 
+When you want the test workflow to rebuild first, use:
+
+```powershell
+PS> Test-NovaBuild -Build
+% nova test --build
+% nova test -b
+```
+
 NovaModuleTools can self-update the installed module from PowerShell or the `nova` CLI launcher.
 
 - Stable self-updates are always available.
@@ -128,6 +136,8 @@ Use the launcher-oriented help forms when you want CLI syntax instead of PowerSh
 
 - `% nova <command> --help` / `% nova <command> -h` shows short command help
 - `% nova --help <command>` / `% nova -h <command>` shows long command help
+- Long command help now includes the matching public GitHub Pages guide URL for the selected command, while short help
+  stays link-free
 - CLI help is launcher-native and uses CLI option spellings such as `--repository` and `-r`
 - Use PowerShell `Get-Help` when you want cmdlet help such as `Get-Help Publish-NovaModule -Full`
 - Root `% nova -v` means version, while command-level `% nova build -v` means verbose for supported routed commands

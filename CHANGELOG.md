@@ -50,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the current project version from `project.json`, while keeping `% nova --version` / `% nova -v` dedicated to the
   installed
   NovaModuleTools version.
+- Add build-before-test support to the test workflow so `Test-NovaBuild -Build`, `% nova test --build`, and `% nova
+  test -b` rebuild the project before running Pester.
 - Add an opt-in `-Preview` mode to `Update-NovaModuleVersion` / GNU-style `% nova bump --preview` / `% nova bump -p` for
   explicit preview iteration.
     - Stable versions still use the normal semantic bump target first, then append `-preview`.
@@ -84,6 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change `nova` help to a dedicated CLI-native help system with both short and long command help forms.
     - `% nova <command> --help` and `% nova <command> -h` now show short CLI help.
     - `% nova --help <command>` and `% nova -h <command>` now show long CLI help.
+  - Long command help now includes the matching public GitHub Pages guide URL for the selected command, while short help
+    stays focused on command syntax and options.
     - CLI help no longer delegates to PowerShell `Get-Help` and now consistently shows CLI option spellings such as
       `--repository` and `-r`.
 - Refactor `tests/NovaCommandModel.TestSupport.ps1` into smaller, focused support scripts so the shared Nova command
@@ -101,6 +105,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
+- Fix GitHub Pages guide fragment links so section anchors such as `#pack` scroll fully into view instead of hiding the
+  section heading behind the sticky top navigation.
 
 ### Documentation
 

@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/25/2026
+ms.date: 04/26/2026
 PlatyPS schema version: 2024-05-01
 title: Test-NovaBuild
 ---
@@ -20,14 +20,16 @@ Runs Pester tests for the current NovaModuleTools project.
 ### __AllParameterSets
 
 ```text
-PS> Test-NovaBuild [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>] [[-OutputVerbosity] <string>]
-[[-OutputRenderMode] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Test-NovaBuild [-Build] [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>]
+ [[-OutputVerbosity] <string>] [[-OutputRenderMode] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
 `Test-NovaBuild` reads the Pester configuration from `project.json`, resolves the correct test path, and runs the test
 suite against the current project.
+
+Use `-Build` when you want Nova to rebuild the project output before the Pester run starts.
 
 With the default
 `BuildRecursiveFolders=true`, test files in nested folders under `tests` are discovered and run. Set
@@ -50,12 +52,20 @@ Runs the Pester tests for the current project.
 ### EXAMPLE 2
 
 ```text
+PS> Test-NovaBuild -Build
+```
+
+Builds the project first, then runs the configured Pester test workflow.
+
+### EXAMPLE 3
+
+```text
 PS> Test-NovaBuild -TagFilter unit,fast
 ```
 
 Runs only tests tagged `unit` or `fast`.
 
-### EXAMPLE 3
+### EXAMPLE 4
 
 ```text
 PS> Test-NovaBuild -ExcludeTagFilter slow
@@ -63,7 +73,7 @@ PS> Test-NovaBuild -ExcludeTagFilter slow
 
 Runs the test suite while excluding tests tagged `slow`.
 
-### EXAMPLE 4
+### EXAMPLE 5
 
 ```text
 PS> Test-NovaBuild -OutputVerbosity Normal -OutputRenderMode Ansi
@@ -71,7 +81,7 @@ PS> Test-NovaBuild -OutputVerbosity Normal -OutputRenderMode Ansi
 
 Overrides the console output settings for the current test run while keeping color-capable rendering.
 
-### EXAMPLE 5
+### EXAMPLE 6
 
 ```text
 PS> Test-NovaBuild -WhatIf
@@ -79,7 +89,36 @@ PS> Test-NovaBuild -WhatIf
 
 Previews the planned Pester run without executing tests or writing `artifacts/TestResults.xml`.
 
+### EXAMPLE 7
+
+```text
+PS> Test-NovaBuild -Build -WhatIf
+```
+
+Previews the build-before-test workflow without rebuilding the project or running Pester.
+
 ## PARAMETERS
+
+### -Build
+
+Builds the project before the test workflow starts.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
 
 ### -ExcludeTagFilter
 

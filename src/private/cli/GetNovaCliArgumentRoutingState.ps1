@@ -58,6 +58,7 @@ function Get-NovaCliLegacyOptionReplacement {
     $replacementMap = @{
         '-apikey' = "'--api-key' or '-k'"
         '-authenticationscheme' = "'--auth-scheme' or '-a'"
+        '-build' = "'--build' or '-b'"
         '-confirm' = "'--confirm' or '-c'"
         '-disable' = "'--disable' or '-d'"
         '-enable' = "'--enable' or '-e'"

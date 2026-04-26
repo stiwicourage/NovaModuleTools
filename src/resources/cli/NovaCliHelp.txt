@@ -99,5 +99,8 @@ artifacts from the configured package output directory to a raw repository endpo
 Inside PowerShell, 'nova publish --local' also reloads the published module from the
 local install path after a successful publish.
 
+For more information, documentation, and examples, visit:
+   https://www.novamoduletools.com/
+
 Note: 'nova init' is interactive. Use 'nova init --path <path>' or 'nova init -p <path>' for an explicit destination,
 'nova init --example' or 'nova init -e' for the packaged example scaffold, and do not use 'nova init --what-if' or 'nova init -w'.

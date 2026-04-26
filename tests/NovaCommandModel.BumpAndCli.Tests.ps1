@@ -1,97 +1,81 @@
-function global:Get-TestSupportPath {
-    [CmdletBinding()]
-    param()
+$script:testSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.ps1')).Path
 
-    return (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.ps1')).Path
+<#
+# Why we intentionally ignore CodeScene's warnings here
+#
+# This test file contains a large number of small helper functions that are used across multiple test cases to
+# validate the behavior of the nova CLI confirmation and version bump workflows. To avoid unnecessary complexity
+# in the test cases and to promote reuse of common test logic, these helper functions are defined in a separate
+# test support script and imported into this test file.
+#
+# @CodeScene (disable:"Global Conditionals")
+#>
+$global:novaCommandModelBumpAndCliTestSupportFunctionNameList = @(
+    'Publish-TestSupportFunctions'
+    'Get-TestRegexMatchGroup'
+    'ConvertTo-TestNormalizedText'
+    'Assert-TestModuleIsBuilt'
+    'Get-TestModuleDisplayVersion'
+    'Get-TestHelpLocaleFromMarkdownFiles'
+    'Get-CommandHelpActivationTestCase'
+    'Get-CommandHelpActivationTestCases'
+    'Get-TestModuleContextInfo'
+    'Initialize-TestModuleContext'
+    'Initialize-TestNovaCliProjectLayout'
+    'Write-TestNovaCliProjectJson'
+    'Write-TestNovaCliPublicFunction'
+    'Initialize-TestNovaCliGitRepository'
+    'Invoke-TestInstalledNovaCommand'
+    'New-TestPesterConfigStub'
+    'Assert-TestNovaCliConfirmDecisions'
+    'Invoke-ReadNovaCliPromptKeyAssertion'
+    'Invoke-GetNovaCliCommandPromptKeyAssertion'
+    'Invoke-GetNovaCliCommandCancellationInfoAssertion'
+    'Invoke-UpdateNovaModuleVersionDefaultPathAssertion'
+    'Invoke-ConfirmNovaCliCommandActionEnterAssertion'
+    'Invoke-ConfirmNovaCliCommandActionRetryAssertion'
+    'Invoke-ConfirmNovaCliCommandActionCancellationAssertion'
+)
+. $script:testSupportPath
+
+foreach ($functionName in $global:novaCommandModelBumpAndCliTestSupportFunctionNameList) {
+    $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+    Set-Item -Path "function:global:$functionName" -Value $scriptBlock
 }
-
-function global:Get-TestSupportFunctionNameList {
-    [CmdletBinding()]
-    param()
-
-    return @(
-        'Publish-TestSupportFunctions'
-        'Get-TestRegexMatchGroup'
-        'ConvertTo-TestNormalizedText'
-        'Assert-TestModuleIsBuilt'
-        'Get-TestModuleDisplayVersion'
-        'Get-TestHelpLocaleFromMarkdownFiles'
-        'Get-CommandHelpActivationTestCase'
-        'Get-CommandHelpActivationTestCases'
-        'Get-TestModuleContextInfo'
-        'Initialize-TestModuleContext'
-        'Initialize-TestNovaCliProjectLayout'
-        'Write-TestNovaCliProjectJson'
-        'Write-TestNovaCliPublicFunction'
-        'Initialize-TestNovaCliGitRepository'
-        'Invoke-TestInstalledNovaCommand'
-        'New-TestPesterConfigStub'
-    )
-}
-
-function global:Import-TestSupportFunctions {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][string]$SupportPath,
-        [Parameter(Mandatory)][string[]]$FunctionNameList
-    )
-
-    . $SupportPath
-    Publish-TestSupportFunctions -FunctionNameList $FunctionNameList
-}
-
-function global:Initialize-TestSupportEnvironment {
-    [CmdletBinding()]
-    param()
-
-    $script:testSupportPath = Get-TestSupportPath
-    $global:novaCommandModelTestSupportFunctionNameList = Get-TestSupportFunctionNameList
-    Import-TestSupportFunctions -SupportPath $script:testSupportPath -FunctionNameList $global:novaCommandModelTestSupportFunctionNameList
-}
-
-Initialize-TestSupportEnvironment
 
 BeforeAll {
     $testSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'NovaCommandModel.TestSupport.ps1')).Path
     . $testSupportPath
-    $script:assertTestNovaCliConfirmDecisions = (Get-Command -Name 'Assert-TestNovaCliConfirmDecisions' -CommandType Function -ErrorAction Stop).ScriptBlock
-    $script:invokeReadNovaCliPromptKeyAssertion = (Get-Command -Name 'Invoke-ReadNovaCliPromptKeyAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
-    $script:invokeGetNovaCliCommandPromptKeyAssertion = (Get-Command -Name 'Invoke-GetNovaCliCommandPromptKeyAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
-    $script:invokeGetNovaCliCommandCancellationInfoAssertion = (Get-Command -Name 'Invoke-GetNovaCliCommandCancellationInfoAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
-    $script:invokeUpdateNovaModuleVersionDefaultPathAssertion = (Get-Command -Name 'Invoke-UpdateNovaModuleVersionDefaultPathAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
-    $script:invokeConfirmNovaCliCommandActionEnterAssertion = (Get-Command -Name 'Invoke-ConfirmNovaCliCommandActionEnterAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
-    $script:invokeConfirmNovaCliCommandActionRetryAssertion = (Get-Command -Name 'Invoke-ConfirmNovaCliCommandActionRetryAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
-    $script:invokeConfirmNovaCliCommandActionCancellationAssertion = (Get-Command -Name 'Invoke-ConfirmNovaCliCommandActionCancellationAssertion' -CommandType Function -ErrorAction Stop).ScriptBlock
-    Publish-TestSupportFunctions -FunctionNameList $global:novaCommandModelTestSupportFunctionNameList
-    $moduleContext = Initialize-TestModuleContext -CommandPath $PSCommandPath -SupportPath $testSupportPath -FunctionNameList $global:novaCommandModelTestSupportFunctionNameList
+    Publish-TestSupportFunctions -FunctionNameList $global:novaCommandModelBumpAndCliTestSupportFunctionNameList
+    $moduleContext = Initialize-TestModuleContext -CommandPath $PSCommandPath -SupportPath $testSupportPath -FunctionNameList $global:novaCommandModelBumpAndCliTestSupportFunctionNameList
     $script:moduleName = $moduleContext.ModuleName
     $script:distModuleDir = $moduleContext.DistModuleDir
 }
 
 Describe 'Nova command model - bump and CLI confirmation behavior' {
     It 'Get-NovaCliConfirmDecision approves Yes and Yes to All, and cancels No, No to All, and Suspend' {
-        & $script:assertTestNovaCliConfirmDecisions -ModuleName $script:moduleName
+        Assert-TestNovaCliConfirmDecisions -ModuleName $script:moduleName
     }
 
     It 'Read-NovaCliPromptKey returns the expected result when console input <Name>' -ForEach @(
         @{Name = 'is available'; Expected = [char]'y'; ConsoleKeyChar = [char]'y'; Throws = $false}
         @{Name = 'fails'; Expected = [char]0; ConsoleKeyChar = [char]0; Throws = $true}
     ) {
-        & $script:invokeReadNovaCliPromptKeyAssertion -ModuleName $script:moduleName -TestCase $_
+        Invoke-ReadNovaCliPromptKeyAssertion -ModuleName $script:moduleName -TestCase $_
     }
 
     It 'Get-NovaCliCommandPromptKey returns the expected key when prompt input <Name>' -ForEach @(
         @{Name = 'uses the NOVA_CLI_CONFIRM_RESPONSE override'; EnvironmentResponse = 'later'; Expected = [char]'l'; PromptReadCount = 0}
         @{Name = 'must be read from the interactive prompt'; EnvironmentResponse = ''; Expected = [char]'n'; PromptReadCount = 1}
     ) {
-        & $script:invokeGetNovaCliCommandPromptKeyAssertion -ModuleName $script:moduleName -TestCase $_
+        Invoke-GetNovaCliCommandPromptKeyAssertion -ModuleName $script:moduleName -TestCase $_
     }
 
     It 'Get-NovaCliCommandCancellationInfo returns the expected cancellation metadata for <Name>' -ForEach @(
         @{Name = 'Suspend'; Key = 'S'; ExpectedMessage = 'Suspend is not supported in nova CLI mode. Operation cancelled.'; ExpectedErrorId = 'Nova.Workflow.CliSuspendNotSupported'}
         @{Name = 'No'; Key = 'N'; ExpectedMessage = 'Operation cancelled.'; ExpectedErrorId = 'Nova.Workflow.CliOperationCancelled'}
     ) {
-        & $script:invokeGetNovaCliCommandCancellationInfoAssertion -ModuleName $script:moduleName -TestCase $_
+        Invoke-GetNovaCliCommandCancellationInfoAssertion -ModuleName $script:moduleName -TestCase $_
     }
 
     It 'Get-NovaVersionUpdateWorkflowContext prepares version bump state from project info and commit history' {
@@ -179,7 +163,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
     }
 
     It 'Update-NovaModuleVersion defaults Path to the current location when Path is omitted' {
-        & $script:invokeUpdateNovaModuleVersionDefaultPathAssertion -ModuleName $script:moduleName
+        Invoke-UpdateNovaModuleVersionDefaultPathAssertion -ModuleName $script:moduleName
     }
 
     It 'Update-NovaModuleVersion -WhatIf returns the expected next version without persisting it when <Name>' -ForEach @(
@@ -419,15 +403,15 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
     }
 
     It 'Confirm-NovaCliCommandAction accepts Enter as the default confirmation response' {
-        & $script:invokeConfirmNovaCliCommandActionEnterAssertion -ModuleName $script:moduleName
+        Invoke-ConfirmNovaCliCommandActionEnterAssertion -ModuleName $script:moduleName
     }
 
     It 'Confirm-NovaCliCommandAction retries after invalid input and returns after an accepted response' {
-        & $script:invokeConfirmNovaCliCommandActionRetryAssertion -ModuleName $script:moduleName
+        Invoke-ConfirmNovaCliCommandActionRetryAssertion -ModuleName $script:moduleName
     }
 
     It 'Confirm-NovaCliCommandAction stops the operation with the expected CLI cancellation result for No' {
-        & $script:invokeConfirmNovaCliCommandActionCancellationAssertion -ModuleName $script:moduleName -TestCase @{
+        Invoke-ConfirmNovaCliCommandActionCancellationAssertion -ModuleName $script:moduleName -TestCase @{
             Key = 'N'
             ExpectedMessage = 'Operation cancelled.'
             ExpectedErrorId = 'Nova.Workflow.CliOperationCancelled'
@@ -435,7 +419,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
     }
 
     It 'Confirm-NovaCliCommandAction stops the operation with the expected CLI cancellation result for Suspend' {
-        & $script:invokeConfirmNovaCliCommandActionCancellationAssertion -ModuleName $script:moduleName -TestCase @{
+        Invoke-ConfirmNovaCliCommandActionCancellationAssertion -ModuleName $script:moduleName -TestCase @{
             Key = 'S'
             ExpectedMessage = 'Suspend is not supported in nova CLI mode. Operation cancelled.'
             ExpectedErrorId = 'Nova.Workflow.CliSuspendNotSupported'

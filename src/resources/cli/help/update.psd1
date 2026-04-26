@@ -4,7 +4,9 @@
     Usage = 'nova update [<options>]'
     Description = @(
         'Update the installed NovaModuleTools module by using the stored prerelease-notification preference.',
-        'Stable updates remain available by default, while prerelease targets require explicit confirmation before they run.'
+        'Stable updates remain available by default, while prerelease targets require explicit confirmation before they run.',
+        'For more information, documentation, and examples, visit:',
+        'https://www.novamoduletools.com/versioning-and-updates.html#self-update'
     )
     Options = @(
         @{

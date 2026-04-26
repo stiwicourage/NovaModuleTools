@@ -65,7 +65,8 @@ function Invoke-NovaCliCommandRoute {
             Invoke-NovaBuild @mutatingCommonParameters
         }
         'test' = {
-            Test-NovaBuild @mutatingCommonParameters
+            $options = ConvertFrom-NovaTestCliArgument -Arguments $arguments
+            Test-NovaBuild @options @mutatingCommonParameters
         }
         'package' = {
             New-NovaModulePackage @mutatingCommonParameters

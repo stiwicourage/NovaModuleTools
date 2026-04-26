@@ -4,7 +4,9 @@
     Usage = 'nova release [<options>]'
     Description = @(
         'Run the full release flow: build, test, version bump, rebuild, and publish.',
-        'Use the same publish-target options as nova publish when you want the release workflow to publish locally or to a repository.'
+        'Use the same publish-target options as nova publish when you want the release workflow to publish locally or to a repository.',
+        'For more information, documentation, and examples, visit:',
+        'https://www.novamoduletools.com/packaging-and-delivery.html#release'
     )
     Options = @(
         @{

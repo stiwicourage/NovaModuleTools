@@ -4,7 +4,9 @@
     Usage = 'nova publish [<options>]'
     Description = @(
         'Build, test, and publish the current project either locally or to a PowerShell repository.',
-        'Use --local when you want a local publish workflow, or supply repository credentials when you want a repository publish.'
+        'Use --local when you want a local publish workflow, or supply repository credentials when you want a repository publish.',
+        'For more information, documentation, and examples, visit:',
+        'https://www.novamoduletools.com/packaging-and-delivery.html#publish'
     )
     Options = @(
         @{

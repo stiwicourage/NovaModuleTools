@@ -257,8 +257,9 @@ PS&gt; Invoke-NovaBuild -WhatIf</code></pre>
                             <li><strong>Best for:</strong> validating the project test suite from the normal Nova
                                 workflow
                             </li>
-                            <li><strong>Key parameters:</strong> <code>-TagFilter</code>, <code>-ExcludeTagFilter</code>,
-                                <code>-OutputVerbosity</code>, <code>-OutputRenderMode</code></li>
+                            <li><strong>Key parameters:</strong> <code>-Build</code>, <code>-TagFilter</code>,
+                                <code>-ExcludeTagFilter</code>, <code>-OutputVerbosity</code>,
+                                <code>-OutputRenderMode</code></li>
                             <li><strong>Notable behavior:</strong> uses <code>BuildRecursiveFolders</code> to decide
                                 nested test discovery
                             </li>
@@ -271,17 +272,20 @@ PS&gt; Invoke-NovaBuild -WhatIf</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="powershell">
                                 <pre><code>PS&gt; Test-NovaBuild
+PS&gt; Test-NovaBuild -Build
 PS&gt; Test-NovaBuild -TagFilter unit,fast</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
                                 <pre><code>% nova test
+% nova test --build
 % nova test --what-if</code></pre>
                             </div>
                         </div>
                         <div class="surface-note" data-command-visibility="command-line" hidden>
-                            <p><strong>Command-line note:</strong> advanced test filters such as <code>-TagFilter</code>,
-                                <code>-ExcludeTagFilter</code>, and render-mode overrides stay on the PowerShell cmdlet
-                                surface.</p>
+                            <p><strong>Command-line note:</strong> use <code>--build</code> or <code>-b</code> when you
+                                want the routed CLI to rebuild before testing. Advanced test filters such as
+                                <code>-TagFilter</code>, <code>-ExcludeTagFilter</code>, and render-mode overrides stay
+                                on the PowerShell cmdlet surface.</p>
                         </div>
                         <p><a class="text-link" href="./core-workflows.html#test">See the test workflow</a></p>
                     </article>

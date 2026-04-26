@@ -313,15 +313,24 @@ function Invoke-TestProjectTests {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot,
-        [Parameter(Mandatory)][string]$ModulePath
+        [Parameter(Mandatory)][string]$ModulePath,
+        [switch]$BuildBeforeTest
     )
 
     $scriptPath = Join-Path $ProjectRoot 'Run-TestNovaBuild.ps1'
+    $testCommand = if ($BuildBeforeTest) {
+        'Test-NovaBuild -Build'
+    }
+    else {
+        @(
+            'Invoke-NovaBuild'
+            'Test-NovaBuild'
+        ) -join [Environment]::NewLine
+    }
     $script = @"
 Import-Module '$ModulePath' -Force
 Set-Location -LiteralPath '$ProjectRoot'
-Invoke-NovaBuild
-Test-NovaBuild
+$testCommand
 "@
 
     Set-Content -LiteralPath $scriptPath -Value $script -Encoding utf8
