@@ -12,7 +12,7 @@ function Publish-NovaModule {
     )
 
     dynamicparam {
-        return New-NovaDynamicSkipTestsParameterDictionary
+        return Get-NovaDynamicSkipTestsParameterDictionary
     }
 
     begin {

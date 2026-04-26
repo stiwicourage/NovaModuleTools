@@ -1,4 +1,4 @@
-function Set-NovaCliDeliveryOption {
+function Add-NovaCliDeliveryOption {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][hashtable]$Options,
@@ -30,22 +30,22 @@ function ConvertFrom-NovaCliArgument {
 
         switch -Regex ($token) {
             '^(--local|-l)$' {
-                Set-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'Local'; Value = $true}) -Token $token
+                Add-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'Local'; Value = $true}) -Token $token
             }
             '^(--repository|-r)$' {
                 $value = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--repository'
-                Set-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'Repository'; Value = $value}) -Token $token
+                Add-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'Repository'; Value = $value}) -Token $token
             }
             '^(--path|-p)$' {
                 $value = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--path'
-                Set-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'ModuleDirectoryPath'; Value = $value}) -Token $token
+                Add-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'ModuleDirectoryPath'; Value = $value}) -Token $token
             }
             '^(--api-key|-k)$' {
                 $value = Get-NovaCliRequiredArgumentValue -Arguments $Arguments -Index ([ref]$index) -OptionName '--api-key'
-                Set-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'ApiKey'; Value = $value}) -Token $token
+                Add-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'ApiKey'; Value = $value}) -Token $token
             }
             '^(--skip-tests|-s)$' {
-                Set-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'SkipTests'; Value = $true}) -Token $token
+                Add-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'SkipTests'; Value = $true}) -Token $token
             }
             default {
                 Stop-NovaOperation -Message "Unknown argument: $token" -ErrorId 'Nova.Validation.UnknownCliArgument' -Category InvalidArgument -TargetObject $token

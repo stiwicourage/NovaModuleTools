@@ -1,4 +1,4 @@
-function New-NovaDynamicSkipTestsParameterDictionary {
+function Get-NovaDynamicSkipTestsParameterDictionary {
     [CmdletBinding()]
     param()
 
