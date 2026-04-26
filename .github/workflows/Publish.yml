@@ -81,6 +81,8 @@ jobs:
           git checkout develop
           git reset --hard origin/main
 
+          ./scripts/build/ci/Install-CiPowerShellModules.ps1
+
           Update-NovaModuleVersion -Preview -Verbose
 
       - name: Prepare next prerelease version on develop
@@ -97,6 +99,8 @@ jobs:
           if (-not (Get-PSResourceRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
             Register-PSResourceRepository -PSGallery
           }
+
+          ./scripts/build/ci/Install-CiPowerShellModules.ps1
 
           Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
 
