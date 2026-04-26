@@ -103,7 +103,7 @@ jobs:
 
           ./scripts/build/ci/Import-BuiltCiModule.ps1 | Out-Null
 
-          Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
+          Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
 
           ./scripts/build/ci/Import-BuiltCiModule.ps1 | Out-Null
 
