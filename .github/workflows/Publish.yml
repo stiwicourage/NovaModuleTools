@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 defaults:
   run:
@@ -99,6 +100,10 @@ jobs:
           if (-not (Get-PSResourceRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
             Register-PSResourceRepository -PSGallery
           }
+
+          ./scripts/build/ci/Import-BuiltCiModule.ps1 | Out-Null
+
+          Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
 
           ./scripts/build/ci/Import-BuiltCiModule.ps1 | Out-Null
 
