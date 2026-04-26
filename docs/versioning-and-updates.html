@@ -202,14 +202,19 @@
                     </div>
                     <div class="surface-example__surface" data-command-surface="powershell">
                         <pre><code>PS&gt; Update-NovaModuleVersion -WhatIf
-PS&gt; Update-NovaModuleVersion -Preview -WhatIf</code></pre>
+PS&gt; Update-NovaModuleVersion -Preview -WhatIf
+PS&gt; Update-NovaModuleVersion -ContinuousIntegration</code></pre>
                     </div>
                     <div class="surface-example__surface" data-command-surface="command-line" hidden>
                         <pre><code>% nova bump --what-if
 % nova bump --preview --what-if
+% nova bump --continuous-integration
 % nova bump --confirm</code></pre>
                     </div>
                 </div>
+                <p>Use the continuous-integration form when the same CI/self-hosting session must first re-activate the
+                    built <code>dist/</code> module before the version bump runs. This is especially useful after an
+                    earlier command changed the active module state.</p>
                 <div class="notice notice--warning">
                     <strong>Empty repository rule.</strong>
                     <p>If your Git repository exists but has no commits yet, Nova throws: <code>Cannot bump version

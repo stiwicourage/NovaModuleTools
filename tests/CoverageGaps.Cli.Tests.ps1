@@ -9,6 +9,11 @@ $global:coverageGapsCliTestSupportFunctionNameList = @(
     'Assert-TestStructuredCliError'
     'Resolve-TestPublicDocsUrl'
     'Assert-TestPublicDocsUrlExists'
+    'Get-TestNovaCliRoutedParserCaseList'
+    'Get-TestNovaCliContinuousIntegrationRouteCaseList'
+    'Get-TestNovaCliNormalizedRootCommandCaseList'
+    'Get-TestNovaCliOptionClassificationCaseList'
+    'Get-TestNovaCliSyntaxGuidanceCaseList'
 )
 . $script:gitTestSupportPath
 . $script:coverageGapsCliTestSupportPath
@@ -338,47 +343,31 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
-    It 'ConvertFrom-NovaBumpCliArgument parses the preview switch and rejects unsupported bump arguments' {
-        InModuleScope $script:moduleName {
-            (ConvertFrom-NovaBumpCliArgument -Arguments @('--preview')).Preview | Should -BeTrue
-            (ConvertFrom-NovaBumpCliArgument -Arguments @('-p')).Preview | Should -BeTrue
+    It 'routed CLI parsers accept supported switches and reject unsupported arguments' {
+        foreach ($testCase in (Get-TestNovaCliRoutedParserCaseList)) {
+            InModuleScope $script:moduleName -Parameters @{TestCase = $testCase} {
+                param($TestCase)
 
-            $unknownArgumentError = $null
-            try {
-                ConvertFrom-NovaBumpCliArgument -Arguments @('--bogus')
+                foreach ($validCase in $TestCase.ValidCases) {
+                    $options = & $TestCase.ParserCommand -Arguments $validCase.Arguments
+                    $options[$validCase.Property] | Should -BeTrue
+                }
+
+                $unknownArgumentError = $null
+                try {
+                    & $TestCase.ParserCommand -Arguments @('--bogus')
+                }
+                catch {
+                    $unknownArgumentError = $_
+                }
+
+                Assert-TestStructuredCliError -ThrownError $unknownArgumentError -ExpectedError ([pscustomobject]@{
+                    Message = 'Unknown argument: --bogus'
+                    ErrorId = 'Nova.Validation.UnknownCliArgument'
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                    TargetObject = '--bogus'
+                })
             }
-            catch {
-                $unknownArgumentError = $_
-            }
-
-            Assert-TestStructuredCliError -ThrownError $unknownArgumentError -ExpectedError ([pscustomobject]@{
-                Message = 'Unknown argument: --bogus'
-                ErrorId = 'Nova.Validation.UnknownCliArgument'
-                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                TargetObject = '--bogus'
-            })
-        }
-    }
-
-    It 'ConvertFrom-NovaTestCliArgument parses the build switch and rejects unsupported test arguments' {
-        InModuleScope $script:moduleName {
-            (ConvertFrom-NovaTestCliArgument -Arguments @('--build')).Build | Should -BeTrue
-            (ConvertFrom-NovaTestCliArgument -Arguments @('-b')).Build | Should -BeTrue
-
-            $unknownArgumentError = $null
-            try {
-                ConvertFrom-NovaTestCliArgument -Arguments @('--bogus')
-            }
-            catch {
-                $unknownArgumentError = $_
-            }
-
-            Assert-TestStructuredCliError -ThrownError $unknownArgumentError -ExpectedError ([pscustomobject]@{
-                Message = 'Unknown argument: --bogus'
-                ErrorId = 'Nova.Validation.UnknownCliArgument'
-                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                TargetObject = '--bogus'
-            })
         }
     }
 
@@ -663,6 +652,38 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'Invoke-NovaCliCommandRoute forwards ContinuousIntegration to build and bump commands' {
+        foreach ($testCase in (Get-TestNovaCliContinuousIntegrationRouteCaseList)) {
+            InModuleScope $script:moduleName -Parameters @{TestCase = $testCase} {
+                param($TestCase)
+
+                $invocationContext = [pscustomobject]@{
+                    Command = $TestCase.Command
+                    Arguments = @('--continuous-integration')
+                    CommonParameters = @{}
+                    MutatingCommonParameters = @{WhatIf = $true}
+                    IsHelpRequest = $false
+                    HelpRequest = $null
+                    ModuleName = 'NovaModuleTools'
+                    WhatIfEnabled = $true
+                    CliConfirmEnabled = $false
+                }
+
+                Mock $TestCase.ParserCommand {@{ContinuousIntegration = $true}}
+                Mock $TestCase.ActionCommand {
+                    param([switch]$ContinuousIntegration, [switch]$WhatIf)
+
+                    [pscustomobject]@{Feature = $ContinuousIntegration.IsPresent; WhatIf = $WhatIf.IsPresent}
+                }
+
+                $result = Invoke-NovaCliCommandRoute -InvocationContext $invocationContext
+
+                $result.Feature | Should -BeTrue
+                $result.WhatIf | Should -BeTrue
+            }
+        }
+    }
+
     It 'Get-NovaCliCommandHelp renders CLI-native command help without calling Get-Help' {
         InModuleScope $script:moduleName {
             Mock Get-Help {throw 'CLI help should not call Get-Help'}
@@ -712,75 +733,46 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
-    It 'CLI routing helpers cover normalized root help, option classification, and generic syntax guidance' {
-        InModuleScope $script:moduleName {
-            (Get-NovaCliNormalizedRootCommand -Command '-h') | Should -Be '--help'
-            (Get-NovaCliNormalizedRootCommand -Command '-v') | Should -Be '--version'
-            (Get-NovaCliNormalizedRootCommand -Command 'build') | Should -Be 'build'
-            (Test-NovaCliLegacySingleHyphenOption -Argument '-legacy') | Should -BeTrue
-            (Test-NovaCliLegacySingleHyphenOption -Argument '--legacy') | Should -BeFalse
-            (Test-NovaCliWhatIfOption -Argument '--what-if') | Should -BeTrue
-            (Test-NovaCliConfirmOption -Argument '-c') | Should -BeTrue
+    It 'Get-NovaCliNormalizedRootCommand normalizes root aliases' {
+        foreach ($testCase in (Get-TestNovaCliNormalizedRootCommandCaseList)) {
+            InModuleScope $script:moduleName -Parameters @{TestCase = $testCase} {
+                param($TestCase)
 
-            $genericSyntaxError = $null
-            try {
-                Assert-NovaCliArgumentSyntax -Arguments @('-legacy')
+                (Get-NovaCliNormalizedRootCommand -Command $TestCase.Command) | Should -Be $TestCase.Expected
             }
-            catch {
-                $genericSyntaxError = $_
-            }
+        }
+    }
 
-            Assert-TestStructuredCliError -ThrownError $genericSyntaxError -ExpectedError ([pscustomobject]@{
-                Message = "Unsupported CLI option syntax: -legacy. Use long options with '--' or single-character short options."
-                ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
-                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                TargetObject = '-legacy'
-            })
+    It 'CLI routing helpers classify routed options correctly' {
+        foreach ($testCase in (Get-TestNovaCliOptionClassificationCaseList)) {
+            InModuleScope $script:moduleName -Parameters @{TestCase = $testCase} {
+                param($TestCase)
 
-            $deprecatedWhatIfError = $null
-            try {
-                Assert-NovaCliArgumentSyntax -Arguments @('--whatif')
+                (& $TestCase.HelperName -Argument $TestCase.Argument) | Should -Be $TestCase.Expected
             }
-            catch {
-                $deprecatedWhatIfError = $_
-            }
+        }
+    }
 
-            Assert-TestStructuredCliError -ThrownError $deprecatedWhatIfError -ExpectedError ([pscustomobject]@{
-                Message = "Unsupported CLI option syntax: --whatif. Use '--what-if' or '-w' instead."
-                ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
-                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                TargetObject = '--whatif'
-            })
+    It 'Assert-NovaCliArgumentSyntax returns migration guidance for unsupported routed options' {
+        foreach ($testCase in (Get-TestNovaCliSyntaxGuidanceCaseList)) {
+            InModuleScope $script:moduleName -Parameters @{TestCase = $testCase} {
+                param($TestCase)
 
-            $deprecatedBuildError = $null
-            try {
-                Assert-NovaCliArgumentSyntax -Arguments @('-build')
-            }
-            catch {
-                $deprecatedBuildError = $_
-            }
+                $syntaxError = $null
+                try {
+                    Assert-NovaCliArgumentSyntax -Arguments @($TestCase.Argument)
+                }
+                catch {
+                    $syntaxError = $_
+                }
 
-            Assert-TestStructuredCliError -ThrownError $deprecatedBuildError -ExpectedError ([pscustomobject]@{
-                Message = "Unsupported CLI option syntax: -build. Use '--build' or '-b' instead."
-                ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
-                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                TargetObject = '-build'
-            })
-
-            $deprecatedSkipTestsError = $null
-            try {
-                Assert-NovaCliArgumentSyntax -Arguments @('-skiptests')
+                Assert-TestStructuredCliError -ThrownError $syntaxError -ExpectedError ([pscustomobject]@{
+                    Message = $TestCase.Message
+                    ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                    TargetObject = $TestCase.Argument
+                })
             }
-            catch {
-                $deprecatedSkipTestsError = $_
-            }
-
-            Assert-TestStructuredCliError -ThrownError $deprecatedSkipTestsError -ExpectedError ([pscustomobject]@{
-                Message = "Unsupported CLI option syntax: -skiptests. Use '--skip-tests' or '-s' instead."
-                ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
-                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                TargetObject = '-skiptests'
-            })
         }
     }
 
@@ -863,14 +855,15 @@ catch {
         }
     }
 
-    It 'ConvertFrom-NovaCliArgument parses local, path, api key, and skip-tests options' {
+    It 'ConvertFrom-NovaCliArgument parses local, path, api key, skip-tests, and continuous integration options' {
         InModuleScope $script:moduleName {
-            $options = ConvertFrom-NovaCliArgument -Arguments @('--local', '--path', '/tmp/modules', '--api-key', 'secret', '--skip-tests')
+            $options = ConvertFrom-NovaCliArgument -Arguments @('--local', '--path', '/tmp/modules', '--api-key', 'secret', '--skip-tests', '--continuous-integration')
 
             $options.Local | Should -BeTrue
             $options.ModuleDirectoryPath | Should -Be '/tmp/modules'
             $options.ApiKey | Should -Be 'secret'
             $options.SkipTests | Should -BeTrue
+            $options.ContinuousIntegration | Should -BeTrue
         }
     }
 

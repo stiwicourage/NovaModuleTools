@@ -63,3 +63,65 @@ function Assert-TestPublicDocsUrlExists {
     return $resolvedUrl
 }
 
+function Get-TestNovaCliRoutedParserCaseList {
+    return @(
+        @{
+            ParserCommand = 'ConvertFrom-NovaBuildCliArgument'
+            ValidCases = @(
+                @{Arguments = @('--continuous-integration'); Property = 'ContinuousIntegration'}
+                @{Arguments = @('-i'); Property = 'ContinuousIntegration'}
+            )
+        }
+        @{
+            ParserCommand = 'ConvertFrom-NovaBumpCliArgument'
+            ValidCases = @(
+                @{Arguments = @('--preview'); Property = 'Preview'}
+                @{Arguments = @('-p'); Property = 'Preview'}
+                @{Arguments = @('--continuous-integration'); Property = 'ContinuousIntegration'}
+                @{Arguments = @('-i'); Property = 'ContinuousIntegration'}
+            )
+        }
+        @{
+            ParserCommand = 'ConvertFrom-NovaTestCliArgument'
+            ValidCases = @(
+                @{Arguments = @('--build'); Property = 'Build'}
+                @{Arguments = @('-b'); Property = 'Build'}
+            )
+        }
+    )
+}
+
+function Get-TestNovaCliContinuousIntegrationRouteCaseList {
+    return @(
+        @{Command = 'build'; ParserCommand = 'ConvertFrom-NovaBuildCliArgument'; ActionCommand = 'Invoke-NovaBuild'}
+        @{Command = 'bump'; ParserCommand = 'ConvertFrom-NovaBumpCliArgument'; ActionCommand = 'Update-NovaModuleVersion'}
+    )
+}
+
+function Get-TestNovaCliNormalizedRootCommandCaseList {
+    return @(
+        @{Command = '-h'; Expected = '--help'}
+        @{Command = '-v'; Expected = '--version'}
+        @{Command = 'build'; Expected = 'build'}
+    )
+}
+
+function Get-TestNovaCliOptionClassificationCaseList {
+    return @(
+        @{HelperName = 'Test-NovaCliLegacySingleHyphenOption'; Argument = '-legacy'; Expected = $true}
+        @{HelperName = 'Test-NovaCliLegacySingleHyphenOption'; Argument = '--legacy'; Expected = $false}
+        @{HelperName = 'Test-NovaCliWhatIfOption'; Argument = '--what-if'; Expected = $true}
+        @{HelperName = 'Test-NovaCliConfirmOption'; Argument = '-c'; Expected = $true}
+    )
+}
+
+function Get-TestNovaCliSyntaxGuidanceCaseList {
+    return @(
+        @{Argument = '-legacy'; Message = "Unsupported CLI option syntax: -legacy. Use long options with '--' or single-character short options."}
+        @{Argument = '--whatif'; Message = "Unsupported CLI option syntax: --whatif. Use '--what-if' or '-w' instead."}
+        @{Argument = '-build'; Message = "Unsupported CLI option syntax: -build. Use '--build' or '-b' instead."}
+        @{Argument = '-skiptests'; Message = "Unsupported CLI option syntax: -skiptests. Use '--skip-tests' or '-s' instead."}
+        @{Argument = '-continuousintegration'; Message = "Unsupported CLI option syntax: -continuousintegration. Use '--continuous-integration' or '-i' instead."}
+    )
+}
+

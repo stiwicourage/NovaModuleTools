@@ -12,11 +12,12 @@ function Publish-NovaModule {
     )
 
     dynamicparam {
-        return Get-NovaDynamicSkipTestsParameterDictionary
+        return Get-NovaDynamicDeliveryParameterDictionary
     }
 
     begin {
         $skipTests = $PSBoundParameters.ContainsKey('SkipTests') -and $PSBoundParameters.SkipTests
+        $continuousIntegration = $PSBoundParameters.ContainsKey('ContinuousIntegration') -and $PSBoundParameters.ContinuousIntegration
 
         $workflowContext = Get-NovaPublishWorkflowContext -ProjectInfo (Get-NovaProjectInfo) -PublishOption @{
             Local = [bool]$Local
@@ -24,6 +25,7 @@ function Publish-NovaModule {
             ModuleDirectoryPath = $ModuleDirectoryPath
             ApiKey = $ApiKey
             SkipTests = [bool]$skipTests
+            'ContinuousIntegration' = [bool]$continuousIntegration
         } -WorkflowParams (Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference) -WorkflowSettings @{
             WorkflowName = 'publish'
             IncludeLocalPublishActivation = $true

@@ -137,14 +137,20 @@ PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
                         </p>
                     </div>
                     <div class="surface-example__surface" data-command-surface="powershell">
-                        <pre><code>PS&gt; Invoke-NovaBuild</code></pre>
+                        <pre><code>PS&gt; Invoke-NovaBuild
+PS&gt; Invoke-NovaBuild -ContinuousIntegration</code></pre>
                     </div>
                     <div class="surface-example__surface" data-command-surface="command-line" hidden>
-                        <pre><code>% nova build</code></pre>
+                        <pre><code>% nova build
+% nova build --continuous-integration</code></pre>
                     </div>
                 </div>
                 <p>The build step turns your project into a real PowerShell module under
                     <code>dist/&lt;ProjectName&gt;</code>.</p>
+                <p>Use the continuous-integration form when the same CI/self-hosting session must keep using the freshly
+                    built module after the build completes. Nova then re-imports the new <code>dist/</code> output
+                    before
+                    returning.</p>
                 <h3>What build includes</h3>
                 <ul class="plain-list">
                     <li>generated <code>.psm1</code> output</li>
@@ -257,6 +263,13 @@ pwsh -NoLogo -Command 'Import-Module (Get-NovaProjectInfo).OutputModuleDir -Forc
                         published
                         module from the local install path after a successful publish. That is different from the normal
                         build/import loop, which works from <code>dist/</code>.</p>
+                </div>
+                <div class="notice">
+                    <strong>CI/self-hosting note.</strong>
+                    <p>When a later command in the same session must switch back to the built <code>dist/</code> module,
+                        use <code>Invoke-NovaBuild -ContinuousIntegration</code> or <code>% nova build
+                            --continuous-integration</code>
+                        so Nova restores the built module state automatically.</p>
                 </div>
             </section>
 

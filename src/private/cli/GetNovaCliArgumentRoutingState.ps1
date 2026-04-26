@@ -60,6 +60,7 @@ function Get-NovaCliLegacyOptionReplacement {
         '-authenticationscheme' = "'--auth-scheme' or '-a'"
         '-build' = "'--build' or '-b'"
         '-confirm' = "'--confirm' or '-c'"
+        '-continuousintegration' = "'--continuous-integration' or '-i'"
         '-disable' = "'--disable' or '-d'"
         '-enable' = "'--enable' or '-e'"
         '-example' = "'--example' or '-e'"

@@ -20,7 +20,7 @@ Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
 ### __AllParameterSets
 
 ```text
-PS> Invoke-NovaRelease [[-PublishOption] <hashtable>] [-SkipTests] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Invoke-NovaRelease [[-PublishOption] <hashtable>] [-SkipTests] [-ContinuousIntegration] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -37,6 +37,10 @@ Use `-SkipTests` when tests already ran earlier in your pipeline and you only wa
 `Test-NovaBuild` step. Both build steps still run.
 
 The command changes location to `-Path` for execution and always restores the previous location.
+
+Use `-ContinuousIntegration` when the same CI/self-hosting session should re-activate the built `dist/` module at the
+release workflow boundaries where session state matters. Nova forwards that CI intent into the nested build and version
+bump steps and restores the built module again after publish.
 
 When local release mode is selected, the resolved local publish target is previewed consistently with
 `Publish-NovaModule -Local`. Unlike `Publish-NovaModule -Local`, `Invoke-NovaRelease` does not import the published
@@ -87,6 +91,15 @@ PS> Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env
 ```
 
 Runs the release workflow without re-running the pre-release `Test-NovaBuild` step.
+
+### EXAMPLE 6
+
+```text
+PS> Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -ContinuousIntegration
+```
+
+Runs the release workflow and re-activates the built `dist/<ProjectName>/<ProjectName>.psd1` at the CI-sensitive
+workflow boundaries so later commands in the same session keep using the built module state.
 
 ## PARAMETERS
 
@@ -165,6 +178,29 @@ AcceptedValues: [ ]
 HelpMessage: ''
 ```
 
+### -ContinuousIntegration
+
+Re-activate the built module from `dist/` at the release workflow boundaries where the active module state matters.
+
+Use this for CI/self-hosting flows that continue in the same session after build, version bump, or publish.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
 ### CommonParameters
 
 This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`, `-ErrorVariable`, `-InformationAction`,
@@ -192,6 +228,10 @@ When `-SkipTests` is used, only the pre-release `Test-NovaBuild` step is skipped
 
 Use `Publish-NovaModule -Local` when you want a successful local publish to reload the published module into the active
 PowerShell session.
+
+When `-ContinuousIntegration` is used, the release workflow restores the built `dist/` module after CI-sensitive
+boundaries so later steps in the same session keep using the built module state instead of a stale or publish-modified
+copy.
 
 `Invoke-NovaRelease` uses `SupportsShouldProcess`, so `Get-Help Invoke-NovaRelease -Full` surfaces native `-WhatIf`
 and `-Confirm` support.

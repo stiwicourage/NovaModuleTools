@@ -47,7 +47,45 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             $result.ProjectInfo.ProjectName | Should -Be 'NovaModuleTools'
             $result.Target | Should -Be '/tmp/dist/NovaModuleTools'
             $result.Operation | Should -Be 'Build Nova module output'
+            $result.ContinuousIntegrationRequested | Should -BeFalse
             Assert-MockCalled Get-NovaBuildProjectInfo -Times 1 -ParameterFilter {$null -eq $ProjectInfo}
+        }
+    }
+
+    It 'Get-NovaBuildWorkflowContext carries ContinuousIntegrationRequested when requested' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaBuildProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            }
+
+            $result = Get-NovaBuildWorkflowContext -ContinuousIntegrationRequested
+
+            $result.ContinuousIntegrationRequested | Should -BeTrue
+        }
+    }
+
+    It 'Import-NovaBuiltModuleForCi resolves the built manifest path and imports it globally' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            }
+            Mock Test-Path {$true} -ParameterFilter {$LiteralPath -eq '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'}
+            Mock Get-Module {@()}
+            Mock Import-Module {
+                [pscustomobject]@{Path = $Name}
+            } -ParameterFilter {$Name -eq '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1' -and $Force -and $Global -and $PassThru}
+
+            $result = Import-NovaBuiltModuleForCi -ProjectRoot '/tmp/project'
+
+            $result.Path | Should -Be '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'
+            Assert-MockCalled Get-NovaProjectInfo -Times 1 -ParameterFilter {$Path -eq '/tmp/project'}
+            Assert-MockCalled Import-Module -Times 1 -ParameterFilter {$Name -eq '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1' -and $Force -and $Global -and $PassThru}
         }
     }
 

@@ -104,11 +104,35 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $result.CommitCount | Should -Be 2
             $result.Target | Should -Be 'project.json'
             $result.Action | Should -Be 'Update module version using Minor release label'
+            $result.'ContinuousIntegrationRequested' | Should -BeFalse
             Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
                 $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
                         $Label -eq 'Minor' -and
                         -not $PreviewRelease
             }
+        }
+    }
+
+    It 'Get-NovaVersionUpdateWorkflowContext carries ContinuousIntegrationRequested when requested' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    Version = '1.0.0'
+                    ProjectJSON = '/tmp/project.json'
+                }
+            }
+            Mock Get-GitCommitMessageForVersionBump {@('feat: add change')}
+            Mock Get-NovaVersionLabelForBump {'Minor'}
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    NewVersion = [semver]'1.1.0'
+                }
+            }
+
+            $result = Get-NovaVersionUpdateWorkflowContext -ProjectRoot '/tmp/project' -ContinuousIntegrationRequested
+
+            $result.'ContinuousIntegrationRequested' | Should -BeTrue
         }
     }
 
@@ -162,8 +186,61 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
+    It 'Update-NovaModuleVersion imports the built module before preparing the workflow in CI mode' {
+        InModuleScope $script:moduleName {
+            $script:steps = @()
+
+            Mock Resolve-Path {[pscustomobject]@{Path = '/tmp/current-project'}} -ParameterFilter {$LiteralPath -eq '/tmp/current-project'}
+            Mock Import-NovaBuiltModuleForCi {$script:steps += 'import'}
+            Mock Get-NovaVersionUpdateWorkflowContext {
+                $script:steps += 'context'
+                [pscustomobject]@{
+                    Target = 'project.json'
+                    Action = 'Update module version using Minor release label'
+                }
+            }
+            Mock Invoke-NovaVersionUpdateWorkflow {
+                $script:steps += 'workflow'
+                [pscustomobject]@{NewVersion = '1.1.0'}
+            }
+
+            $result = Update-NovaModuleVersion -Path '/tmp/current-project' -ContinuousIntegration -Confirm:$false
+
+            $result.NewVersion | Should -Be '1.1.0'
+            $script:steps | Should -Be @('import', 'context', 'workflow')
+            Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1 -ParameterFilter {$ProjectRoot -eq '/tmp/current-project'}
+            Assert-MockCalled Get-NovaVersionUpdateWorkflowContext -Times 1 -ParameterFilter {$ProjectRoot -eq '/tmp/current-project' -and $ContinuousIntegrationRequested}
+        }
+    }
+
     It 'Update-NovaModuleVersion defaults Path to the current location when Path is omitted' {
         Invoke-UpdateNovaModuleVersionDefaultPathAssertion -ModuleName $script:moduleName
+    }
+
+    It 'Update-NovaModuleVersion -WhatIf stays side-effect free in CI mode' {
+        InModuleScope $script:moduleName {
+            Mock Resolve-Path {[pscustomobject]@{Path = '/tmp/current-project'}} -ParameterFilter {$LiteralPath -eq '/tmp/current-project'}
+            Mock Import-NovaBuiltModuleForCi {throw 'should not import during WhatIf'}
+            Mock Get-NovaVersionUpdateWorkflowContext {
+                [pscustomobject]@{
+                    PreviousVersion = '1.0.0'
+                    NewVersion = '1.1.0'
+                    Label = 'Minor'
+                    CommitCount = 1
+                    Target = 'project.json'
+                    Action = 'Update module version using Minor release label'
+                }
+            }
+            Mock Invoke-NovaVersionUpdateWorkflow {
+                [pscustomobject]@{NewVersion = '1.1.0'}
+            }
+
+            $result = Update-NovaModuleVersion -Path '/tmp/current-project' -ContinuousIntegration -WhatIf
+
+            $result.NewVersion | Should -Be '1.1.0'
+            Assert-MockCalled Import-NovaBuiltModuleForCi -Times 0
+            Assert-MockCalled Get-NovaVersionUpdateWorkflowContext -Times 1 -ParameterFilter {$ContinuousIntegrationRequested}
+        }
     }
 
     It 'Update-NovaModuleVersion -WhatIf returns the expected next version without persisting it when <Name>' -ForEach @(

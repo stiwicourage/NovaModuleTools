@@ -57,6 +57,12 @@
             Long = '--skip-tests'
             Placeholder = ''
             Description = 'Skip the pre-release Test-NovaBuild step. Both build steps still run, which is useful when tests already passed earlier in CI/CD.'
+        },
+        @{
+            Short = '-i'
+            Long = '--continuous-integration'
+            Placeholder = ''
+            Description = 'Re-activate the built dist module at the release workflow boundaries where session state matters so later CI steps keep using the fresh build output.'
         }
     )
     Examples = @(
@@ -71,6 +77,10 @@
         @{
             Command = 'nova release --repository PSGallery --api-key <key> --skip-tests'
             Description = 'Run the release workflow without re-running the pre-release Test-NovaBuild step.'
+        },
+        @{
+            Command = 'nova release --local --continuous-integration --what-if'
+            Description = 'Preview the release workflow and CI-safe reactivation flow without changing files or publishing output.'
         }
     )
 }

@@ -32,6 +32,12 @@
             Long = '--confirm'
             Placeholder = ''
             Description = 'Request CLI confirmation before the version update runs.'
+        },
+        @{
+            Short = '-i'
+            Long = '--continuous-integration'
+            Placeholder = ''
+            Description = 'Re-import the built dist module before the version bump workflow starts so later CI steps keep using the correct built module state.'
         }
     )
     Examples = @(
@@ -42,6 +48,10 @@
         @{
             Command = 'nova bump --preview --what-if'
             Description = 'Preview the next prerelease version without updating project.json.'
+        },
+        @{
+            Command = 'nova bump --continuous-integration --what-if'
+            Description = 'Preview the next version by using the CI-safe routed bump entrypoint without changing project.json.'
         }
     )
 }

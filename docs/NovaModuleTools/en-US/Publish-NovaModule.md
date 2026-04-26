@@ -20,13 +20,13 @@ Builds, tests, and publishes the current project either locally or to a PowerShe
 ### Local
 
 ```text
-PS> Publish-NovaModule [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Publish-NovaModule [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### Repository
 
 ```text
-PS> Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -42,6 +42,10 @@ PowerShell session so the newly published module is ready to use immediately.
 
 Use repository mode when you want to publish the built module to a registered PowerShell repository such as
 `PSGallery`.
+
+Use `-ContinuousIntegration` when the same CI/self-hosting session should switch back to the built `dist/` module after
+publish completes. This keeps later commands aligned with the built module state instead of whatever publish imported or
+left loaded.
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
 resolved publish target and workflow without building, testing, or publishing.
@@ -100,6 +104,15 @@ PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTes
 ```
 
 Builds and publishes the module to `PSGallery` without re-running `Test-NovaBuild`.
+
+### EXAMPLE 7
+
+```text
+PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -ContinuousIntegration
+```
+
+Publishes the module and then re-imports the built `dist/<ProjectName>/<ProjectName>.psd1` so later CI steps in the
+same session continue from the built module state.
 
 ## PARAMETERS
 
@@ -216,6 +229,32 @@ AcceptedValues: [ ]
 HelpMessage: ''
 ```
 
+### -ContinuousIntegration
+
+Re-import the built module from `dist/` after publish completes.
+
+Use this when your CI/self-hosting workflow continues in the same session after publish and must keep using the built
+module state for later commands.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: Local
+    Position: Named
+  - Name: Repository
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
@@ -246,6 +285,9 @@ step is skipped.
 Local publish imports the published module from the resolved local install directory. It does not import directly from
 the
 source project or from `dist/`.
+
+When `-ContinuousIntegration` is used, Nova restores the built `dist/` module after publish so later commands in the
+same session keep using the built module state.
 
 `Publish-NovaModule` uses `SupportsShouldProcess`, so `Get-Help Publish-NovaModule -Full` should surface native
 `-WhatIf` and `-Confirm` support.

@@ -18,10 +18,14 @@ function ConvertFrom-NovaCliArgument {
     [CmdletBinding()]
     param(
         [string[]]$Arguments,
-        [string[]]$AllowedOptionNameList = @('Local', 'Repository', 'ModuleDirectoryPath', 'ApiKey', 'SkipTests')
+        [string[]]$AllowedOptionNameList
     )
 
     $Arguments = ConvertTo-NovaCliArgumentArray -BoundParameters $PSBoundParameters -Arguments $Arguments
+    if ($null -eq $AllowedOptionNameList) {
+        $AllowedOptionNameList = @('Local', 'Repository', 'ModuleDirectoryPath', 'ApiKey', 'SkipTests', 'ContinuousIntegration')
+    }
+
     $options = @{}
     $index = 0
 
@@ -46,6 +50,9 @@ function ConvertFrom-NovaCliArgument {
             }
             '^(--skip-tests|-s)$' {
                 Add-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'SkipTests'; Value = $true}) -Token $token
+            }
+            '^(--continuous-integration|-i)$' {
+                Add-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'ContinuousIntegration'; Value = $true}) -Token $token
             }
             default {
                 Stop-NovaOperation -Message "Unknown argument: $token" -ErrorId 'Nova.Validation.UnknownCliArgument' -Category InvalidArgument -TargetObject $token

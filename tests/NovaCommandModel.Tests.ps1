@@ -591,6 +591,35 @@ Describe 'Nova command model - project, help, and build behavior' {
         }
     }
 
+    It 'Invoke-NovaBuildWorkflow re-imports the built module after the build completes in CI mode' {
+        InModuleScope $script:moduleName {
+            $script:steps = @()
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'NovaModuleTools'
+                OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                FailOnDuplicateFunctionNames = $true
+            }
+            $workflowContext = [pscustomobject]@{
+                ProjectInfo = $projectInfo
+                ContinuousIntegrationRequested = $true
+            }
+
+            Mock Reset-ProjectDist {$script:steps += 'reset'}
+            Mock Build-Module {$script:steps += 'module'}
+            Mock Assert-BuiltModuleHasNoDuplicateFunctionName {$script:steps += 'duplicates'}
+            Mock Build-Manifest {$script:steps += 'manifest'}
+            Mock Build-Help {$script:steps += 'help'}
+            Mock Copy-ProjectResource {$script:steps += 'resources'}
+            Mock Invoke-NovaBuildUpdateNotification {$script:steps += 'notification'}
+            Mock Import-NovaBuiltModuleForCi {$script:steps += 'ci'}
+
+            Invoke-NovaBuildWorkflow -WorkflowContext $workflowContext
+
+            $script:steps -join ',' | Should -Be 'reset,module,duplicates,manifest,help,resources,notification,ci'
+            Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
+        }
+    }
+
     It 'Invoke-NovaBuild delegates orchestration to the private build workflow helper' {
         InModuleScope $script:moduleName {
             Mock Get-NovaBuildWorkflowContext {
@@ -612,6 +641,22 @@ Describe 'Nova command model - project, help, and build behavior' {
         }
     }
 
+    It 'Invoke-NovaBuild forwards ContinuousIntegration into the build workflow context' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaBuildWorkflowContext {
+                [pscustomobject]@{
+                    Target = '/tmp/dist/NovaModuleTools'
+                    Operation = 'Build Nova module output'
+                }
+            }
+            Mock Invoke-NovaBuildWorkflow {}
+
+            Invoke-NovaBuild -ContinuousIntegration -Confirm:$false
+
+            Assert-MockCalled Get-NovaBuildWorkflowContext -Times 1 -ParameterFilter {$ContinuousIntegrationRequested}
+        }
+    }
+
     It 'Invoke-NovaBuild -WhatIf skips the build pipeline' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {
@@ -626,8 +671,9 @@ Describe 'Nova command model - project, help, and build behavior' {
             Mock Build-Help {throw 'should not build help'}
             Mock Copy-ProjectResource {throw 'should not copy resources'}
             Mock Invoke-NovaBuildUpdateNotification {throw 'should not check for updates'}
+            Mock Import-NovaBuiltModuleForCi {throw 'should not re-import'}
 
-            $result = Invoke-NovaBuild -WhatIf
+            $result = Invoke-NovaBuild -ContinuousIntegration -WhatIf
 
             $result | Should -BeNullOrEmpty
             Assert-MockCalled Reset-ProjectDist -Times 0
@@ -636,6 +682,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             Assert-MockCalled Build-Help -Times 0
             Assert-MockCalled Copy-ProjectResource -Times 0
             Assert-MockCalled Invoke-NovaBuildUpdateNotification -Times 0
+            Assert-MockCalled Import-NovaBuiltModuleForCi -Times 0
         }
     }
 

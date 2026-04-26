@@ -2,7 +2,8 @@ function Get-NovaVersionUpdateWorkflowContext {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot,
-        [switch]$PreviewRelease
+        [switch]$PreviewRelease,
+        [switch]$ContinuousIntegrationRequested
     )
 
     $projectInfo = Get-NovaProjectInfo -Path $ProjectRoot
@@ -10,7 +11,7 @@ function Get-NovaVersionUpdateWorkflowContext {
     $label = Get-NovaVersionLabelForBump -ProjectRoot $ProjectRoot -CommitMessages $commitMessages
     $versionUpdatePlan = Get-NovaVersionUpdatePlan -ProjectInfo $projectInfo -Label $label -PreviewRelease:$PreviewRelease
 
-    return Get-NovaVersionUpdateWorkflowContextObject -ProjectRoot $ProjectRoot -ProjectInfo $projectInfo -CommitMessages $commitMessages -Label $label -VersionUpdatePlan $versionUpdatePlan -PreviewRelease:$PreviewRelease
+    return Get-NovaVersionUpdateWorkflowContextObject -ProjectRoot $ProjectRoot -ProjectInfo $projectInfo -CommitMessages $commitMessages -Label $label -VersionUpdatePlan $versionUpdatePlan -PreviewRelease:$PreviewRelease -ContinuousIntegrationRequested:$ContinuousIntegrationRequested
 }
 
 function Get-NovaVersionUpdateWorkflowContextObject {
@@ -21,7 +22,8 @@ function Get-NovaVersionUpdateWorkflowContextObject {
         [AllowEmptyCollection()][string[]]$CommitMessages = @(),
         [Parameter(Mandatory)][string]$Label,
         [Parameter(Mandatory)][pscustomobject]$VersionUpdatePlan,
-        [switch]$PreviewRelease
+        [switch]$PreviewRelease,
+        [switch]$ContinuousIntegrationRequested
     )
 
     return [pscustomobject]@{
@@ -31,6 +33,7 @@ function Get-NovaVersionUpdateWorkflowContextObject {
         CommitCount = $CommitMessages.Count
         Label = $Label
         PreviewRelease = [bool]$PreviewRelease
+        ContinuousIntegrationRequested = [bool]$ContinuousIntegrationRequested
         Target = [System.IO.Path]::GetFileName($ProjectInfo.ProjectJSON)
         Action = "Update module version using $Label release label"
         PreviousVersion = $ProjectInfo.Version

@@ -1,4 +1,4 @@
-function ConvertFrom-NovaBumpCliArgument {
+function ConvertFrom-NovaBuildCliArgument {
     [CmdletBinding()]
     param(
         [string[]]$Arguments
@@ -9,9 +9,6 @@ function ConvertFrom-NovaBumpCliArgument {
 
     foreach ($token in $Arguments) {
         switch -Regex ($token) {
-            '^(--preview|-p)$' {
-                $options.Preview = $true
-            }
             '^(--continuous-integration|-i)$' {
                 $options.ContinuousIntegration = $true
             }
