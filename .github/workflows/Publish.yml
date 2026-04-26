@@ -98,11 +98,7 @@ jobs:
             Register-PSResourceRepository -PSGallery
           }
 
-          Publish-NovaModule `
-            -Repository PSGallery `
-            -ApiKey $env:PSGALLERY_API `
-            -SkipTests `
-            -Verbose
+          Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
 
           Update-NovaModuleVersion -Preview -Verbose
         env:
