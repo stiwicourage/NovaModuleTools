@@ -6,6 +6,7 @@ $global:novaCommandModelTestSupportFunctionNameList = @(
     'Get-TestHelpLocaleFromMarkdownFiles'
     'Get-CommandHelpActivationTestCase'
     'Get-CommandHelpActivationTestCases'
+    'Assert-TestPowerShellHelpExcludesCliSyntax'
     'Initialize-TestNovaCliProjectLayout'
     'Write-TestNovaCliProjectJson'
     'Write-TestNovaCliPublicFunction'
@@ -463,6 +464,19 @@ Describe 'Nova command model - project, help, and build behavior' {
         }
     }
 
+    It 'PowerShell help markdown stays free of launcher syntax and GNU-style options' {
+        $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:projectInfo.DocsDir -Filter '*.md' -Recurse
+
+        foreach ($file in $helpMarkdownFiles) {
+            $content = Get-Content -LiteralPath $file.FullName -Raw
+            if ($content -notmatch '(?m)^document type:\s*(cmdlet|module)\s*$') {
+                continue
+            }
+
+            Assert-TestPowerShellHelpExcludesCliSyntax -Text $content -Subject $file.Name
+        }
+    }
+
     It 'Get-Help supports Detailed, Full, Examples, and Parameter views for every public command' {
         $commonParameterNames = @(
             'Verbose',
@@ -498,10 +512,14 @@ Describe 'Nova command model - project, help, and build behavior' {
             $fullText | Should -Match 'OUTPUTS' -Because "$( $testCase.HelpTarget ) should render an outputs section"
             $fullText | Should -Match 'NOTES' -Because "$( $testCase.HelpTarget ) should render a notes section"
             $examplesText | Should -Match 'PS>' -Because "$( $testCase.HelpTarget ) examples should use PowerShell prompt formatting"
+            Assert-TestPowerShellHelpExcludesCliSyntax -Text $detailedText -Subject "$( $testCase.HelpTarget ) detailed help"
+            Assert-TestPowerShellHelpExcludesCliSyntax -Text $fullText -Subject "$( $testCase.HelpTarget ) full help"
+            Assert-TestPowerShellHelpExcludesCliSyntax -Text $examplesText -Subject "$( $testCase.HelpTarget ) examples help"
 
             foreach ($parameterName in $expectedParameterNames) {
                 $parameterText = Get-Help $testCase.HelpTarget -Parameter $parameterName -ErrorAction Stop | Out-String
                 $parameterText | Should -Match ([regex]::Escape("-$parameterName")) -Because "$( $testCase.HelpTarget ) should document -$parameterName"
+                Assert-TestPowerShellHelpExcludesCliSyntax -Text $parameterText -Subject "$( $testCase.HelpTarget ) parameter help for -$parameterName"
             }
         }
     }

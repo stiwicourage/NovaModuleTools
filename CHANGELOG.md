@@ -118,6 +118,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       easier to scan and less visually cramped.
   - The getting started and core workflows guides now let readers switch between PowerShell and command-line
     examples, including the local-publish-plus-`pwsh` handoff for `Get-ExampleGreeting` and fresh-process `pwsh`
+
+- Clean the generated PowerShell cmdlet help so `Get-Help` pages no longer mix in `nova` launcher syntax or GNU-style
+  CLI options.
     import/reload validation from the command-line path.
   - The command reference, working-with-modules, packaging-and-delivery, versioning-and-updates, and troubleshooting
     guides now use the same centered command-surface header and PowerShell/command-line example switching model.

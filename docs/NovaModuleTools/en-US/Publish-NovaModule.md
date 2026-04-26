@@ -43,11 +43,7 @@ Use repository mode when you want to publish the built module to a registered Po
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
 resolved publish target and workflow without building, testing, or publishing.
 
-When you run the same workflow through `% nova publish --confirm` / `% nova publish -c`, the CLI handles confirmation
-before
-the routed publish starts. `Y` / `Yes` and `A` / `Yes to All` continue, `N` / `No` and `L` / `No to All` cancel the
-publish with a non-zero exit code, and `S` / `Suspend` is treated as cancel because nested PowerShell prompts are not
-supported in CLI mode.
+Use `-Confirm` when you want PowerShell to prompt before the publish workflow starts.
 
 ## EXAMPLES
 
@@ -80,10 +76,10 @@ Builds, tests, and publishes the module to `PSGallery`.
 ### EXAMPLE 4
 
 ```text
-% nova publish --repository PSGallery --api-key $PSGALLERY_API
+PS> Publish-NovaModule -Repository PSGallery -Confirm
 ```
 
-Runs the same publish flow through the `nova` CLI.
+Prompts before the repository publish workflow starts.
 
 ### EXAMPLE 5
 
@@ -215,8 +211,6 @@ source project or from `dist/`.
 `Publish-NovaModule` uses `SupportsShouldProcess`, so `Get-Help Publish-NovaModule -Full` should surface native
 `-WhatIf` and `-Confirm` support.
 
-The CLI-specific `% nova publish --confirm` / `% nova publish -c` prompt is separate from native PowerShell `-Confirm`.
-It never opens a nested PowerShell `Suspend` prompt.
 
 ## RELATED LINKS
 
