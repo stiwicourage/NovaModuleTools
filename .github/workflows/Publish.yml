@@ -81,7 +81,7 @@ jobs:
           git checkout develop
           git reset --hard origin/main
 
-          ./scripts/build/ci/Install-CiPowerShellModules.ps1
+          ./scripts/build/ci/Import-BuiltCiModule.ps1 | Out-Null
 
           Update-NovaModuleVersion -Preview -Verbose
 
@@ -100,7 +100,7 @@ jobs:
             Register-PSResourceRepository -PSGallery
           }
 
-          ./scripts/build/ci/Install-CiPowerShellModules.ps1
+          ./scripts/build/ci/Import-BuiltCiModule.ps1 | Out-Null
 
           Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
 
