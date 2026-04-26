@@ -238,6 +238,40 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
+    It 'Invoke-NovaRelease defaults Path to the current location when Path is omitted' {
+        $expectedPath = (Get-Location).Path
+
+        InModuleScope $script:moduleName -Parameters @{ExpectedPath = $expectedPath} {
+            param($ExpectedPath)
+
+            Mock Push-Location {} -ParameterFilter {$LiteralPath -eq $ExpectedPath}
+            Mock Pop-Location {}
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+            }
+            Mock Get-NovaPublishWorkflowContext {
+                [pscustomobject]@{
+                    WorkflowName = 'release'
+                    LocalRequested = $true
+                    PublishInvocation = [pscustomobject]@{IsLocal = $true}
+                    Target = '/tmp/modules'
+                    Operation = 'Run Nova release workflow (build, test, and publish) to local directory'
+                }
+            }
+            Mock Write-NovaPublishWorkflowContext {}
+            Mock Invoke-NovaReleaseWorkflow {
+                [pscustomobject]@{NewVersion = '1.0.1'}
+            }
+
+            $result = Invoke-NovaRelease -PublishOption @{Local = $true} -Confirm:$false
+
+            $result.NewVersion | Should -Be '1.0.1'
+            Assert-MockCalled Push-Location -Times 1 -ParameterFilter {$LiteralPath -eq $ExpectedPath}
+            Assert-MockCalled Pop-Location -Times 1
+            Assert-MockCalled Invoke-NovaReleaseWorkflow -Times 1
+        }
+    }
+
     It '<CommandName> forwards SkipTests into its shared workflow context' -ForEach @(
         @{
             CommandName = 'Invoke-NovaRelease'

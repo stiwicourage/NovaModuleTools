@@ -144,6 +144,17 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'Get-NovaCliCommandHandler returns the mapped handler for a known command' {
+        InModuleScope $script:moduleName {
+            $expectedHandler = [pscustomobject]@{Name = 'publish-handler'}
+            $handlerMap = @{publish = $expectedHandler}
+
+            $result = Get-NovaCliCommandHandler -CommandHandlerMap $handlerMap -Command 'publish'
+
+            $result | Should -Be $expectedHandler
+        }
+    }
+
     It 'Get-NovaCliHelpRequest resolves root short help, command short help, and command long help' {
         InModuleScope $script:moduleName {
             $rootHelp = Get-NovaCliHelpRequest -Command '--help' -Arguments @()
