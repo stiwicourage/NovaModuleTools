@@ -1,5 +1,6 @@
 BeforeAll {
     $data = Get-NovaProjectInfo
+    $script:repoRoot = Split-Path -Parent $PSScriptRoot
 }
 
 Describe 'General Module Control' {
@@ -24,5 +25,33 @@ Describe 'General Module Control' {
         $exportedCommandNameList | Should -Not -Contain 'Merge-NovaModule'
         $exportedCommandNameList | Should -Not -Contain 'Upload-NovaPackage'
         $exportedCommandNameList | Should -Not -Contain 'New-NovaModule'
+    }
+
+    It 'Freshly importing the built module can run Update-NovaModuleVersion -WhatIf without missing private helpers' {
+        Get-Module -Name $data.ProjectName -All | Remove-Module -Force -ErrorAction SilentlyContinue
+        Import-Module -Name $data.OutputModuleDir -Force | Out-Null
+
+        $result = Update-NovaModuleVersion -Path $script:repoRoot -WhatIf
+
+        $result | Should -Not -BeNullOrEmpty
+        $result.PSObject.Properties.Name | Should -Contain 'PreviousVersion'
+        $result.PSObject.Properties.Name | Should -Contain 'NewVersion'
+        $result.PSObject.Properties.Name | Should -Contain 'Label'
+        $result.PSObject.Properties.Name | Should -Contain 'CommitCount'
+    }
+
+    It 'Import-BuiltCiModule.ps1 loads the built module into the caller session for subsequent commands' {
+        $helperPath = Join-Path $script:repoRoot 'scripts/build/ci/Import-BuiltCiModule.ps1'
+        Get-Module -Name $data.ProjectName -All | Remove-Module -Force -ErrorAction SilentlyContinue
+
+        & $helperPath | Out-Null
+
+        $importedModule = Get-Module -Name $data.ProjectName -ErrorAction Stop
+        (Split-Path -Parent $importedModule.Path) | Should -Be $data.OutputModuleDir
+
+        $result = Update-NovaModuleVersion -Path $script:repoRoot -WhatIf
+
+        $result | Should -Not -BeNullOrEmpty
+        $result.PSObject.Properties.Name | Should -Contain 'NewVersion'
     }
 }

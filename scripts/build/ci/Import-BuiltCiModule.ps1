@@ -17,4 +17,4 @@ if (-not (Test-Path -LiteralPath $moduleManifestPath)) {
 }
 
 Remove-Module -Name $ProjectName -Force -ErrorAction SilentlyContinue
-return Import-Module -Name $moduleManifestPath -Force -PassThru -ErrorAction Stop
+return Import-Module -Name $moduleManifestPath -Force -Global -PassThru -ErrorAction Stop
