@@ -4,7 +4,9 @@
     Usage = 'nova version [<options>]'
     Description = @(
         'Show the current project version from project.json.',
-        'Use --installed when you want the locally installed version of the current project module instead of the project.json version.'
+        'Use --installed when you want the locally installed version of the current project module instead of the project.json version.',
+        'For more information, documentation, and examples, visit:',
+        'https://www.novamoduletools.com/versioning-and-updates.html#version-views'
     )
     Options = @(
         @{

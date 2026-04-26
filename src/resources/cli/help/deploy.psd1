@@ -4,7 +4,9 @@
     Usage = 'nova deploy [<options>]'
     Description = @(
         'Upload existing package artifact(s) from the current project to a raw HTTP endpoint.',
-        'Use a named repository from project.json or pass an explicit URL when you want a direct upload target.'
+        'Use a named repository from project.json or pass an explicit URL when you want a direct upload target.',
+        'For more information, documentation, and examples, visit:',
+        'https://www.novamoduletools.com/packaging-and-delivery.html#upload'
     )
     Options = @(
         @{

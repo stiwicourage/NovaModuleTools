@@ -377,6 +377,51 @@ Describe '$projectName tests' {
         }
     }
 
+    It 'Install-NovaCli rebuilds before testing when nova test uses <Option>' -ForEach @(
+        @{Option = '--build'}
+        @{Option = '-b'}
+    ) {
+        $option = $_.Option
+        $targetDirectory = Join-Path $TestDrive "test-build-bin-$($option.Replace('-', '') )"
+        $installedPath = Join-Path $targetDirectory 'nova'
+        $projectName = "CliTestBuild$($option.Replace('-', '') )"
+        $projectRoot = Join-Path $TestDrive $projectName
+        $topMarker = Join-Path $projectRoot 'top-level-ran.txt'
+        $builtModulePath = Join-Path $projectRoot "dist/$projectName/$projectName.psm1"
+        $originalModulePath = $env:PSModulePath
+        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
+        $distParent = Split-Path -Parent $script:distModuleDir
+
+        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
+
+        Initialize-TestNovaCliProjectLayout -ProjectRoot $projectRoot
+        Write-TestNovaCliProjectJson -ProjectRoot $projectRoot -ProjectName $projectName -ProjectGuid ([guid]::NewGuid().Guid)
+        Write-TestNovaCliPublicFunction -ProjectRoot $projectRoot -FunctionName "Invoke-$projectName"
+        @"
+Describe '$projectName tests' {
+    It 'imports the built module and writes a marker' {
+        Import-Module '$builtModulePath' -Force
+        Get-Module -Name '$projectName' | Should -Not -BeNullOrEmpty
+        Set-Content -LiteralPath '$topMarker' -Value 'TopLevel' -Encoding utf8 -NoNewline
+    }
+}
+"@ | Set-Content -LiteralPath (Join-Path $projectRoot 'tests/TestBuildFlag.Tests.ps1') -Encoding utf8
+
+        try {
+            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
+
+            (Test-Path -LiteralPath $builtModulePath) | Should -BeFalse
+            $result = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('test', $option)
+
+            $result.ExitCode | Should -Be 0 -Because $result.Text
+            (Test-Path -LiteralPath $builtModulePath) | Should -BeTrue
+            (Test-Path -LiteralPath $topMarker) | Should -BeTrue
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+    }
+
     It 'Invoke-NovaCli version returns the project name and version' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectName = 'AzureDevOpsAgentInstaller'; Version = '1.2.3'}}
@@ -428,7 +473,7 @@ Describe '$projectName tests' {
         @{CommandName = 'info'; Usage = 'usage: nova info'; ExpectedPattern = '\(none\)'},
         @{CommandName = 'version'; Usage = 'usage: nova version [<options>]'; ExpectedPattern = '-i, --installed'},
         @{CommandName = 'build'; Usage = 'usage: nova build [<options>]'; ExpectedPattern = '-v, --verbose'},
-        @{CommandName = 'test'; Usage = 'usage: nova test [<options>]'; ExpectedPattern = '-w, --what-if'},
+        @{CommandName = 'test'; Usage = 'usage: nova test [<options>]'; ExpectedPattern = '-b, --build'},
         @{CommandName = 'package'; Usage = 'usage: nova package [<options>]'; ExpectedPattern = '-c, --confirm'},
         @{CommandName = 'deploy'; Usage = 'usage: nova deploy [<options>]'; ExpectedPattern = '-r, --repository <name>'},
         @{CommandName = 'bump'; Usage = 'usage: nova bump [<options>]'; ExpectedPattern = '-p, --preview'},

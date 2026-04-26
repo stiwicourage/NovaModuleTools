@@ -720,9 +720,11 @@ title: Invoke-NovaBuild
         InModuleScope $script:moduleName {
             Mock Get-NovaTestWorkflowContext {
                 [pscustomobject]@{
+                    BuildRequested = $false
                     Target = '/tmp/nova-project/artifacts/TestResults.xml'
                     Operation = 'Run Pester tests and write test results'
                     PesterConfig = [pscustomobject]@{}
+                    WorkflowParams = @{}
                 }
             }
             Mock Invoke-NovaTestWorkflow {}
@@ -736,6 +738,32 @@ title: Invoke-NovaBuild
             Assert-MockCalled Invoke-NovaTestWorkflow -Times 1 -ParameterFilter {
                 $WorkflowContext.Target -eq '/tmp/nova-project/artifacts/TestResults.xml' -and
                         $WorkflowContext.Operation -eq 'Run Pester tests and write test results'
+            }
+        }
+    }
+
+    It 'Test-NovaBuild -Build forwards the build flag into the test workflow context and workflow execution' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaTestWorkflowContext {
+                [pscustomobject]@{
+                    BuildRequested = $true
+                    Target = '/tmp/nova-project/artifacts/TestResults.xml'
+                    Operation = 'Build project, run Pester tests, and write test results'
+                    PesterConfig = [pscustomobject]@{}
+                    WorkflowParams = @{}
+                }
+            }
+            Mock Invoke-NovaTestWorkflow {}
+
+            Test-NovaBuild -Build -Confirm:$false
+
+            Assert-MockCalled Get-NovaTestWorkflowContext -Times 1 -ParameterFilter {
+                $TestOption.Build -and
+                        $BoundParameters.ContainsKey('Build') -and
+                        $BoundParameters.ContainsKey('Confirm')
+            }
+            Assert-MockCalled Invoke-NovaTestWorkflow -Times 1 -ParameterFilter {
+                $WorkflowContext.BuildRequested -and $ShouldRun
             }
         }
     }
@@ -773,5 +801,54 @@ title: Invoke-NovaBuild
         }
     }
 
+    It 'Test-NovaBuild -Build runs Invoke-NovaBuild before the Pester workflow' {
+        InModuleScope $script:moduleName {
+            $steps = [System.Collections.Generic.List[string]]::new()
+            $workflowContext = [pscustomobject]@{
+                BuildRequested = $true
+                WorkflowParams = @{}
+                TestResultDirectory = '/tmp/nova-project/artifacts'
+                TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
+                PesterConfig = New-TestPesterConfigStub -IncludeOutput
+                TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
+                TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
+            }
+
+            Mock Invoke-NovaBuild {$steps.Add('build')}
+            Mock Initialize-NovaPesterArtifactDirectory {$steps.Add('artifacts')}
+            Mock Invoke-NovaPester {
+                $steps.Add('pester')
+                [pscustomobject]@{Result = 'Passed'}
+            }
+            Invoke-NovaTestWorkflow -WorkflowContext $workflowContext -ShouldRun
+
+            $steps | Should -Be @('build', 'artifacts', 'pester')
+            $workflowContext.PesterConfig.TestResult.OutputPath | Should -Be '/tmp/nova-project/artifacts/TestResults.xml'
+        }
+    }
+
+    It 'Test-NovaBuild -Build -WhatIf previews the nested build without invoking Pester' {
+        InModuleScope $script:moduleName {
+            $workflowContext = [pscustomobject]@{
+                BuildRequested = $true
+                WorkflowParams = @{WhatIf = $true}
+                TestResultDirectory = '/tmp/nova-project/artifacts'
+                TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
+                PesterConfig = New-TestPesterConfigStub -IncludeOutput
+                TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
+                TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
+            }
+
+            Mock Invoke-NovaBuild {}
+            Mock Initialize-NovaPesterArtifactDirectory {throw 'should not create artifacts'}
+            Mock Invoke-NovaPester {throw 'should not run tests'}
+            $result = Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
+
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled Invoke-NovaBuild -Times 1 -ParameterFilter {$WhatIf}
+            Assert-MockCalled Initialize-NovaPesterArtifactDirectory -Times 0
+            Assert-MockCalled Invoke-NovaPester -Times 0
+        }
+    }
 
 }

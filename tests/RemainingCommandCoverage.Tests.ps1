@@ -131,11 +131,14 @@ Describe 'Coverage for remaining command and filesystem branches' {
         }
     }
 
-    It 'Get-NovaTestWorkflowContext prepares the Pester workflow state and resolves the report writers' {
+    It 'Get-NovaTestWorkflowContext prepares the Pester workflow state and resolves the report writers' -ForEach @(
+        @{Build = $false; ExpectedOperation = 'Run Pester tests and write test results'}
+        @{Build = $true; ExpectedOperation = 'Build project, run Pester tests, and write test results'}
+    ) {
         $cfg = Get-TestNovaPesterConfig
 
-        InModuleScope $script:moduleName -Parameters @{Config = $cfg} {
-            param($Config)
+        InModuleScope $script:moduleName -Parameters @{Config = $cfg; TestCase = $_} {
+            param($Config, $TestCase)
 
             $projectRoot = '/tmp/nova-project'
             $artifactWriter = [pscustomobject]@{ScriptBlock = {}}
@@ -154,10 +157,16 @@ Describe 'Coverage for remaining command and filesystem branches' {
             Mock Get-Command {$artifactWriter} -ParameterFilter {$Name -eq 'Write-NovaPesterTestResultArtifact' -and $CommandType -eq 'Function'}
             Mock Get-Command {$reportWriter} -ParameterFilter {$Name -eq 'Write-NovaPesterTestResultReport' -and $CommandType -eq 'Function'}
 
-            $result = Get-NovaTestWorkflowContext -TestOption @{} -BoundParameters @{}
+            $testOption = @{}
+            if ($TestCase.Build) {
+                $testOption.Build = $true
+            }
+
+            $result = Get-NovaTestWorkflowContext -TestOption $testOption -BoundParameters @{}
 
             $result.Target | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts', 'TestResults.xml'))
-            $result.Operation | Should -Be 'Run Pester tests and write test results'
+            $result.BuildRequested | Should -Be $TestCase.Build
+            $result.Operation | Should -Be $TestCase.ExpectedOperation
             $Config.Run.Path | Should -Be ([System.IO.Path]::Join('tests', '*.Tests.ps1'))
             $Config.Output.RenderMode | Should -Be 'Auto'
             $result.TestResultArtifactWriter | Should -Be $artifactWriter

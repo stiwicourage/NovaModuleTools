@@ -1,3 +1,16 @@
+function Get-NovaTestWorkflowOperation {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][bool]$BuildRequested
+    )
+
+    if ($BuildRequested) {
+        return 'Build project, run Pester tests, and write test results'
+    }
+
+    return 'Run Pester tests and write test results'
+}
+
 function Get-NovaTestWorkflowContext {
     [CmdletBinding()]
     param(
@@ -18,16 +31,19 @@ function Get-NovaTestWorkflowContext {
     Initialize-NovaPesterExecutionConfiguration -PesterConfig $pesterConfig -BoundParameters $BoundParameters -OutputVerbosity (Get-NovaTestOptionValue -TestOption $TestOption -Name OutputVerbosity) -OutputRenderMode (Get-NovaTestOptionValue -TestOption $TestOption -Name OutputRenderMode)
 
     $testResultPath = Get-NovaPesterTestResultPath -ProjectRoot $projectInfo.ProjectRoot
+    $buildRequested = [bool](Get-NovaTestOptionValue -TestOption $TestOption -Name Build)
 
     return [pscustomobject]@{
+        BuildRequested = $buildRequested
         ProjectInfo = $projectInfo
         PesterConfig = $pesterConfig
         TestResultPath = $testResultPath
         TestResultDirectory = Split-Path -Parent $testResultPath
         TestResultArtifactWriter = Get-Command -Name Write-NovaPesterTestResultArtifact -CommandType Function -ErrorAction Stop
         TestResultReportWriter = Get-Command -Name Write-NovaPesterTestResultReport -CommandType Function -ErrorAction Stop
+        WorkflowParams = Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:($BoundParameters.ContainsKey('WhatIf') -and [bool]$BoundParameters.WhatIf)
         Target = $testResultPath
-        Operation = 'Run Pester tests and write test results'
+        Operation = Get-NovaTestWorkflowOperation -BuildRequested:$buildRequested
     }
 }
 

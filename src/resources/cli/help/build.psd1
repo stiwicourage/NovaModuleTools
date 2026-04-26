@@ -4,7 +4,9 @@
     Usage = 'nova build [<options>]'
     Description = @(
         'Build the current project into the dist folder.',
-        'Use this command when you want fresh built module output before testing, packaging, or publishing.'
+        'Use this command when you want fresh built module output before testing, packaging, or publishing.',
+        'For more information, documentation, and examples, visit:',
+        'https://www.novamoduletools.com/core-workflows.html#build'
     )
     Options = @(
         @{

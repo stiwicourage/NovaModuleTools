@@ -168,23 +168,27 @@ PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
                     </div>
                     <div class="surface-example__surface" data-command-surface="powershell">
                         <pre><code>PS&gt; Test-NovaBuild
+PS&gt; Test-NovaBuild -Build
 PS&gt; Test-NovaBuild -TagFilter unit,fast
 PS&gt; Test-NovaBuild -ExcludeTagFilter slow
 PS&gt; Test-NovaBuild -OutputVerbosity Detailed -OutputRenderMode Ansi</code></pre>
                     </div>
                     <div class="surface-example__surface" data-command-surface="command-line" hidden>
                         <pre><code>% nova test
+% nova test --build
 % nova test --what-if</code></pre>
                     </div>
                 </div>
                 <p><code>Test-NovaBuild</code> reads the Pester configuration from <code>project.json</code>, resolves
                     the test path, and writes results to <code>artifacts/TestResults.xml</code>.</p>
+                <p>Use <code>-Build</code>, <code>--build</code>, or <code>-b</code> when you want Nova to rebuild the
+                    project before the test workflow starts.</p>
                 <p><strong>Important behavior:</strong> when <code>BuildRecursiveFolders</code> is <code>true</code>,
                     nested test files are discovered. When it is <code>false</code>, Nova stays closer to top-level
                     Pester-style discovery.</p>
                 <div class="surface-note" data-command-visibility="command-line" hidden>
-                    <p><strong>Command-line note:</strong> the routed CLI currently covers the standard test flow and
-                        preview mode. Advanced test overrides such as <code>-TagFilter</code>,
+                    <p><strong>Command-line note:</strong> the routed CLI covers the standard test flow, optional
+                        build-before-test, and preview mode. Advanced test overrides such as <code>-TagFilter</code>,
                         <code>-ExcludeTagFilter</code>, <code>-OutputVerbosity</code>, and
                         <code>-OutputRenderMode</code> are PowerShell cmdlet parameters, so switch to the PowerShell
                         view when you need those controls.</p>

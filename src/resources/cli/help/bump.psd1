@@ -4,7 +4,9 @@
     Usage = 'nova bump [<options>]'
     Description = @(
         'Update the module version in project.json by using the current repository history.',
-        'Use --preview when you want an explicit prerelease iteration instead of the next stable semantic version.'
+        'Use --preview when you want an explicit prerelease iteration instead of the next stable semantic version.',
+        'For more information, documentation, and examples, visit:',
+        'https://www.novamoduletools.com/versioning-and-updates.html#bump'
     )
     Options = @(
         @{

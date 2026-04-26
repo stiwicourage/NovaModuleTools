@@ -8,16 +8,25 @@ function Test-NovaBuild {
         [ValidateSet('Auto', 'Ansi')]
         [string]$OutputRenderMode
     )
-    $workflowContext = Get-NovaTestWorkflowContext -TestOption @{
-        TagFilter = $TagFilter
-        ExcludeTagFilter = $ExcludeTagFilter
-        OutputVerbosity = $OutputVerbosity
-        OutputRenderMode = $OutputRenderMode
-    } -BoundParameters $PSBoundParameters
 
-    if (-not $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Operation)) {
-        return
+    dynamicparam {
+        return New-NovaTestDynamicParameterDictionary
     }
 
-    Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
+    end {
+        $workflowContext = Get-NovaTestWorkflowContext -TestOption @{
+            Build = $PSBoundParameters.ContainsKey('Build')
+            TagFilter = $TagFilter
+            ExcludeTagFilter = $ExcludeTagFilter
+            OutputVerbosity = $OutputVerbosity
+            OutputRenderMode = $OutputRenderMode
+        } -BoundParameters $PSBoundParameters
+
+        $shouldRun = $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Operation)
+        if (-not $shouldRun -and -not $WhatIfPreference) {
+            return
+        }
+
+        Invoke-NovaTestWorkflow -WorkflowContext $workflowContext -ShouldRun:$shouldRun
+    }
 }

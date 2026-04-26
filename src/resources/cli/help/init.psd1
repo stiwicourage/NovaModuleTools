@@ -4,7 +4,9 @@
     Usage = 'nova init [<options>]'
     Description = @(
         'Create a new Nova module scaffold.',
-        'Run without options for the interactive flow, or pass an explicit destination path when you want a non-interactive target.'
+        'Run without options for the interactive flow, or pass an explicit destination path when you want a non-interactive target.',
+        'For more information, documentation, and examples, visit:',
+        'https://www.novamoduletools.com/core-workflows.html#scaffold'
     )
     Options = @(
         @{

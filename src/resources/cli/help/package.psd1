@@ -4,7 +4,9 @@
     Usage = 'nova package [<options>]'
     Description = @(
         'Build, test, and package the current project by using the configured package settings.',
-        'Use this command when you want package artifact output without publishing to a PowerShell repository.'
+        'Use this command when you want package artifact output without publishing to a PowerShell repository.',
+        'For more information, documentation, and examples, visit:',
+        'https://www.novamoduletools.com/packaging-and-delivery.html#pack'
     )
     Options = @(
         @{
