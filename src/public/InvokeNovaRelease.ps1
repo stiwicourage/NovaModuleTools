@@ -3,6 +3,7 @@ function Invoke-NovaRelease {
     param(
         [hashtable]$PublishOption = @{},
         [switch]$SkipTests,
+        [switch]$ContinuousIntegration,
         [string]$Path = (Get-Location).Path
     )
 
@@ -14,6 +15,7 @@ function Invoke-NovaRelease {
         }
 
         $releasePublishOption.SkipTests = [bool]$SkipTests
+        $releasePublishOption['ContinuousIntegration'] = [bool]$ContinuousIntegration
         $workflowContext = Get-NovaPublishWorkflowContext -ProjectInfo (Get-NovaProjectInfo) -PublishOption $releasePublishOption -WorkflowParams (Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference) -WorkflowSettings @{
             WorkflowName = 'release'
             Release = $true

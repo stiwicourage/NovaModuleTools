@@ -20,7 +20,7 @@ Builds the current NovaModuleTools project into a ready-to-import PowerShell mod
 ### __AllParameterSets
 
 ```text
-PS> Invoke-NovaBuild [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Invoke-NovaBuild [-ContinuousIntegration] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,6 +29,9 @@ PS> Invoke-NovaBuild [-WhatIf] [-Confirm] [<CommonParameters>]
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
 build target without clearing `dist/` or generating new build output.
+
+Use `-ContinuousIntegration` when the same PowerShell session needs to keep using the freshly built `dist/` module after
+the build completes. In CI/self-hosting flows, that re-activates the built module before the command returns.
 
 The command:
 
@@ -88,7 +91,40 @@ PS> Invoke-NovaBuild -Confirm
 
 Prompts before the build workflow runs when confirmation is required.
 
+### EXAMPLE 5
+
+```text
+PS> Invoke-NovaBuild -ContinuousIntegration
+```
+
+Builds the project and then re-imports the freshly built `dist/<ProjectName>/<ProjectName>.psd1` so later CI steps in
+the same session use the updated build output.
+
 ## PARAMETERS
+
+### -ContinuousIntegration
+
+Re-import the freshly built module from `dist/` before the command returns.
+
+Use this in CI/self-hosting flows when later commands in the same PowerShell session must run against the freshly built
+module state instead of the previously loaded copy.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
 
 ### CommonParameters
 
@@ -115,6 +151,9 @@ Run this command from the project root so `project.json`, `src/`, `docs/`, and `
 
 `Invoke-NovaBuild` uses `SupportsShouldProcess`, so `Get-Help Invoke-NovaBuild -Full` shows the native `-WhatIf` and
 `-Confirm` behavior.
+
+When `-ContinuousIntegration` is used together with a real build, the command re-imports the freshly built module after
+the build succeeds. `-WhatIf` previews remain side-effect free and do not change the loaded module state.
 
 ## RELATED LINKS
 

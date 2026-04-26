@@ -82,6 +82,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       `Invoke-NovaRelease -SkipTests`.
     - The `nova` launcher now supports `--skip-tests` / `-s` on `nova package`, `nova publish`, and `nova release`.
     - Skip-tests bypasses `Test-NovaBuild` only; the related build steps still run.
+- Add first-class CI activation switches so Nova can re-import the built `dist/` module at the workflow boundaries where
+  session state matters.
+    - PowerShell now supports `Invoke-NovaBuild -ContinuousIntegration`,
+      `Update-NovaModuleVersion -ContinuousIntegration`,
+      `Publish-NovaModule -ContinuousIntegration`, and `Invoke-NovaRelease -ContinuousIntegration`.
+    - The `nova` launcher now supports `--continuous-integration` / `-i` on `nova build`, `nova bump`, `nova publish`,
+      and `nova release` while keeping `nova version -i` dedicated to the installed-version view.
+    - Build re-activates the freshly built module after the build succeeds, bump re-activates it before the version
+      update starts, and publish/release restore the built module again after publish completes.
 
 ### Changed
 

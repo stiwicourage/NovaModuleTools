@@ -110,7 +110,7 @@ function Invoke-NovaCliCommandRoute {
             return Invoke-NovaCliVersionCommand -Arguments $InvocationContext.Arguments -ForwardedParameters $commonParameters
         }
         'build' {
-            return Invoke-NovaBuild @mutatingCommonParameters
+            return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaBuildCliArgument' -ActionCommand 'Invoke-NovaBuild'
         }
         'test' {
             return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaTestCliArgument' -ActionCommand 'Test-NovaBuild'

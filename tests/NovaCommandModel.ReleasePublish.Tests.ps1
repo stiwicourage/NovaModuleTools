@@ -179,13 +179,37 @@ Describe 'Nova command model - release and publish behavior' {
             $result.PublishParams.WhatIf | Should -BeTrue
             $result.PublishInvocation.IsLocal | Should -BeTrue
             $result.SkipTestsRequested | Should -BeFalse
+            $result.'ContinuousIntegrationRequested' | Should -BeFalse
             $result.Operation | Should -Be 'Run Nova release workflow (build, test, and publish) to local directory'
             $result.LocalPublishActivation | Should -BeNullOrEmpty
         }
     }
 
-    It 'Get-NovaPublishWorkflowContext composes skip-tests release workflow context when requested' {
-        InModuleScope $script:moduleName {
+    It 'Get-NovaPublishWorkflowContext carries delivery workflow flags when requested' -ForEach @(
+        @{
+            PublishOption = @{Repository = 'PSGallery'; SkipTests = $true}
+            WorkflowSettings = @{WorkflowName = 'release'; Release = $true}
+            Assert = {
+                param($Result)
+
+                $Result.SkipTestsRequested | Should -BeTrue
+                $Result.Operation | Should -Be 'Run Nova release workflow (build and publish) to repository'
+            }
+        }
+        @{
+            PublishOption = @{Repository = 'PSGallery'; ContinuousIntegration = $true}
+            WorkflowSettings = @{WorkflowName = 'publish'}
+            Assert = {
+                param($Result)
+
+                $Result.'ContinuousIntegrationRequested' | Should -BeTrue
+                $Result.ProjectInfo.ProjectName | Should -Be 'NovaModuleTools'
+            }
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
             Mock Resolve-NovaPublishInvocation {
                 [pscustomobject]@{
                     Target = 'PSGallery'
@@ -200,13 +224,9 @@ Describe 'Nova command model - release and publish behavior' {
                 OutputModuleDir = '/tmp/dist/NovaModuleTools'
             }
 
-            $result = Get-NovaPublishWorkflowContext -ProjectInfo $projectInfo -PublishOption @{Repository = 'PSGallery'; SkipTests = $true} -WorkflowSettings @{
-                WorkflowName = 'release'
-                Release = $true
-            }
+            $result = Get-NovaPublishWorkflowContext -ProjectInfo $projectInfo -PublishOption $TestCase.PublishOption -WorkflowSettings $TestCase.WorkflowSettings
 
-            $result.SkipTestsRequested | Should -BeTrue
-            $result.Operation | Should -Be 'Run Nova release workflow (build and publish) to repository'
+            & $TestCase.Assert $result
         }
     }
 
@@ -235,6 +255,53 @@ Describe 'Nova command model - release and publish behavior' {
             Assert-MockCalled Get-NovaPublishWorkflowContext -Times 1 -ParameterFilter {$WorkflowSettings.WorkflowName -eq 'release' -and $WorkflowSettings.Release}
             Assert-MockCalled Write-NovaPublishWorkflowContext -Times 1
             Assert-MockCalled Invoke-NovaReleaseWorkflow -Times 1
+        }
+    }
+
+    It '<CommandName> forwards ContinuousIntegration into its shared workflow context' -ForEach @(
+        @{
+            CommandName = 'Invoke-NovaRelease'
+            WorkflowName = 'release'
+            Operation = 'Run Nova release workflow (build, test, and publish) to repository'
+            Invoke = {
+                Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'} -ContinuousIntegration -Path (Get-Location).Path -Confirm:$false
+            }
+        }
+        @{
+            CommandName = 'Publish-NovaModule'
+            WorkflowName = 'publish'
+            Operation = 'Build, test, and publish Nova module to repository'
+            Invoke = {
+                Publish-NovaModule -Repository PSGallery -ApiKey key123 -ContinuousIntegration -Confirm:$false
+            }
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+            }
+            Mock Get-NovaPublishWorkflowContext {
+                [pscustomobject]@{
+                    WorkflowName = $TestCase.WorkflowName
+                    LocalRequested = $false
+                    PublishInvocation = [pscustomobject]@{IsLocal = $false}
+                    Target = 'PSGallery'
+                    Operation = $TestCase.Operation
+                }
+            }
+            Mock Write-NovaPublishWorkflowContext {}
+            if ($TestCase.WorkflowName -eq 'release') {
+                Mock Invoke-NovaReleaseWorkflow {}
+            }
+            else {
+                Mock Invoke-NovaPublishWorkflow {}
+            }
+
+            & $TestCase.Invoke | Out-Null
+
+            Assert-MockCalled Get-NovaPublishWorkflowContext -Times 1 -ParameterFilter {$PublishOption.ContinuousIntegration -and $PublishOption.Repository -eq 'PSGallery'}
         }
     }
 
@@ -346,6 +413,55 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
+    It 'Invoke-NovaPublishWorkflow restores the built module in CI mode for <Name>' -ForEach @(
+        @{
+            Name = 'repository publish'
+            UseLocalPublishActivation = $false
+            ExpectedSteps = 'build,test,publish,ci'
+        }
+        @{
+            Name = 'local publish'
+            UseLocalPublishActivation = $true
+            ExpectedSteps = 'build,test,publish,import,ci'
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            $script:steps = @()
+
+            Mock Invoke-NovaBuild {$script:steps += 'build'}
+            Mock Test-NovaBuild {$script:steps += 'test'}
+            Mock Import-NovaBuiltModuleForCi {$script:steps += 'ci'}
+            $localPublishActivation = $null
+            if ($TestCase.UseLocalPublishActivation) {
+                $localPublishActivation = [pscustomobject]@{
+                    ManifestPath = '/tmp/modules/NovaModuleTools/NovaModuleTools.psd1'
+                    ImportAction = {param($ProjectName, $ManifestPath) $script:steps += 'import'}
+                }
+            }
+
+            $workflowContext = [pscustomobject]@{
+                ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                WorkflowParams = @{}
+                ContinuousIntegrationRequested = $true
+                PublishInvocation = [pscustomobject]@{
+                    Parameters = @{
+                        ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                    }
+                    Action = {$script:steps += 'publish'}
+                }
+                PublishParams = @{}
+                LocalPublishActivation = $localPublishActivation
+            }
+
+            Invoke-NovaPublishWorkflow -WorkflowContext $workflowContext -ShouldRun | Out-Null
+
+            $script:steps -join ',' | Should -Be $TestCase.ExpectedSteps
+            Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
+        }
+    }
+
     It 'Invoke-NovaPublishWorkflow skips tests when SkipTests is requested' {
         InModuleScope $script:moduleName {
             $script:steps = @()
@@ -417,6 +533,45 @@ Describe 'Nova command model - release and publish behavior' {
 
             $result | Should -BeNullOrEmpty
             $script:steps -join ',' | Should -Be 'build:True,test:True,publish:True'
+        }
+    }
+
+    It 'Invoke-NovaReleaseWorkflow forwards ContinuousIntegration into nested build and bump steps and restores the built module after publish' {
+        InModuleScope $script:moduleName {
+            $script:steps = @()
+
+            Mock Invoke-NovaBuild {
+                param([switch]$ContinuousIntegration)
+
+                $script:steps += "build:$( [bool]$ContinuousIntegration )"
+            }
+            Mock Test-NovaBuild {
+                $script:steps += 'test'
+            }
+            Mock Update-NovaModuleVersion {
+                param([switch]$ContinuousIntegration)
+
+                $script:steps += "bump:$( [bool]$ContinuousIntegration )"
+                [pscustomobject]@{NewVersion = '1.0.1'}
+            }
+            Mock Import-NovaBuiltModuleForCi {
+                $script:steps += 'ci'
+            }
+            $workflowContext = [pscustomobject]@{
+                ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                WorkflowParams = @{}
+                ContinuousIntegrationRequested = $true
+                SkipTestsRequested = $false
+                PublishInvocation = [pscustomobject]@{
+                    Action = {$script:steps += 'publish'}
+                }
+                PublishParams = @{}
+            }
+
+            Invoke-NovaReleaseWorkflow -WorkflowContext $workflowContext | Out-Null
+
+            $script:steps | Should -Be @('build:True', 'test', 'bump:True', 'build:True', 'publish', 'ci')
+            Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
         }
     }
 

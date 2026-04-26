@@ -1,12 +1,23 @@
-function Get-NovaDynamicSkipTestsParameterDictionary {
+function Add-NovaDynamicSwitchParameter {
     [CmdletBinding()]
-    param()
+    param(
+        [Parameter(Mandatory)][System.Management.Automation.RuntimeDefinedParameterDictionary]$ParameterDictionary,
+        [Parameter(Mandatory)][string]$Name
+    )
 
     $attributeCollection = [System.Collections.ObjectModel.Collection[System.Attribute]]::new()
     $attributeCollection.Add([System.Management.Automation.ParameterAttribute]::new())
-    $runtimeParameter = [System.Management.Automation.RuntimeDefinedParameter]::new('SkipTests', [switch],$attributeCollection)
+    $runtimeParameter = [System.Management.Automation.RuntimeDefinedParameter]::new($Name, [switch],$attributeCollection)
+    $ParameterDictionary.Add($Name, $runtimeParameter)
+}
+
+function Get-NovaDynamicDeliveryParameterDictionary {
+    [CmdletBinding()]
+    param()
+
     $parameterDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
-    $parameterDictionary.Add('SkipTests', $runtimeParameter)
+    Add-NovaDynamicSwitchParameter -ParameterDictionary $parameterDictionary -Name 'SkipTests'
+    Add-NovaDynamicSwitchParameter -ParameterDictionary $parameterDictionary -Name 'ContinuousIntegration'
     return $parameterDictionary
 }
 

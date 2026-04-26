@@ -13,6 +13,9 @@ Publish-TestSupportFunctions -FunctionNameList @(
     'Write-TestNovaCliPublicFunction'
     'Initialize-TestNovaCliGitRepository'
     'Invoke-TestInstalledNovaCommand'
+    'Get-TestNovaCliWhatIfResultMap'
+    'Assert-TestNovaCliWhatIfResultMap'
+    'Get-TestNovaCliContinuousIntegrationForwardingCaseList'
     'New-TestPesterConfigStub'
     'Get-TestInstalledNovaCliSnapshot'
     'Assert-TestInstalledNovaCliSnapshot'
@@ -45,6 +48,9 @@ BeforeAll {
         'Write-TestNovaCliPublicFunction'
         'Initialize-TestNovaCliGitRepository'
         'Invoke-TestInstalledNovaCommand'
+        'Get-TestNovaCliWhatIfResultMap'
+        'Assert-TestNovaCliWhatIfResultMap'
+        'Get-TestNovaCliContinuousIntegrationForwardingCaseList'
         'New-TestPesterConfigStub'
         'Get-TestInstalledNovaCliSnapshot'
         'Assert-TestInstalledNovaCliSnapshot'
@@ -153,7 +159,7 @@ function Invoke-TestCliVerbose {
         }
     }
 
-    It 'Install-NovaCli forwards --what-if and -w from the standalone launcher without mutating build, test, bump, or publish state' {
+    It 'Install-NovaCli forwards --what-if, -w, and CI-safe routed options without mutating build, test, bump, publish, or release state' {
         $targetDirectory = Join-Path $TestDrive 'whatif-bin'
         $installedPath = Join-Path $targetDirectory 'nova'
         $projectRoot = Join-Path $TestDrive 'CliWhatIfProject'
@@ -183,35 +189,9 @@ Describe 'CLI WhatIf test project' {
 }
 '@ | Set-Content -LiteralPath (Join-Path $projectRoot 'tests/CliWhatIf.Tests.ps1') -Encoding utf8
 
-            $buildResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('build', '--what-if')
-            $shortTestResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('test', '-w')
-            $longTestResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('test', '--what-if')
-            $publishResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('publish', '--local', '-w')
-            $bumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '-w')
-            $previewBumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '--preview', '--what-if')
-            $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
+            $resultMap = Get-TestNovaCliWhatIfResultMap -InstalledPath $installedPath -ProjectRoot $projectRoot
 
-            $buildResult.ExitCode | Should -Be 0
-            $shortTestResult.ExitCode | Should -Be 0
-            $longTestResult.ExitCode | Should -Be 0
-            $publishResult.ExitCode | Should -Be 0
-            $bumpResult.ExitCode | Should -Be 0
-            $previewBumpResult.ExitCode | Should -Be 0
-            $buildResult.Text | Should -Match 'What if:'
-            $shortTestResult.Text | Should -Match 'What if:'
-            $longTestResult.Text | Should -Match 'What if:'
-            $publishResult.Text | Should -Match 'What if:'
-            $publishResult.Text | Should -Not -Match 'Unknown argument:'
-            $bumpResult.Text | Should -Match 'What if:'
-            $bumpResult.Text | Should -Match '0\.0\.1\s+0\.1\.0\s+Minor\s+1'
-            $previewBumpResult.Text | Should -Match 'What if:'
-            $previewBumpResult.Text | Should -Match '0\.0\.1\s+0\.1\.0-preview\s+Minor\s+1'
-            $bumpResult.Text | Should -Not -Match 'Version bumped to :'
-            $previewBumpResult.Text | Should -Not -Match 'Unknown argument:'
-            $previewBumpResult.Text | Should -Not -Match 'Version bumped to :'
-            $versionAfterBump | Should -Be '0.0.1'
-            (Test-Path -LiteralPath $builtModulePath) | Should -BeFalse
-            (Test-Path -LiteralPath $testResultPath) | Should -BeFalse
+            Assert-TestNovaCliWhatIfResultMap -ResultMap $resultMap -ProjectJsonPath $projectJsonPath -BuiltModulePath $builtModulePath -TestResultPath $testResultPath
         }
         finally {
             $env:PSModulePath = $originalModulePath
@@ -541,6 +521,23 @@ Describe '$projectName tests' {
         }
     }
 
+    It 'Invoke-NovaCli help for build, bump, publish, and release documents the continuous integration options' -ForEach @(
+        @{CommandName = 'build'}
+        @{CommandName = 'bump'}
+        @{CommandName = 'publish'}
+        @{CommandName = 'release'}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{CommandName = $_.CommandName} {
+            param($CommandName)
+
+            $shortHelp = Invoke-NovaCli -Command $CommandName -Arguments @('--help')
+            $longHelp = Invoke-NovaCli -Command '--help' -Arguments @($CommandName)
+
+            $shortHelp | Should -Match '-i, --continuous-integration'
+            $longHelp | Should -Match '--continuous-integration'
+        }
+    }
+
     It 'Invoke-NovaCli CLI help never delegates to PowerShell Get-Help' {
         InModuleScope $script:moduleName {
             Mock Get-Help {throw 'CLI help should not call Get-Help'}
@@ -576,6 +573,29 @@ Describe '$projectName tests' {
             $result = Invoke-NovaCli package --skip-tests
 
             $result.SkipTests | Should -BeTrue
+        }
+    }
+
+    It 'Invoke-NovaCli forwards continuous integration for routed build, bump, publish, and release commands' {
+        foreach ($testCase in (Get-TestNovaCliContinuousIntegrationForwardingCaseList)) {
+            InModuleScope $script:moduleName -Parameters @{TestCase = $testCase} {
+                param($TestCase)
+
+                if ($TestCase.UsesPublishOption) {
+                    Mock $TestCase.ActionCommand {
+                        [pscustomobject]@{ContinuousIntegration = [bool]$PublishOption.ContinuousIntegration}
+                    }
+                }
+                else {
+                    Mock $TestCase.ActionCommand {
+                        [pscustomobject]@{ContinuousIntegration = $ContinuousIntegration.IsPresent}
+                    }
+                }
+
+                $result = Invoke-NovaCli -Command $TestCase.CommandName -Arguments $TestCase.Arguments
+
+                $result.ContinuousIntegration | Should -BeTrue
+            }
         }
     }
 
@@ -755,6 +775,7 @@ Describe '$projectName tests' {
         }
     }
 
+
     It 'Invoke-NovaCli publish uses the CLI confirmation wrapper for --confirm and -c without forwarding raw Confirm' {
         InModuleScope $script:moduleName {
             Mock Confirm-NovaCliCommandAction {}
@@ -806,6 +827,7 @@ Describe '$projectName tests' {
             $result.SkipTests | Should -BeTrue
         }
     }
+
 
     It 'Invoke-NovaCli forwards WhatIf to mutating routed commands' {
         InModuleScope $script:moduleName {

@@ -121,3 +121,67 @@ function Invoke-TestInstalledNovaCommand {
     }
 }
 
+function Get-TestNovaCliWhatIfResultMap {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$InstalledPath,
+        [Parameter(Mandatory)][string]$ProjectRoot
+    )
+
+    return @{
+        Build = Invoke-TestInstalledNovaCommand -InstalledPath $InstalledPath -WorkingDirectory $ProjectRoot -Arguments @('build', '--what-if')
+        BuildCi = Invoke-TestInstalledNovaCommand -InstalledPath $InstalledPath -WorkingDirectory $ProjectRoot -Arguments @('build', '--continuous-integration', '--what-if')
+        TestShort = Invoke-TestInstalledNovaCommand -InstalledPath $InstalledPath -WorkingDirectory $ProjectRoot -Arguments @('test', '-w')
+        TestLong = Invoke-TestInstalledNovaCommand -InstalledPath $InstalledPath -WorkingDirectory $ProjectRoot -Arguments @('test', '--what-if')
+        Publish = Invoke-TestInstalledNovaCommand -InstalledPath $InstalledPath -WorkingDirectory $ProjectRoot -Arguments @('publish', '--local', '-w')
+        PublishCi = Invoke-TestInstalledNovaCommand -InstalledPath $InstalledPath -WorkingDirectory $ProjectRoot -Arguments @('publish', '--local', '-i', '-w')
+        Bump = Invoke-TestInstalledNovaCommand -InstalledPath $InstalledPath -WorkingDirectory $ProjectRoot -Arguments @('bump', '-w')
+        BumpCi = Invoke-TestInstalledNovaCommand -InstalledPath $InstalledPath -WorkingDirectory $ProjectRoot -Arguments @('bump', '-i', '-w')
+        PreviewBump = Invoke-TestInstalledNovaCommand -InstalledPath $InstalledPath -WorkingDirectory $ProjectRoot -Arguments @('bump', '--preview', '--what-if')
+        ReleaseCi = Invoke-TestInstalledNovaCommand -InstalledPath $InstalledPath -WorkingDirectory $ProjectRoot -Arguments @('release', '--local', '-i', '-w')
+    }
+}
+
+function Assert-TestNovaCliWhatIfResultMap {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][hashtable]$ResultMap,
+        [Parameter(Mandatory)][string]$ProjectJsonPath,
+        [Parameter(Mandatory)][string]$BuiltModulePath,
+        [Parameter(Mandatory)][string]$TestResultPath
+    )
+
+    foreach ($resultName in $ResultMap.Keys) {
+        $ResultMap[$resultName].ExitCode | Should -Be 0 -Because "$resultName => $( $ResultMap[$resultName].Text )"
+    }
+
+    foreach ($resultName in @('Build', 'BuildCi', 'TestShort', 'TestLong', 'Publish', 'PublishCi', 'Bump', 'BumpCi', 'PreviewBump', 'ReleaseCi')) {
+        $ResultMap[$resultName].Text | Should -Match 'What if:'
+    }
+
+    foreach ($resultName in @('Publish', 'PublishCi', 'PreviewBump', 'ReleaseCi')) {
+        $ResultMap[$resultName].Text | Should -Not -Match 'Unknown argument:'
+    }
+
+    $ResultMap.Bump.Text | Should -Match '0\.0\.1\s+0\.1\.0\s+Minor\s+1'
+    $ResultMap.BumpCi.Text | Should -Match '0\.0\.1\s+0\.1\.0\s+Minor\s+1'
+    $ResultMap.PreviewBump.Text | Should -Match '0\.0\.1\s+0\.1\.0-preview\s+Minor\s+1'
+    $ResultMap.Bump.Text | Should -Not -Match 'Version bumped to :'
+    $ResultMap.PreviewBump.Text | Should -Not -Match 'Version bumped to :'
+    ((Get-Content -LiteralPath $ProjectJsonPath -Raw | ConvertFrom-Json).Version) | Should -Be '0.0.1'
+    (Test-Path -LiteralPath $BuiltModulePath) | Should -BeFalse
+    (Test-Path -LiteralPath $TestResultPath) | Should -BeFalse
+}
+
+function Get-TestNovaCliContinuousIntegrationForwardingCaseList {
+    [CmdletBinding()]
+    param()
+
+    return @(
+        @{CommandName = 'build'; ActionCommand = 'Invoke-NovaBuild'; UsesPublishOption = $false; Arguments = @('--continuous-integration')}
+        @{CommandName = 'bump'; ActionCommand = 'Update-NovaModuleVersion'; UsesPublishOption = $false; Arguments = @('--continuous-integration')}
+        @{CommandName = 'publish'; ActionCommand = 'Publish-NovaModule'; UsesPublishOption = $false; Arguments = @('--repository', 'PSGallery', '--api-key', 'key123', '--continuous-integration')}
+        @{CommandName = 'release'; ActionCommand = 'Invoke-NovaRelease'; UsesPublishOption = $true; Arguments = @('--repository', 'PSGallery', '--api-key', 'key123', '--continuous-integration')}
+    )
+}
+

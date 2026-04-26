@@ -5,6 +5,7 @@ function Invoke-NovaBuildWorkflow {
     )
 
     $projectInfo = $WorkflowContext.ProjectInfo
+    $continuousIntegrationRequested = ($WorkflowContext.PSObject.Properties.Name -contains 'ContinuousIntegrationRequested') -and $WorkflowContext.ContinuousIntegrationRequested
 
     Reset-ProjectDist -ProjectInfo $projectInfo -Confirm:$false
     Build-Module -ProjectInfo $projectInfo
@@ -13,6 +14,10 @@ function Invoke-NovaBuildWorkflow {
     Build-Help -ProjectInfo $projectInfo
     Copy-ProjectResource -ProjectInfo $projectInfo
     Invoke-NovaBuildUpdateNotificationSafely
+
+    if ($continuousIntegrationRequested) {
+        $null = Import-NovaBuiltModuleForCi -ProjectInfo $projectInfo
+    }
 }
 
 function Invoke-NovaBuildDuplicateValidation {

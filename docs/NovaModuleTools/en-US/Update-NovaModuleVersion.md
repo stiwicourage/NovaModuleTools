@@ -20,7 +20,7 @@ Updates the project version in `project.json` based on git commit history.
 ### __AllParameterSets
 
 ```text
-PS> Update-NovaModuleVersion [[-Path] <string>] [-Preview] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Update-NovaModuleVersion [[-Path] <string>] [-Preview] [-ContinuousIntegration] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -50,6 +50,9 @@ has no commits yet. Create an initial commit first.`
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
 calculated release label and the exact next version without changing the stored version.
+
+Use `-ContinuousIntegration` when the same session should first re-activate the built `dist/` module before the version
+bump workflow starts. This is useful in CI/self-hosting flows where an earlier command changed the active module state.
 
 When the current version is already a prerelease for the selected release line, Nova finalizes that same semantic
 version instead of incrementing again. For example, a `Major` bump from `2.0.0-preview7` resolves to `2.0.0`, not
@@ -151,6 +154,14 @@ CommitCount: 3
 
 Shows how `-Preview` starts any bare non-preview prerelease stem at `01` instead of jumping directly to `1`.
 
+### EXAMPLE 8
+
+```text
+PS> Update-NovaModuleVersion -ContinuousIntegration
+```
+
+Re-imports the built `dist/<ProjectName>/<ProjectName>.psd1` first and then runs the normal version bump workflow.
+
 ## PARAMETERS
 
 ### -Path
@@ -200,6 +211,30 @@ AcceptedValues: [ ]
 HelpMessage: ''
 ```
 
+### -ContinuousIntegration
+
+Re-import the built module from `dist/` before the version bump workflow starts.
+
+Use this when later steps in the same CI/self-hosting session must stay aligned with the built module state that Nova
+just produced earlier in the workflow.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
@@ -228,6 +263,9 @@ reflect the new version.
 
 `Update-NovaModuleVersion` uses `SupportsShouldProcess`, so `Get-Help Update-NovaModuleVersion -Full` surfaces native
 `-WhatIf` and `-Confirm` support.
+
+When `-ContinuousIntegration` is used with a real update, the command re-activates the built `dist/` module first. When
+combined with `-WhatIf`, Nova still previews the bump without changing the loaded module state.
 
 ## RELATED LINKS
 

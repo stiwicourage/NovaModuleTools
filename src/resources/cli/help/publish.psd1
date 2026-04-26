@@ -57,6 +57,12 @@
             Long = '--skip-tests'
             Placeholder = ''
             Description = 'Skip Test-NovaBuild for this publish run. Build still runs, which is useful when tests already passed earlier in CI/CD.'
+        },
+        @{
+            Short = '-i'
+            Long = '--continuous-integration'
+            Placeholder = ''
+            Description = 'Re-import the built dist module after publish finishes so later CI steps in the same session keep using the built module state.'
         }
     )
     Examples = @(
@@ -71,6 +77,10 @@
         @{
             Command = 'nova publish --repository PSGallery --api-key <key> --skip-tests'
             Description = 'Build and publish the module without re-running Test-NovaBuild.'
+        },
+        @{
+            Command = 'nova publish --repository PSGallery --api-key <key> --continuous-integration'
+            Description = 'Publish the module and then restore the built dist module state for later CI steps in the same session.'
         }
     )
 }

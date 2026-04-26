@@ -26,6 +26,12 @@
             Long = '--confirm'
             Placeholder = ''
             Description = 'Request CLI confirmation before the build workflow runs.'
+        },
+        @{
+            Short = '-i'
+            Long = '--continuous-integration'
+            Placeholder = ''
+            Description = 'Re-import the freshly built dist module before returning so later CI steps in the same session use the updated build output.'
         }
     )
     Examples = @(
@@ -36,6 +42,10 @@
         @{
             Command = 'nova build --what-if'
             Description = 'Preview the build workflow without writing output.'
+        },
+        @{
+            Command = 'nova build --continuous-integration'
+            Description = 'Build the project and re-activate the freshly built dist module for later CI steps in the same session.'
         }
     )
 }

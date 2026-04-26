@@ -182,6 +182,29 @@ PS> Publish-NovaModule -Local
 the active PowerShell session. If your repository workflow needs to switch back to the built `dist/` output afterward,
 re-import `./dist/NovaModuleTools` explicitly.
 
+When the same CI/self-hosting session must stay aligned with the built `dist/` output automatically, use the new
+continuous-integration activation switches instead of handling re-imports manually:
+
+```powershell
+PS> Invoke-NovaBuild -ContinuousIntegration
+PS> Update-NovaModuleVersion -ContinuousIntegration
+PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -ContinuousIntegration
+PS> Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API} -ContinuousIntegration
+
+% nova build --continuous-integration
+% nova bump --continuous-integration
+% nova publish --repository PSGallery --api-key $env:PSGALLERY_API --continuous-integration
+% nova release --repository PSGallery --api-key $env:PSGALLERY_API --continuous-integration
+```
+
+These switches keep the behavior explicit and opt-in:
+
+- `Invoke-NovaBuild -ContinuousIntegration` re-imports the freshly built module after the build succeeds
+- `Update-NovaModuleVersion -ContinuousIntegration` re-imports the built module before the bump workflow starts
+- `Publish-NovaModule -ContinuousIntegration` restores the built module after publish completes
+- `Invoke-NovaRelease -ContinuousIntegration` forwards that CI intent through the nested build/bump boundaries and then
+  restores the built module again after publish
+
 Useful local helper:
 
 ```powershell
@@ -344,6 +367,10 @@ PS> Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env
 
 These forms skip `Test-NovaBuild` only. `Publish-NovaModule` still builds before publishing, and `Invoke-NovaRelease`
 still runs both build steps around the version bump.
+
+When your pipeline continues in the same PowerShell session after build, bump, publish, or release, add
+`-ContinuousIntegration` / `--continuous-integration` / `-i` to the supported commands so Nova re-activates the built
+`dist/` module at the workflow boundaries where session state matters.
 
 ### Run code quality checks
 

@@ -44,7 +44,7 @@ function Write-NovaAvailableModuleUpdateWarning {
             ''
             'To stop prerelease update notifications:'
             'PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications'
-            'nova notification --disable'
+            '% nova notification --disable'
             'Stable release notifications remain enabled.'
         )
     }

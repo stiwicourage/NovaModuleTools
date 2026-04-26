@@ -225,10 +225,13 @@ PS&gt; Get-NovaProjectInfo -Version</code></pre>
                                 package, or publish
                             </li>
                             <li><strong>Key switches:</strong> <code>-WhatIf</code>, <code>-Confirm</code>, or the CLI
-                                forms <code>--what-if</code> / <code>-w</code> and <code>--confirm</code> /
-                                <code>-c</code></li>
+                                forms <code>--what-if</code> / <code>-w</code>, <code>--confirm</code> /
+                                <code>-c</code>, and <code>--continuous-integration</code> / <code>-i</code></li>
                             <li><strong>Notable behavior:</strong> respects <code>SetSourcePath</code>,
                                 <code>Preamble</code>, and duplicate function validation
+                            </li>
+                            <li><strong>CI note:</strong> <code>-ContinuousIntegration</code> restores the freshly built
+                                <code>dist/</code> module before the command returns
                             </li>
                         </ul>
                         <div class="surface-example" data-command-example>
@@ -239,11 +242,13 @@ PS&gt; Get-NovaProjectInfo -Version</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="powershell">
                                 <pre><code>PS&gt; Invoke-NovaBuild
-PS&gt; Invoke-NovaBuild -WhatIf</code></pre>
+PS&gt; Invoke-NovaBuild -WhatIf
+PS&gt; Invoke-NovaBuild -ContinuousIntegration</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
                                 <pre><code>% nova build
-% nova build --what-if</code></pre>
+% nova build --what-if
+% nova build --continuous-integration</code></pre>
                             </div>
                         </div>
                         <p><a class="text-link" href="./core-workflows.html#build">See the build workflow</a></p>
@@ -366,13 +371,16 @@ PS&gt; Deploy-NovaPackage -Url 'https://packages.example/raw/' -Token $env:NOVA_
                         <h3><code>Publish-NovaModule</code> / <code>% nova publish</code></h3>
                         <p>Build, test, and publish the module either locally or to a registered PowerShell
                             repository. Use <code>-SkipTests</code> / <code>--skip-tests</code> when tests already ran
-                            earlier in CI/CD.</p>
+                            earlier in CI/CD, or <code>-ContinuousIntegration</code> /
+                            <code>--continuous-integration</code>
+                            when later commands in the same session must switch back to the built <code>dist/</code>
+                            module.</p>
                         <ul class="plain-list">
                             <li><strong>Best for:</strong> PowerShell repository publishing or validating a local
                                 publish/install cycle
                             </li>
                             <li><strong>Key parameters:</strong> <code>-Local</code>, <code>-Repository</code>, <code>-ModuleDirectoryPath</code>,
-                                <code>-ApiKey</code>, <code>-SkipTests</code></li>
+                                <code>-ApiKey</code>, <code>-SkipTests</code>, <code>-ContinuousIntegration</code></li>
                             <li><strong>Notable behavior:</strong> local publish reloads the published module into the
                                 current PowerShell session
                             </li>
@@ -386,12 +394,14 @@ PS&gt; Deploy-NovaPackage -Url 'https://packages.example/raw/' -Token $env:NOVA_
                             <div class="surface-example__surface" data-command-surface="powershell">
                                 <pre><code>PS&gt; Publish-NovaModule -Local
 PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
-PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests</code></pre>
+PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
+PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -ContinuousIntegration</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
                                 <pre><code>% nova publish --local
 % nova publish --repository PSGallery --api-key $env:PSGALLERY_API
-% nova publish --repository PSGallery --api-key $env:PSGALLERY_API --skip-tests</code></pre>
+% nova publish --repository PSGallery --api-key $env:PSGALLERY_API --skip-tests
+% nova publish --repository PSGallery --api-key $env:PSGALLERY_API --continuous-integration</code></pre>
                             </div>
                         </div>
                         <p><a class="text-link" href="./packaging-and-delivery.html#publish">See publish details</a></p>
@@ -401,13 +411,16 @@ PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -Skip
                         <h3><code>Invoke-NovaRelease</code> / <code>% nova release</code></h3>
                         <p>Run the full release flow: build, test, bump version, build again, and then publish. Use
                             <code>-SkipTests</code> / <code>--skip-tests</code> when tests already ran earlier in CI/CD
-                            and you only want to skip the pre-release test step.</p>
+                            and you only want to skip the pre-release test step. Use <code>-ContinuousIntegration</code>
+                            / <code>--continuous-integration</code> when Nova should restore the built
+                            <code>dist/</code>
+                            module at the CI-sensitive workflow boundaries.</p>
                         <ul class="plain-list">
                             <li><strong>Best for:</strong> an orchestrated release command when you want one workflow
                                 instead of separate steps
                             </li>
                             <li><strong>Key parameters:</strong> <code>-PublishOption</code>, <code>-Path</code>,
-                                <code>-SkipTests</code></li>
+                                <code>-SkipTests</code>, <code>-ContinuousIntegration</code></li>
                             <li><strong>Important difference:</strong> local release does not reload the published
                                 module into the session after publishing
                             </li>
@@ -421,11 +434,13 @@ PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -Skip
                             <div class="surface-example__surface" data-command-surface="powershell">
                                 <pre><code>PS&gt; Invoke-NovaRelease -PublishOption @{ Local = $true }
 PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API }
-PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -SkipTests</code></pre>
+PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -SkipTests
+PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -ContinuousIntegration</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
                                 <pre><code>% nova release --repository PSGallery --api-key $env:PSGALLERY_API
-% nova release --repository PSGallery --api-key $env:PSGALLERY_API --skip-tests</code></pre>
+% nova release --repository PSGallery --api-key $env:PSGALLERY_API --skip-tests
+% nova release --repository PSGallery --api-key $env:PSGALLERY_API --continuous-integration</code></pre>
                             </div>
                         </div>
                         <div class="surface-note" data-command-visibility="command-line" hidden>
@@ -447,8 +462,9 @@ PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $
                         </p>
                         <ul class="plain-list">
                             <li><strong>Best for:</strong> Git-driven semantic version updates</li>
-                            <li><strong>Key parameters:</strong> <code>-Path</code>, <code>-Preview</code>, or the CLI
-                                form <code>--preview</code> / <code>-p</code></li>
+                            <li><strong>Key parameters:</strong> <code>-Path</code>, <code>-Preview</code>,
+                                <code>-ContinuousIntegration</code>, or the CLI form <code>--preview</code> /
+                                <code>-p</code> and <code>--continuous-integration</code> / <code>-i</code></li>
                             <li><strong>Notable behavior:</strong> falls back to a patch bump when the folder is not a
                                 Git repository, but throws when the repository exists and has no commits yet
                             </li>
@@ -470,10 +486,12 @@ PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $
                                         data-command-surface-label>PowerShell</span></p>
                             </div>
                             <div class="surface-example__surface" data-command-surface="powershell">
-                                <pre><code>PS&gt; Update-NovaModuleVersion -Preview -WhatIf</code></pre>
+                                <pre><code>PS&gt; Update-NovaModuleVersion -Preview -WhatIf
+PS&gt; Update-NovaModuleVersion -ContinuousIntegration</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
                                 <pre><code>% nova bump --preview --what-if
+% nova bump --continuous-integration
 % nova bump --preview --confirm</code></pre>
                             </div>
                         </div>
