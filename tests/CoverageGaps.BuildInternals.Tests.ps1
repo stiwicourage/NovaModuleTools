@@ -67,7 +67,68 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
         }
     }
 
-    It 'Import-NovaBuiltModuleForCi resolves the built manifest path and imports it globally' {
+    It 'Resolve-NovaCiProjectInfo uses the current location when ProjectRoot is omitted' {
+        $expectedPath = (Get-Location).Path
+
+        InModuleScope $script:moduleName -Parameters @{ExpectedPath = $expectedPath} {
+            param($ExpectedPath)
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            } -ParameterFilter {$Path -eq $ExpectedPath}
+
+            $result = Resolve-NovaCiProjectInfo
+
+            $result.ProjectName | Should -Be 'NovaModuleTools'
+            Assert-MockCalled Get-NovaProjectInfo -Times 1 -ParameterFilter {$Path -eq $ExpectedPath}
+        }
+    }
+
+    It 'Resolve-NovaCiProjectInfo returns the provided ProjectInfo without resolving it again' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'NovaModuleTools'
+                OutputModuleDir = '/tmp/dist/NovaModuleTools'
+            }
+            Mock Get-NovaProjectInfo {throw 'should not resolve project info'}
+
+            $result = Resolve-NovaCiProjectInfo -ProjectInfo $projectInfo
+
+            $result | Should -Be $projectInfo
+            Assert-MockCalled Get-NovaProjectInfo -Times 0
+        }
+    }
+
+    It 'Import-NovaBuiltModuleForCi resolves the built manifest path from the current location and imports it globally' {
+        $expectedPath = (Get-Location).Path
+
+        InModuleScope $script:moduleName -Parameters @{ExpectedPath = $expectedPath} {
+            param($ExpectedPath)
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            } -ParameterFilter {$Path -eq $ExpectedPath}
+            Mock Test-Path {$true} -ParameterFilter {$LiteralPath -eq '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'}
+            Mock Get-Module {@()}
+            Mock Import-Module {
+                [pscustomobject]@{Path = $Name}
+            } -ParameterFilter {$Name -eq '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1' -and $Force -and $Global -and $PassThru}
+
+            $result = Import-NovaBuiltModuleForCi
+
+            $result.Path | Should -Be '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'
+            Assert-MockCalled Get-NovaProjectInfo -Times 1 -ParameterFilter {$Path -eq $ExpectedPath}
+            Assert-MockCalled Import-Module -Times 1 -ParameterFilter {$Name -eq '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1' -and $Force -and $Global -and $PassThru}
+        }
+    }
+
+    It 'Import-NovaBuiltModuleForCi throws a stable error when the built manifest is missing' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {
                 [pscustomobject]@{
@@ -75,17 +136,14 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
                     OutputModuleDir = '/tmp/dist/NovaModuleTools'
                 }
             }
-            Mock Test-Path {$true} -ParameterFilter {$LiteralPath -eq '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'}
-            Mock Get-Module {@()}
-            Mock Import-Module {
-                [pscustomobject]@{Path = $Name}
-            } -ParameterFilter {$Name -eq '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1' -and $Force -and $Global -and $PassThru}
+            Mock Test-Path {$false} -ParameterFilter {$LiteralPath -eq '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'}
+            Mock Get-Module {throw 'should not enumerate modules'}
+            Mock Import-Module {throw 'should not import when manifest is missing'}
 
-            $result = Import-NovaBuiltModuleForCi -ProjectRoot '/tmp/project'
+            {Import-NovaBuiltModuleForCi -ProjectRoot '/tmp/project'} | Should -Throw 'Built module manifest not found: /tmp/dist/NovaModuleTools/NovaModuleTools.psd1'
 
-            $result.Path | Should -Be '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'
-            Assert-MockCalled Get-NovaProjectInfo -Times 1 -ParameterFilter {$Path -eq '/tmp/project'}
-            Assert-MockCalled Import-Module -Times 1 -ParameterFilter {$Name -eq '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1' -and $Force -and $Global -and $PassThru}
+            Assert-MockCalled Get-Module -Times 0
+            Assert-MockCalled Import-Module -Times 0
         }
     }
 
