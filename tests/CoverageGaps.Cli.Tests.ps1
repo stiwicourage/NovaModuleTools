@@ -120,6 +120,30 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'Invoke-NovaCliCommandRoute handles the direct root --help command route when help was not pre-normalized' {
+        InModuleScope $script:moduleName {
+            $invocationContext = [pscustomobject]@{
+                Command = '--help'
+                Arguments = @()
+                CommonParameters = @{}
+                MutatingCommonParameters = @{}
+                IsHelpRequest = $false
+                HelpRequest = $null
+                ModuleName = 'NovaModuleTools'
+                WhatIfEnabled = $false
+                CliConfirmEnabled = $false
+            }
+            Mock Get-NovaCliHelp {'root-help'}
+            Mock Get-NovaCliCommandHelp {throw 'command help should not be used'}
+
+            $result = Invoke-NovaCliCommandRoute -InvocationContext $invocationContext
+
+            $result | Should -Be 'root-help'
+            Assert-MockCalled Get-NovaCliHelp -Times 1
+            Assert-MockCalled Get-NovaCliCommandHelp -Times 0
+        }
+    }
+
     It 'Get-NovaCliHelpRequest resolves root short help, command short help, and command long help' {
         InModuleScope $script:moduleName {
             $rootHelp = Get-NovaCliHelpRequest -Command '--help' -Arguments @()
