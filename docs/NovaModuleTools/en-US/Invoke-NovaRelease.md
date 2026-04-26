@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/25/2026
+  ms.date: 04/26/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-NovaRelease
 ---
@@ -20,7 +20,7 @@ Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
 ### __AllParameterSets
 
 ```text
-PS> Invoke-NovaRelease [[-PublishOption] <hashtable>] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Invoke-NovaRelease [[-PublishOption] <hashtable>] [-SkipTests] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -32,6 +32,9 @@ PS> Invoke-NovaRelease [[-PublishOption] <hashtable>] [[-Path] <string>] [-WhatI
 3. Bump version (`Update-NovaModuleVersion`)
 4. Build again to include the updated version
 5. Publish through the resolved local-directory or repository publish action
+
+Use `-SkipTests` when tests already ran earlier in your pipeline and you only want to skip the pre-release
+`Test-NovaBuild` step. Both build steps still run.
 
 The command changes location to `-Path` for execution and always restores the previous location.
 
@@ -76,6 +79,14 @@ PS> Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'; ApiKey = $env:
 ```
 
 Previews the release workflow and repository target without making changes.
+
+### EXAMPLE 5
+
+```text
+PS> Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -SkipTests
+```
+
+Runs the release workflow without re-running the pre-release `Test-NovaBuild` step.
 
 ## PARAMETERS
 
@@ -130,6 +141,30 @@ AcceptedValues: [ ]
 HelpMessage: ''
 ```
 
+### -SkipTests
+
+Skip the pre-release `Test-NovaBuild` step. `Invoke-NovaBuild` still runs before the version bump and again after the
+bump so the published output reflects the updated version.
+
+This option is mainly intended for CI/CD flows where tests already passed earlier in the pipeline.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
 ### CommonParameters
 
 This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`, `-ErrorVariable`, `-InformationAction`,
@@ -152,6 +187,8 @@ selected release label, and commit count.
 ## NOTES
 
 If build or tests fail, version bump and publish are not completed.
+
+When `-SkipTests` is used, only the pre-release `Test-NovaBuild` step is skipped. Both build steps still run.
 
 Use `Publish-NovaModule -Local` when you want a successful local publish to reload the published module into the active
 PowerShell session.

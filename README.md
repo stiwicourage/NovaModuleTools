@@ -240,6 +240,16 @@ When `Manifest.Tags`, `Manifest.ProjectUri`, `Manifest.ReleaseNotes`, or `Manife
 copies them into the generated package metadata; when they are omitted, packaging still succeeds and the matching
 package metadata fields are simply left out.
 
+When tests already ran earlier in CI/CD, you can skip only the test step while still rebuilding before packaging:
+
+```powershell
+PS> New-NovaModulePackage -SkipTests
+% nova package --skip-tests
+% nova package -s
+```
+
+`-SkipTests` / `--skip-tests` skips `Test-NovaBuild` only. `Invoke-NovaBuild` still runs.
+
 Use this `project.json` shape when you want to control the package types and output directory:
 
 ```json
@@ -321,6 +331,19 @@ Use this `project.json` shape when you want Nova to resolve upload targets from 
 - `Package.Headers`, `Package.Auth`, `Package.RepositoryUrl`, and repository-specific overrides remain generic so the
   workflow works with raw endpoints such as Nexus or Artifactory without turning `Publish-NovaModule` into a vendor-
   specific upload command.
+
+For module publishing and release flows, the same opt-in skip-tests behavior is available when tests already ran earlier
+in the pipeline:
+
+```powershell
+PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
+PS> Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -SkipTests
+% nova publish --repository PSGallery --api-key $env:PSGALLERY_API --skip-tests
+% nova release --repository PSGallery --api-key $env:PSGALLERY_API -s
+```
+
+These forms skip `Test-NovaBuild` only. `Publish-NovaModule` still builds before publishing, and `Invoke-NovaRelease`
+still runs both build steps around the version bump.
 
 ### Run code quality checks
 

@@ -4,6 +4,7 @@
     Usage = 'nova release [<options>]'
     Description = @(
         'Run the full release flow: build, test, version bump, rebuild, and publish.',
+        'Use --skip-tests / -s when tests already ran earlier in CI/CD and you only want to skip the pre-release Test-NovaBuild step.',
         'Use the same publish-target options as nova publish when you want the release workflow to publish locally or to a repository.',
         'For more information, documentation, and examples, visit:',
         'https://www.novamoduletools.com/packaging-and-delivery.html#release'
@@ -50,6 +51,12 @@
             Long = '--confirm'
             Placeholder = ''
             Description = 'Request CLI confirmation before the release workflow runs.'
+        },
+        @{
+            Short = '-s'
+            Long = '--skip-tests'
+            Placeholder = ''
+            Description = 'Skip the pre-release Test-NovaBuild step. Both build steps still run, which is useful when tests already passed earlier in CI/CD.'
         }
     )
     Examples = @(
@@ -60,6 +67,10 @@
         @{
             Command = 'nova release --local --what-if'
             Description = 'Preview the full release workflow for a local publish target.'
+        },
+        @{
+            Command = 'nova release --repository PSGallery --api-key <key> --skip-tests'
+            Description = 'Run the release workflow without re-running the pre-release Test-NovaBuild step.'
         }
     )
 }

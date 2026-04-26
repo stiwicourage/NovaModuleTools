@@ -2,14 +2,22 @@ function Get-NovaPublishWorkflowOperation {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][bool]$IsLocal,
-        [switch]$Release
+        [switch]$Release,
+        [switch]$SkipTestsRequested
     )
 
-    $workflowText = if ($Release) {
-        'Run Nova release workflow and publish'
+    $validationText = if ($SkipTestsRequested) {
+        'build and publish'
     }
     else {
-        'Build, test, and publish Nova module'
+        'build, test, and publish'
+    }
+
+    $workflowText = if ($Release) {
+        "Run Nova release workflow ($validationText)"
+    }
+    else {
+        "Build, $( $SkipTestsRequested ? 'skip tests, and publish' : 'test, and publish' ) Nova module"
     }
 
     $destinationText = if ($IsLocal) {

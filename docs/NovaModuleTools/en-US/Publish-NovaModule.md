@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/25/2026
+  ms.date: 04/26/2026
 PlatyPS schema version: 2024-05-01
 title: Publish-NovaModule
 ---
@@ -20,18 +20,21 @@ Builds, tests, and publishes the current project either locally or to a PowerShe
 ### Local
 
 ```text
-PS> Publish-NovaModule [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Publish-NovaModule [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### Repository
 
 ```text
-PS> Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
 `Publish-NovaModule` runs the normal NovaModuleTools build and test flow, then publishes the built module.
+
+Use `-SkipTests` when tests already ran earlier in your pipeline and you only want to skip `Test-NovaBuild` for this
+publish run. `Invoke-NovaBuild` still runs before the publish step.
 
 Use local mode when you want to copy the built module into a module directory on the current machine.
 After a successful local publish, the command reloads the published module from that local install path into the active
@@ -89,6 +92,14 @@ PS> Publish-NovaModule -Local -WhatIf
 
 Previews the local publish workflow and target directory without making changes.
 No module copy or import happens when `-WhatIf` is used.
+
+### EXAMPLE 6
+
+```text
+PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
+```
+
+Builds and publishes the module to `PSGallery` without re-running `Test-NovaBuild`.
 
 ## PARAMETERS
 
@@ -180,6 +191,31 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
+### -SkipTests
+
+Skip `Test-NovaBuild` for this publish run. `Invoke-NovaBuild` still runs before the publish step.
+
+This option is mainly intended for CI/CD flows where tests already passed earlier in the pipeline.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: Local
+    Position: Named
+  - Name: Repository
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
@@ -202,7 +238,10 @@ published module from the local install path.
 
 ## NOTES
 
-The command always builds and tests before publishing.
+The command always builds before publishing.
+
+When `-SkipTests` is omitted, `Publish-NovaModule` also runs `Test-NovaBuild`. When `-SkipTests` is used, only the test
+step is skipped.
 
 Local publish imports the published module from the resolved local install directory. It does not import directly from
 the

@@ -72,6 +72,7 @@ function Get-NovaCliLegacyOptionReplacement {
         '-path' = "'--path' or '-p'"
         '-preview' = "'--preview' or '-p'"
         '-repository' = "'--repository' or '-r'"
+        '-skiptests' = "'--skip-tests' or '-s'"
         '-token' = "'--token' or '-k'"
         '-tokenenvironmentvariable' = "'--token-env' or '-e'"
         '-type' = "'--type' or '-t'"

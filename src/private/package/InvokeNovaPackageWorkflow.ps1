@@ -5,10 +5,7 @@ function Invoke-NovaPackageWorkflow {
         [switch]$ShouldRun
     )
 
-    $workflowParams = $WorkflowContext.WorkflowParams
-
-    Invoke-NovaBuild @workflowParams
-    Test-NovaBuild @workflowParams
+    Invoke-NovaBuildValidation -WorkflowContext $WorkflowContext
 
     if (-not $ShouldRun) {
         return

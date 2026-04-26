@@ -144,6 +144,17 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'Get-NovaCliCommandHandler returns the mapped handler for a known command' {
+        InModuleScope $script:moduleName {
+            $expectedHandler = [pscustomobject]@{Name = 'publish-handler'}
+            $handlerMap = @{publish = $expectedHandler}
+
+            $result = Get-NovaCliCommandHandler -CommandHandlerMap $handlerMap -Command 'publish'
+
+            $result | Should -Be $expectedHandler
+        }
+    }
+
     It 'Get-NovaCliHelpRequest resolves root short help, command short help, and command long help' {
         InModuleScope $script:moduleName {
             $rootHelp = Get-NovaCliHelpRequest -Command '--help' -Arguments @()
@@ -563,11 +574,50 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
-    It 'Invoke-NovaCliCommandRoute forwards the parsed test build flag to Test-NovaBuild' {
-        InModuleScope $script:moduleName {
+    It 'Invoke-NovaCliCommandRoute forwards parsed mutating options for <Command>' -ForEach @(
+        @{
+            Command = 'test'
+            Arguments = @('--build')
+            ParserCommand = 'ConvertFrom-NovaTestCliArgument'
+            ActionCommand = 'Test-NovaBuild'
+            ParsedOptions = @{Build = $true}
+            ExpectedProperty = 'Build'
+            UsesPublishOption = $false
+        }
+        @{
+            Command = 'package'
+            Arguments = @('--skip-tests')
+            ParserCommand = 'ConvertFrom-NovaPackageCliArgument'
+            ActionCommand = 'New-NovaModulePackage'
+            ParsedOptions = @{SkipTests = $true}
+            ExpectedProperty = 'SkipTests'
+            UsesPublishOption = $false
+        }
+        @{
+            Command = 'publish'
+            Arguments = @('-s')
+            ParserCommand = 'ConvertFrom-NovaCliArgument'
+            ActionCommand = 'Publish-NovaModule'
+            ParsedOptions = @{SkipTests = $true}
+            ExpectedProperty = 'SkipTests'
+            UsesPublishOption = $false
+        }
+        @{
+            Command = 'release'
+            Arguments = @('--skip-tests')
+            ParserCommand = 'ConvertFrom-NovaCliArgument'
+            ActionCommand = 'Invoke-NovaRelease'
+            ParsedOptions = @{SkipTests = $true}
+            ExpectedProperty = 'SkipTests'
+            UsesPublishOption = $true
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
             $invocationContext = [pscustomobject]@{
-                Command = 'test'
-                Arguments = @('--build')
+                Command = $TestCase.Command
+                Arguments = $TestCase.Arguments
                 CommonParameters = @{}
                 MutatingCommonParameters = @{WhatIf = $true}
                 IsHelpRequest = $false
@@ -576,22 +626,40 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 WhatIfEnabled = $true
                 CliConfirmEnabled = $false
             }
-            Mock ConvertFrom-NovaTestCliArgument {@{Build = $true}}
-            Mock Test-NovaBuild {
-                param(
-                    [switch]$Build,
-                    [switch]$WhatIf
-                )
 
-                [pscustomobject]@{Build = $Build.IsPresent; WhatIf = $WhatIf.IsPresent}
+            $parserCommand = $TestCase.ParserCommand
+            $actionCommand = $TestCase.ActionCommand
+            $parsedOptions = $TestCase.ParsedOptions
+            $expectedProperty = $TestCase.ExpectedProperty
+
+            Mock $parserCommand {$parsedOptions}
+            if ($TestCase.UsesPublishOption) {
+                Mock $actionCommand {
+                    param([hashtable]$PublishOption, [switch]$WhatIf)
+
+                    [pscustomobject]@{Feature = [bool]$PublishOption.SkipTests; WhatIf = $WhatIf.IsPresent}
+                }
+            }
+            elseif ($expectedProperty -eq 'Build') {
+                Mock $actionCommand {
+                    param([switch]$Build, [switch]$WhatIf)
+
+                    [pscustomobject]@{Feature = $Build.IsPresent; WhatIf = $WhatIf.IsPresent}
+                }
+            }
+            else {
+                Mock $actionCommand {
+                    param([switch]$SkipTests, [switch]$WhatIf)
+
+                    [pscustomobject]@{Feature = $SkipTests.IsPresent; WhatIf = $WhatIf.IsPresent}
+                }
             }
 
             $result = Invoke-NovaCliCommandRoute -InvocationContext $invocationContext
 
-            $result.Build | Should -BeTrue
+            $result.Feature | Should -BeTrue
             $result.WhatIf | Should -BeTrue
-            Assert-MockCalled ConvertFrom-NovaTestCliArgument -Times 1 -ParameterFilter {$Arguments -eq @('--build')}
-            Assert-MockCalled Test-NovaBuild -Times 1 -ParameterFilter {$Build -and $WhatIf}
+            Assert-MockCalled $parserCommand -Times 1 -ParameterFilter {$Arguments -eq $TestCase.Arguments}
         }
     }
 
@@ -698,6 +766,21 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 TargetObject = '-build'
             })
+
+            $deprecatedSkipTestsError = $null
+            try {
+                Assert-NovaCliArgumentSyntax -Arguments @('-skiptests')
+            }
+            catch {
+                $deprecatedSkipTestsError = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $deprecatedSkipTestsError -ExpectedError ([pscustomobject]@{
+                Message = "Unsupported CLI option syntax: -skiptests. Use '--skip-tests' or '-s' instead."
+                ErrorId = 'Nova.Validation.UnsupportedCliOptionSyntax'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '-skiptests'
+            })
         }
     }
 
@@ -780,13 +863,35 @@ catch {
         }
     }
 
-    It 'ConvertFrom-NovaCliArgument parses local, path, and api key options' {
+    It 'ConvertFrom-NovaCliArgument parses local, path, api key, and skip-tests options' {
         InModuleScope $script:moduleName {
-            $options = ConvertFrom-NovaCliArgument -Arguments @('--local', '--path', '/tmp/modules', '--api-key', 'secret')
+            $options = ConvertFrom-NovaCliArgument -Arguments @('--local', '--path', '/tmp/modules', '--api-key', 'secret', '--skip-tests')
 
             $options.Local | Should -BeTrue
             $options.ModuleDirectoryPath | Should -Be '/tmp/modules'
             $options.ApiKey | Should -Be 'secret'
+            $options.SkipTests | Should -BeTrue
+        }
+    }
+
+    It 'ConvertFrom-NovaPackageCliArgument accepts skip-tests and rejects publish-only options' {
+        InModuleScope $script:moduleName {
+            (ConvertFrom-NovaPackageCliArgument -Arguments @('-s')).SkipTests | Should -BeTrue
+
+            $thrown = $null
+            try {
+                ConvertFrom-NovaPackageCliArgument -Arguments @('--local')
+            }
+            catch {
+                $thrown = $_
+            }
+
+            Assert-TestStructuredCliError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
+                Message = 'Unknown argument: --local'
+                ErrorId = 'Nova.Validation.UnknownCliArgument'
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject = '--local'
+            })
         }
     }
 

@@ -11,22 +11,31 @@ function Publish-NovaModule {
         [string]$ApiKey
     )
 
-    $workflowContext = Get-NovaPublishWorkflowContext -ProjectInfo (Get-NovaProjectInfo) -PublishOption @{
-        Local = [bool]$Local
-        Repository = $Repository
-        ModuleDirectoryPath = $ModuleDirectoryPath
-        ApiKey = $ApiKey
-    } -WorkflowParams (Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference) -WorkflowSettings @{
-        WorkflowName = 'publish'
-        IncludeLocalPublishActivation = $true
+    dynamicparam {
+        return Get-NovaDynamicSkipTestsParameterDictionary
     }
 
-    Write-NovaPublishWorkflowContext -WorkflowContext $workflowContext
+    begin {
+        $skipTests = $PSBoundParameters.ContainsKey('SkipTests') -and $PSBoundParameters.SkipTests
 
-    $shouldRun = $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Operation)
-    if (-not $shouldRun -and -not $WhatIfPreference) {
-        return
+        $workflowContext = Get-NovaPublishWorkflowContext -ProjectInfo (Get-NovaProjectInfo) -PublishOption @{
+            Local = [bool]$Local
+            Repository = $Repository
+            ModuleDirectoryPath = $ModuleDirectoryPath
+            ApiKey = $ApiKey
+            SkipTests = [bool]$skipTests
+        } -WorkflowParams (Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference) -WorkflowSettings @{
+            WorkflowName = 'publish'
+            IncludeLocalPublishActivation = $true
+        }
+
+        Write-NovaPublishWorkflowContext -WorkflowContext $workflowContext
+
+        $shouldRun = $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Operation)
+        if (-not $shouldRun -and -not $WhatIfPreference) {
+            return
+        }
+
+        Invoke-NovaPublishWorkflow -WorkflowContext $workflowContext -ShouldRun:$shouldRun
     }
-
-    Invoke-NovaPublishWorkflow -WorkflowContext $workflowContext -ShouldRun:$shouldRun
 }

@@ -298,12 +298,17 @@ PS&gt; Test-NovaBuild -TagFilter unit,fast</code></pre>
                     <article class="command-card">
                         <h3><code>New-NovaModulePackage</code> / <code>% nova package</code></h3>
                         <p>Build, test, and package the module. By default it creates a <code>.nupkg</code> in <code>artifacts/packages/</code>.
-                            Use <code>Package.Types</code> and related settings to customize the output.</p>
+                            Use <code>Package.Types</code> and related settings to customize the output, or use
+                            <code>-SkipTests</code> / <code>--skip-tests</code> when tests already ran earlier in CI/CD.
+                        </p>
                         <ul class="plain-list">
                             <li><strong>Best for:</strong> creating package artifacts from the built module output</li>
                             <li><strong>Key settings:</strong> <code>Package.Types</code>, <code>Package.Latest</code>,
                                 <code>Package.OutputDirectory</code></li>
                             <li><strong>Output:</strong> one object per generated artifact</li>
+                            <li><strong>Optional fast path:</strong> <code>-SkipTests</code> / <code>--skip-tests</code>
+                                skips <code>Test-NovaBuild</code> only; build still runs
+                            </li>
                         </ul>
                         <div class="surface-example" data-command-example>
                             <div class="surface-example__meta">
@@ -312,10 +317,12 @@ PS&gt; Test-NovaBuild -TagFilter unit,fast</code></pre>
                                         data-command-surface-label>PowerShell</span></p>
                             </div>
                             <div class="surface-example__surface" data-command-surface="powershell">
-                                <pre><code>PS&gt; New-NovaModulePackage</code></pre>
+                                <pre><code>PS&gt; New-NovaModulePackage
+PS&gt; New-NovaModulePackage -SkipTests</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
-                                <pre><code>% nova package</code></pre>
+                                <pre><code>% nova package
+% nova package --skip-tests</code></pre>
                             </div>
                         </div>
                         <p><a class="text-link" href="./packaging-and-delivery.html#pack">See packaging details</a></p>
@@ -358,13 +365,14 @@ PS&gt; Deploy-NovaPackage -Url 'https://packages.example/raw/' -Token $env:NOVA_
                     <article class="command-card">
                         <h3><code>Publish-NovaModule</code> / <code>% nova publish</code></h3>
                         <p>Build, test, and publish the module either locally or to a registered PowerShell
-                            repository.</p>
+                            repository. Use <code>-SkipTests</code> / <code>--skip-tests</code> when tests already ran
+                            earlier in CI/CD.</p>
                         <ul class="plain-list">
                             <li><strong>Best for:</strong> PowerShell repository publishing or validating a local
                                 publish/install cycle
                             </li>
                             <li><strong>Key parameters:</strong> <code>-Local</code>, <code>-Repository</code>, <code>-ModuleDirectoryPath</code>,
-                                <code>-ApiKey</code></li>
+                                <code>-ApiKey</code>, <code>-SkipTests</code></li>
                             <li><strong>Notable behavior:</strong> local publish reloads the published module into the
                                 current PowerShell session
                             </li>
@@ -377,11 +385,13 @@ PS&gt; Deploy-NovaPackage -Url 'https://packages.example/raw/' -Token $env:NOVA_
                             </div>
                             <div class="surface-example__surface" data-command-surface="powershell">
                                 <pre><code>PS&gt; Publish-NovaModule -Local
-PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API</code></pre>
+PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
+PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
                                 <pre><code>% nova publish --local
-% nova publish --repository PSGallery --api-key $env:PSGALLERY_API</code></pre>
+% nova publish --repository PSGallery --api-key $env:PSGALLERY_API
+% nova publish --repository PSGallery --api-key $env:PSGALLERY_API --skip-tests</code></pre>
                             </div>
                         </div>
                         <p><a class="text-link" href="./packaging-and-delivery.html#publish">See publish details</a></p>
@@ -389,12 +399,15 @@ PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API</code
 
                     <article class="command-card">
                         <h3><code>Invoke-NovaRelease</code> / <code>% nova release</code></h3>
-                        <p>Run the full release flow: build, test, bump version, build again, and then publish.</p>
+                        <p>Run the full release flow: build, test, bump version, build again, and then publish. Use
+                            <code>-SkipTests</code> / <code>--skip-tests</code> when tests already ran earlier in CI/CD
+                            and you only want to skip the pre-release test step.</p>
                         <ul class="plain-list">
                             <li><strong>Best for:</strong> an orchestrated release command when you want one workflow
                                 instead of separate steps
                             </li>
-                            <li><strong>Key parameters:</strong> <code>-PublishOption</code>, <code>-Path</code></li>
+                            <li><strong>Key parameters:</strong> <code>-PublishOption</code>, <code>-Path</code>,
+                                <code>-SkipTests</code></li>
                             <li><strong>Important difference:</strong> local release does not reload the published
                                 module into the session after publishing
                             </li>
@@ -407,10 +420,12 @@ PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API</code
                             </div>
                             <div class="surface-example__surface" data-command-surface="powershell">
                                 <pre><code>PS&gt; Invoke-NovaRelease -PublishOption @{ Local = $true }
-PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API }</code></pre>
+PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API }
+PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -SkipTests</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
-                                <pre><code>% nova release --repository PSGallery --api-key $env:PSGALLERY_API</code></pre>
+                                <pre><code>% nova release --repository PSGallery --api-key $env:PSGALLERY_API
+% nova release --repository PSGallery --api-key $env:PSGALLERY_API --skip-tests</code></pre>
                             </div>
                         </div>
                         <div class="surface-note" data-command-visibility="command-line" hidden>

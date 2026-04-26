@@ -525,6 +525,22 @@ Describe '$projectName tests' {
         }
     }
 
+    It 'Invoke-NovaCli help for package, publish, and release documents the skip-tests options' -ForEach @(
+        @{CommandName = 'package'}
+        @{CommandName = 'publish'}
+        @{CommandName = 'release'}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{CommandName = $_.CommandName} {
+            param($CommandName)
+
+            $shortHelp = Invoke-NovaCli -Command $CommandName -Arguments @('--help')
+            $longHelp = Invoke-NovaCli -Command '--help' -Arguments @($CommandName)
+
+            $shortHelp | Should -Match '-s, --skip-tests'
+            $longHelp | Should -Match '--skip-tests'
+        }
+    }
+
     It 'Invoke-NovaCli CLI help never delegates to PowerShell Get-Help' {
         InModuleScope $script:moduleName {
             Mock Get-Help {throw 'CLI help should not call Get-Help'}
@@ -548,6 +564,18 @@ Describe '$projectName tests' {
 
             $result.Type | Should -Be @('NuGet')
             $result.PackagePath | Should -Be @('/tmp/artifacts/packages/NovaModuleTools.1.2.3.nupkg')
+        }
+    }
+
+    It 'Invoke-NovaCli package forwards skip-tests to New-NovaModulePackage' {
+        InModuleScope $script:moduleName {
+            Mock New-NovaModulePackage {
+                [pscustomobject]@{SkipTests = $SkipTests.IsPresent}
+            }
+
+            $result = Invoke-NovaCli package --skip-tests
+
+            $result.SkipTests | Should -BeTrue
         }
     }
 
@@ -715,6 +743,18 @@ Describe '$projectName tests' {
         }
     }
 
+    It 'Invoke-NovaCli publish forwards skip-tests' {
+        InModuleScope $script:moduleName {
+            Mock Publish-NovaModule {
+                [pscustomobject]@{SkipTests = $SkipTests.IsPresent}
+            }
+
+            $result = Invoke-NovaCli publish --repository PSGallery --api-key key123 -s
+
+            $result.SkipTests | Should -BeTrue
+        }
+    }
+
     It 'Invoke-NovaCli publish uses the CLI confirmation wrapper for --confirm and -c without forwarding raw Confirm' {
         InModuleScope $script:moduleName {
             Mock Confirm-NovaCliCommandAction {}
@@ -752,6 +792,18 @@ Describe '$projectName tests' {
             $result = Invoke-NovaCli publish --local
 
             $result.Local | Should -BeTrue
+        }
+    }
+
+    It 'Invoke-NovaCli release forwards skip-tests in PublishOption' {
+        InModuleScope $script:moduleName {
+            Mock Invoke-NovaRelease {
+                [pscustomobject]@{SkipTests = [bool]$PublishOption.SkipTests}
+            }
+
+            $result = Invoke-NovaCli release --repository PSGallery --api-key key123 --skip-tests
+
+            $result.SkipTests | Should -BeTrue
         }
     }
 
