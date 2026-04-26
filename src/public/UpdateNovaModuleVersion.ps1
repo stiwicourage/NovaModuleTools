@@ -8,7 +8,10 @@ function Update-NovaModuleVersion {
 
     $projectRoot = (Resolve-Path -LiteralPath $Path).Path
     if ($ContinuousIntegration -and -not $WhatIfPreference) {
-        $null = Import-NovaBuiltModuleForCi -ProjectRoot $projectRoot
+        $ciActivatedCommand = Get-NovaVersionUpdateCiActivatedCommand -ProjectRoot $projectRoot
+        if ($null -ne $ciActivatedCommand) {
+            return & $ciActivatedCommand @PSBoundParameters
+        }
     }
 
     $workflowContext = Get-NovaVersionUpdateWorkflowContext -ProjectRoot $projectRoot -PreviewRelease:$Preview -ContinuousIntegrationRequested:$ContinuousIntegration

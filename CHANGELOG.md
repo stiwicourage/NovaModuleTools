@@ -91,6 +91,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       and `nova release` while keeping `nova version -i` dedicated to the installed-version view.
     - Build re-activates the freshly built module after the build succeeds, bump re-activates it before the version
       update starts, and publish/release restore the built module again after publish completes.
+  - Repository publish no longer forces verbose `Publish-PSResource` output unless verbose logging was explicitly
+    requested.
+  - CI bump now reuses the already activated built-module command when the current session is already running from
+    `dist/`, so publish-then-bump prerelease automation can continue in the same session without losing private helper
+    bindings.
 
 ### Changed
 

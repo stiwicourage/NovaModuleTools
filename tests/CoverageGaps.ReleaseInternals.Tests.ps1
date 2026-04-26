@@ -249,20 +249,43 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
-    It 'Publish-NovaBuiltModuleToRepository uses the PSGallery fallback api key when needed' {
+    It 'Publish-NovaBuiltModuleToRepository uses the PSGallery fallback api key without forcing verbose output' {
         InModuleScope $script:moduleName {
             $originalApiKey = $env:PSGALLERY_API
             try {
                 $env:PSGALLERY_API = 'gallery-secret'
-                Mock Publish-PSResource {}
+                $script:publishPsResourceBoundParameters = $null
+                $script:publishPsResourceVerbosePreference = $null
+                Mock Publish-PSResource {
+                    $script:publishPsResourceBoundParameters = @{}
+                    foreach ($key in $PSBoundParameters.Keys) {
+                        $script:publishPsResourceBoundParameters[$key] = $PSBoundParameters[$key]
+                    }
+                    $script:publishPsResourceVerbosePreference = $VerbosePreference
+                }
 
                 Publish-NovaBuiltModuleToRepository -ProjectInfo ([pscustomobject]@{OutputModuleDir = '/tmp/dist'}) -Repository PSGallery
 
-                Assert-MockCalled Publish-PSResource -Times 1 -ParameterFilter {$Path -eq '/tmp/dist' -and $Repository -eq 'PSGallery' -and $ApiKey -eq 'gallery-secret' -and $Verbose}
+                Assert-MockCalled Publish-PSResource -Times 1 -ParameterFilter {$Path -eq '/tmp/dist' -and $Repository -eq 'PSGallery' -and $ApiKey -eq 'gallery-secret'}
+                $script:publishPsResourceVerbosePreference | Should -Not -Be 'Continue'
             }
             finally {
                 $env:PSGALLERY_API = $originalApiKey
             }
+        }
+    }
+
+    It 'Publish-NovaBuiltModuleToRepository forwards verbose output only when explicitly requested' {
+        InModuleScope $script:moduleName {
+            $script:publishPsResourceVerbosePreference = $null
+            Mock Publish-PSResource {
+                $script:publishPsResourceVerbosePreference = $VerbosePreference
+            }
+
+            Publish-NovaBuiltModuleToRepository -ProjectInfo ([pscustomobject]@{OutputModuleDir = '/tmp/dist'}) -Repository PSGallery -ApiKey 'gallery-secret' -Verbose
+
+            Assert-MockCalled Publish-PSResource -Times 1 -ParameterFilter {$Path -eq '/tmp/dist' -and $Repository -eq 'PSGallery' -and $ApiKey -eq 'gallery-secret'}
+            $script:publishPsResourceVerbosePreference | Should -Be 'Continue'
         }
     }
 

@@ -136,6 +136,63 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
+    It 'Get-NovaVersionUpdateCiActivatedCommand skips re-import when the current command already uses the built module' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            }
+            Mock Get-Command {
+                [pscustomobject]@{
+                    Module = [pscustomobject]@{Path = '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'}
+                }
+            } -ParameterFilter {$Name -eq 'Update-NovaModuleVersion' -and $CommandType -eq 'Function'}
+            Mock Import-NovaBuiltModuleForCi {throw 'should not re-import when already activated'}
+
+            $result = Get-NovaVersionUpdateCiActivatedCommand -ProjectRoot '/tmp/project'
+
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled Import-NovaBuiltModuleForCi -Times 0
+        }
+    }
+
+    It 'Get-NovaVersionUpdateCiActivatedCommand imports the built module and returns the rebound command when activation is needed' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            }
+
+            $script:getCommandCallCount = 0
+            Mock Get-Command {
+                $script:getCommandCallCount += 1
+                if ($script:getCommandCallCount -eq 1) {
+                    return [pscustomobject]@{
+                        Name = 'Update-NovaModuleVersion'
+                        Module = [pscustomobject]@{Path = '/tmp/installed/NovaModuleTools/NovaModuleTools.psd1'}
+                    }
+                }
+
+                return [pscustomobject]@{
+                    Name = 'Update-NovaModuleVersion'
+                    Module = [pscustomobject]@{Path = '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'}
+                }
+            } -ParameterFilter {$Name -eq 'Update-NovaModuleVersion' -and $CommandType -eq 'Function'}
+            Mock Import-NovaBuiltModuleForCi {}
+
+            $result = Get-NovaVersionUpdateCiActivatedCommand -ProjectRoot '/tmp/project'
+
+            $result.Name | Should -Be 'Update-NovaModuleVersion'
+            $result.Module.Path | Should -Be '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'
+            Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
+            Assert-MockCalled Get-Command -Times 2 -ParameterFilter {$Name -eq 'Update-NovaModuleVersion' -and $CommandType -eq 'Function'}
+        }
+    }
+
     It 'Invoke-NovaVersionUpdateWorkflow writes only when requested and still returns WhatIf results' {
         InModuleScope $script:moduleName {
             $workflowContext = [pscustomobject]@{
@@ -186,29 +243,51 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
-    It 'Update-NovaModuleVersion imports the built module before preparing the workflow in CI mode' {
+    It 'Update-NovaModuleVersion re-invokes the CI-activated command before preparing the workflow when activation is needed' {
         InModuleScope $script:moduleName {
             $script:steps = @()
 
             Mock Resolve-Path {[pscustomobject]@{Path = '/tmp/current-project'}} -ParameterFilter {$LiteralPath -eq '/tmp/current-project'}
-            Mock Import-NovaBuiltModuleForCi {$script:steps += 'import'}
+            Mock Get-NovaVersionUpdateCiActivatedCommand {
+                $script:steps += 'activate'
+                {
+                    param([string]$Path, [switch]$Preview, [switch]$ContinuousIntegration)
+
+                    $script:steps += ('reinvoke:{0}:{1}:{2}' -f $Path, [bool]$Preview, [bool]$ContinuousIntegration)
+                    [pscustomobject]@{NewVersion = '1.1.0'}
+                }
+            }
+            Mock Get-NovaVersionUpdateWorkflowContext {throw 'should not continue in the stale module scope'}
+            Mock Invoke-NovaVersionUpdateWorkflow {throw 'should not run the stale workflow'}
+
+            $result = Update-NovaModuleVersion -Path '/tmp/current-project' -Preview -ContinuousIntegration -Confirm:$false
+
+            $result.NewVersion | Should -Be '1.1.0'
+            $script:steps | Should -Be @('activate', 'reinvoke:/tmp/current-project:True:True')
+            Assert-MockCalled Get-NovaVersionUpdateCiActivatedCommand -Times 1 -ParameterFilter {$ProjectRoot -eq '/tmp/current-project'}
+        }
+    }
+
+    It 'Update-NovaModuleVersion prepares the workflow directly in CI mode when activation is already satisfied' {
+        InModuleScope $script:moduleName {
+            Mock Resolve-Path {[pscustomobject]@{Path = '/tmp/current-project'}} -ParameterFilter {$LiteralPath -eq '/tmp/current-project'}
+            Mock Get-NovaVersionUpdateCiActivatedCommand {$null}
             Mock Get-NovaVersionUpdateWorkflowContext {
-                $script:steps += 'context'
                 [pscustomobject]@{
+                    PreviousVersion = '1.0.0'
+                    NewVersion = '1.1.0'
                     Target = 'project.json'
                     Action = 'Update module version using Minor release label'
                 }
             }
             Mock Invoke-NovaVersionUpdateWorkflow {
-                $script:steps += 'workflow'
                 [pscustomobject]@{NewVersion = '1.1.0'}
             }
 
             $result = Update-NovaModuleVersion -Path '/tmp/current-project' -ContinuousIntegration -Confirm:$false
 
             $result.NewVersion | Should -Be '1.1.0'
-            $script:steps | Should -Be @('import', 'context', 'workflow')
-            Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1 -ParameterFilter {$ProjectRoot -eq '/tmp/current-project'}
+            Assert-MockCalled Get-NovaVersionUpdateCiActivatedCommand -Times 1 -ParameterFilter {$ProjectRoot -eq '/tmp/current-project'}
             Assert-MockCalled Get-NovaVersionUpdateWorkflowContext -Times 1 -ParameterFilter {$ProjectRoot -eq '/tmp/current-project' -and $ContinuousIntegrationRequested}
         }
     }
@@ -220,7 +299,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
     It 'Update-NovaModuleVersion -WhatIf stays side-effect free in CI mode' {
         InModuleScope $script:moduleName {
             Mock Resolve-Path {[pscustomobject]@{Path = '/tmp/current-project'}} -ParameterFilter {$LiteralPath -eq '/tmp/current-project'}
-            Mock Import-NovaBuiltModuleForCi {throw 'should not import during WhatIf'}
+            Mock Get-NovaVersionUpdateCiActivatedCommand {throw 'should not activate during WhatIf'}
             Mock Get-NovaVersionUpdateWorkflowContext {
                 [pscustomobject]@{
                     PreviousVersion = '1.0.0'
@@ -238,7 +317,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $result = Update-NovaModuleVersion -Path '/tmp/current-project' -ContinuousIntegration -WhatIf
 
             $result.NewVersion | Should -Be '1.1.0'
-            Assert-MockCalled Import-NovaBuiltModuleForCi -Times 0
+            Assert-MockCalled Get-NovaVersionUpdateCiActivatedCommand -Times 0
             Assert-MockCalled Get-NovaVersionUpdateWorkflowContext -Times 1 -ParameterFilter {$ContinuousIntegrationRequested}
         }
     }

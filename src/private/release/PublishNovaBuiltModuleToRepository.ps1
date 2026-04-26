@@ -18,7 +18,10 @@ function Publish-NovaBuiltModuleToRepository {
     $publishParams = @{
         Path = $ProjectInfo.OutputModuleDir
         Repository = $Repository
-        Verbose = $true
+    }
+
+    if ( $PSBoundParameters.ContainsKey('Verbose')) {
+        $publishParams.Verbose = $true
     }
 
     if (-not [string]::IsNullOrWhiteSpace($resolvedApiKey)) {
