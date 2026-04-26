@@ -3,6 +3,7 @@ function Get-NovaPackageWorkflowContext {
     param(
         [pscustomobject]$ProjectInfo,
         [hashtable]$WorkflowParams = @{},
+        [switch]$SkipTestsRequested,
         [string]$ModulePath = $ExecutionContext.SessionState.Module.Path
     )
 
@@ -15,10 +16,11 @@ function Get-NovaPackageWorkflowContext {
     return [pscustomobject]@{
         ProjectInfo = $projectInfo
         WorkflowParams = $WorkflowParams
+        SkipTestsRequested = $SkipTestsRequested.IsPresent
         PackageMetadataList = $packageMetadataList
         ModulePath = $ModulePath
         Target = Get-NovaPackageWorkflowTarget -PackageMetadataList $packageMetadataList
-        Operation = Get-NovaPackageWorkflowOperation -PackageMetadataList $packageMetadataList
+        Operation = Get-NovaPackageWorkflowOperation -PackageMetadataList $packageMetadataList -SkipTestsRequested:$SkipTestsRequested
     }
 }
 
@@ -47,12 +49,20 @@ function Get-NovaPackageWorkflowTarget {
 function Get-NovaPackageWorkflowOperation {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][object[]]$PackageMetadataList
+        [Parameter(Mandatory)][object[]]$PackageMetadataList,
+        [switch]$SkipTestsRequested
     )
 
-    if (@($PackageMetadataList).Count -eq 1) {
-        return "Create $( $PackageMetadataList[0].Type ) package from built module output"
+    $validationText = if ($SkipTestsRequested) {
+        'built module output with tests skipped'
+    }
+    else {
+        'built and tested module output'
     }
 
-    return 'Create package artifacts from built module output'
+    if (@($PackageMetadataList).Count -eq 1) {
+        return "Create $( $PackageMetadataList[0].Type ) package from $validationText"
+    }
+
+    return "Create package artifacts from $validationText"
 }

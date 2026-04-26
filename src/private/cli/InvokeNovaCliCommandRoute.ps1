@@ -35,6 +35,54 @@ function Confirm-NovaCliRoutedCommand {
     Confirm-NovaCliCommandAction -Command $Command
 }
 
+function Invoke-NovaCliParsedCommand {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$InvocationContext,
+        [Parameter(Mandatory)][string]$ParserCommand,
+        [Parameter(Mandatory)][string]$ActionCommand,
+        [switch]$UsePublishOption
+    )
+
+    $arguments = $InvocationContext.Arguments
+    $mutatingCommonParameters = $InvocationContext.MutatingCommonParameters
+    $options = & $ParserCommand -Arguments $arguments
+    if ($UsePublishOption) {
+        return & $ActionCommand -PublishOption $options @mutatingCommonParameters
+    }
+
+    return & $ActionCommand @options @mutatingCommonParameters
+}
+
+function Invoke-NovaCliUpdateRouteCommand {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$InvocationContext
+    )
+
+    $result = Invoke-NovaCliUpdateCommand -Arguments $InvocationContext.Arguments -ForwardedParameters $InvocationContext.MutatingCommonParameters
+    Format-NovaCliCommandResult -Command $InvocationContext.Command -Result $result
+}
+
+function Invoke-NovaCliNotificationRouteCommand {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$InvocationContext
+    )
+
+    Invoke-NovaCliNotificationCommand -Arguments $InvocationContext.Arguments -CommonParameters $InvocationContext.CommonParameters -MutatingCommonParameters $InvocationContext.MutatingCommonParameters
+}
+
+function Invoke-NovaCliInstalledVersionCommand {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$InvocationContext
+    )
+
+    $moduleVersion = Get-NovaCliInstalledVersion
+    Format-NovaCliVersionString -Name $InvocationContext.ModuleName -Version $moduleVersion
+}
+
 function Invoke-NovaCliCommandRoute {
     [CmdletBinding()]
     param(
@@ -50,63 +98,55 @@ function Invoke-NovaCliCommandRoute {
     }
 
     $command = $InvocationContext.Command
-    $arguments = $InvocationContext.Arguments
     $commonParameters = $InvocationContext.CommonParameters
     $mutatingCommonParameters = $InvocationContext.MutatingCommonParameters
-
-    $commandHandlerMap = @{
-        'info' = {
-            Get-NovaProjectInfo @commonParameters
-        }
-        'version' = {
-            Invoke-NovaCliVersionCommand -Arguments $arguments -ForwardedParameters $commonParameters
-        }
-        'build' = {
-            Invoke-NovaBuild @mutatingCommonParameters
-        }
-        'test' = {
-            $options = ConvertFrom-NovaTestCliArgument -Arguments $arguments
-            Test-NovaBuild @options @mutatingCommonParameters
-        }
-        'package' = {
-            New-NovaModulePackage @mutatingCommonParameters
-        }
-        'deploy' = {
-            Invoke-NovaCliDeployCommand -Arguments $arguments -ForwardedParameters $mutatingCommonParameters
-        }
-        'init' = {
-            Invoke-NovaCliInitCommand -Arguments $arguments -ForwardedParameters $mutatingCommonParameters -WhatIfEnabled:$InvocationContext.WhatIfEnabled
-        }
-        'bump' = {
-            $options = ConvertFrom-NovaBumpCliArgument -Arguments $arguments
-            Update-NovaModuleVersion @options @mutatingCommonParameters
-        }
-        'update' = {
-            $result = Invoke-NovaCliUpdateCommand -Arguments $arguments -ForwardedParameters $mutatingCommonParameters
-            Format-NovaCliCommandResult -Command $command -Result $result
-        }
-        'publish' = {
-            $options = ConvertFrom-NovaCliArgument -Arguments $arguments
-            Publish-NovaModule @options @mutatingCommonParameters
-        }
-        'release' = {
-            $options = ConvertFrom-NovaCliArgument -Arguments $arguments
-            Invoke-NovaRelease -PublishOption $options @mutatingCommonParameters
-        }
-        'notification' = {
-            Invoke-NovaCliNotificationCommand -Arguments $arguments -CommonParameters $commonParameters -MutatingCommonParameters $mutatingCommonParameters
-        }
-        '--version' = {
-            $moduleVersion = Get-NovaCliInstalledVersion
-            Format-NovaCliVersionString -Name $InvocationContext.ModuleName -Version $moduleVersion
-        }
-        '--help' = {
-            Get-NovaCliHelp
-        }
-    }
-
-    $commandHandler = Get-NovaCliCommandHandler -CommandHandlerMap $commandHandlerMap -Command $command
     Confirm-NovaCliRoutedCommand -InvocationContext $InvocationContext -Command $command
 
-    return & $commandHandler
+    switch ($command) {
+        'info' {
+            return Get-NovaProjectInfo @commonParameters
+        }
+        'version' {
+            return Invoke-NovaCliVersionCommand -Arguments $InvocationContext.Arguments -ForwardedParameters $commonParameters
+        }
+        'build' {
+            return Invoke-NovaBuild @mutatingCommonParameters
+        }
+        'test' {
+            return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaTestCliArgument' -ActionCommand 'Test-NovaBuild'
+        }
+        'package' {
+            return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaPackageCliArgument' -ActionCommand 'New-NovaModulePackage'
+        }
+        'deploy' {
+            return Invoke-NovaCliDeployCommand -Arguments $InvocationContext.Arguments -ForwardedParameters $mutatingCommonParameters
+        }
+        'init' {
+            return Invoke-NovaCliInitCommand -Arguments $InvocationContext.Arguments -ForwardedParameters $mutatingCommonParameters -WhatIfEnabled:$InvocationContext.WhatIfEnabled
+        }
+        'bump' {
+            return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaBumpCliArgument' -ActionCommand 'Update-NovaModuleVersion'
+        }
+        'update' {
+            return Invoke-NovaCliUpdateRouteCommand -InvocationContext $InvocationContext
+        }
+        'publish' {
+            return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaCliArgument' -ActionCommand 'Publish-NovaModule'
+        }
+        'release' {
+            return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaCliArgument' -ActionCommand 'Invoke-NovaRelease' -UsePublishOption
+        }
+        'notification' {
+            return Invoke-NovaCliNotificationRouteCommand -InvocationContext $InvocationContext
+        }
+        '--version' {
+            return Invoke-NovaCliInstalledVersionCommand -InvocationContext $InvocationContext
+        }
+        '--help' {
+            return Get-NovaCliHelp
+        }
+        default {
+            return Get-NovaCliCommandHandler -CommandHandlerMap @{} -Command $command
+        }
+    }
 }

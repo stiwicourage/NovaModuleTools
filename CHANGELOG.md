@@ -76,6 +76,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     generic headers/auth settings.
   - Package upload now discovers all matching artifacts for the selected package types, including versioned and
     `latest` files in the configured package output directory.
+- Add opt-in skip-test support to the package, publish, and release workflows for CI/CD-oriented delivery paths where
+  tests already ran earlier in the pipeline.
+    - PowerShell now supports `New-NovaModulePackage -SkipTests`, `Publish-NovaModule -SkipTests`, and
+      `Invoke-NovaRelease -SkipTests`.
+    - The `nova` launcher now supports `--skip-tests` / `-s` on `nova package`, `nova publish`, and `nova release`.
+    - Skip-tests bypasses `Test-NovaBuild` only; the related build steps still run.
 
 ### Changed
 

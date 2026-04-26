@@ -5,11 +5,9 @@ function Invoke-NovaPublishWorkflow {
         [switch]$ShouldRun
     )
 
-    $workflowParams = $WorkflowContext.WorkflowParams
     $publishParams = $WorkflowContext.PublishParams
 
-    Invoke-NovaBuild @workflowParams
-    Test-NovaBuild @workflowParams
+    Invoke-NovaBuildValidation -WorkflowContext $WorkflowContext
 
     & $WorkflowContext.PublishInvocation.Action @publishParams
 

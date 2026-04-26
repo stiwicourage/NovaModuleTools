@@ -4,6 +4,7 @@
     Usage = 'nova publish [<options>]'
     Description = @(
         'Build, test, and publish the current project either locally or to a PowerShell repository.',
+        'Use --skip-tests / -s when tests already ran earlier in CI/CD and you only want to skip Test-NovaBuild for this publish run.',
         'Use --local when you want a local publish workflow, or supply repository credentials when you want a repository publish.',
         'For more information, documentation, and examples, visit:',
         'https://www.novamoduletools.com/packaging-and-delivery.html#publish'
@@ -50,6 +51,12 @@
             Long = '--confirm'
             Placeholder = ''
             Description = 'Request CLI confirmation before the publish workflow runs.'
+        },
+        @{
+            Short = '-s'
+            Long = '--skip-tests'
+            Placeholder = ''
+            Description = 'Skip Test-NovaBuild for this publish run. Build still runs, which is useful when tests already passed earlier in CI/CD.'
         }
     )
     Examples = @(
@@ -60,6 +67,10 @@
         @{
             Command = 'nova publish --repository PSGallery --api-key <key>'
             Description = 'Build, test, and publish the module to a PowerShell repository.'
+        },
+        @{
+            Command = 'nova publish --repository PSGallery --api-key <key> --skip-tests'
+            Description = 'Build and publish the module without re-running Test-NovaBuild.'
         }
     )
 }

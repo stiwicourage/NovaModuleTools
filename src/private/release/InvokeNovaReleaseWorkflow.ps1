@@ -7,8 +7,7 @@ function Invoke-NovaReleaseWorkflow {
     $workflowParams = $WorkflowContext.WorkflowParams
     $publishParams = $WorkflowContext.PublishParams
 
-    Invoke-NovaBuild @workflowParams
-    Test-NovaBuild @workflowParams
+    Invoke-NovaBuildValidation -WorkflowContext $WorkflowContext
     $versionResult = Update-NovaModuleVersion @workflowParams
     Invoke-NovaBuild @workflowParams
 

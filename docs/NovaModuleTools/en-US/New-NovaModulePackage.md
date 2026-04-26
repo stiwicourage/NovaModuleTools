@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/25/2026
+  ms.date: 04/26/2026
 PlatyPS schema version: 2024-05-01
 title: New-NovaModulePackage
 ---
@@ -20,13 +20,16 @@ Builds, tests, and packages the current project as one or more configured packag
 ### __AllParameterSets
 
 ```text
-PS> New-NovaModulePackage [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> New-NovaModulePackage [-SkipTests] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
 `New-NovaModulePackage` runs the normal NovaModuleTools build and test flow, then packages the built module output from
 `dist/<ProjectName>/` into the package formats requested by `Package.Types`.
+
+Use `-SkipTests` when tests already ran earlier in your pipeline and you only want to skip `Test-NovaBuild` for this
+packaging run. `Invoke-NovaBuild` still runs so the package is created from fresh built output.
 
 The package is written to `artifacts/packages/` by default. You can override generic package metadata through the
 optional `Package` section in `project.json`.
@@ -135,7 +138,39 @@ PS> New-NovaModulePackage -Confirm
 
 Prompts before the package artifact is created.
 
+### EXAMPLE 8
+
+```text
+PS> New-NovaModulePackage -SkipTests
+```
+
+Builds the project and creates the package artifact without re-running `Test-NovaBuild`.
+
 ## PARAMETERS
+
+### -SkipTests
+
+Skip `Test-NovaBuild` for this packaging run. `Invoke-NovaBuild` still runs before packaging so the artifact is created
+from fresh built output.
+
+This option is mainly intended for CI/CD flows where tests already passed earlier in the pipeline.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
 
 ### -WhatIf
 
@@ -221,6 +256,8 @@ Use the top-level `Package` section only for generic packaging overrides such as
 directory, or package file name. `New-NovaModulePackage` always allows packaging when you invoke it; there is no
 separate
 `Package.Enabled` switch.
+
+When `-SkipTests` is used, only `Test-NovaBuild` is skipped. Build still runs.
 
 ## RELATED LINKS
 

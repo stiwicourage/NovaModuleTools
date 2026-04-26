@@ -48,18 +48,24 @@ BeforeAll {
 }
 
 Describe 'Nova command model - release and publish behavior' {
-    It 'Invoke-NovaReleaseWorkflow runs build test bump build publish in order' {
-        InModuleScope $script:moduleName {
+    It 'Invoke-NovaReleaseWorkflow preserves the expected step order when <Name>' -ForEach @(
+        @{Name = 'tests run'; SkipTestsRequested = $false; ExpectedStepList = @('build', 'test', 'bump', 'build', 'publish'); ExpectedTestCalls = 1}
+        @{Name = 'tests are skipped'; SkipTestsRequested = $true; ExpectedStepList = @('build', 'bump', 'build', 'publish'); ExpectedTestCalls = 0}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
             $script:steps = @()
 
             Mock Invoke-NovaBuild {$script:steps += 'build'}
             Mock Test-NovaBuild {$script:steps += 'test'}
             Mock Update-NovaModuleVersion {
                 $script:steps += 'bump'
-                return [pscustomobject]@{NewVersion = '1.0.1'}
+                [pscustomobject]@{NewVersion = '1.0.1'}
             }
             $workflowContext = [pscustomobject]@{
                 WorkflowParams = @{}
+                SkipTestsRequested = $TestCase.SkipTestsRequested
                 PublishInvocation = [pscustomobject]@{
                     Action = {$script:steps += 'publish'}
                 }
@@ -68,7 +74,8 @@ Describe 'Nova command model - release and publish behavior' {
 
             Invoke-NovaReleaseWorkflow -WorkflowContext $workflowContext | Out-Null
 
-            $script:steps -join ',' | Should -Be 'build,test,bump,build,publish'
+            $script:steps | Should -Be $TestCase.ExpectedStepList
+            Assert-MockCalled Test-NovaBuild -Times $TestCase.ExpectedTestCalls
         }
     }
 
@@ -171,8 +178,35 @@ Describe 'Nova command model - release and publish behavior' {
             $result.PublishParams.ModuleDirectoryPath | Should -Be '/tmp/modules'
             $result.PublishParams.WhatIf | Should -BeTrue
             $result.PublishInvocation.IsLocal | Should -BeTrue
-            $result.Operation | Should -Be 'Run Nova release workflow and publish to local directory'
+            $result.SkipTestsRequested | Should -BeFalse
+            $result.Operation | Should -Be 'Run Nova release workflow (build, test, and publish) to local directory'
             $result.LocalPublishActivation | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'Get-NovaPublishWorkflowContext composes skip-tests release workflow context when requested' {
+        InModuleScope $script:moduleName {
+            Mock Resolve-NovaPublishInvocation {
+                [pscustomobject]@{
+                    Target = 'PSGallery'
+                    IsLocal = $false
+                    Parameters = @{}
+                    Action = {}
+                }
+            }
+            Mock Get-NovaResolvedPublishParameterMap {{}}
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'NovaModuleTools'
+                OutputModuleDir = '/tmp/dist/NovaModuleTools'
+            }
+
+            $result = Get-NovaPublishWorkflowContext -ProjectInfo $projectInfo -PublishOption @{Repository = 'PSGallery'; SkipTests = $true} -WorkflowSettings @{
+                WorkflowName = 'release'
+                Release = $true
+            }
+
+            $result.SkipTestsRequested | Should -BeTrue
+            $result.Operation | Should -Be 'Run Nova release workflow (build and publish) to repository'
         }
     }
 
@@ -187,7 +221,7 @@ Describe 'Nova command model - release and publish behavior' {
                     LocalRequested = $true
                     PublishInvocation = [pscustomobject]@{IsLocal = $true}
                     Target = '/tmp/modules'
-                    Operation = 'Run Nova release workflow and publish to local directory'
+                    Operation = 'Run Nova release workflow (build, test, and publish) to local directory'
                 }
             }
             Mock Write-NovaPublishWorkflowContext {}
@@ -201,6 +235,53 @@ Describe 'Nova command model - release and publish behavior' {
             Assert-MockCalled Get-NovaPublishWorkflowContext -Times 1 -ParameterFilter {$WorkflowSettings.WorkflowName -eq 'release' -and $WorkflowSettings.Release}
             Assert-MockCalled Write-NovaPublishWorkflowContext -Times 1
             Assert-MockCalled Invoke-NovaReleaseWorkflow -Times 1
+        }
+    }
+
+    It '<CommandName> forwards SkipTests into its shared workflow context' -ForEach @(
+        @{
+            CommandName = 'Invoke-NovaRelease'
+            WorkflowName = 'release'
+            Operation = 'Run Nova release workflow (build and publish) to repository'
+            Invoke = {
+                Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'} -SkipTests -Path (Get-Location).Path -Confirm:$false
+            }
+        }
+        @{
+            CommandName = 'Publish-NovaModule'
+            WorkflowName = 'publish'
+            Operation = 'Build, skip tests, and publish Nova module to repository'
+            Invoke = {
+                Publish-NovaModule -Repository PSGallery -ApiKey key123 -SkipTests -Confirm:$false
+            }
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+            }
+            Mock Get-NovaPublishWorkflowContext {
+                [pscustomobject]@{
+                    WorkflowName = $TestCase.WorkflowName
+                    LocalRequested = $false
+                    PublishInvocation = [pscustomobject]@{IsLocal = $false}
+                    Target = 'PSGallery'
+                    Operation = $TestCase.Operation
+                }
+            }
+            Mock Write-NovaPublishWorkflowContext {}
+            if ($TestCase.WorkflowName -eq 'release') {
+                Mock Invoke-NovaReleaseWorkflow {}
+            }
+            else {
+                Mock Invoke-NovaPublishWorkflow {}
+            }
+
+            & $TestCase.Invoke | Out-Null
+
+            Assert-MockCalled Get-NovaPublishWorkflowContext -Times 1 -ParameterFilter {$PublishOption.SkipTests -and $PublishOption.Repository -eq 'PSGallery'}
         }
     }
 
@@ -228,6 +309,32 @@ Describe 'Nova command model - release and publish behavior' {
             {Invoke-NovaPublishWorkflow -WorkflowContext $workflowContext -ShouldRun} | Should -Not -Throw
 
             $script:steps -join ',' | Should -Be 'build,test,publish,import'
+        }
+    }
+
+    It 'Invoke-NovaPublishWorkflow skips tests when SkipTests is requested' {
+        InModuleScope $script:moduleName {
+            $script:steps = @()
+
+            Mock Invoke-NovaBuild {$script:steps += 'build'}
+            Mock Test-NovaBuild {$script:steps += 'test'}
+            $workflowContext = [pscustomobject]@{
+                WorkflowParams = @{}
+                SkipTestsRequested = $true
+                PublishInvocation = [pscustomobject]@{
+                    Parameters = @{
+                        ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                    }
+                    Action = {$script:steps += 'publish'}
+                }
+                PublishParams = @{}
+                LocalPublishActivation = $null
+            }
+
+            Invoke-NovaPublishWorkflow -WorkflowContext $workflowContext -ShouldRun | Out-Null
+
+            $script:steps -join ',' | Should -Be 'build,publish'
+            Assert-MockCalled Test-NovaBuild -Times 0
         }
     }
 
@@ -332,10 +439,30 @@ Describe 'Nova command model - release and publish behavior' {
             $result.WorkflowParams.WhatIf | Should -BeTrue
             $result.ModulePath | Should -Be '/tmp/NovaModuleTools.psm1'
             $result.Target | Should -Be '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg, /tmp/project/artifacts/packages/NovaModuleTools.1.2.3.zip'
-            $result.Operation | Should -Be 'Create package artifacts from built module output'
+            $result.SkipTestsRequested | Should -BeFalse
+            $result.Operation | Should -Be 'Create package artifacts from built and tested module output'
             $result.PackageMetadataList.Type | Should -Be @('NuGet', 'Zip')
             Assert-MockCalled Get-NovaPackageMetadataList -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
             Assert-MockCalled Assert-NovaPackageMetadata -Times 2
+        }
+    }
+
+    It 'Get-NovaPackageWorkflowContext carries SkipTestsRequested into package operation text' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'NovaModuleTools'
+            }
+            $packageMetadataList = @(
+                [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+            )
+
+            Mock Get-NovaPackageMetadataList {$packageMetadataList}
+            Mock Assert-NovaPackageMetadata {}
+
+            $result = Get-NovaPackageWorkflowContext -ProjectInfo $projectInfo -SkipTestsRequested
+
+            $result.SkipTestsRequested | Should -BeTrue
+            $result.Operation | Should -Be 'Create NuGet package from built module output with tests skipped'
         }
     }
 
@@ -353,7 +480,7 @@ Describe 'Nova command model - release and publish behavior' {
 
             $result = Get-NovaPackageWorkflowContext -ProjectInfo $projectInfo
 
-            $result.Operation | Should -Be 'Create NuGet package from built module output'
+            $result.Operation | Should -Be 'Create NuGet package from built and tested module output'
             $result.Target | Should -Be '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'
             Assert-MockCalled Assert-NovaPackageMetadata -Times 1
         }
@@ -397,6 +524,34 @@ Describe 'Nova command model - release and publish behavior' {
                         $WorkflowContext.PackageMetadataList.Count -eq 2 -and
                         $WorkflowContext.ModulePath -eq '/tmp/NovaModuleTools.psm1'
             }
+        }
+    }
+
+    It 'Invoke-NovaPackageWorkflow skips tests when SkipTests is requested' {
+        InModuleScope $script:moduleName {
+            $script:steps = @()
+            $workflowContext = [pscustomobject]@{
+                ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                WorkflowParams = @{}
+                SkipTestsRequested = $true
+                PackageMetadataList = @(
+                    [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                )
+                ModulePath = '/tmp/NovaModuleTools.psm1'
+            }
+
+            Mock Invoke-NovaBuild {$script:steps += 'build'}
+            Mock Test-NovaBuild {$script:steps += 'test'}
+            Mock Invoke-NovaPackageArtifactCreation {
+                $script:steps += 'pack'
+                @([pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'})
+            }
+
+            $result = @(Invoke-NovaPackageWorkflow -WorkflowContext $workflowContext -ShouldRun)
+
+            $script:steps -join ',' | Should -Be 'build,pack'
+            $result.Type | Should -Be @('NuGet')
+            Assert-MockCalled Test-NovaBuild -Times 0
         }
     }
 
@@ -483,7 +638,7 @@ Describe 'Nova command model - release and publish behavior' {
                     )
                     ModulePath = '/tmp/NovaModuleTools.psm1'
                     Target = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'
-                    Operation = 'Create NuGet package from built module output'
+                    Operation = 'Create NuGet package from built and tested module output'
                 }
             }
             Mock Invoke-NovaPackageWorkflow {
@@ -500,8 +655,31 @@ Describe 'Nova command model - release and publish behavior' {
             Assert-MockCalled Invoke-NovaPackageWorkflow -Times 1 -ParameterFilter {
                 $ShouldRun -and
                         $WorkflowContext.Target -eq '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg' -and
-                        $WorkflowContext.Operation -eq 'Create NuGet package from built module output'
+                        $WorkflowContext.Operation -eq 'Create NuGet package from built and tested module output'
             }
+        }
+    }
+
+    It 'New-NovaModulePackage forwards SkipTests into the package workflow context' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaPackageWorkflowContext {
+                [pscustomobject]@{
+                    ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                    WorkflowParams = @{}
+                    SkipTestsRequested = $true
+                    PackageMetadataList = @(
+                        [pscustomobject]@{Type = 'NuGet'; PackagePath = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'}
+                    )
+                    ModulePath = '/tmp/NovaModuleTools.psm1'
+                    Target = '/tmp/project/artifacts/packages/NovaModuleTools.1.2.3.nupkg'
+                    Operation = 'Create NuGet package from built module output with tests skipped'
+                }
+            }
+            Mock Invoke-NovaPackageWorkflow {}
+
+            New-NovaModulePackage -SkipTests -Confirm:$false | Out-Null
+
+            Assert-MockCalled Get-NovaPackageWorkflowContext -Times 1 -ParameterFilter {$SkipTestsRequested}
         }
     }
 
