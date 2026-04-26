@@ -87,10 +87,10 @@ when `Package.Types` is omitted or resolves to `NuGet`.
 ### EXAMPLE 2
 
 ```text
-% nova package
+PS> New-NovaModulePackage -WhatIf
 ```
 
-Runs the same packaging workflow through the `nova` CLI.
+Previews the build, test, and packaging workflow without writing a package artifact.
 
 ### EXAMPLE 3
 

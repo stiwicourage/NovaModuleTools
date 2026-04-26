@@ -32,7 +32,7 @@ Shows whether prerelease update notifications are enabled. Stable release notifi
 
 ### `PS> Install-NovaCli`
 
-Installs the bundled `nova` launcher into a user command directory on macOS or Linux.
+Installs the bundled command-line launcher into a user command directory on macOS or Linux.
 
 ### `PS> Invoke-NovaBuild`
 
@@ -73,7 +73,7 @@ Builds, tests, and publishes the current project either locally or to a reposito
 
 ### `PS> Set-NovaUpdateNotificationPreference`
 
-Enables or disables whether prerelease self-updates are eligible for `Update-NovaModuleTool` and `% nova update`.
+Enables or disables whether prerelease self-updates are eligible for `Update-NovaModuleTool`.
 
 ### `PS> Update-NovaModuleVersion`
 

@@ -40,10 +40,10 @@ The command:
 6. copies project resources into the built module output
 
 To update the installed `NovaModuleTools` module itself, use `Update-NovaModuleTool` (alias:
-`Update-NovaModuleTools`) or `% nova update`.
+`Update-NovaModuleTools`).
 
-Use `Set-NovaUpdateNotificationPreference`, `Get-NovaUpdateNotificationPreference`, or the `% nova notification`
-commands when you want to control whether prerelease self-updates are eligible.
+Use `Set-NovaUpdateNotificationPreference` or `Get-NovaUpdateNotificationPreference` when you want to control whether
+prerelease self-updates are eligible.
 
 If `Invoke-NovaBuild` detects that a newer `NovaModuleTools` release or prerelease is available after the build, the
 warning includes the recommended update command together with the release notes link from the installed module

@@ -95,3 +95,32 @@ function Get-CommandHelpActivationTestCases {
     )
 }
 
+function Assert-TestPowerShellHelpExcludesCliSyntax {
+    [CmdletBinding()]
+    param(
+        [AllowNull()][string]$Text,
+        [Parameter(Mandatory)][string]$Subject
+    )
+
+    if ( [string]::IsNullOrWhiteSpace($Text)) {
+        return
+    }
+
+    foreach ($forbiddenPattern in @(
+        [pscustomobject]@{
+            Pattern = '(?-i)\bnova\s+(?:--help|--version|info|version|build|test|package|deploy|init|bump|update|notification|publish|release)\b'
+            Reason = 'should not mention launcher command syntax'
+        }
+        [pscustomobject]@{
+            Pattern = '(?<![A-Za-z0-9-])--[a-z][a-z-]*'
+            Reason = 'should not expose GNU-style long options'
+        }
+        [pscustomobject]@{
+            Pattern = '(?m)^\s*[%$]\s*nova\b'
+            Reason = 'should not include shell prompt launcher examples'
+        }
+    )) {
+        $Text | Should -Not -Match $forbiddenPattern.Pattern -Because "$Subject $( $forbiddenPattern.Reason )"
+    }
+}
+

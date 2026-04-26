@@ -29,30 +29,16 @@ PS> Invoke-NovaCli [[-Command] <string>] [[-Arguments] <string[]>] [-WhatIf] [-C
 
 Use it when you need scripted routing inside PowerShell, for example in tests, automation, or wrapper functions.
 
-Use the installed `nova` launcher when you want the end-user CLI experience. The module does not export `nova` as a
-PowerShell alias.
+`Invoke-NovaCli` routes the same top-level command names as the bundled command-line launcher, but it keeps the entry
+surface explicit for PowerShell callers.
 
-`Invoke-NovaCli` routes the same top-level commands that the launcher supports, including `% nova info`, `% nova
-version`, `% nova --version`, `% nova --help`, `% nova build`, `% nova test`, `% nova package`, `% nova deploy`, `% nova
-init`, `% nova bump`, `% nova update`, `% nova notification`, `% nova publish`, and `% nova release`.
+Use `-Command` to select the routed command and `-Arguments` when a routed command needs additional raw arguments.
 
-Mutating routed commands forward CLI `--verbose`/`-v` and `--what-if`/`-w` to the underlying cmdlet. Routed CLI
-`--confirm`/`-c` is handled by the shared CLI confirmation flow so the launcher never exposes PowerShell's interactive
-`Suspend` prompt.
-
-Only the supported mutating `nova` commands accept `--confirm`/`-c`. Read-only routes and `% nova init` reject the CLI
-confirm flag with a clear validation error.
+When `-Command` is omitted, `Invoke-NovaCli` routes to the root help view.
 
 Direct PowerShell cmdlets such as `Invoke-NovaBuild`, `Publish-NovaModule`, `Deploy-NovaPackage`,
 `Update-NovaModuleVersion`, and `Invoke-NovaRelease` keep their native `-WhatIf` and `-Confirm` behavior when called
 directly.
-
-Use `% nova <command> --help` or `% nova <command> -h` when you want short CLI help for a specific command.
-
-Use `% nova --help <command>` or `% nova -h <command>` when you want long CLI help for a specific command.
-
-The launcher help is CLI-native and uses CLI option spellings such as `--repository` and `-r`. Use PowerShell
-`Get-Help` when you want cmdlet help instead.
 
 ## EXAMPLES
 
@@ -67,68 +53,44 @@ Routes the build workflow through the explicit PowerShell cmdlet entrypoint.
 ### EXAMPLE 2
 
 ```text
-PS> Invoke-NovaCli -Command publish -Arguments @('--local') -WhatIf
+PS> Invoke-NovaCli -Command version
 ```
 
-Routes the local publish workflow while keeping native PowerShell `-WhatIf` on the outer call.
+Routes the version workflow through the explicit PowerShell cmdlet entrypoint.
 
 ### EXAMPLE 3
 
 ```text
-PS> Invoke-NovaCli -Command init -Arguments @('--example', '--path', '~/Work')
+PS> Invoke-NovaCli -Command update -WhatIf
 ```
 
-Starts the example scaffold flow from the explicit PowerShell cmdlet entrypoint.
+Routes the self-update workflow while previewing the outer PowerShell action.
 
 ### EXAMPLE 4
 
 ```text
-% nova build --confirm
+PS> Invoke-NovaCli -Command notification
 ```
 
-Runs the routed build workflow through the launcher-facing CLI surface and uses the shared CLI confirmation flow.
+Routes the notification-preference status workflow through the explicit PowerShell cmdlet entrypoint.
 
 ### EXAMPLE 5
 
 ```text
-% nova version --installed
+PS> Invoke-NovaCli -Command build -Confirm
 ```
 
-Returns the locally installed version of the current project/module.
-
-### EXAMPLE 6
-
-```text
-% nova --version
-```
-
-Returns the installed `NovaModuleTools` module version.
-
-### EXAMPLE 7
-
-```text
-% nova update
-```
-
-Runs the self-update flow through the launcher-oriented CLI surface.
-
-### EXAMPLE 8
-
-```text
-% nova notification --disable
-```
-
-Disables prerelease self-update eligibility through the launcher-facing CLI surface.
+Prompts before the routed build workflow starts.
 
 ## PARAMETERS
 
 ### -Command
 
-Top-level Nova command to route. Defaults to `--help`.
+Top-level Nova command to route. When omitted, the cmdlet routes to the root help view.
 
 ```yaml
 Type: System.String
-DefaultValue: --help
+DefaultValue: (root help view)
 SupportsWildcards: false
 Aliases: [ ]
 ParameterSets:
@@ -146,6 +108,8 @@ HelpMessage: ''
 ### -Arguments
 
 Raw routed argument list for the selected Nova command.
+
+Use this parameter when a routed command needs additional command-specific arguments.
 
 ```yaml
 Type: System.String[]
@@ -187,10 +151,11 @@ Returns the same output that the selected routed Nova command returns.
 Use `Invoke-NovaCli` directly when you need the underlying PowerShell command in scripts, tests, or command dispatch
 scenarios.
 
-Install the bundled `nova` launcher with `Install-NovaCli` when you want `% nova ...` available from your shell.
+Install the bundled command-line launcher with `Install-NovaCli` when you want the same routed command surface from
+your shell.
 
 `Invoke-NovaCli` uses `SupportsShouldProcess` so the outer PowerShell call still surfaces native `-WhatIf` and
-`-Confirm`, while routed CLI `--confirm`/`-c` stays inside the shared CLI confirmation flow.
+`-Confirm` support.
 
 ## RELATED LINKS
 

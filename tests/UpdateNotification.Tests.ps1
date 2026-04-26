@@ -739,7 +739,7 @@ throw 'offline'
             $cliHelp | Should -Match 'prerelease targets require explicit confirmation'
             $commandHelp | Should -Match 'stored prerelease preference'
             $commandHelp | Should -Match 'explicit confirmation'
-            $commandHelp | Should -Match 'nova update'
+            $commandHelp | Should -Not -Match 'nova update'
         }
     }
 

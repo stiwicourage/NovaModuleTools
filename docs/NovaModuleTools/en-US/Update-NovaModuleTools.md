@@ -31,7 +31,7 @@ The cmdlet is also available through the compatibility alias `Update-NovaModuleT
 
 Before it runs `Update-Module`, it resolves the best available update candidate by using the stored prerelease
 preference exposed through `Get-NovaUpdateNotificationPreference`, `Set-NovaUpdateNotificationPreference`, and
-`% nova notification`.
+those PowerShell preference commands.
 
 When prerelease notifications are disabled, `Update-NovaModuleTool` only considers stable releases and never passes
 `-AllowPrerelease` to the update flow.
@@ -41,10 +41,7 @@ prerelease, the command always asks for explicit confirmation before it proceeds
 
 Stable updates do not require prerelease confirmation.
 
-After a successful update, `Update-NovaModuleTool` and `% nova update` print the release notes link from the installed
-module manifest.
-
-Use `% nova update` when you want the same behavior through the Nova CLI entrypoint.
+After a successful update, `Update-NovaModuleTool` prints the release notes link from the installed module manifest.
 
 ## EXAMPLES
 
@@ -69,16 +66,13 @@ Restricts self-update to stable releases only.
 ### EXAMPLE 3
 
 ```text
-% nova update
+PS> Get-NovaUpdateNotificationPreference
+PS> Update-NovaModuleTool
 ```
 
-Runs the same self-update flow from the Nova CLI. If the selected target is a prerelease, the CLI asks for explicit
-confirmation before running the update.
+Reads the current prerelease preference and then runs the self-update flow from PowerShell.
 
 Successful updates print the release notes link from the installed module manifest.
-
-If no newer version is available, the standalone `% nova update` launcher prints `You're up to date!` together with the
-installed `NovaModuleTools` version.
 
 ### EXAMPLE 4
 
@@ -157,10 +151,8 @@ update was available, whether the target was prerelease, and whether the update 
 If the PowerShell Gallery cannot be reached well enough to resolve an update candidate, the command stops before calling
 `Update-Module`.
 
-Use `Get-NovaUpdateNotificationPreference`, `Set-NovaUpdateNotificationPreference`, `% nova notification`,
-`% nova notification --disable` / `% nova notification -d`, and `% nova notification --enable` /
-`% nova notification -e` to
-inspect or change the same stored prerelease setting.
+Use `Get-NovaUpdateNotificationPreference` and `Set-NovaUpdateNotificationPreference` to inspect or change the stored
+prerelease setting.
 
 ## RELATED LINKS
 

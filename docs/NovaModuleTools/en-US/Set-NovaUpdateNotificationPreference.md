@@ -32,16 +32,12 @@ PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications [-WhatI
 ## DESCRIPTION
 
 `Set-NovaUpdateNotificationPreference` manages the user preference that controls whether
-`Update-NovaModuleTool` / `Update-NovaModuleTools` and `% nova update` may select prerelease versions of
-`NovaModuleTools`.
+`Update-NovaModuleTool` / `Update-NovaModuleTools` may select prerelease versions of `NovaModuleTools`.
 
-The same stored preference is also used by `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) and `% nova update`
-when they decide whether a prerelease self-update can be selected.
+The same stored preference is also used by `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) when it decides
+whether a prerelease self-update can be selected.
 
 Stable self-updates remain available and do not require prerelease eligibility.
-
-If you prefer the Nova CLI surface, use `% nova notification --disable` / `% nova notification -d` and
-`% nova notification --enable` / `% nova notification -e` for the same stored preference.
 
 ## EXAMPLES
 
@@ -51,8 +47,7 @@ If you prefer the Nova CLI surface, use `% nova notification --disable` / `% nov
 PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
 ```
 
-Turns off prerelease self-update eligibility and restricts `Update-NovaModuleTool` / `% nova update` to stable releases
-only.
+Turns off prerelease self-update eligibility and restricts `Update-NovaModuleTool` to stable releases only.
 
 ### EXAMPLE 2
 
@@ -61,23 +56,23 @@ PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
 ```
 
 Turns prerelease self-update eligibility back on, which allows `Update-NovaModuleTool` /
-`Update-NovaModuleTools` and `% nova update` to consider a prerelease target again.
+`Update-NovaModuleTools` to consider a prerelease target again.
 
 ### EXAMPLE 3
 
 ```text
-% nova notification --disable
+PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications -WhatIf
 ```
 
-Uses the Nova CLI entrypoint to disable prerelease self-update eligibility.
+Previews the change that would disable prerelease self-update eligibility.
 
 ### EXAMPLE 4
 
 ```text
-% nova notification --enable
+PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications -Confirm
 ```
 
-Uses the Nova CLI entrypoint to re-enable prerelease self-update eligibility.
+Prompts before the preference is changed to allow prerelease self-updates again.
 
 ## PARAMETERS
 
@@ -201,7 +196,6 @@ Returns the current prerelease self-update state, the always-available stable-up
 
 Use this command together with `Get-NovaUpdateNotificationPreference` when you want to confirm the stored setting.
 
-Use `% nova notification` when you want to view the same setting through the CLI surface.
 
 ## RELATED LINKS
 

@@ -74,10 +74,10 @@ prompt flow to the copied `project.json`.
 ### EXAMPLE 4
 
 ```text
-% nova init --example --path ~/Work
+PS> Initialize-NovaModule -Example -Path ~/Work -WhatIf
 ```
 
-Runs the same example-based scaffold flow through the `nova` CLI.
+Shows what the example-based scaffold flow would create without writing files.
 
 ## PARAMETERS
 
