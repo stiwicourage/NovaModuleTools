@@ -532,6 +532,15 @@
                         </tbody>
                     </table>
                 </div>
+                <p>Nova resolves raw-upload settings in a fixed order so CI/CD overrides stay predictable. Command
+                    arguments such as <code>-Url</code> / <code>--url</code> and <code>-UploadPath</code> /
+                    <code>--upload-path</code> win first, then the selected <code>Package.Repositories[]</code> entry,
+                    then package-level defaults such as <code>Package.RepositoryUrl</code>,
+                    <code>Package.RawRepositoryUrl</code>, and <code>Package.UploadPath</code>.</p>
+                <p>Secrets follow a matching precedence model. An explicit token value wins first, then an explicit
+                    token-environment-variable name, then the merged repository/package
+                    <code>Auth.TokenEnvironmentVariable</code>, and finally the merged literal
+                    <code>Auth.Token</code>. Prefer environment-variable indirection for real credentials.</p>
 
                 <h3>Authentication examples</h3>
                 <pre><code>{
@@ -677,7 +686,8 @@
   }
 }</code></pre>
                 <p>Use package-level values for the shared default behavior, then override only the repository-specific
-                    parts that need to change.</p>
+                    parts that need to change. Repository-specific <code>Headers</code>, <code>Auth</code>, and
+                    <code>UploadPath</code> override package defaults only for the selected named target.</p>
             </section>
         </div>
     </section>

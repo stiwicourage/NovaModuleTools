@@ -579,6 +579,69 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
+    It 'Publish-NovaBuiltModuleToRepository resolves API key precedence clearly when <Name>' -ForEach @(
+        @{
+            Name = 'an explicit API key overrides the PSGallery environment fallback'
+            Repository = 'PSGallery'
+            ApiKey = 'explicit-gallery-key'
+            EnvironmentApiKey = 'environment-gallery-key'
+            ExpectedApiKey = 'explicit-gallery-key'
+        }
+        @{
+            Name = 'PSGallery falls back to PSGALLERY_API when ApiKey is omitted'
+            Repository = 'PSGallery'
+            ApiKey = $null
+            EnvironmentApiKey = 'environment-gallery-key'
+            ExpectedApiKey = 'environment-gallery-key'
+        }
+    ) {
+        $originalApiKey = [System.Environment]::GetEnvironmentVariable('PSGALLERY_API')
+
+        try {
+            [System.Environment]::SetEnvironmentVariable('PSGALLERY_API', $_.EnvironmentApiKey, 'Process')
+
+            InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+                param($TestCase)
+
+                Mock Publish-PSResource {}
+
+                Publish-NovaBuiltModuleToRepository -ProjectInfo ([pscustomobject]@{OutputModuleDir = '/tmp/dist'}) -Repository $TestCase.Repository -ApiKey $TestCase.ApiKey
+
+                Assert-MockCalled Publish-PSResource -Times 1 -ParameterFilter {
+                    $Path -eq '/tmp/dist' -and
+                            $Repository -eq $TestCase.Repository -and
+                            $ApiKey -eq $TestCase.ExpectedApiKey
+                }
+            }
+        }
+        finally {
+            [System.Environment]::SetEnvironmentVariable('PSGALLERY_API', $originalApiKey, 'Process')
+        }
+    }
+
+    It 'Publish-NovaBuiltModuleToRepository does not reuse the PSGallery fallback for other repositories' {
+        $originalApiKey = [System.Environment]::GetEnvironmentVariable('PSGALLERY_API')
+
+        try {
+            [System.Environment]::SetEnvironmentVariable('PSGALLERY_API', 'environment-gallery-key', 'Process')
+
+            InModuleScope $script:moduleName {
+                Mock Publish-PSResource {}
+
+                Publish-NovaBuiltModuleToRepository -ProjectInfo ([pscustomobject]@{OutputModuleDir = '/tmp/dist'}) -Repository 'InternalFeed'
+
+                Assert-MockCalled Publish-PSResource -Times 1 -ParameterFilter {
+                    $Path -eq '/tmp/dist' -and
+                            $Repository -eq 'InternalFeed' -and
+                            -not $PSBoundParameters.ContainsKey('ApiKey')
+                }
+            }
+        }
+        finally {
+            [System.Environment]::SetEnvironmentVariable('PSGALLERY_API', $originalApiKey, 'Process')
+        }
+    }
+
     It 'Get-NovaPackageWorkflowContext resolves package metadata, target, and operation for all requested package types' {
         InModuleScope $script:moduleName {
             $projectInfo = [pscustomobject]@{

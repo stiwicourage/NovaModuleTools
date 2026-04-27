@@ -348,6 +348,35 @@ Describe 'Update notification behavior' {
         }
     }
 
+    It 'Get-NovaUpdateSettingsFilePath keeps platform settings-root precedence explicit' {
+        $configRoot = Join-Path $TestDrive 'config-shared-root'
+        $appDataRoot = Join-Path $TestDrive 'appdata-shared-root'
+        $originalConfigHome = $env:XDG_CONFIG_HOME
+        $originalAppData = $env:APPDATA
+
+        try {
+            $env:XDG_CONFIG_HOME = $configRoot
+            $env:APPDATA = $appDataRoot
+
+            InModuleScope $script:moduleName -Parameters @{
+                ExpectedPath = if ($IsWindows) {
+                    Join-Path $appDataRoot 'NovaModuleTools/settings.json'
+                }
+                else {
+                    Join-Path $configRoot 'NovaModuleTools/settings.json'
+                }
+            } {
+                param($ExpectedPath)
+
+                Get-NovaUpdateSettingsFilePath | Should -Be $ExpectedPath
+            }
+        }
+        finally {
+            $env:XDG_CONFIG_HOME = $originalConfigHome
+            $env:APPDATA = $originalAppData
+        }
+    }
+
     It 'Set-NovaUpdateNotificationPreference can disable and re-enable prerelease notifications' {
         $result = Invoke-TestNotificationPreferenceToggle -ConfigDirectoryName 'config-toggle'
 

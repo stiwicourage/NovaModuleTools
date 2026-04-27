@@ -1,3 +1,16 @@
+function Get-NovaPublishRepositoryDefaultApiKeyEnvironmentVariable {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Repository
+    )
+
+    if ( $Repository.Equals('PSGallery', [System.StringComparison]::OrdinalIgnoreCase)) {
+        return 'PSGALLERY_API'
+    }
+
+    return $null
+}
+
 function Publish-NovaBuiltModuleToRepository {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
@@ -10,10 +23,10 @@ function Publish-NovaBuiltModuleToRepository {
         [string]$ApiKey
     )
 
-    $resolvedApiKey = $ApiKey
-    if ($Repository -eq 'PSGallery' -and [string]::IsNullOrWhiteSpace($resolvedApiKey)) {
-        $resolvedApiKey = $env:PSGALLERY_API
-    }
+    $resolvedApiKey = Resolve-NovaSecretValue -SecretSources ([pscustomobject]@{
+        ExplicitValue = $ApiKey
+        DefaultEnvironmentVariableName = Get-NovaPublishRepositoryDefaultApiKeyEnvironmentVariable -Repository $Repository
+    })
 
     $publishParams = @{
         Path = $ProjectInfo.OutputModuleDir

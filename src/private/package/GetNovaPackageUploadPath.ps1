@@ -6,16 +6,12 @@ function Get-NovaPackageUploadPath {
         [string]$UploadPath
     )
 
-    if (-not [string]::IsNullOrWhiteSpace($UploadPath)) {
-        return $UploadPath.Trim()
-    }
+    $resolvedUploadPath = Get-NovaFirstConfiguredValue -CandidateList @(
+        $UploadPath
+        (Get-NovaPackageSettingValue -InputObject $RepositorySettings -Name 'UploadPath')
+        (Get-NovaPackageSettingValue -InputObject $PackageSettings -Name 'UploadPath')
+    )
 
-    $repositoryUploadPath = Get-NovaPackageSettingValue -InputObject $RepositorySettings -Name 'UploadPath'
-    if (-not [string]::IsNullOrWhiteSpace("$repositoryUploadPath")) {
-        return "$repositoryUploadPath".Trim()
-    }
-
-    $packageUploadPath = Get-NovaPackageSettingValue -InputObject $PackageSettings -Name 'UploadPath'
-    return "$( $packageUploadPath )".Trim()
+    return "$( $resolvedUploadPath )".Trim()
 }
 

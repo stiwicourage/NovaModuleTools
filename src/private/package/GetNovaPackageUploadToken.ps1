@@ -6,18 +6,11 @@ function Get-NovaPackageUploadToken {
         [string]$TokenEnvironmentVariable
     )
 
-    if (-not [string]::IsNullOrWhiteSpace($Token)) {
-        return $Token
-    }
-
-    $environmentVariableName = $TokenEnvironmentVariable
-    if ( [string]::IsNullOrWhiteSpace($environmentVariableName)) {
-        $environmentVariableName = Get-NovaPackageSettingValue -InputObject $AuthSettings -Name 'TokenEnvironmentVariable'
-    }
-    if (-not [string]::IsNullOrWhiteSpace("$environmentVariableName")) {
-        return [System.Environment]::GetEnvironmentVariable("$environmentVariableName")
-    }
-
-    return Get-NovaPackageSettingValue -InputObject $AuthSettings -Name 'Token'
+    return Resolve-NovaSecretValue -SecretSources ([pscustomobject]@{
+        ExplicitValue = $Token
+        ExplicitEnvironmentVariableName = $TokenEnvironmentVariable
+        ConfiguredEnvironmentVariableName = Get-NovaPackageSettingValue -InputObject $AuthSettings -Name 'TokenEnvironmentVariable'
+        ConfiguredValue = Get-NovaPackageSettingValue -InputObject $AuthSettings -Name 'Token'
+    })
 }
 

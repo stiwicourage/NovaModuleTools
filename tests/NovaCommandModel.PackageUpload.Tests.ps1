@@ -290,6 +290,125 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
+    It 'Resolve-NovaPackageUploadHeaders keeps token precedence explicit when <Name>' -ForEach @(
+        @{
+            Name = 'an explicit token overrides explicit and configured environment variables'
+            UploadTarget = [pscustomobject]@{
+                Headers = [ordered]@{}
+                Auth = [ordered]@{
+                    HeaderName = 'X-Api-Key'
+                    TokenEnvironmentVariable = 'NOVA_PACKAGE_CONFIGURED_TOKEN'
+                    Token = 'configured-literal-token'
+                }
+            }
+            UploadOption = [pscustomobject]@{
+                Headers = [ordered]@{}
+                Token = 'explicit-token'
+                TokenEnvironmentVariable = 'NOVA_PACKAGE_EXPLICIT_TOKEN'
+                AuthenticationScheme = $null
+            }
+            Environment = @{
+                NOVA_PACKAGE_CONFIGURED_TOKEN = 'configured-environment-token'
+                NOVA_PACKAGE_EXPLICIT_TOKEN = 'explicit-environment-token'
+            }
+            ExpectedHeaderValue = 'explicit-token'
+        }
+        @{
+            Name = 'an explicit token environment variable overrides configured auth values'
+            UploadTarget = [pscustomobject]@{
+                Headers = [ordered]@{}
+                Auth = [ordered]@{
+                    HeaderName = 'X-Api-Key'
+                    TokenEnvironmentVariable = 'NOVA_PACKAGE_CONFIGURED_TOKEN'
+                    Token = 'configured-literal-token'
+                }
+            }
+            UploadOption = [pscustomobject]@{
+                Headers = [ordered]@{}
+                Token = $null
+                TokenEnvironmentVariable = 'NOVA_PACKAGE_EXPLICIT_TOKEN'
+                AuthenticationScheme = $null
+            }
+            Environment = @{
+                NOVA_PACKAGE_CONFIGURED_TOKEN = 'configured-environment-token'
+                NOVA_PACKAGE_EXPLICIT_TOKEN = 'explicit-environment-token'
+            }
+            ExpectedHeaderValue = 'explicit-environment-token'
+        }
+        @{
+            Name = 'a configured token environment variable overrides a configured literal token'
+            UploadTarget = [pscustomobject]@{
+                Headers = [ordered]@{}
+                Auth = [ordered]@{
+                    HeaderName = 'X-Api-Key'
+                    TokenEnvironmentVariable = 'NOVA_PACKAGE_CONFIGURED_TOKEN'
+                    Token = 'configured-literal-token'
+                }
+            }
+            UploadOption = [pscustomobject]@{
+                Headers = [ordered]@{}
+                Token = $null
+                TokenEnvironmentVariable = $null
+                AuthenticationScheme = $null
+            }
+            Environment = @{
+                NOVA_PACKAGE_CONFIGURED_TOKEN = 'configured-environment-token'
+                NOVA_PACKAGE_EXPLICIT_TOKEN = $null
+            }
+            ExpectedHeaderValue = 'configured-environment-token'
+        }
+    ) {
+        $originalConfiguredToken = [System.Environment]::GetEnvironmentVariable('NOVA_PACKAGE_CONFIGURED_TOKEN')
+        $originalExplicitToken = [System.Environment]::GetEnvironmentVariable('NOVA_PACKAGE_EXPLICIT_TOKEN')
+
+        try {
+            [System.Environment]::SetEnvironmentVariable('NOVA_PACKAGE_CONFIGURED_TOKEN', $_.Environment.NOVA_PACKAGE_CONFIGURED_TOKEN, 'Process')
+            [System.Environment]::SetEnvironmentVariable('NOVA_PACKAGE_EXPLICIT_TOKEN', $_.Environment.NOVA_PACKAGE_EXPLICIT_TOKEN, 'Process')
+
+            InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+                param($TestCase)
+
+                $result = Resolve-NovaPackageUploadHeaders -UploadTarget $TestCase.UploadTarget -UploadOption $TestCase.UploadOption
+
+                $result['X-Api-Key'] | Should -Be $TestCase.ExpectedHeaderValue
+                $result.Keys.Count | Should -Be 1
+            }
+        }
+        finally {
+            [System.Environment]::SetEnvironmentVariable('NOVA_PACKAGE_CONFIGURED_TOKEN', $originalConfiguredToken, 'Process')
+            [System.Environment]::SetEnvironmentVariable('NOVA_PACKAGE_EXPLICIT_TOKEN', $originalExplicitToken, 'Process')
+        }
+    }
+
+    It 'Resolve-NovaPackageUploadTarget missing URL errors do not leak configured token values' {
+        $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'missing-upload-url-secret-safe')
+        $secretToken = 'do-not-log-this-token'
+
+        InModuleScope $script:moduleName -Parameters @{
+            SecretToken = $secretToken
+            ProjectInfo = (New-TestNovaPackageUploadProjectInfo -Layout $layout -Options @{
+                Auth = [ordered]@{
+                    Token = $secretToken
+                }
+            })
+        } {
+            param($ProjectInfo, $SecretToken)
+
+            $thrown = $null
+
+            try {
+                Resolve-NovaPackageUploadTarget -ProjectInfo $ProjectInfo
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Not -Match [regex]::Escape($SecretToken)
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.PackageUploadTargetUrlMissing'
+        }
+    }
+
     It 'Deploy-NovaPackage uploads the specified package file to the specified raw URL' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'explicit-upload')
         $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'

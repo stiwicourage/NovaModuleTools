@@ -6,17 +6,13 @@ function Get-NovaPackageUploadTargetUrl {
         [string]$Url
     )
 
-    $resolvedUrl = $Url
-    if ( [string]::IsNullOrWhiteSpace($resolvedUrl)) {
-        $resolvedUrl = Get-NovaPackageSettingValue -InputObject $RepositorySettings -Name 'Url'
-    }
-    if ( [string]::IsNullOrWhiteSpace("$resolvedUrl")) {
-        $resolvedUrl = Get-NovaPackageSettingValue -InputObject $PackageSettings -Name 'RepositoryUrl'
-    }
-    if ( [string]::IsNullOrWhiteSpace("$resolvedUrl")) {
-        $resolvedUrl = Get-NovaPackageSettingValue -InputObject $PackageSettings -Name 'RawRepositoryUrl'
-    }
-    if ( [string]::IsNullOrWhiteSpace("$resolvedUrl")) {
+    $resolvedUrl = Get-NovaFirstConfiguredValue -CandidateList @(
+        $Url
+        (Get-NovaPackageSettingValue -InputObject $RepositorySettings -Name 'Url')
+        (Get-NovaPackageSettingValue -InputObject $PackageSettings -Name 'RepositoryUrl')
+        (Get-NovaPackageSettingValue -InputObject $PackageSettings -Name 'RawRepositoryUrl')
+    )
+    if (-not (Test-NovaConfiguredValue -Value $resolvedUrl)) {
         Stop-NovaOperation -Message 'Upload target URL is missing. Provide -Url or configure Package.RepositoryUrl or Package.Repositories[].Url.' -ErrorId 'Nova.Configuration.PackageUploadTargetUrlMissing' -Category InvalidData -TargetObject 'Url'
     }
 
