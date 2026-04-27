@@ -308,6 +308,21 @@ Describe 'Update notification behavior' {
         }
     }
 
+    It 'Complete-NovaModuleSelfUpdateResult overwrites an existing release-notes property in place' {
+        InModuleScope $script:moduleName {
+            $plan = [pscustomobject]@{
+                ModuleName = 'NovaModuleTools'
+                UpdateAvailable = $true
+                ReleaseNotesUri = 'https://old.example/release-notes'
+            }
+
+            $result = Complete-NovaModuleSelfUpdateResult -Plan $plan -ReleaseNotesUri 'https://www.novamoduletools.com/release-notes.html'
+
+            $result.ReleaseNotesUri | Should -Be 'https://www.novamoduletools.com/release-notes.html'
+            @($result.PSObject.Properties.Name | Where-Object {$_ -eq 'ReleaseNotesUri'}).Count | Should -Be 1
+        }
+    }
+
     It 'Update-NovaModuleTool delegates workflow context resolution and execution to private helpers' {
         InModuleScope $script:moduleName {
             Mock Get-NovaModuleSelfUpdateWorkflowContext {
@@ -345,6 +360,38 @@ Describe 'Update notification behavior' {
             Assert-MockCalled Write-NovaModuleReleaseNotesLink -Times 1 -ParameterFilter {
                 $ReleaseNotesUri -eq 'https://www.novamoduletools.com/release-notes.html'
             }
+        }
+    }
+
+    It 'Update-NovaModuleTool returns the unchanged plan and skips update execution when WhatIf declines the update action' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaModuleSelfUpdateWorkflowContext {
+                [pscustomobject]@{
+                    Plan = [pscustomobject]@{
+                        ModuleName = 'NovaModuleTools'
+                        CurrentVersion = '1.0.0'
+                        TargetVersion = '1.1.0'
+                        PrereleaseNotificationsEnabled = $true
+                        UpdateAvailable = $true
+                        Updated = $false
+                        Cancelled = $false
+                        IsPrereleaseTarget = $false
+                        UsedAllowPrerelease = $false
+                    }
+                    Action = 'Update NovaModuleTools to version 1.1.0'
+                }
+            }
+            Mock Invoke-NovaModuleSelfUpdateWorkflow {throw 'should not update during WhatIf'}
+            Mock Write-NovaModuleReleaseNotesLink {throw 'should not write release notes during WhatIf'}
+
+            $result = Update-NovaModuleTool -WhatIf
+
+            $result.UpdateAvailable | Should -BeTrue
+            $result.Updated | Should -BeFalse
+            $result.ReleaseNotesUri | Should -BeNullOrEmpty
+            Assert-MockCalled Get-NovaModuleSelfUpdateWorkflowContext -Times 1
+            Assert-MockCalled Invoke-NovaModuleSelfUpdateWorkflow -Times 0
+            Assert-MockCalled Write-NovaModuleReleaseNotesLink -Times 0
         }
     }
 
@@ -622,6 +669,17 @@ throw 'offline'
 
             $message | Should -Be 'Release notes: https://www.novamoduletools.com/release-notes.html'
             $script:hostMessages | Should -Be @('Release notes: https://www.novamoduletools.com/release-notes.html')
+        }
+    }
+
+    It 'Get-NovaModuleReleaseNotesMessage resolves the URI from the module parameter set' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaModuleReleaseNotesUri {'https://www.novamoduletools.com/release-notes.html'}
+
+            $message = Get-NovaModuleReleaseNotesMessage -Module ([pscustomobject]@{Name = 'NovaModuleTools'})
+
+            $message | Should -Be 'Release notes: https://www.novamoduletools.com/release-notes.html'
+            Assert-MockCalled Get-NovaModuleReleaseNotesUri -Times 1
         }
     }
 

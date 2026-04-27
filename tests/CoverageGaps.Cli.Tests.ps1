@@ -140,6 +140,22 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'Format-NovaCliCommandResult renders applied bump results as a completed CLI summary' {
+        InModuleScope $script:moduleName {
+            $versionUpdateResult = [pscustomobject]@{
+                PreviousVersion = '1.0.0'
+                NewVersion = '1.1.0'
+                Label = 'Minor'
+                CommitCount = 2
+                Applied = $true
+            }
+
+            $result = Format-NovaCliCommandResult -Command 'bump' -Result $versionUpdateResult
+
+            $result | Should -Be 'Version bump completed: 1.0.0 -> 1.1.0 | Label: Minor | Commits: 2'
+        }
+    }
+
     It 'Invoke-NovaCliCommandRoute formats bump results through the shared CLI formatter' {
         InModuleScope $script:moduleName {
             $invocationContext = [pscustomobject]@{

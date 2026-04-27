@@ -254,6 +254,32 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
+    It 'Set-NovaModuleVersion returns a non-applied write result when WhatIf declines project.json persistence' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    ProjectFile = '/tmp/project.json'
+                    NewVersion = [semver]'1.3.0-preview'
+                }
+            }
+            Mock Read-ProjectJsonData {
+                [ordered]@{
+                    Version = '1.2.3'
+                }
+            }
+            Mock Write-ProjectJsonData {throw 'should not persist during WhatIf'}
+
+            $result = Set-NovaModuleVersion -Label Minor -PreviewRelease -WhatIf
+
+            $result.ProjectFile | Should -Be '/tmp/project.json'
+            $result.PreviousVersion | Should -Be '1.2.3'
+            $result.NewVersion | Should -Be '1.3.0-preview'
+            $result.Applied | Should -BeFalse
+            Assert-MockCalled Read-ProjectJsonData -Times 1 -ParameterFilter {$ProjectJsonPath -eq '/tmp/project.json'}
+            Assert-MockCalled Write-ProjectJsonData -Times 0
+        }
+    }
+
     It 'Publish-NovaBuiltModuleToRepository uses the PSGallery fallback api key without forcing verbose output' {
         InModuleScope $script:moduleName {
             $originalApiKey = $env:PSGALLERY_API
