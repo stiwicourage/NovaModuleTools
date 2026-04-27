@@ -4,14 +4,16 @@ function ConvertFrom-NovaVersionCliArgument {
         [string[]]$Arguments
     )
 
-    $Arguments = ConvertTo-NovaCliArgumentArray -BoundParameters $PSBoundParameters -Arguments $Arguments
-    if ($Arguments.Count -eq 0) {
-        return @{Installed = $false}
-    }
-
-    if ($Arguments.Count -eq 1 -and $Arguments[0] -match '^(--installed|-i)$') {
-        return @{Installed = $true}
-    }
-
-    Stop-NovaOperation -Message "Unsupported 'nova version' usage. Use 'nova version' or 'nova version --installed'/'nova version -i'." -ErrorId 'Nova.Validation.UnsupportedVersionCliUsage' -Category InvalidArgument -TargetObject $Arguments
+    return Get-NovaCliModeArgumentValue -Arguments $Arguments -Definition ([pscustomobject]@{
+        EmptyResult = @{Installed = $false}
+        TokenMap = @{
+            '--installed' = @{Installed = $true}
+            '-i' = @{Installed = $true}
+        }
+        Usage = [pscustomobject]@{
+            Message = "Unsupported 'nova version' usage. Use 'nova version' or 'nova version --installed'/'nova version -i'."
+            ErrorId = 'Nova.Validation.UnsupportedVersionCliUsage'
+        }
+        UnknownArgumentUsesUsageError = $true
+    })
 }

@@ -134,6 +134,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change `Publish-NovaModule -Local` and `% nova publish --local` so a successful local publish also reloads the
   published
   module from the local install path into the active PowerShell session.
+- Refactor the simple routed `nova` parsers to use shared declarative parser helpers while keeping the existing CLI
+  syntax, validation, and routed command behavior unchanged.
+    - `nova build`, `nova test`, and `nova bump` now share one switch-parser pattern.
+    - `nova update`, `nova version`, and `nova notification` now share one mode-parser pattern.
 
 ### Fixed
 

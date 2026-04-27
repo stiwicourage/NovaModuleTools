@@ -4,10 +4,13 @@ function ConvertFrom-NovaUpdateCliArgument {
         [string[]]$Arguments
     )
 
-    $Arguments = ConvertTo-NovaCliArgumentArray -BoundParameters $PSBoundParameters -Arguments $Arguments
-    if ($Arguments.Count -eq 0) {
-        return @{}
-    }
-
-    Stop-NovaOperation -Message "Unsupported 'nova update' usage. Use 'nova update'." -ErrorId 'Nova.Validation.UnsupportedUpdateCliUsage' -Category InvalidArgument -TargetObject $Arguments
+    return Get-NovaCliModeArgumentValue -Arguments $Arguments -Definition ([pscustomobject]@{
+        EmptyResult = @{}
+        TokenMap = @{}
+        Usage = [pscustomobject]@{
+            Message = "Unsupported 'nova update' usage. Use 'nova update'."
+            ErrorId = 'Nova.Validation.UnsupportedUpdateCliUsage'
+        }
+        UnknownArgumentUsesUsageError = $true
+    })
 }
