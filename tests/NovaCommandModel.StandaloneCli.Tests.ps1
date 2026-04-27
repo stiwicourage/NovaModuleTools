@@ -301,7 +301,7 @@ Describe '$projectName tests' {
 
             $previewBumpResult.ExitCode | Should -Be 0
             $previewBumpResult.Text | Should -Match 'What if:'
-            $previewBumpResult.Text | Should -Match '0\.0\.1-rc1\s+0\.0\.1-rc2\s+Major\s+1'
+            $previewBumpResult.Text | Should -Match 'Version plan: 0\.0\.1-rc1 -> 0\.0\.1-rc2 \| Label: Major \| Commits: 1'
             $previewBumpResult.Text | Should -Not -Match 'Unknown argument:'
             $previewBumpResult.Text | Should -Not -Match 'Version bumped to :'
             $versionAfterBump | Should -Be '0.0.1-rc1'
@@ -835,7 +835,7 @@ Describe '$projectName tests' {
                 [pscustomobject]@{WhatIfSeen = $WhatIfPreference}
             }
 
-            $result = Invoke-NovaCli publish --repository PSGallery --api-key key123 -WhatIf
+            $result = Invoke-NovaCli -Command publish -Arguments @('--repository', 'PSGallery', '--api-key', 'key123') -WhatIf
 
             $result.WhatIfSeen | Should -BeTrue
         }

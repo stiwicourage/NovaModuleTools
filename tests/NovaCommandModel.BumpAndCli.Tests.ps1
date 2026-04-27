@@ -207,13 +207,21 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
                 NewVersion = '1.1.0-preview'
                 CommitCount = 2
             }
-            Mock Set-NovaModuleVersion {}
+            Mock Set-NovaModuleVersion {
+                [pscustomobject]@{
+                    PreviousVersion = '1.0.0'
+                    NewVersion = '1.1.0-preview'
+                    Applied = $true
+                }
+            }
 
             $whatIfResult = Invoke-NovaVersionUpdateWorkflow -WorkflowContext $workflowContext -WhatIfEnabled
             $runResult = Invoke-NovaVersionUpdateWorkflow -WorkflowContext $workflowContext -ShouldRun
 
             $whatIfResult.NewVersion | Should -Be '1.1.0-preview'
+            $whatIfResult.Applied | Should -BeFalse
             $runResult.NewVersion | Should -Be '1.1.0-preview'
+            $runResult.Applied | Should -BeTrue
             Assert-MockCalled Set-NovaModuleVersion -Times 1 -ParameterFilter {
                 $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
                         $Label -eq 'Minor' -and
@@ -232,8 +240,9 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
                 }
             }
             Mock Invoke-NovaVersionUpdateWorkflow {
-                [pscustomobject]@{NewVersion = '1.1.0'}
+                [pscustomobject]@{NewVersion = '1.1.0'; Applied = $true}
             }
+            Mock Write-Host {}
 
             $result = Update-NovaModuleVersion -Path (Get-Location).Path -Confirm:$false
 
@@ -244,6 +253,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
                         $ShouldRun -and
                         -not $WhatIfEnabled
             }
+            Assert-MockCalled Write-Host -Times 1 -ParameterFilter {$Object -eq 'Version bumped to : 1.1.0'}
         }
     }
 
@@ -285,8 +295,9 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
                 }
             }
             Mock Invoke-NovaVersionUpdateWorkflow {
-                [pscustomobject]@{NewVersion = '1.1.0'}
+                [pscustomobject]@{NewVersion = '1.1.0'; Applied = $true}
             }
+            Mock Write-Host {}
 
             $result = Update-NovaModuleVersion -Path '/tmp/current-project' -ContinuousIntegration -Confirm:$false
 
@@ -315,12 +326,14 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
                 }
             }
             Mock Invoke-NovaVersionUpdateWorkflow {
-                [pscustomobject]@{NewVersion = '1.1.0'}
+                [pscustomobject]@{NewVersion = '1.1.0'; Applied = $false}
             }
+            Mock Write-Host {throw 'WhatIf should not emit host output'}
 
             $result = Update-NovaModuleVersion -Path '/tmp/current-project' -ContinuousIntegration -WhatIf
 
             $result.NewVersion | Should -Be '1.1.0'
+            $result.Applied | Should -BeFalse
             Assert-MockCalled Get-NovaVersionUpdateCiActivatedCommand -Times 0
             Assert-MockCalled Get-NovaVersionUpdateWorkflowContext -Times 1 -ParameterFilter {$ContinuousIntegrationRequested}
         }
@@ -523,8 +536,9 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
                 }
             }
             Mock Invoke-NovaVersionUpdateWorkflow {
-                [pscustomobject]@{NewVersion = '1.1.0'}
+                [pscustomobject]@{NewVersion = '1.1.0'; Applied = $true}
             }
+            Mock Write-Host {}
 
             $result = Update-NovaModuleVersion -Path (Get-Location).Path -Confirm:$false
 

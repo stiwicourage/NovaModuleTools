@@ -64,6 +64,16 @@ function Invoke-NovaCliUpdateRouteCommand {
     Format-NovaCliCommandResult -Command $InvocationContext.Command -Result $result
 }
 
+function Invoke-NovaCliBumpRouteCommand {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$InvocationContext
+    )
+
+    $result = Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaBumpCliArgument' -ActionCommand 'Update-NovaModuleVersion'
+    return Format-NovaCliCommandResult -Command $InvocationContext.Command -Result $result
+}
+
 function Invoke-NovaCliNotificationRouteCommand {
     [CmdletBinding()]
     param(
@@ -125,7 +135,7 @@ function Invoke-NovaCliCommandRoute {
             return Invoke-NovaCliInitCommand -Arguments $InvocationContext.Arguments -ForwardedParameters $mutatingCommonParameters -WhatIfEnabled:$InvocationContext.WhatIfEnabled
         }
         'bump' {
-            return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaBumpCliArgument' -ActionCommand 'Update-NovaModuleVersion'
+            return Invoke-NovaCliBumpRouteCommand -InvocationContext $InvocationContext
         }
         'update' {
             return Invoke-NovaCliUpdateRouteCommand -InvocationContext $InvocationContext

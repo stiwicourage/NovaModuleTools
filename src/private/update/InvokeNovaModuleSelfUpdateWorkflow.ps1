@@ -12,6 +12,22 @@ function Invoke-NovaModuleSelfUpdateOrStop {
     }
 }
 
+function Complete-NovaModuleSelfUpdateResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Plan,
+        [AllowNull()][string]$ReleaseNotesUri
+    )
+
+    if ($Plan.PSObject.Properties.Name -contains 'ReleaseNotesUri') {
+        $Plan.ReleaseNotesUri = $ReleaseNotesUri
+        return $Plan
+    }
+
+    $Plan | Add-Member -NotePropertyName 'ReleaseNotesUri' -NotePropertyValue $ReleaseNotesUri
+    return $Plan
+}
+
 function Invoke-NovaModuleSelfUpdateWorkflow {
     [CmdletBinding()]
     param(
@@ -20,11 +36,11 @@ function Invoke-NovaModuleSelfUpdateWorkflow {
 
     $plan = $WorkflowContext.Plan
     if (-not $plan.UpdateAvailable) {
-        return $plan
+        return Complete-NovaModuleSelfUpdateResult -Plan $plan -ReleaseNotesUri $null
     }
 
     Invoke-NovaModuleSelfUpdateOrStop -Plan $plan
     $plan.Updated = $true
-    Write-NovaModuleReleaseNotesLink
-    return $plan
+    $releaseNotesUri = Get-NovaModuleReleaseNotesUri
+    return Complete-NovaModuleSelfUpdateResult -Plan $plan -ReleaseNotesUri $releaseNotesUri
 }

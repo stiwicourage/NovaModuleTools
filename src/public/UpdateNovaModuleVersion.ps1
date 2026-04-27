@@ -19,5 +19,14 @@ function Update-NovaModuleVersion {
 
     $shouldRun = $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Action)
 
-    return Invoke-NovaVersionUpdateWorkflow -WorkflowContext $workflowContext -ShouldRun:$shouldRun -WhatIfEnabled:$WhatIfPreference
+    $result = Invoke-NovaVersionUpdateWorkflow -WorkflowContext $workflowContext -ShouldRun:$shouldRun -WhatIfEnabled:$WhatIfPreference
+    if ($null -eq $result) {
+        return
+    }
+
+    if ($result.Applied) {
+        Write-Host "Version bumped to : $( $result.NewVersion )"
+    }
+
+    return $result
 }

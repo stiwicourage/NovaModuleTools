@@ -11,5 +11,7 @@ function Install-NovaCli {
         return
     }
 
-    return Invoke-NovaCliInstallWorkflow -WorkflowContext $workflowContext
+    $result = Invoke-NovaCliInstallWorkflow -WorkflowContext $workflowContext
+    Write-NovaModuleReleaseNotesLink -ReleaseNotesUri $result.ReleaseNotesUri
+    return $result
 }

@@ -125,6 +125,69 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'Format-NovaCliCommandResult renders structured bump results as a stable CLI summary' {
+        InModuleScope $script:moduleName {
+            $versionUpdateResult = [pscustomobject]@{
+                PreviousVersion = '1.0.0'
+                NewVersion = '1.1.0-preview'
+                Label = 'Minor'
+                CommitCount = 2
+                Applied = $false
+            }
+            $result = Format-NovaCliCommandResult -Command 'bump' -Result $versionUpdateResult
+
+            $result | Should -Be 'Version plan: 1.0.0 -> 1.1.0-preview | Label: Minor | Commits: 2'
+        }
+    }
+
+    It 'Format-NovaCliCommandResult renders applied bump results as a completed CLI summary' {
+        InModuleScope $script:moduleName {
+            $versionUpdateResult = [pscustomobject]@{
+                PreviousVersion = '1.0.0'
+                NewVersion = '1.1.0'
+                Label = 'Minor'
+                CommitCount = 2
+                Applied = $true
+            }
+
+            $result = Format-NovaCliCommandResult -Command 'bump' -Result $versionUpdateResult
+
+            $result | Should -Be 'Version bump completed: 1.0.0 -> 1.1.0 | Label: Minor | Commits: 2'
+        }
+    }
+
+    It 'Invoke-NovaCliCommandRoute formats bump results through the shared CLI formatter' {
+        InModuleScope $script:moduleName {
+            $invocationContext = [pscustomobject]@{
+                Command = 'bump'
+                Arguments = @('--preview')
+                CommonParameters = @{}
+                MutatingCommonParameters = @{WhatIf = $true}
+                IsHelpRequest = $false
+                HelpRequest = $null
+                ModuleName = 'NovaModuleTools'
+                WhatIfEnabled = $true
+                CliConfirmEnabled = $false
+            }
+            Mock ConvertFrom-NovaBumpCliArgument {@{Preview = $true}}
+            Mock Update-NovaModuleVersion {
+                [pscustomobject]@{
+                    PreviousVersion = '1.0.0'
+                    NewVersion = '1.1.0-preview'
+                    Label = 'Minor'
+                    CommitCount = 2
+                    Applied = $false
+                }
+            }
+
+            $result = Invoke-NovaCliCommandRoute -InvocationContext $invocationContext
+
+            $result | Should -Be 'Version plan: 1.0.0 -> 1.1.0-preview | Label: Minor | Commits: 2'
+            Assert-MockCalled ConvertFrom-NovaBumpCliArgument -Times 1 -ParameterFilter {$Arguments -eq @('--preview')}
+            Assert-MockCalled Update-NovaModuleVersion -Times 1 -ParameterFilter {$Preview -and $WhatIf}
+        }
+    }
+
     It 'Invoke-NovaCliCommandRoute handles the direct root --help command route when help was not pre-normalized' {
         InModuleScope $script:moduleName {
             $invocationContext = [pscustomobject]@{

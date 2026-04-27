@@ -298,7 +298,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
             }
             Mock Copy-NovaCliLauncher {'/tmp/bin/nova'}
             Mock Test-NovaCliDirectoryOnPath {$true}
-            Mock Write-NovaModuleReleaseNotesLink {}
+            Mock Get-NovaModuleReleaseNotesUri {'https://www.novamoduletools.com/release-notes.html'}
 
             $result = Invoke-NovaCliInstallWorkflow -WorkflowContext $workflowContext
 
@@ -306,12 +306,13 @@ Describe 'Coverage for remaining command and filesystem branches' {
             $result.InstalledPath | Should -Be '/tmp/bin/nova'
             $result.DestinationDirectory | Should -Be '/tmp/bin'
             $result.DirectoryOnPath | Should -BeTrue
+            $result.ReleaseNotesUri | Should -Be 'https://www.novamoduletools.com/release-notes.html'
             Assert-MockCalled Copy-NovaCliLauncher -Times 1 -ParameterFilter {
                 $SourcePath -eq '/tmp/source/nova' -and
                         $TargetPath -eq '/tmp/bin/nova' -and
                         $Force
             }
-            Assert-MockCalled Write-NovaModuleReleaseNotesLink -Times 1
+            Assert-MockCalled Get-NovaModuleReleaseNotesUri -Times 1
         }
     }
 
@@ -332,8 +333,10 @@ Describe 'Coverage for remaining command and filesystem branches' {
                     InstalledPath = '/tmp/bin/nova'
                     DestinationDirectory = '/tmp/bin'
                     DirectoryOnPath = $true
+                    ReleaseNotesUri = 'https://www.novamoduletools.com/release-notes.html'
                 }
             }
+            Mock Write-NovaModuleReleaseNotesLink {}
 
             $result = Install-NovaCli -DestinationDirectory '/tmp/bin' -Force -Confirm:$false
 
@@ -344,6 +347,9 @@ Describe 'Coverage for remaining command and filesystem branches' {
             Assert-MockCalled Invoke-NovaCliInstallWorkflow -Times 1 -ParameterFilter {
                 $WorkflowContext.TargetPath -eq '/tmp/bin/nova' -and
                         $WorkflowContext.Action -eq 'Install nova CLI launcher'
+            }
+            Assert-MockCalled Write-NovaModuleReleaseNotesLink -Times 1 -ParameterFilter {
+                $ReleaseNotesUri -eq 'https://www.novamoduletools.com/release-notes.html'
             }
         }
     }

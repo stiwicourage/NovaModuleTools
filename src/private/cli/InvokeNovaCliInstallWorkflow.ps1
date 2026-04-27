@@ -10,12 +10,13 @@ function Invoke-NovaCliInstallWorkflow {
         Write-Warning "Installed nova to $( $WorkflowContext.TargetDirectory ), but that directory is not currently in PATH. Add it to your shell profile before using nova directly from zsh/bash."
     }
 
-    Write-NovaModuleReleaseNotesLink
+    $releaseNotesUri = Get-NovaModuleReleaseNotesUri
 
     return [pscustomobject]@{
         CommandName = 'nova'
         InstalledPath = $installedPath
         DestinationDirectory = $WorkflowContext.TargetDirectory
         DirectoryOnPath = $directoryOnPath
+        ReleaseNotesUri = $releaseNotesUri
     }
 }
