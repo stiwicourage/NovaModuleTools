@@ -6,17 +6,19 @@ function Update-NovaModuleTool {
     $workflowContext = Get-NovaModuleSelfUpdateWorkflowContext
     $plan = $workflowContext.Plan
     if (-not $plan.UpdateAvailable) {
-        return $plan
+        return Complete-NovaModuleSelfUpdateResult -Plan $plan -ReleaseNotesUri $null
     }
 
     if ($plan.IsPrereleaseTarget -and -not (Confirm-NovaPrereleaseModuleUpdate -Cmdlet $PSCmdlet -CurrentVersion $plan.CurrentVersion -TargetVersion $plan.TargetVersion)) {
         $plan.Cancelled = $true
-        return $plan
+        return Complete-NovaModuleSelfUpdateResult -Plan $plan -ReleaseNotesUri $null
     }
 
     if (-not $PSCmdlet.ShouldProcess($plan.ModuleName, $workflowContext.Action)) {
-        return $plan
+        return Complete-NovaModuleSelfUpdateResult -Plan $plan -ReleaseNotesUri $null
     }
 
-    return Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext $workflowContext
+    $result = Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext $workflowContext
+    Write-NovaModuleReleaseNotesLink -ReleaseNotesUri $result.ReleaseNotesUri
+    return $result
 }

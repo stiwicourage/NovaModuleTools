@@ -198,13 +198,15 @@ Describe 'Coverage gaps for release and git internals' {
 }
 '@
             Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectJSON = $projectJsonPath}}
-            Mock Write-Host {}
             $warningMessages = $null
 
-            Set-NovaModuleVersion -Label Minor -PreviewRelease -Confirm:$false -WarningVariable warningMessages
+            $result = Set-NovaModuleVersion -Label Minor -PreviewRelease -Confirm:$false -WarningVariable warningMessages
 
             $updatedProject = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json
 
+            $result.PreviousVersion | Should -Be '1.2.3'
+            $result.NewVersion | Should -Be '1.3.0-preview'
+            $result.Applied | Should -BeTrue
             $updatedProject.Version | Should -Be '1.3.0-preview'
             $updatedProject.Package.Auth.HeaderName | Should -Be 'Authorization'
             $updatedProject.Package.Repositories.Count | Should -Be 1
@@ -236,10 +238,13 @@ Describe 'Coverage gaps for release and git internals' {
                 }
             }
             Mock Write-ProjectJsonData {}
-            Mock Write-Host {}
 
-            Set-NovaModuleVersion -Label Minor -PreviewRelease -Confirm:$false
+            $result = Set-NovaModuleVersion -Label Minor -PreviewRelease -Confirm:$false
 
+            $result.ProjectFile | Should -Be '/tmp/project.json'
+            $result.PreviousVersion | Should -Be '1.2.3'
+            $result.NewVersion | Should -Be '1.3.0-preview'
+            $result.Applied | Should -BeTrue
             Assert-MockCalled Read-ProjectJsonData -Times 1 -ParameterFilter {$ProjectJsonPath -eq '/tmp/project.json'}
             Assert-MockCalled Write-ProjectJsonData -Times 1 -ParameterFilter {
                 $ProjectJsonPath -eq '/tmp/project.json' -and

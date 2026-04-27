@@ -106,6 +106,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CI bump now reuses the already activated built-module command when the current session is already running from
     `dist/`, so publish-then-bump prerelease automation can continue in the same session without losing private helper
     bindings.
+- Keep standalone `nova bump` output stable by formatting version-update results in the CLI layer instead of relying on
+  PowerShell's default object rendering.
+    - `nova bump --what-if` and `% run.ps1` now surface a predictable summary for previous version, new version, label,
+      and commit count.
 
 ### Changed
 

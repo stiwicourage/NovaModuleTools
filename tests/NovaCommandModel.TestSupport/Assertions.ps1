@@ -124,8 +124,9 @@ function Invoke-UpdateNovaModuleVersionDefaultPathAssertion {
             }
         }
         Mock Invoke-NovaVersionUpdateWorkflow {
-            [pscustomobject]@{NewVersion = '1.1.0'}
+            [pscustomobject]@{NewVersion = '1.1.0'; Applied = $true}
         }
+        Mock Write-Host {}
 
         $result = Update-NovaModuleVersion -Confirm:$false
 

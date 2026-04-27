@@ -6,15 +6,16 @@ function Invoke-NovaVersionUpdateWorkflow {
         [switch]$WhatIfEnabled
     )
 
+    $versionWriteResult = $null
     if ($ShouldRun) {
-        Set-NovaModuleVersion -ProjectInfo $WorkflowContext.ProjectInfo -Label $WorkflowContext.Label -PreviewRelease:$WorkflowContext.PreviewRelease -Confirm:$false
+        $versionWriteResult = Set-NovaModuleVersion -ProjectInfo $WorkflowContext.ProjectInfo -Label $WorkflowContext.Label -PreviewRelease:$WorkflowContext.PreviewRelease -Confirm:$false
     }
 
     if (-not (Test-NovaVersionUpdateResultRequired -ShouldRun:$ShouldRun -WhatIfEnabled:$WhatIfEnabled)) {
         return
     }
 
-    return Get-NovaVersionUpdateResult -WorkflowContext $WorkflowContext
+    return Get-NovaVersionUpdateResult -WorkflowContext $WorkflowContext -Applied:($null -ne $versionWriteResult -and $versionWriteResult.Applied)
 }
 
 function Test-NovaVersionUpdateResultRequired {
@@ -30,7 +31,8 @@ function Test-NovaVersionUpdateResultRequired {
 function Get-NovaVersionUpdateResult {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][pscustomobject]$WorkflowContext
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
+        [switch]$Applied
     )
 
     return [pscustomobject]@{
@@ -38,5 +40,6 @@ function Get-NovaVersionUpdateResult {
         NewVersion = $WorkflowContext.NewVersion
         Label = $WorkflowContext.Label
         CommitCount = $WorkflowContext.CommitCount
+        Applied = [bool]$Applied
     }
 }
