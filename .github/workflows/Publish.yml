@@ -38,7 +38,7 @@ jobs:
         run: ./scripts/build/ci/Install-CiPowerShellModules.ps1
 
       - name: Build Module
-        run: Invoke-NovaBuild -ContinuousIntegration
+        run: Invoke-NovaBuild -ContinuousIntegration -Verbose
 
       - name: Run Pester Tests
         run: Test-NovaBuild
@@ -82,7 +82,7 @@ jobs:
           git checkout develop
           git reset --hard origin/main
 
-          Update-NovaModuleVersion -Preview -ContinuousIntegration
+          Update-NovaModuleVersion -Preview -ContinuousIntegration -Verbose
 
       - name: Prepare next prerelease version on develop
         if: github.ref_name == 'develop'
@@ -100,7 +100,7 @@ jobs:
           }
 
           Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests -ContinuousIntegration
-          Update-NovaModuleVersion -Preview -ContinuousIntegration
+          Update-NovaModuleVersion -Preview -ContinuousIntegration -Verbose
         env:
           PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
 
