@@ -363,6 +363,11 @@ PS&gt; Deploy-NovaPackage -Url 'https://packages.example/raw/' -Token $env:NOVA_
 % nova deploy --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN</code></pre>
                             </div>
                         </div>
+                        <p>Resolution order stays explicit: command-line <code>url</code> / <code>upload-path</code>
+                            overrides win first, then the selected <code>Package.Repositories[]</code> entry, then
+                            package-level defaults. Secrets follow the same pattern: explicit <code>token</code>, then
+                            explicit <code>token-env</code>, then configured <code>Auth.TokenEnvironmentVariable</code>,
+                            then configured <code>Auth.Token</code>.</p>
                         <p><a class="text-link" href="./packaging-and-delivery.html#upload">See raw upload details</a>
                         </p>
                     </article>
@@ -404,6 +409,9 @@ PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -Cont
 % nova publish --repository PSGallery --api-key $env:PSGALLERY_API --continuous-integration</code></pre>
                             </div>
                         </div>
+                        <p>When publishing to <code>PSGallery</code>, an explicit <code>-ApiKey</code> /
+                            <code>--api-key</code> wins first. If it is omitted, Nova still checks
+                            <code>PSGALLERY_API</code> as the repository-specific fallback.</p>
                         <p><a class="text-link" href="./packaging-and-delivery.html#publish">See publish details</a></p>
                     </article>
 
@@ -608,6 +616,9 @@ PS&gt; Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications</code
 % nova notification --enable</code></pre>
                             </div>
                         </div>
+                        <p>The shared preference file lives under <code>%APPDATA%</code> on Windows, otherwise under
+                            <code>$XDG_CONFIG_HOME</code> when it is set, and finally under
+                            <code>~/.config/NovaModuleTools/settings.json</code>.</p>
                         <p><a class="text-link" href="./versioning-and-updates.html#notification-preferences">See update
                             preference guidance</a></p>
                     </article>

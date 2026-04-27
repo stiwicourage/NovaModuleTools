@@ -96,6 +96,12 @@ PS> Update-NovaModuleTools   # alias
 Use `% nova notification` when you want the CLI-oriented workflow and the `Set-` / `Get-` cmdlets when you want the
 PowerShell function form in scripts.
 
+Update notification preferences use one shared settings location:
+
+- Windows: `%APPDATA%/NovaModuleTools/settings.json`
+- macOS/Linux with `XDG_CONFIG_HOME`: `$XDG_CONFIG_HOME/NovaModuleTools/settings.json`
+- macOS/Linux fallback: `~/.config/NovaModuleTools/settings.json`
+
 `Update-NovaModuleTool` (and its `Update-NovaModuleTools` alias), CLI:`% nova update` use that stored prerelease
 preference to decide whether prerelease self-updates are eligible. When prerelease self-updates are disabled,
 self-update stays on stable releases. When they are enabled, self-update may target a prerelease, but it asks for
@@ -339,8 +345,12 @@ Use this `project.json` shape when you want Nova to resolve upload targets from 
 - `Deploy-NovaPackage` uploads existing package files only; it does not build, test, or create packages.
 - `% nova deploy` is the CLI entrypoint for the same raw upload workflow and uses POSIX/GNU-style options such as
   `--repository`, `--url`, and `--token`.
-- `-Url` overrides repository or package-level upload settings and is the simplest CI/CD path for the PowerShell cmdlet
-  form.
+- Upload target precedence is explicit: `-Url` / `--url` and `-UploadPath` / `--upload-path` win first, then matching
+  `Package.Repositories[]` values, then package-level `Package.RepositoryUrl` / `Package.RawRepositoryUrl` and
+  `Package.UploadPath`.
+- Secret precedence is explicit too: `-Token` / `--token` wins first, then `-TokenEnvironmentVariable` /
+  `--token-env`, then merged repository/package `Auth.TokenEnvironmentVariable`, then merged repository/package
+  `Auth.Token`.
 - When `-PackagePath` is omitted, Nova resolves package files from `Package.OutputDirectory.Path`.
 - `Package.FileNamePattern` overrides the default upload discovery pattern. When omitted, Nova falls back to
   `<Package.Id>*` and then applies the selected package type extension.
@@ -354,6 +364,9 @@ Use this `project.json` shape when you want Nova to resolve upload targets from 
 - `Package.Headers`, `Package.Auth`, `Package.RepositoryUrl`, and repository-specific overrides remain generic so the
   workflow works with raw endpoints such as Nexus or Artifactory without turning `Publish-NovaModule` into a vendor-
   specific upload command.
+- `Publish-NovaModule` and `Invoke-NovaRelease` keep a matching secret rule for PowerShell repositories: `-ApiKey` /
+  `--api-key` overrides any fallback, and `PSGallery` still checks `PSGALLERY_API` when no explicit API key was
+  provided.
 
 For module publishing and release flows, the same opt-in skip-tests behavior is available when tests already ran earlier
 in the pipeline:
