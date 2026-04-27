@@ -377,6 +377,48 @@ Describe 'Update notification behavior' {
         }
     }
 
+    It 'Get-NovaSettingsRootPath prefers APPDATA when the Windows platform branch is used' {
+        $configRoot = Join-Path $TestDrive 'config-unused-root'
+        $appDataRoot = Join-Path $TestDrive 'appdata-preferred-root'
+        $originalConfigHome = $env:XDG_CONFIG_HOME
+        $originalAppData = $env:APPDATA
+
+        try {
+            $env:XDG_CONFIG_HOME = $configRoot
+            $env:APPDATA = $appDataRoot
+
+            InModuleScope $script:moduleName -Parameters @{ExpectedRoot = $appDataRoot} {
+                param($ExpectedRoot)
+
+                Get-NovaSettingsRootPath -IsWindowsPlatform $true | Should -Be $ExpectedRoot
+            }
+        }
+        finally {
+            $env:XDG_CONFIG_HOME = $originalConfigHome
+            $env:APPDATA = $originalAppData
+        }
+    }
+
+    It 'Get-NovaSettingsRootPath falls back to HOME dot-config when environment roots are blank' {
+        $originalConfigHome = $env:XDG_CONFIG_HOME
+        $originalAppData = $env:APPDATA
+
+        try {
+            $env:XDG_CONFIG_HOME = '   '
+            $env:APPDATA = '   '
+
+            InModuleScope $script:moduleName -Parameters @{ExpectedRoot = (Join-Path $HOME '.config')} {
+                param($ExpectedRoot)
+
+                Get-NovaSettingsRootPath | Should -Be $ExpectedRoot
+            }
+        }
+        finally {
+            $env:XDG_CONFIG_HOME = $originalConfigHome
+            $env:APPDATA = $originalAppData
+        }
+    }
+
     It 'Set-NovaUpdateNotificationPreference can disable and re-enable prerelease notifications' {
         $result = Invoke-TestNotificationPreferenceToggle -ConfigDirectoryName 'config-toggle'
 

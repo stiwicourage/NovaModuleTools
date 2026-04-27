@@ -131,6 +131,34 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         }
     }
 
+    It 'Get-LocalModulePathEntryList returns an empty list when PSModulePath is missing' {
+        $originalModulePath = $env:PSModulePath
+
+        try {
+            $env:PSModulePath = $null
+
+            InModuleScope $script:moduleName {
+                @(Get-LocalModulePathEntryList) | Should -Be @()
+            }
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+    }
+
+    It 'Get-NovaEnvironmentVariableValue returns nothing when the variable name is blank' {
+        InModuleScope $script:moduleName {
+            Get-NovaEnvironmentVariableValue -Name '   ' | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'Get-NovaFirstConfiguredValue treats non-string values as configured' {
+        InModuleScope $script:moduleName {
+            Get-NovaFirstConfiguredValue -CandidateList @($null, '', 0, 'fallback') | Should -Be 0
+            Get-NovaFirstConfiguredValue -CandidateList @($null, ' ', $false, 'fallback') | Should -BeFalse
+        }
+    }
+
     It 'module PSData helpers read release notes from both supported metadata shapes' -ForEach @(
         @{
             ModuleInfo = [pscustomobject]@{

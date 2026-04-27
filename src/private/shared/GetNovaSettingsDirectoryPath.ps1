@@ -9,9 +9,11 @@ function Get-NovaSettingsDirectoryPath {
 
 function Get-NovaSettingsRootPath {
     [CmdletBinding()]
-    param()
+    param(
+        [bool]$IsWindowsPlatform = $IsWindows
+    )
 
-    if ($IsWindows) {
+    if ($IsWindowsPlatform) {
         $appData = Get-NovaEnvironmentVariableValue -Name 'APPDATA'
         if (Test-NovaConfiguredValue -Value $appData) {
             return $appData
