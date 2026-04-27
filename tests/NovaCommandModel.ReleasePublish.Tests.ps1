@@ -3,6 +3,7 @@ $global:novaCommandModelTestSupportFunctionNameList = @(
     'Get-TestRegexMatchGroup'
     'ConvertTo-TestNormalizedText'
     'Assert-TestStructuredError'
+    'Invoke-TestPublishWorkflowCiRestoreAssertion'
     'Get-TestModuleDisplayVersion'
     'Get-TestHelpLocaleFromMarkdownFiles'
     'Get-CommandHelpActivationTestCase'
@@ -425,40 +426,9 @@ Describe 'Nova command model - release and publish behavior' {
             ExpectedSteps = 'build,test,publish,import,ci'
         }
     ) {
-        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
-            param($TestCase)
-
-            $script:steps = @()
-
-            Mock Invoke-NovaBuild {$script:steps += 'build'}
-            Mock Test-NovaBuild {$script:steps += 'test'}
-            Mock Import-NovaBuiltModuleForCi {$script:steps += 'ci'}
-            $localPublishActivation = $null
-            if ($TestCase.UseLocalPublishActivation) {
-                $localPublishActivation = [pscustomobject]@{
-                    ManifestPath = '/tmp/modules/NovaModuleTools/NovaModuleTools.psd1'
-                    ImportAction = {param($ProjectName, $ManifestPath) $script:steps += 'import'}
-                }
-            }
-
-            $workflowContext = [pscustomobject]@{
-                ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
-                WorkflowParams = @{}
-                ContinuousIntegrationRequested = $true
-                PublishInvocation = [pscustomobject]@{
-                    Parameters = @{
-                        ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
-                    }
-                    Action = {$script:steps += 'publish'}
-                }
-                PublishParams = @{}
-                LocalPublishActivation = $localPublishActivation
-            }
-
-            Invoke-NovaPublishWorkflow -WorkflowContext $workflowContext -ShouldRun | Out-Null
-
-            $script:steps -join ',' | Should -Be $TestCase.ExpectedSteps
-            Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
+        Invoke-TestPublishWorkflowCiRestoreAssertion -AssertionCase @{
+            ModuleName = $script:moduleName
+            TestCase = $_
         }
     }
 

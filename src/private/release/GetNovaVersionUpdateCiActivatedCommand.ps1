@@ -5,14 +5,14 @@ function Get-NovaVersionUpdateCiActivatedCommand {
     )
 
     $projectInfo = Get-NovaProjectInfo -Path $ProjectRoot
-    $builtManifestPath = Get-NovaBuiltModuleManifestPathForCi -ProjectInfo $projectInfo
+    $builtModulePath = Join-Path $projectInfo.OutputModuleDir "$( $projectInfo.ProjectName ).psm1"
     $currentCommand = Get-Command -Name 'Update-NovaModuleVersion' -CommandType Function -ErrorAction Stop
 
-    if ($currentCommand.Module.Path -eq $builtManifestPath) {
+    if ($currentCommand.ScriptBlock.Module.Path -eq $builtModulePath) {
         return $null
     }
 
-    $null = Import-NovaBuiltModuleForCi -ProjectInfo $projectInfo
-    return Get-Command -Name 'Update-NovaModuleVersion' -CommandType Function -ErrorAction Stop
+    $importedModule = Import-NovaBuiltModuleForCi -ProjectInfo $projectInfo
+    return $importedModule.ExportedCommands['Update-NovaModuleVersion']
 }
 

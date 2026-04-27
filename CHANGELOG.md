@@ -78,6 +78,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `latest` files in the configured package output directory.
 - Add opt-in skip-test support to the package, publish, and release workflows for CI/CD-oriented delivery paths where
   tests already ran earlier in the pipeline.
+
+### Fixed
+
+- Keep CI-oriented publish and bump workflows bound to the freshly built module so follow-up `publish`, `release`, and
+  `bump` steps no longer lose private helpers after module re-imports in the same session.
     - PowerShell now supports `New-NovaModulePackage -SkipTests`, `Publish-NovaModule -SkipTests`, and
       `Invoke-NovaRelease -SkipTests`.
     - The `nova` launcher now supports `--skip-tests` / `-s` on `nova package`, `nova publish`, and `nova release`.

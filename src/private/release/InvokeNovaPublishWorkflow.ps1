@@ -13,11 +13,12 @@ function Invoke-NovaPublishWorkflowCiRestore {
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$ShouldRun,
-        [switch]$ContinuousIntegrationRequested
+        [switch]$ContinuousIntegrationRequested,
+        [scriptblock]$ImportBuiltModuleForCiAction = ${function:Import-NovaBuiltModuleForCi}
     )
 
     if ($ShouldRun -and $ContinuousIntegrationRequested) {
-        $null = Import-NovaBuiltModuleForCi -ProjectInfo $WorkflowContext.ProjectInfo
+        $null = & $ImportBuiltModuleForCiAction -ProjectInfo $WorkflowContext.ProjectInfo
     }
 }
 
@@ -31,18 +32,20 @@ function Invoke-NovaPublishWorkflow {
     $publishParams = $WorkflowContext.PublishParams
     $continuousIntegrationRequested = ($WorkflowContext.PSObject.Properties.Name -contains 'ContinuousIntegrationRequested') -and $WorkflowContext.ContinuousIntegrationRequested
     $shouldImportPublishedLocalModule = Test-NovaPublishWorkflowShouldImportLocalModule -WorkflowContext $WorkflowContext -ShouldRun:$ShouldRun
+    $ciRestoreAction = ${function:Invoke-NovaPublishWorkflowCiRestore}
+    $importBuiltModuleForCiAction = ${function:Import-NovaBuiltModuleForCi}
 
     Invoke-NovaBuildValidation -WorkflowContext $WorkflowContext
 
     & $WorkflowContext.PublishInvocation.Action @publishParams
 
     if (-not $shouldImportPublishedLocalModule) {
-        Invoke-NovaPublishWorkflowCiRestore -WorkflowContext $WorkflowContext -ShouldRun:$ShouldRun -ContinuousIntegrationRequested:$continuousIntegrationRequested
+        & $ciRestoreAction -WorkflowContext $WorkflowContext -ShouldRun:$ShouldRun -ContinuousIntegrationRequested:$continuousIntegrationRequested -ImportBuiltModuleForCiAction $importBuiltModuleForCiAction
         return
     }
 
     $null = & $WorkflowContext.LocalPublishActivation.ImportAction -ProjectName $WorkflowContext.PublishInvocation.Parameters.ProjectInfo.ProjectName -ManifestPath $WorkflowContext.LocalPublishActivation.ManifestPath
     Write-Verbose "Module copy to local path complete and imported from $( $WorkflowContext.LocalPublishActivation.ManifestPath )"
 
-    Invoke-NovaPublishWorkflowCiRestore -WorkflowContext $WorkflowContext -ShouldRun:$ShouldRun -ContinuousIntegrationRequested:$continuousIntegrationRequested
+    & $ciRestoreAction -WorkflowContext $WorkflowContext -ShouldRun:$ShouldRun -ContinuousIntegrationRequested:$continuousIntegrationRequested -ImportBuiltModuleForCiAction $importBuiltModuleForCiAction
 }

@@ -146,7 +146,9 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             }
             Mock Get-Command {
                 [pscustomobject]@{
-                    Module = [pscustomobject]@{Path = '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'}
+                    ScriptBlock = [pscustomobject]@{
+                        Module = [pscustomobject]@{Path = '/tmp/dist/NovaModuleTools/NovaModuleTools.psm1'}
+                    }
                 }
             } -ParameterFilter {$Name -eq 'Update-NovaModuleVersion' -and $CommandType -eq 'Function'}
             Mock Import-NovaBuiltModuleForCi {throw 'should not re-import when already activated'}
@@ -169,27 +171,29 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
 
             $script:getCommandCallCount = 0
             Mock Get-Command {
-                $script:getCommandCallCount += 1
-                if ($script:getCommandCallCount -eq 1) {
-                    return [pscustomobject]@{
-                        Name = 'Update-NovaModuleVersion'
-                        Module = [pscustomobject]@{Path = '/tmp/installed/NovaModuleTools/NovaModuleTools.psd1'}
+                return [pscustomobject]@{
+                    ScriptBlock = [pscustomobject]@{
+                        Module = [pscustomobject]@{Path = '/tmp/installed/NovaModuleTools/NovaModuleTools.psm1'}
                     }
                 }
-
-                return [pscustomobject]@{
-                    Name = 'Update-NovaModuleVersion'
-                    Module = [pscustomobject]@{Path = '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'}
-                }
             } -ParameterFilter {$Name -eq 'Update-NovaModuleVersion' -and $CommandType -eq 'Function'}
-            Mock Import-NovaBuiltModuleForCi {}
+            Mock Import-NovaBuiltModuleForCi {
+                [pscustomobject]@{
+                    ExportedCommands = @{
+                        'Update-NovaModuleVersion' = [pscustomobject]@{
+                            Name = 'Update-NovaModuleVersion'
+                            Module = [pscustomobject]@{Path = '/tmp/dist/NovaModuleTools/NovaModuleTools.psm1'}
+                        }
+                    }
+                }
+            }
 
             $result = Get-NovaVersionUpdateCiActivatedCommand -ProjectRoot '/tmp/project'
 
             $result.Name | Should -Be 'Update-NovaModuleVersion'
-            $result.Module.Path | Should -Be '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'
+            $result.Module.Path | Should -Be '/tmp/dist/NovaModuleTools/NovaModuleTools.psm1'
             Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
-            Assert-MockCalled Get-Command -Times 2 -ParameterFilter {$Name -eq 'Update-NovaModuleVersion' -and $CommandType -eq 'Function'}
+            Assert-MockCalled Get-Command -Times 1 -ParameterFilter {$Name -eq 'Update-NovaModuleVersion' -and $CommandType -eq 'Function'}
         }
     }
 

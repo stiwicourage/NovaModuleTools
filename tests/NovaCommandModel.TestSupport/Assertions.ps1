@@ -136,6 +136,58 @@ function Invoke-UpdateNovaModuleVersionDefaultPathAssertion {
     }
 }
 
+function Invoke-TestPublishWorkflowCiRestoreAssertion {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]$AssertionCase
+    )
+
+    InModuleScope $AssertionCase.ModuleName -Parameters @{TestCase = $AssertionCase.TestCase} {
+        param($TestCase)
+
+        $script:steps = @()
+
+        Mock Invoke-NovaBuild {$script:steps += 'build'}
+        Mock Test-NovaBuild {$script:steps += 'test'}
+        Mock Get-Module {@()}
+        Mock Test-Path {$true} -ParameterFilter {$LiteralPath -eq '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1'}
+        Mock Import-Module {
+            $script:steps += 'ci'
+            [pscustomobject]@{Path = $Name}
+        } -ParameterFilter {$Name -eq '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1' -and $Force -and $Global -and $PassThru}
+
+        $localPublishActivation = $null
+        if ($TestCase.UseLocalPublishActivation) {
+            $localPublishActivation = [pscustomobject]@{
+                ManifestPath = '/tmp/modules/NovaModuleTools/NovaModuleTools.psd1'
+                ImportAction = {param($ProjectName, $ManifestPath) $script:steps += 'import'}
+            }
+        }
+
+        $workflowContext = [pscustomobject]@{
+            ProjectInfo = [pscustomobject]@{
+                ProjectName = 'NovaModuleTools'
+                OutputModuleDir = '/tmp/dist/NovaModuleTools'
+            }
+            WorkflowParams = @{}
+            ContinuousIntegrationRequested = $true
+            PublishInvocation = [pscustomobject]@{
+                Parameters = @{
+                    ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                }
+                Action = {$script:steps += 'publish'}
+            }
+            PublishParams = @{}
+            LocalPublishActivation = $localPublishActivation
+        }
+
+        Invoke-NovaPublishWorkflow -WorkflowContext $workflowContext -ShouldRun | Out-Null
+
+        $script:steps -join ',' | Should -Be $TestCase.ExpectedSteps
+        Assert-MockCalled Import-Module -Times 1 -ParameterFilter {$Name -eq '/tmp/dist/NovaModuleTools/NovaModuleTools.psd1' -and $Force -and $Global -and $PassThru}
+    }
+}
+
 function Invoke-ConfirmNovaCliCommandActionEnterAssertion {
     [CmdletBinding()]
     param(
