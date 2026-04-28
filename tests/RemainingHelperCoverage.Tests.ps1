@@ -330,6 +330,405 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         }
     }
 
+    It 'Get-NovaPackageSettingValue reads dictionary and object values and returns nothing for missing entries' {
+        InModuleScope $script:moduleName {
+            Get-NovaPackageSettingValue -InputObject $null -Name 'Id' | Should -BeNullOrEmpty
+            Get-NovaPackageSettingValue -InputObject @{Id = 'Nova.Package'} -Name 'Id' | Should -Be 'Nova.Package'
+            Get-NovaPackageSettingValue -InputObject @{Id = 'Nova.Package'} -Name 'Missing' | Should -BeNullOrEmpty
+            Get-NovaPackageSettingValue -InputObject ([pscustomobject]@{Id = 'Nova.Object.Package'}) -Name 'Id' | Should -Be 'Nova.Object.Package'
+            Get-NovaPackageSettingValue -InputObject ([pscustomobject]@{Id = 'Nova.Object.Package'}) -Name 'Missing' | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'Merge-NovaPackageSettingTable merges dictionary and object settings while letting overrides win' {
+        InModuleScope $script:moduleName {
+            $result = Merge-NovaPackageSettingTable -BaseSettings ([pscustomobject]@{Id = 'base'; Authors = 'Base'}) -OverrideSettings @{Authors = 'Override'; Description = 'Package description'}
+
+            $result.Id | Should -Be 'base'
+            $result.Authors | Should -Be 'Override'
+            $result.Description | Should -Be 'Package description'
+            (Merge-NovaPackageSettingTable -BaseSettings $null -OverrideSettings $null).Count | Should -Be 0
+        }
+    }
+
+    It 'Get-NovaConfiguredPackageTypeList uses configured values and defaults to NuGet when none are set' {
+        InModuleScope $script:moduleName {
+            @(Get-NovaConfiguredPackageTypeList -PackageSettings @{Types = @('NuGet', '', $null, 'Zip')}) | Should -Be @('NuGet', 'Zip')
+            @(Get-NovaConfiguredPackageTypeList -PackageSettings ([pscustomobject]@{Types = @('Zip')})) | Should -Be @('Zip')
+            @(Get-NovaConfiguredPackageTypeList -PackageSettings ([pscustomobject]@{Types = @('', $null)})) | Should -Be @('NuGet')
+        }
+    }
+
+    It 'Test-NovaPackageLatestEnabled reads dictionary and object latest flags and defaults to false otherwise' {
+        InModuleScope $script:moduleName {
+            Test-NovaPackageLatestEnabled -PackageSettings @{Latest = $true} | Should -BeTrue
+            Test-NovaPackageLatestEnabled -PackageSettings @{Types = @('NuGet')} | Should -BeFalse
+            Test-NovaPackageLatestEnabled -PackageSettings ([pscustomobject]@{Latest = $true}) | Should -BeTrue
+            Test-NovaPackageLatestEnabled -PackageSettings ([pscustomobject]@{Types = @('Zip')}) | Should -BeFalse
+            Test-NovaPackageLatestEnabled -PackageSettings $null | Should -BeFalse
+        }
+    }
+
+    It 'Get-NovaPackageMetadataList returns one entry per package type and optional latest variants' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaConfiguredPackageTypeList {@('NuGet', 'Zip')}
+            Mock Test-NovaPackageLatestEnabled {$true}
+            Mock Get-NovaPackageMetadata {"$( $PackageType )-latest:$( [bool]$Latest )"}
+
+            $result = @(Get-NovaPackageMetadataList -ProjectInfo ([pscustomobject]@{Package = @{}}))
+
+            $result | Should -Be @('NuGet-latest:False', 'NuGet-latest:True', 'Zip-latest:False', 'Zip-latest:True')
+            Assert-MockCalled Get-NovaPackageMetadata -Times 4
+        }
+    }
+
+    It 'Get-NovaPackageAuthorList normalizes string and enumerable author values' {
+        InModuleScope $script:moduleName {
+            @(Get-NovaPackageAuthorList -AuthorValue $null) | Should -Be @()
+            @(Get-NovaPackageAuthorList -AuthorValue '  Nova Author  ') | Should -Be @('Nova Author')
+            @(Get-NovaPackageAuthorList -AuthorValue @(' Author A ', 'Author B', 'Author A', ' ')) | Should -Be @('Author A', 'Author B')
+        }
+    }
+
+    It 'Get-NovaPackageAuthorList rejects unsupported author value types' {
+        InModuleScope $script:moduleName {
+            $thrown = $null
+            try {
+                Get-NovaPackageAuthorList -AuthorValue 42
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Package.Authors must be a string or an array of strings.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.PackageAuthorsInvalidType'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+            $thrown.TargetObject | Should -Be 42
+        }
+    }
+
+    It 'Get-NovaPackageMetadata resolves explicit package types, trims fields, and uses a zip content root for zip packages' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'NovaModuleTools'
+                Version = ' 1.2.3 '
+                Manifest = [pscustomobject]@{}
+                Package = [pscustomobject]@{
+                    Id = ' Nova.Package '
+                    Authors = @(' Author A ', 'Author B')
+                    Description = ' Package description '
+                    OutputDirectory = [pscustomobject]@{Clean = $true}
+                    Types = @('zip')
+                }
+            }
+            Mock ConvertTo-NovaPackageType {'Zip'}
+            Mock Get-NovaPackageAuthorList {@('Author A', 'Author B')}
+            Mock Get-NovaManifestValue {
+                switch ($Name) {
+                    'Tags' {
+                        @('tools', '', 'module')
+                    }
+                    'ProjectUri' {
+                        ' https://example.test/project '
+                    }
+                    'ReleaseNotes' {
+                        ' https://example.test/release-notes '
+                    }
+                    'LicenseUri' {
+                        ' https://example.test/license '
+                    }
+                    default {
+                        $null
+                    }
+                }
+            }
+            Mock Get-NovaPackageFileName {'Nova.Package.latest.zip'}
+            Mock Get-NovaPackageOutputDirectory {'/tmp/packages'}
+
+            $result = Get-NovaPackageMetadata -ProjectInfo $projectInfo -PackageType 'zip' -Latest
+
+            $result.Type | Should -Be 'Zip'
+            $result.Latest | Should -BeTrue
+            $result.Id | Should -Be 'Nova.Package'
+            $result.Version | Should -Be '1.2.3'
+            $result.Authors | Should -Be @('Author A', 'Author B')
+            $result.Description | Should -Be 'Package description'
+            $result.Tags | Should -Be @('tools', 'module')
+            $result.ProjectUrl | Should -Be 'https://example.test/project'
+            $result.ReleaseNotes | Should -Be 'https://example.test/release-notes'
+            $result.LicenseUrl | Should -Be 'https://example.test/license'
+            $result.PackagePath | Should -Be ([System.IO.Path]::Join('/tmp/packages', 'Nova.Package.latest.zip'))
+            $result.ContentRoot | Should -Be 'NovaModuleTools'
+        }
+    }
+
+    It 'Get-NovaPackageMetadata defaults to NuGet and content packages when no package type is configured' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ProjectName = 'NovaModuleTools'
+                Version = '1.2.3'
+                Manifest = [pscustomobject]@{}
+                Package = [pscustomobject]@{
+                    Id = 'Nova.Package'
+                    Authors = 'Author A'
+                    Description = 'Package description'
+                    OutputDirectory = [pscustomobject]@{Clean = $false}
+                    Types = @('', $null)
+                }
+            }
+            Mock ConvertTo-NovaPackageType {throw 'ConvertTo-NovaPackageType should not be called when the default NuGet type is used.'}
+            Mock Get-NovaPackageAuthorList {@('Author A')}
+            Mock Get-NovaManifestValue {
+                if ($Name -eq 'Tags') {
+                    return @()
+                }
+
+                return ''
+            }
+            Mock Get-NovaPackageFileName {'Nova.Package.nupkg'}
+            Mock Get-NovaPackageOutputDirectory {'/tmp/packages'}
+
+            $result = Get-NovaPackageMetadata -ProjectInfo $projectInfo
+
+            $result.Type | Should -Be 'NuGet'
+            $result.ContentRoot | Should -Be 'content/NovaModuleTools'
+            $result.CleanOutputDirectory | Should -BeFalse
+        }
+    }
+
+    It 'Assert-NovaPackageMetadata accepts complete metadata and rejects missing required fields and authors' {
+        InModuleScope $script:moduleName {
+            {
+                Assert-NovaPackageMetadata -PackageMetadata ([pscustomobject]@{
+                    Type = 'NuGet'
+                    Id = 'Nova.Package'
+                    Version = '1.2.3'
+                    Description = 'Package description'
+                    OutputDirectory = '/tmp/packages'
+                    PackageFileName = 'Nova.Package.nupkg'
+                    PackagePath = '/tmp/packages/Nova.Package.nupkg'
+                    Authors = @('Author A')
+                })
+            } | Should -Not -Throw
+
+            $missingField = $null
+            try {
+                Assert-NovaPackageMetadata -PackageMetadata ([pscustomobject]@{
+                    Type = ''
+                    Id = 'Nova.Package'
+                    Version = '1.2.3'
+                    Description = 'Package description'
+                    OutputDirectory = '/tmp/packages'
+                    PackageFileName = 'Nova.Package.nupkg'
+                    PackagePath = '/tmp/packages/Nova.Package.nupkg'
+                    Authors = @('Author A')
+                })
+            }
+            catch {
+                $missingField = $_
+            }
+
+            $missingField.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.PackageMetadataValueMissing'
+            $missingField.TargetObject | Should -Be 'Type'
+
+            $missingAuthors = $null
+            try {
+                Assert-NovaPackageMetadata -PackageMetadata ([pscustomobject]@{
+                    Type = 'NuGet'
+                    Id = 'Nova.Package'
+                    Version = '1.2.3'
+                    Description = 'Package description'
+                    OutputDirectory = '/tmp/packages'
+                    PackageFileName = 'Nova.Package.nupkg'
+                    PackagePath = '/tmp/packages/Nova.Package.nupkg'
+                    Authors = @()
+                })
+            }
+            catch {
+                $missingAuthors = $_
+            }
+
+            $missingAuthors.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.PackageMetadataValueMissing'
+            $missingAuthors.TargetObject | Should -Be 'Authors'
+        }
+    }
+
+    It 'Get-NovaPackageArtifactPatternInfo uses the configured pattern or defaults to the package id wildcard' {
+        InModuleScope $script:moduleName {
+            $defaultPattern = Get-NovaPackageArtifactPatternInfo -ProjectInfo ([pscustomobject]@{Package = [pscustomobject]@{Id = 'Nova.Package'; FileNamePattern = ' '}})
+
+            $defaultPattern.Pattern | Should -Be 'Nova.Package*'
+            $defaultPattern.ExplicitPackageType | Should -BeNullOrEmpty
+
+            Mock ConvertTo-NovaPackageType {'Zip'}
+
+            $zipPattern = Get-NovaPackageArtifactPatternInfo -ProjectInfo ([pscustomobject]@{Package = [pscustomobject]@{Id = 'Nova.Package'; FileNamePattern = 'artifacts/*.zip'}})
+
+            $zipPattern.Pattern | Should -Be 'artifacts/*.zip'
+            $zipPattern.ExplicitPackageType | Should -Be 'Zip'
+        }
+    }
+
+    It 'Get-NovaPackageArtifactType resolves supported extensions and rejects unsupported upload file names' {
+        InModuleScope $script:moduleName {
+            Get-NovaPackageArtifactType -PackagePath '/tmp/Nova.Package.nupkg' | Should -Be 'NuGet'
+            Get-NovaPackageArtifactType -PackagePath '/tmp/Nova.Package.zip' | Should -Be 'Zip'
+
+            foreach ($packagePath in @('/tmp/Nova.Package', '/tmp/Nova.Package.tar.gz')) {
+                $thrown = $null
+                try {
+                    Get-NovaPackageArtifactType -PackagePath $packagePath
+                }
+                catch {
+                    $thrown = $_
+                }
+
+                $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnsupportedPackageUploadFileType'
+                $thrown.TargetObject | Should -Be $packagePath
+            }
+        }
+    }
+
+    It 'Get-NovaPackageOutputDirectory returns rooted paths unchanged and resolves relative paths from the project root' {
+        InModuleScope $script:moduleName {
+            $relativeProject = [pscustomobject]@{ProjectRoot = '/tmp/project'; Package = [pscustomobject]@{OutputDirectory = [pscustomobject]@{Path = 'artifacts/packages'}}}
+            $absoluteProject = [pscustomobject]@{ProjectRoot = '/tmp/project'; Package = [pscustomobject]@{OutputDirectory = '/tmp/packages'}}
+
+            Get-NovaPackageOutputDirectory -ProjectInfo $relativeProject | Should -Be ([System.IO.Path]::Join('/tmp/project', 'artifacts/packages'))
+            Get-NovaPackageOutputDirectory -ProjectInfo $absoluteProject | Should -Be '/tmp/packages'
+        }
+    }
+
+    It 'Get-NovaPackageBaseFileName and Get-NovaPackageFileName respect version suffix and latest naming rules' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                Version = '1.2.3'
+                Package = [pscustomobject]@{
+                    PackageFileName = ' Custom.Package.zip '
+                    AddVersionToFileName = $true
+                }
+            }
+
+            Get-NovaPackageBaseFileName -ProjectInfo ([pscustomobject]@{Version = '1.2.3'; Package = [pscustomobject]@{PackageFileName = ''; AddVersionToFileName = $false}}) -PackageId 'Nova.Package' | Should -Be 'Nova.Package.1.2.3'
+            Get-NovaPackageBaseFileName -ProjectInfo $projectInfo -PackageId 'Nova.Package' | Should -Be 'Custom.Package.1.2.3'
+            Add-NovaPackageVersionSuffix -PackageFileName 'Custom.Package.1.2.3' -Version '1.2.3' | Should -Be 'Custom.Package.1.2.3'
+            ConvertTo-NovaLatestPackageFileName -PackageFileName 'Custom.Package.1.2.3' -Version '1.2.3' | Should -Be 'Custom.Package.latest'
+            ConvertTo-NovaLatestPackageFileName -PackageFileName 'Custom.Package' -Version '1.2.3' | Should -Be 'Custom.Package.latest'
+            ConvertTo-NovaLatestPackageFileName -PackageFileName 'Custom.Package.latest' -Version '1.2.3' | Should -Be 'Custom.Package.latest'
+            Get-NovaPackageFileName -ProjectInfo $projectInfo -PackageId 'Nova.Package' -PackageType 'zip' -Latest | Should -Be 'Custom.Package.latest.zip'
+        }
+    }
+
+    It 'Get-NovaPackageUploadStatusCode returns integer status codes and nothing for null or missing responses' {
+        InModuleScope $script:moduleName {
+            Get-NovaPackageUploadStatusCode -Response $null | Should -BeNullOrEmpty
+            Get-NovaPackageUploadStatusCode -Response ([pscustomobject]@{StatusCode = '201'}) | Should -Be 201
+            Get-NovaPackageUploadStatusCode -Response ([pscustomobject]@{Body = 'ok'}) | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'Get-NovaPackageUploadAuthHeaderValue returns raw tokens for non-authorization headers or None schemes and defaults authorization to Bearer' {
+        InModuleScope $script:moduleName {
+            Get-NovaPackageUploadAuthHeaderValue -AuthSettings $null -HeaderName 'X-Api-Key' -Token 'secret-token' | Should -Be 'secret-token'
+            Get-NovaPackageUploadAuthHeaderValue -AuthSettings $null -HeaderName 'Authorization' -Token 'secret-token' | Should -Be 'Bearer secret-token'
+            Get-NovaPackageUploadAuthHeaderValue -AuthSettings ([pscustomobject]@{Scheme = 'None'}) -HeaderName 'Authorization' -Token 'secret-token' | Should -Be 'secret-token'
+            Get-NovaPackageUploadAuthHeaderValue -AuthSettings $null -AuthenticationScheme ' Basic ' -HeaderName 'Authorization' -Token 'secret-token' | Should -Be 'Basic secret-token'
+        }
+    }
+
+    It 'Initialize-NovaPackageOutputDirectory validates non-empty metadata, clears when requested, and creates missing directories' {
+        InModuleScope $script:moduleName {
+            $thrown = $null
+            try {
+                Initialize-NovaPackageOutputDirectory -ProjectInfo ([pscustomobject]@{}) -PackageMetadataList @()
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.PackageMetadataListEmpty'
+            $thrown.TargetObject | Should -Be 'PackageMetadataList'
+
+            $metadata = [pscustomobject]@{OutputDirectory = '/tmp/packages'; CleanOutputDirectory = $true}
+            Mock Clear-NovaPackageOutputDirectory {}
+            Mock Test-Path {$false} -ParameterFilter {$LiteralPath -eq '/tmp/packages'}
+            Mock New-Item {[pscustomobject]@{FullName = '/tmp/packages'}} -ParameterFilter {$ItemType -eq 'Directory' -and $Path -eq '/tmp/packages' -and $Force}
+
+            Initialize-NovaPackageOutputDirectory -ProjectInfo ([pscustomobject]@{ProjectRoot = '/tmp/project'}) -PackageMetadataList @($metadata)
+
+            Assert-MockCalled Clear-NovaPackageOutputDirectory -Times 1 -ParameterFilter {$OutputDirectory -eq '/tmp/packages'}
+            Assert-MockCalled New-Item -Times 1 -ParameterFilter {$ItemType -eq 'Directory' -and $Path -eq '/tmp/packages' -and $Force}
+        }
+    }
+
+    It 'Join-NovaPackageUploadUrl trims separators and escapes package file names' {
+        InModuleScope $script:moduleName {
+            Join-NovaPackageUploadUrl -Url 'https://example.test/api/' -UploadPath ' uploads /packages/ ' -PackageFileName 'Nova Package 1.2.3.nupkg' | Should -Be 'https://example.test/api/uploads /packages//Nova%20Package%201.2.3.nupkg'
+            Join-NovaPackageUploadUrl -Url 'https://example.test/api' -PackageFileName 'Nova.Package.zip' | Should -Be 'https://example.test/api/Nova.Package.zip'
+        }
+    }
+
+    It 'Resolve-NovaPackageUploadTypeList uses requested types, explicit artifact types, or metadata types depending on the inputs' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaPackageArtifactPatternInfo {[pscustomobject]@{Pattern = 'artifacts/*'; ExplicitPackageType = $null}}
+            Mock ConvertTo-NovaPackageType {
+                switch ($Type) {
+                    '.zip' {
+                        'Zip'
+                    }
+                    '.nupkg' {
+                        'NuGet'
+                    }
+                    'zip' {
+                        'Zip'
+                    }
+                    'nupkg' {
+                        'NuGet'
+                    }
+                    default {
+                        throw "Unsupported: $Type"
+                    }
+                }
+            }
+            Mock Get-NovaPackageMetadataList {@([pscustomobject]@{Type = 'NuGet'}, [pscustomobject]@{Type = 'Zip'}, [pscustomobject]@{Type = 'NuGet'})}
+
+            @(Resolve-NovaPackageUploadTypeList -ProjectInfo ([pscustomobject]@{}) -PackageType @('zip', 'ZIP', 'nupkg')) | Should -Be @('Zip', 'NuGet')
+
+            Mock Get-NovaPackageArtifactPatternInfo {[pscustomobject]@{Pattern = 'artifacts/*.zip'; ExplicitPackageType = 'Zip'}}
+            @(Resolve-NovaPackageUploadTypeList -ProjectInfo ([pscustomobject]@{}) -PackageType @('zip', 'nupkg')) | Should -Be @('Zip')
+
+            Mock Get-NovaPackageArtifactPatternInfo {[pscustomobject]@{Pattern = 'artifacts/*'; ExplicitPackageType = $null}}
+            @(Resolve-NovaPackageUploadTypeList -ProjectInfo ([pscustomobject]@{})) | Should -Be @('NuGet', 'Zip')
+        }
+    }
+
+    It 'Resolve-NovaPackageUploadTypeList exposes a structured conflict when requested types disagree with an explicit artifact pattern' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaPackageArtifactPatternInfo {[pscustomobject]@{Pattern = 'artifacts/*.zip'; ExplicitPackageType = 'Zip'}}
+            Mock ConvertTo-NovaPackageType {'NuGet'}
+
+            $thrown = $null
+            try {
+                Resolve-NovaPackageUploadTypeList -ProjectInfo ([pscustomobject]@{}) -PackageType @('nupkg')
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.PackageUploadPatternConflict'
+            $thrown.TargetObject | Should -Be 'artifacts/*.zip'
+        }
+    }
+
+    It 'Test-NovaPathContainsPath returns true for identical or nested paths and false for siblings' {
+        InModuleScope $script:moduleName {
+            Test-NovaPathContainsPath -ParentPath '/tmp/project' -ChildPath '/tmp/project' | Should -BeTrue
+            Test-NovaPathContainsPath -ParentPath '/tmp/project' -ChildPath '/tmp/project/dist/module' | Should -BeTrue
+            Test-NovaPathContainsPath -ParentPath '/tmp/project' -ChildPath '/tmp/another' | Should -BeFalse
+        }
+    }
+
     It 'Get-AliasInFunctionFromFile returns aliases declared on the function' {
         $filePath = Join-Path $script:repoRoot 'src/public/UpdateNovaModuleTools.ps1'
 
