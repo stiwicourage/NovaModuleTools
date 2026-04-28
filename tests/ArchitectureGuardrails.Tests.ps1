@@ -80,28 +80,45 @@ Describe 'Architecture guardrails' {
         (Compare-Object -ReferenceObject $expected -DifferenceObject $actual) | Should -BeNullOrEmpty -Because (($actual -join ', '), (& $script:formatMatches -MatchList $matches) -join [Environment]::NewLine)
     }
 
-    It 'public orchestration entrypoints keep delegating to their context and workflow helpers' {
+    It 'public command files use only their approved Nova helper surface' {
         $testCases = @(
-            [pscustomobject]@{Path = 'src/public/DeployNovaPackage.ps1'; ContextPattern = '\bGet-NovaPackageUploadWorkflowContext\b'; ActionPattern = '\bInvoke-NovaPackageUploadWorkflow\b'}
-            [pscustomobject]@{Path = 'src/public/InitializeNovaModule.ps1'; ContextPattern = '\bGet-NovaModuleInitializationWorkflowContext\b'; ActionPattern = '\bInvoke-NovaModuleInitializationWorkflow\b'}
-            [pscustomobject]@{Path = 'src/public/InstallNovaCli.ps1'; ContextPattern = '\bGet-NovaCliInstallWorkflowContext\b'; ActionPattern = '\bInvoke-NovaCliInstallWorkflow\b'}
-            [pscustomobject]@{Path = 'src/public/InvokeNovaBuild.ps1'; ContextPattern = '\bGet-NovaBuildWorkflowContext\b'; ActionPattern = '\bInvoke-NovaBuildWorkflow\b'}
-            [pscustomobject]@{Path = 'src/public/InvokeNovaCli.ps1'; ContextPattern = '\bGet-NovaCliInvocationContext\b'; ActionPattern = '\bInvoke-NovaCliCommandRoute\b'}
-            [pscustomobject]@{Path = 'src/public/InvokeNovaRelease.ps1'; ContextPattern = '\bGet-NovaPublishWorkflowContext\b'; ActionPattern = '\bInvoke-NovaReleaseWorkflow\b'}
-            [pscustomobject]@{Path = 'src/public/NewNovaModulePackage.ps1'; ContextPattern = '\bGet-NovaPackageWorkflowContext\b'; ActionPattern = '\bInvoke-NovaPackageWorkflow\b'}
-            [pscustomobject]@{Path = 'src/public/PublishNovaModule.ps1'; ContextPattern = '\bGet-NovaPublishWorkflowContext\b'; ActionPattern = '\bInvoke-NovaPublishWorkflow\b'}
-            [pscustomobject]@{Path = 'src/public/SetNovaUpdateNotificationPreference.ps1'; ContextPattern = '\bGet-NovaUpdateNotificationPreferenceChangeContext\b'; ActionPattern = '\bInvoke-NovaUpdateNotificationPreferenceChange\b'}
-            [pscustomobject]@{Path = 'src/public/TestNovaBuild.ps1'; ContextPattern = '\bGet-NovaTestWorkflowContext\b'; ActionPattern = '\bInvoke-NovaTestWorkflow\b'}
-            [pscustomobject]@{Path = 'src/public/UpdateNovaModuleTools.ps1'; ContextPattern = '\bGet-NovaModuleSelfUpdateWorkflowContext\b'; ActionPattern = '\bInvoke-NovaModuleSelfUpdateWorkflow\b'}
-            [pscustomobject]@{Path = 'src/public/UpdateNovaModuleVersion.ps1'; ContextPattern = '\bGet-NovaVersionUpdateWorkflowContext\b'; ActionPattern = '\bInvoke-NovaVersionUpdateWorkflow\b'}
+            [pscustomobject]@{Path = 'src/public/DeployNovaPackage.ps1'; ExpectedHelpers = @('Get-NovaPackageUploadWorkflowContext', 'Get-NovaProjectInfo', 'Invoke-NovaPackageUploadWorkflow', 'New-NovaPackageUploadDynamicParameterDictionary', 'New-NovaPackageUploadOption')}
+            [pscustomobject]@{Path = 'src/public/GetNovaProjectInfo.ps1'; ExpectedHelpers = @('Get-NovaProjectInfoContext', 'Get-NovaProjectInfoResult')}
+            [pscustomobject]@{Path = 'src/public/GetNovaUpdateNotificationPreference.ps1'; ExpectedHelpers = @('Get-NovaUpdateNotificationPreferenceStatus')}
+            [pscustomobject]@{Path = 'src/public/InitializeNovaModule.ps1'; ExpectedHelpers = @('Get-NovaModuleInitializationWorkflowContext', 'Invoke-NovaModuleInitializationWorkflow')}
+            [pscustomobject]@{Path = 'src/public/InstallNovaCli.ps1'; ExpectedHelpers = @('Get-NovaCliInstallWorkflowContext', 'Invoke-NovaCliInstallWorkflow', 'Write-NovaModuleReleaseNotesLink')}
+            [pscustomobject]@{Path = 'src/public/InvokeNovaBuild.ps1'; ExpectedHelpers = @('Get-NovaBuildWorkflowContext', 'Invoke-NovaBuildWorkflow')}
+            [pscustomobject]@{Path = 'src/public/InvokeNovaCli.ps1'; ExpectedHelpers = @('Get-NovaCliInvocationContext', 'Invoke-NovaCliCommandRoute')}
+            [pscustomobject]@{Path = 'src/public/InvokeNovaRelease.ps1'; ExpectedHelpers = @('Get-NovaProjectInfo', 'Get-NovaPublishWorkflowContext', 'Get-NovaShouldProcessForwardingParameter', 'Invoke-NovaReleaseWorkflow', 'Write-NovaPublishWorkflowContext')}
+            [pscustomobject]@{Path = 'src/public/NewNovaModulePackage.ps1'; ExpectedHelpers = @('Get-NovaPackageWorkflowContext', 'Get-NovaShouldProcessForwardingParameter', 'Invoke-NovaPackageWorkflow')}
+            [pscustomobject]@{Path = 'src/public/PublishNovaModule.ps1'; ExpectedHelpers = @('Get-NovaDynamicDeliveryParameterDictionary', 'Get-NovaProjectInfo', 'Get-NovaPublishWorkflowContext', 'Get-NovaShouldProcessForwardingParameter', 'Invoke-NovaPublishWorkflow', 'Write-NovaPublishWorkflowContext')}
+            [pscustomobject]@{Path = 'src/public/SetNovaUpdateNotificationPreference.ps1'; ExpectedHelpers = @('Get-NovaUpdateNotificationPreferenceChangeContext', 'Invoke-NovaUpdateNotificationPreferenceChange')}
+            [pscustomobject]@{Path = 'src/public/TestNovaBuild.ps1'; ExpectedHelpers = @('Get-NovaTestWorkflowContext', 'Invoke-NovaTestWorkflow', 'New-NovaTestDynamicParameterDictionary')}
+            [pscustomobject]@{Path = 'src/public/UpdateNovaModuleTools.ps1'; ExpectedHelpers = @('Complete-NovaModuleSelfUpdateResult', 'Confirm-NovaPrereleaseModuleUpdate', 'Get-NovaModuleSelfUpdateWorkflowContext', 'Invoke-NovaModuleSelfUpdateWorkflow', 'Write-NovaModuleReleaseNotesLink')}
+            [pscustomobject]@{Path = 'src/public/UpdateNovaModuleVersion.ps1'; ExpectedHelpers = @('Get-NovaVersionUpdateCiActivatedCommand', 'Get-NovaVersionUpdateWorkflowContext', 'Invoke-NovaVersionUpdateWorkflow')}
         )
+        $expectedPaths = @($testCases | ForEach-Object Path | Sort-Object)
+        $actualPaths = @(
+        Get-ChildItem -LiteralPath (Join-Path $script:srcRoot 'public') -Filter '*.ps1' -File |
+                ForEach-Object {([System.IO.Path]::GetRelativePath($script:repoRoot, $_.FullName)).Replace('\', '/')} |
+                Sort-Object
+        )
+
+        (Compare-Object -ReferenceObject $expectedPaths -DifferenceObject $actualPaths) | Should -BeNullOrEmpty -Because "Public command allowlist should stay in sync with src/public. Expected: $( $expectedPaths -join ', ' ) | Actual: $( $actualPaths -join ', ' )"
 
         foreach ($testCase in $testCases) {
             $filePath = Join-Path $script:repoRoot $testCase.Path
-            $content = Get-Content -LiteralPath $filePath -Raw
+            $null = $tokens = $parseErrors = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile($filePath, [ref]$tokens, [ref]$parseErrors)
+            $actualHelpers = @(
+            $ast.FindAll({param($node) $node -is [System.Management.Automation.Language.CommandAst]}, $true) |
+                    ForEach-Object {$_.GetCommandName()} |
+                    Where-Object {$_ -like '*Nova*'} |
+                    Sort-Object -Unique
+            )
+            $expectedHelpers = @($testCase.ExpectedHelpers | Sort-Object -Unique)
 
-            $content | Should -Match $testCase.ContextPattern -Because "$( $testCase.Path ) should build or resolve its workflow/context state before orchestration"
-            $content | Should -Match $testCase.ActionPattern -Because "$( $testCase.Path ) should delegate execution to its workflow or routing helper"
+            (Compare-Object -ReferenceObject $expectedHelpers -DifferenceObject $actualHelpers) | Should -BeNullOrEmpty -Because "$( $testCase.Path ) should only use its approved Nova helper surface. Expected: $( $expectedHelpers -join ', ' ) | Actual: $( $actualHelpers -join ', ' )"
         }
     }
 
