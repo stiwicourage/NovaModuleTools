@@ -17,16 +17,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       entrypoint instead of exporting a `nova` PowerShell alias.
 - Add optional `Preamble` support in `project.json` to write module-level setup lines at the top of generated `.psm1`
   files.
-- Add `Initialize-NovaModule -Example` and GNU-style `% nova init --example` / `% nova init -e` support to scaffold a
-  full
-  working project from the packaged
-  example resources.
-- git initialization failures so more build and release paths now expose stable error ids and categories.
-    - Runs the normal init flow
-    - Applies the metadata entered during init to the generated `project.json`
-    - Always creates the example test structure without prompting to enable tests
-  - The packaged example `project.json` now keeps the current project, manifest, package, and raw-upload settings
-    visible in one place so users can see the full supported configuration surface
 - Add native `-WhatIf` and `-Confirm` support across mutating Nova commands, including GNU-style routed CLI support for
   `--verbose`/`-v`, `--what-if`/`-w`, and `--confirm`/`-c` on `build`, `test`, `bump`, `publish`, and `release`.
     - Routed CLI confirmation now stays inside the `nova` experience instead of exposing PowerShell's `Suspend` prompt.
@@ -45,13 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Uses the stored prerelease update preference to decide whether prerelease self-updates are eligible.
   - Requires explicit confirmation before a prerelease self-update proceeds.
 - Add `% nova version --installed` / `% nova version -i` so users can compare the locally installed version of the
-  current
-  project/module with
-  the current project version from `project.json`, while keeping `% nova --version` / `% nova -v` dedicated to the
-  installed
-  NovaModuleTools version.
-- Add build-before-test support to the test workflow so `Test-NovaBuild -Build`, `% nova test --build`, and `% nova
-  test -b` rebuild the project before running Pester.
+  current project/module with the current project version from `project.json`, while keeping `% nova --version` /
+  `% nova -v` dedicated to the installed NovaModuleTools version.
+- Add build-before-test support to the test workflow so `Test-NovaBuild -Build`, `% nova test --build`, and
+  `% nova test -b` rebuild the project before running Pester.
 - Add an opt-in `-Preview` mode to `Update-NovaModuleVersion` / GNU-style `% nova bump --preview` / `% nova bump -p` for
   explicit preview iteration.
     - Stable versions still use the normal semantic bump target first, then append `-preview`.
@@ -60,8 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       `rc -> rc01`, `rc1 -> rc2`, `SNAPSHOT -> SNAPSHOT01`, and `SNAPSHOT1 -> SNAPSHOT2`.
 - Add `New-NovaModulePackage` and `% nova package` so projects can build, test, and package the built module output as a
   `.nupkg` artifact by using generic metadata from `project.json`, including repositories whose test runs reload or
-  remove
-  `NovaModuleTools` before the final package step.
+  remove `NovaModuleTools` before the final package step.
     - Package output supports `Package.Types` with case-insensitive `NuGet`, `Zip`, `.nupkg`, and `.zip` values.
     - Omitting `Package.Types` still defaults packaging to a `.nupkg` artifact.
     - Selecting both `NuGet` and `Zip` creates both package formats in the configured output directory.
@@ -107,22 +93,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       and `nova release` while keeping `nova version -i` dedicated to the installed-version view.
     - Build re-activates the freshly built module after the build succeeds, bump re-activates it before the version
       update starts, and publish/release restore the built module again after publish completes.
-  - Repository publish no longer forces verbose `Publish-PSResource` output unless verbose logging was explicitly
-    requested.
-  - CI bump now reuses the already activated built-module command when the current session is already running from
-    `dist/`, so publish-then-bump prerelease automation can continue in the same session without losing private helper
-    bindings.
+    - Repository publish no longer forces verbose `Publish-PSResource` output unless verbose logging was explicitly
+      requested.
+    - CI bump now reuses the already activated built-module command when the current session is already running from
+      `dist/`, so publish-then-bump prerelease automation can continue in the same session without losing private helper
+      bindings.
 - Keep standalone `nova bump` output stable by formatting version-update results in the CLI layer instead of relying on
   PowerShell's default object rendering.
     - `nova bump --what-if` and `% run.ps1` now surface a predictable summary for previous version, new version, label,
       and commit count.
 
+### Fixed
+
+- Fix unsupported `nova` help invocations so they now return Nova's structured CLI validation error instead of a
+  PowerShell parameter-binding failure.
+- Keep manifest/package helper edge cases aligned with their intended behavior.
+    - Manifest settings resolution now accepts ordered dictionary metadata shapes in addition to plain hashtables.
+    - `New-NovaPackageArtifacts` now accepts an empty metadata list and returns an empty artifact result instead of
+      failing during parameter binding.
+- Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
+  clear messages.
+
 ### Changed
 
 - Change the project to a Nova command model, replacing the previous mixed MT/Nova workflow.
     - All public commands are now Nova commands, and the `nova` CLI / `Invoke-NovaCli` command surface is the primary
-      entry point for all
-      operations.
+      entry point for all operations.
 - Change `nova` help to a dedicated CLI-native help system with both short and long command help forms.
 - Isolate external workflow execution behind smaller internal adapters so git, raw package upload, repository publish,
   self-update, settings-file I/O, and CLI environment access have clearer change points and smaller test seams.
@@ -132,27 +128,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     stays focused on command syntax and options.
     - CLI help no longer delegates to PowerShell `Get-Help` and now consistently shows CLI option spellings such as
       `--repository` and `-r`.
-- Refactor `tests/NovaCommandModel.TestSupport.ps1` into smaller, focused support scripts so the shared Nova command
-  model
-  test helpers are easier to maintain without changing test behavior.
-- **BREAKING CHANGE**: Rename the public Nova scaffold cmdlets to approved verbs.
+- **BREAKING CHANGE**: Rename the public Nova scaffold cmdlets.
     - `New-NovaModule` → `Initialize-NovaModule`
     - No compatibility aliases are exported for the retired cmdlet names or CLI subcommands.
 - Change `CopyResourcesToModuleRoot` to the canonical project setting name while keeping the default value `false`.
 - Change `Publish-NovaModule -Local` and `% nova publish --local` so a successful local publish also reloads the
-  published
-  module from the local install path into the active PowerShell session.
-- Refactor the simple routed `nova` parsers to use shared declarative parser helpers while keeping the existing CLI
-  syntax, validation, and routed command behavior unchanged.
-    - `nova build`, `nova test`, and `nova bump` now share one switch-parser pattern.
-    - `nova update`, `nova version`, and `nova notification` now share one mode-parser pattern.
-
-### Fixed
-
-- Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
-  clear messages.
-- Fix GitHub Pages guide fragment links so section anchors such as `#pack` scroll fully into view instead of hiding the
-  section heading behind the sticky top navigation.
+  published module from the local install path into the active PowerShell session.
 
 ### Documentation
 
@@ -160,35 +141,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Expand the public site into a fuller developer end-user manual with rewritten getting started, core workflows, working
   with modules, troubleshooting, concepts, release notes, and license pages plus new reference-style pages for
   commands, `project.json`, packaging/delivery, and versioning/update behavior.
-    - Improve page spacing, card padding, code-block separation, and responsive layout density so the documentation is
-      easier to scan and less visually cramped.
-  - The getting started and core workflows guides now let readers switch between PowerShell and command-line
-    examples, including the local-publish-plus-`pwsh` handoff for `Get-ExampleGreeting` and fresh-process `pwsh`
-
+    - The guides now let readers switch between PowerShell and command-line examples, including the local-publish-plus-
+      `pwsh` handoff for `Get-ExampleGreeting` and fresh-process `pwsh`
 - Clean the generated PowerShell cmdlet help so `Get-Help` pages no longer mix in `nova` launcher syntax or GNU-style
   CLI options.
-    import/reload validation from the command-line path.
-  - The command reference, working-with-modules, packaging-and-delivery, versioning-and-updates, and troubleshooting
-    guides now use the same centered command-surface header and PowerShell/command-line example switching model.
-  - The command-surface toggle sits centered in the top navigation area on the switched guides, with the `Menu`
-    control aligned separately to the right and the header buttons tightened to match the menu height more closely.
-  - The home page now presents its recommended first-path command examples in PowerShell form to match the default
-    quickstart orientation.
-  - The shared docs layout now keeps the same readable content width in PowerShell and command-line modes, while long
-    command examples stay contained inside their own blocks instead of stretching the page.
-  - All public pages now use the wider large-screen shell, and the single-column release-notes and license layouts use
-    a broader centered content width that matches the updated site scale.
-  - The public docs header logo is now larger so the NovaModuleTools brand is more prominent across the site.
 - Refresh public `Get-Help` content and examples for the Nova commands, including CLI usage and preview/confirmation
   scenarios.
     - Simplify `Invoke-NovaCli` help so it matches the launcher-vs-cmdlet split cleanly and PlatyPS can generate command
       help without failing during local builds.
 - Update the `nova` CLI documentation and help text to use POSIX/GNU-style long and short options while keeping
   PowerShell cmdlet examples in their native PowerShell form.
-- Document the CLI-native short-help and long-help forms in the root help text, README, and `Invoke-NovaCli`
-  reference.
-- Clarify the documentation split between the `nova` launcher-oriented CLI surface and the explicit PowerShell
-  `Invoke-NovaCli` cmdlet entrypoint, and mark examples consistently with `PS>` for PowerShell and `%` for CLI.
 
 ### Removed
 

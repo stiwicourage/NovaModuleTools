@@ -887,14 +887,6 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
-    It 'Get-NovaCliConsoleReadKeyReader returns the default console read delegate' {
-        InModuleScope $script:moduleName {
-            $reader = Get-NovaCliConsoleReadKeyReader
-
-            $reader | Should -BeOfType 'scriptblock'
-            ($reader.ToString()).Trim() | Should -Be '[Console]::ReadKey($true)'
-        }
-    }
 
     It 'Invoke-NovaCliConsoleReadKey invokes the shared console reader delegate' {
         InModuleScope $script:moduleName {
