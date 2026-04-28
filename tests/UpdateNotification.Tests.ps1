@@ -137,6 +137,34 @@ Describe 'Update notification behavior' {
         }
     }
 
+    It 'Read-NovaUpdateNotificationPreference delegates settings file parsing to the shared JSON adapter' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaUpdateSettingsFilePath {'/tmp/nova/settings.json'}
+            Mock Read-NovaJsonFileData {
+                [pscustomobject]@{PrereleaseNotificationsEnabled = $false}
+            }
+
+            $result = Read-NovaUpdateNotificationPreference
+
+            $result.PrereleaseNotificationsEnabled | Should -BeFalse
+            Assert-MockCalled Read-NovaJsonFileData -Times 1 -ParameterFilter {$LiteralPath -eq '/tmp/nova/settings.json'}
+        }
+    }
+
+    It 'Write-NovaUpdateNotificationPreference delegates settings persistence to the shared JSON adapter' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaUpdateSettingsFilePath {'/tmp/nova/settings.json'}
+            Mock Write-NovaJsonFileData {}
+
+            Write-NovaUpdateNotificationPreference -PrereleaseNotificationsEnabled:$false
+
+            Assert-MockCalled Write-NovaJsonFileData -Times 1 -ParameterFilter {
+                $LiteralPath -eq '/tmp/nova/settings.json' -and
+                        -not $Value.PrereleaseNotificationsEnabled
+            }
+        }
+    }
+
     It 'Set-NovaUpdateNotificationPreference delegates context resolution and workflow execution to private helpers' {
         InModuleScope $script:moduleName {
             Mock Get-NovaUpdateNotificationPreferenceChangeContext {
@@ -562,6 +590,20 @@ Describe 'Update notification behavior' {
             {Invoke-NovaModuleSelfUpdate -ModuleName 'NovaModuleTools' -AllowPrerelease} | Should -Throw '*was not installed by using Install-Module*'
             Assert-MockCalled Update-Module -Times 1 -ParameterFilter {
                 $Name -eq 'NovaModuleTools' -and $AllowPrerelease -and $ErrorAction -eq 'Stop'
+            }
+        }
+    }
+
+    It 'Invoke-NovaModuleSelfUpdate delegates through the self-update adapter with the resolved parameter map' {
+        InModuleScope $script:moduleName {
+            Mock Invoke-NovaModuleUpdateCommand {}
+
+            Invoke-NovaModuleSelfUpdate -ModuleName 'NovaModuleTools' -AllowPrerelease
+
+            Assert-MockCalled Invoke-NovaModuleUpdateCommand -Times 1 -ParameterFilter {
+                $UpdateParameters.Name -eq 'NovaModuleTools' -and
+                        $UpdateParameters.AllowPrerelease -and
+                        $UpdateParameters.ErrorAction -eq 'Stop'
             }
         }
     }

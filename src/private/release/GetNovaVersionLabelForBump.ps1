@@ -34,8 +34,8 @@ function Test-GitRepositoryIsAvailable {
         return $false
     }
 
-    $null = & git -C $ProjectRoot rev-parse --git-dir 2> $null
-    return $LASTEXITCODE -eq 0
+    $result = Invoke-NovaGitCommand -ProjectRoot $ProjectRoot -Arguments @('rev-parse', '--git-dir')
+    return $result.ExitCode -eq 0
 }
 
 function Test-GitRepositoryHasCommittedHead {
@@ -44,8 +44,8 @@ function Test-GitRepositoryHasCommittedHead {
         [Parameter(Mandatory)][string]$ProjectRoot
     )
 
-    $null = & git -C $ProjectRoot rev-parse --verify HEAD 2> $null
-    return $LASTEXITCODE -eq 0
+    $result = Invoke-NovaGitCommand -ProjectRoot $ProjectRoot -Arguments @('rev-parse', '--verify', 'HEAD')
+    return $result.ExitCode -eq 0
 }
 
 function Test-GitRepositoryHasCommitsSinceLatestTag {
@@ -54,11 +54,13 @@ function Test-GitRepositoryHasCommitsSinceLatestTag {
         [Parameter(Mandatory)][string]$ProjectRoot
     )
 
-    $lastTag = & git -C $ProjectRoot describe --tags --abbrev=0 2> $null
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($lastTag)) {
+    $lastTagResult = Invoke-NovaGitCommand -ProjectRoot $ProjectRoot -Arguments @('describe', '--tags', '--abbrev=0')
+    $lastTag = Get-NovaGitCommandOutputText -Result $lastTagResult
+    if ($lastTagResult.ExitCode -ne 0 -or [string]::IsNullOrWhiteSpace($lastTag)) {
         return $true
     }
 
-    $commitCount = & git -C $ProjectRoot rev-list --count "$lastTag..HEAD" 2> $null
-    return $LASTEXITCODE -ne 0 -or $commitCount -ne '0'
+    $commitCountResult = Invoke-NovaGitCommand -ProjectRoot $ProjectRoot -Arguments @('rev-list', '--count', "$lastTag..HEAD")
+    $commitCount = Get-NovaGitCommandOutputText -Result $commitCountResult
+    return $commitCountResult.ExitCode -ne 0 -or $commitCount -ne '0'
 }

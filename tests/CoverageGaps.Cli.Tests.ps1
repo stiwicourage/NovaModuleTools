@@ -852,6 +852,32 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'Get-NovaCliConsoleReadKeyReader returns the default console read delegate' {
+        InModuleScope $script:moduleName {
+            $reader = Get-NovaCliConsoleReadKeyReader
+
+            $reader | Should -BeOfType 'scriptblock'
+            ($reader.ToString()).Trim() | Should -Be '[Console]::ReadKey($true)'
+        }
+    }
+
+    It 'Invoke-NovaCliConsoleReadKey invokes the shared console reader delegate' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaCliConsoleReadKeyReader {
+                $delegate = {
+                    [pscustomobject]@{KeyChar = [char]'y'}
+                }
+
+                return $delegate
+            }
+
+            $result = Invoke-NovaCliConsoleReadKey
+
+            $result.KeyChar | Should -Be ([char]'y')
+            Assert-MockCalled Get-NovaCliConsoleReadKeyReader -Times 1
+        }
+    }
+
     It 'Invoke-NovaCliConsoleReadKey executes the console read path when standard input is redirected' {
         $runnerPath = Join-Path $TestDrive 'Invoke-NovaCliConsoleReadKey.Runner.ps1'
         $stdinPath = Join-Path $TestDrive 'Invoke-NovaCliConsoleReadKey.stdin.txt'
@@ -1009,6 +1035,15 @@ catch {
             finally {
                 $env:HOME = $originalHome
             }
+        }
+    }
+
+    It 'Get-NovaCliInstallDirectory reads HOME through the shared environment helper' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaEnvironmentVariableValue {'/tmp/nova-home'} -ParameterFilter {$Name -eq 'HOME'}
+
+            Get-NovaCliInstallDirectory | Should -Be ([System.IO.Path]::Join('/tmp/nova-home', '.local', 'bin'))
+            Assert-MockCalled Get-NovaEnvironmentVariableValue -Times 1 -ParameterFilter {$Name -eq 'HOME'}
         }
     }
 
@@ -1243,6 +1278,17 @@ catch {
             finally {
                 $env:PATH = $originalPath
             }
+        }
+    }
+
+    It 'Test-NovaCliDirectoryOnPath reads PATH through the shared environment helper' {
+        InModuleScope $script:moduleName {
+            $separator = [string][System.IO.Path]::PathSeparator
+            $targetDirectory = [System.IO.Path]::GetFullPath($TestDrive)
+            Mock Get-NovaEnvironmentVariableValue {"/tmp/other${separator}$targetDirectory"} -ParameterFilter {$Name -eq 'PATH'}
+
+            Test-NovaCliDirectoryOnPath -Directory $TestDrive | Should -BeTrue
+            Assert-MockCalled Get-NovaEnvironmentVariableValue -Times 1 -ParameterFilter {$Name -eq 'PATH'}
         }
     }
 

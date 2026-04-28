@@ -464,6 +464,17 @@ function Get-Second {
         }
     }
 
+    It 'Read-NovaJsonFileData returns null when the file content is not valid JSON' {
+        $jsonPath = Join-Path $TestDrive 'invalid-settings.json'
+        '{ invalid json }' | Set-Content -LiteralPath $jsonPath -Encoding utf8
+
+        InModuleScope $script:moduleName -Parameters @{JsonPath = $jsonPath} {
+            param($JsonPath)
+
+            Read-NovaJsonFileData -LiteralPath $JsonPath | Should -BeNullOrEmpty
+        }
+    }
+
     It 'Write-ProjectJsonData preserves nested objects, arrays, and unicode text when writing project.json' {
         $projectJsonPath = Join-Path $TestDrive 'written-project.json'
 

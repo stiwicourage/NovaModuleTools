@@ -5,32 +5,44 @@ function New-InitiateGitRepo {
         [string]$DirectoryPath
     )
 
-    # Check if Git is installed
-    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-        Write-Warning 'Git is not installed. Please install Git and initialize repo manually' 
+    if (-not (Test-NovaGitCommandAvailable)) {
+        Write-Warning 'Git is not installed. Please install Git and initialize repo manually'
         return
     }
-    Push-Location -StackName 'GitInit'
+
+    if (Test-Path -LiteralPath (Join-Path $DirectoryPath '.git')) {
+        Write-Warning 'A Git repository already exists in this directory.'
+        return
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($DirectoryPath, "Initiating git on $DirectoryPath")) {
+        return
+    }
+
     try {
-        # Navigate to the specified directory
-        Set-Location $DirectoryPath
-
-        # Check if a Git repository already exists
-        if (Test-Path -Path '.git') {
-            Write-Warning 'A Git repository already exists in this directory.'
-            return
-        }
-
-        if ( $PSCmdlet.ShouldProcess($DirectoryPath, ("Initiating git on $DirectoryPath"))) {
-            try {
-                git init | Out-Null
-            } catch {
-                Stop-NovaOperation -Message "Failed to initialize Git repo: $( $_.Exception.Message )" -ErrorId 'Nova.Dependency.GitRepositoryInitializationFailed' -Category OpenError -TargetObject $DirectoryPath
-            }
-        }
-        Write-Verbose 'Git repository initialized successfully'
+        $result = Invoke-NovaGitCommand -ProjectRoot $DirectoryPath -Arguments @('init')
     }
-    finally {
-        Pop-Location -StackName 'GitInit'
+    catch {
+        Stop-NovaOperation -Message "Failed to initialize Git repo: $( $_.Exception.Message )" -ErrorId 'Nova.Dependency.GitRepositoryInitializationFailed' -Category OpenError -TargetObject $DirectoryPath
     }
+
+    if ($result.ExitCode -ne 0) {
+        Stop-NovaOperation -Message (Get-NovaGitInitializationFailureMessage -Result $result) -ErrorId 'Nova.Dependency.GitRepositoryInitializationFailed' -Category OpenError -TargetObject $DirectoryPath
+    }
+
+    Write-Verbose 'Git repository initialized successfully'
+}
+
+function Get-NovaGitInitializationFailureMessage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Result
+    )
+
+    $details = Get-NovaGitCommandOutputText -Result $Result
+    if ( [string]::IsNullOrWhiteSpace($details)) {
+        return 'Failed to initialize Git repo.'
+    }
+
+    return "Failed to initialize Git repo: $details"
 }

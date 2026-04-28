@@ -809,6 +809,36 @@ Describe 'Nova command model - package upload behavior' {
         }
     }
 
+    It 'Invoke-NovaPackageArtifactUpload delegates request execution to the upload adapter' {
+        $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'upload-request-adapter')
+        $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
+
+        InModuleScope $script:moduleName -Parameters @{PackagePath = $packagePath} {
+            param($PackagePath)
+
+            $uploadArtifact = [pscustomobject]@{
+                Type = 'Zip'
+                PackagePath = $PackagePath
+                PackageFileName = 'PackageProject.2.3.4.zip'
+                Repository = 'LocalRaw'
+                UploadUrl = 'https://packages.example/raw/PackageProject.2.3.4.zip'
+                Headers = [ordered]@{'X-Trace-Id' = 'trace-123'}
+            }
+
+            Mock Invoke-NovaPackageUploadRequest {
+                [pscustomobject]@{StatusCode = 202}
+            }
+
+            $result = Invoke-NovaPackageArtifactUpload -UploadArtifact $uploadArtifact
+
+            $result.StatusCode | Should -Be 202
+            Assert-MockCalled Invoke-NovaPackageUploadRequest -Times 1 -ParameterFilter {
+                $UploadArtifact.PackagePath -eq $PackagePath -and
+                        $UploadArtifact.Headers['X-Trace-Id'] -eq 'trace-123'
+            }
+        }
+    }
+
     It 'Invoke-NovaPackageArtifactUpload exposes a structured dependency error when the upload request fails' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'upload-request-fails')
         $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'
@@ -825,7 +855,7 @@ Describe 'Nova command model - package upload behavior' {
                 Headers = [ordered]@{}
             }
 
-            Mock Invoke-WebRequest {throw 'network down'}
+            Mock Invoke-NovaPackageUploadRequest {throw 'network down'}
 
             $thrown = $null
             try {

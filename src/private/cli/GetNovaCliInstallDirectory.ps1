@@ -8,7 +8,7 @@ function Get-NovaCliInstallDirectory {
         return [System.IO.Path]::GetFullPath($DestinationDirectory)
     }
 
-    $homeDirectory = $env:HOME
+    $homeDirectory = Get-NovaEnvironmentVariableValue -Name 'HOME'
 
     if ( [string]::IsNullOrWhiteSpace($homeDirectory)) {
         Stop-NovaOperation -Message 'HOME environment variable is not set. Provide -DestinationDirectory explicitly.' -ErrorId 'Nova.Environment.HomeDirectoryMissing' -Category ResourceUnavailable -TargetObject 'HOME'

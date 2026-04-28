@@ -118,6 +118,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       entry point for all
       operations.
 - Change `nova` help to a dedicated CLI-native help system with both short and long command help forms.
+- Isolate external workflow execution behind smaller internal adapters so git, raw package upload, repository publish,
+  self-update, settings-file I/O, and CLI environment access have clearer change points and smaller test seams.
     - `% nova <command> --help` and `% nova <command> -h` now show short CLI help.
     - `% nova --help <command>` and `% nova -h <command>` now show long CLI help.
   - Long command help now includes the matching public GitHub Pages guide URL for the selected command, while short help

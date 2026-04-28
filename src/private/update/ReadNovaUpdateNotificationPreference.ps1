@@ -1,21 +1,19 @@
+function Get-NovaDefaultUpdateNotificationPreference {
+    [CmdletBinding()]
+    param()
+
+    return [pscustomobject]@{
+        PrereleaseNotificationsEnabled = $true
+    }
+}
+
 function Read-NovaUpdateNotificationPreference {
     [CmdletBinding()]
     param()
 
-    $settingsPath = Get-NovaUpdateSettingsFilePath
-    $defaultPreference = [pscustomobject]@{
-        PrereleaseNotificationsEnabled = $true
-    }
-
-    if (-not (Test-Path -LiteralPath $settingsPath -PathType Leaf)) {
-        return $defaultPreference
-    }
-
-    try {
-        $settings = Get-Content -LiteralPath $settingsPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
-    }
-    catch {
-        return $defaultPreference
+    $settings = Read-NovaJsonFileData -LiteralPath (Get-NovaUpdateSettingsFilePath)
+    if ($null -eq $settings) {
+        return Get-NovaDefaultUpdateNotificationPreference
     }
 
     return [pscustomobject]@{

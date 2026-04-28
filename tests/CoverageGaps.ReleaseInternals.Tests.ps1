@@ -400,6 +400,101 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
+    It 'Get-GitCommitMessageForVersionBump uses the shared git adapter to resolve tagged commit history' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'mocked-git-history'
+            New-Item -ItemType Directory -Path (Join-Path $projectRoot '.git') -Force | Out-Null
+
+            Mock Invoke-NovaGitCommand {
+                if ($Arguments[0] -eq 'describe') {
+                    return [pscustomobject]@{ExitCode = 0; Output = @('v1.0.0')}
+                }
+
+                return [pscustomobject]@{
+                    ExitCode = 0
+                    Output = @(
+                        'docs: update readme'
+                        ''
+                        '--END-COMMIT--'
+                        'fix: patch bug'
+                        'Detailed patch note'
+                        '--END-COMMIT--'
+                    )
+                }
+            }
+
+            $messages = @(Get-GitCommitMessageForVersionBump -ProjectRoot $projectRoot)
+
+            $messages | Should -Be @(
+                'docs: update readme'
+                "fix: patch bug$( [Environment]::NewLine )Detailed patch note"
+            )
+            Assert-MockCalled Invoke-NovaGitCommand -Times 1 -ParameterFilter {$ProjectRoot -eq $projectRoot -and $Arguments[0] -eq 'describe'}
+            Assert-MockCalled Invoke-NovaGitCommand -Times 1 -ParameterFilter {$ProjectRoot -eq $projectRoot -and $Arguments[0] -eq 'log' -and $Arguments[1] -eq 'v1.0.0..HEAD'}
+        }
+    }
+
+    It 'Get-NovaVersionLabelForBump uses the shared git adapter to detect a tagged head with no new commits' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'mocked-git-state'
+            New-Item -ItemType Directory -Path (Join-Path $projectRoot '.git') -Force | Out-Null
+
+            Mock Invoke-NovaGitCommand {
+                switch ($Arguments[0]) {
+                    'rev-parse' {
+                        return [pscustomobject]@{ExitCode = 0; Output = @('.git')}
+                    }
+                    'describe' {
+                        return [pscustomobject]@{ExitCode = 0; Output = @('v1.0.0')}
+                    }
+                    'rev-list' {
+                        return [pscustomobject]@{ExitCode = 0; Output = @('0')}
+                    }
+                    default {
+                        throw "Unexpected git args: $( $Arguments -join ' ' )"
+                    }
+                }
+            }
+
+            $thrown = $null
+            try {
+                Get-NovaVersionLabelForBump -ProjectRoot $projectRoot
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -Be 'Cannot bump version because there are no commits since the latest tag.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.NoCommitsSinceLatestTag'
+            Assert-MockCalled Invoke-NovaGitCommand -Times 1 -ParameterFilter {$Arguments[0] -eq 'rev-list' -and $Arguments[2] -eq 'v1.0.0..HEAD'}
+        }
+    }
+
+    It 'Get-NovaVersionLabelForBump returns Patch when the repository has commits but no tags yet' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'mocked-git-without-tags'
+            New-Item -ItemType Directory -Path (Join-Path $projectRoot '.git') -Force | Out-Null
+
+            Mock Invoke-NovaGitCommand {
+                switch ($Arguments[0]) {
+                    'rev-parse' {
+                        return [pscustomobject]@{ExitCode = 0; Output = @('.git')}
+                    }
+                    'describe' {
+                        return [pscustomobject]@{ExitCode = 1; Output = @()}
+                    }
+                    default {
+                        throw "Unexpected git args: $( $Arguments -join ' ' )"
+                    }
+                }
+            }
+
+            Get-NovaVersionLabelForBump -ProjectRoot $projectRoot | Should -Be 'Patch'
+            Assert-MockCalled Invoke-NovaGitCommand -Times 1 -ParameterFilter {$Arguments[0] -eq 'describe' -and $Arguments[1] -eq '--tags'}
+            Assert-MockCalled Invoke-NovaGitCommand -Times 0 -ParameterFilter {$Arguments[0] -eq 'rev-list'}
+        }
+    }
+
     It 'Get-NovaVersionLabelForBump throws a clear error when the repository has no commits yet' {
         if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
             Set-ItResult -Skipped -Because 'git is not available in this environment'
@@ -531,5 +626,3 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 }
-
-
