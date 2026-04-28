@@ -127,4 +127,23 @@ Describe 'Targeted coverage for smaller CLI helper internals' {
             Get-NovaCliInstalledVersion -Module $missingPrereleaseModule | Should -Be '2.0.1'
         }
     }
+
+    It 'native console read helpers remain injectable for coverage-safe testing' {
+        InModuleScope $script:moduleName {
+            $result = Invoke-NovaCliNativeConsoleReadKey -Reader {
+                [pscustomobject]@{KeyChar = [char]'y'}
+            }
+            Mock Invoke-NovaCliNativeConsoleReadKey {
+                [pscustomobject]@{KeyChar = [char]'y'}
+            }
+
+            $reader = Get-NovaCliConsoleReadKeyReader
+
+            $result.KeyChar | Should -Be ([char]'y')
+            $reader | Should -BeOfType 'scriptblock'
+            ($reader.ToString()).Trim() | Should -Be 'Invoke-NovaCliNativeConsoleReadKey'
+            (& $reader).KeyChar | Should -Be ([char]'y')
+            Assert-MockCalled Invoke-NovaCliNativeConsoleReadKey -Times 1
+        }
+    }
 }
