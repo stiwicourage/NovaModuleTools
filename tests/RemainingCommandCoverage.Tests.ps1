@@ -131,6 +131,48 @@ Describe 'Coverage for remaining command and filesystem branches' {
         }
     }
 
+    It 'New-InitiateGitRepo stops with a default failure message when git init returns no details' {
+        $repoPath = Join-Path $TestDrive 'git-init-nonzero'
+        New-Item -ItemType Directory -Path $repoPath -Force | Out-Null
+
+        InModuleScope $script:moduleName -Parameters @{RepoPath = $repoPath} {
+            param($RepoPath)
+
+            Mock Get-Command {[pscustomobject]@{Name = 'git'}} -ParameterFilter {$Name -eq 'git'}
+            Mock Invoke-NovaGitCommand {
+                [pscustomobject]@{
+                    ExitCode = 1
+                    Output = @()
+                }
+            }
+
+            $thrown = $null
+            try {
+                New-InitiateGitRepo -DirectoryPath $RepoPath -Confirm:$false
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Failed to initialize Git repo.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.GitRepositoryInitializationFailed'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::OpenError)
+            $thrown.TargetObject | Should -Be $RepoPath
+        }
+    }
+
+    It 'Get-NovaGitInitializationFailureMessage includes git output details when they are available' {
+        InModuleScope $script:moduleName {
+            $result = [pscustomobject]@{
+                ExitCode = 1
+                Output = @('permission denied')
+            }
+
+            Get-NovaGitInitializationFailureMessage -Result $result | Should -Be 'Failed to initialize Git repo: permission denied'
+        }
+    }
+
     It 'Get-NovaTestWorkflowContext prepares the Pester workflow state and resolves the report writers' -ForEach @(
         @{Build = $false; ExpectedOperation = 'Run Pester tests and write test results'}
         @{Build = $true; ExpectedOperation = 'Build project, run Pester tests, and write test results'}

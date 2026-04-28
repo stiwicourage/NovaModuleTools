@@ -470,6 +470,31 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
+    It 'Get-NovaVersionLabelForBump returns Patch when the repository has commits but no tags yet' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'mocked-git-without-tags'
+            New-Item -ItemType Directory -Path (Join-Path $projectRoot '.git') -Force | Out-Null
+
+            Mock Invoke-NovaGitCommand {
+                switch ($Arguments[0]) {
+                    'rev-parse' {
+                        return [pscustomobject]@{ExitCode = 0; Output = @('.git')}
+                    }
+                    'describe' {
+                        return [pscustomobject]@{ExitCode = 1; Output = @()}
+                    }
+                    default {
+                        throw "Unexpected git args: $( $Arguments -join ' ' )"
+                    }
+                }
+            }
+
+            Get-NovaVersionLabelForBump -ProjectRoot $projectRoot | Should -Be 'Patch'
+            Assert-MockCalled Invoke-NovaGitCommand -Times 1 -ParameterFilter {$Arguments[0] -eq 'describe' -and $Arguments[1] -eq '--tags'}
+            Assert-MockCalled Invoke-NovaGitCommand -Times 0 -ParameterFilter {$Arguments[0] -eq 'rev-list'}
+        }
+    }
+
     It 'Get-NovaVersionLabelForBump throws a clear error when the repository has no commits yet' {
         if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
             Set-ItResult -Skipped -Because 'git is not available in this environment'
@@ -601,5 +626,3 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 }
-
-

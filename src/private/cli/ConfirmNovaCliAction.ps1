@@ -37,7 +37,15 @@ function Invoke-NovaCliConsoleReadKey {
     [CmdletBinding()]
     param()
 
-    return [Console]::ReadKey($true)
+    $consoleReader = Get-NovaCliConsoleReadKeyReader
+    return & $consoleReader
+}
+
+function Get-NovaCliConsoleReadKeyReader {
+    [CmdletBinding()]
+    param()
+
+    return {[Console]::ReadKey($true)}
 }
 
 function Read-NovaCliPromptKey {
@@ -140,4 +148,3 @@ function Confirm-NovaCliCommandAction {
         return
     } while ($true)
 }
-

@@ -852,6 +852,23 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'Invoke-NovaCliConsoleReadKey invokes the shared console reader delegate' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaCliConsoleReadKeyReader {
+                $delegate = {
+                    [pscustomobject]@{KeyChar = [char]'y'}
+                }
+
+                return $delegate
+            }
+
+            $result = Invoke-NovaCliConsoleReadKey
+
+            $result.KeyChar | Should -Be ([char]'y')
+            Assert-MockCalled Get-NovaCliConsoleReadKeyReader -Times 1
+        }
+    }
+
     It 'Invoke-NovaCliConsoleReadKey executes the console read path when standard input is redirected' {
         $runnerPath = Join-Path $TestDrive 'Invoke-NovaCliConsoleReadKey.Runner.ps1'
         $stdinPath = Join-Path $TestDrive 'Invoke-NovaCliConsoleReadKey.stdin.txt'
