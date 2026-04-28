@@ -15,10 +15,5 @@ function Resolve-NovaPackageUploadExplicitFile {
         Stop-NovaOperation -Message "Package selection is ambiguous. Explicit PackagePath '$resolvedPackagePath' resolves to type '$resolvedPackageType', but requested PackageType values are: $( $RequestedPackageTypeList -join ', ' )." -ErrorId 'Nova.Validation.PackageUploadSelectionAmbiguous' -Category InvalidArgument -TargetObject $resolvedPackagePath
     }
 
-    return [pscustomobject]@{
-        Type = $resolvedPackageType
-        PackagePath = $resolvedPackagePath
-        PackageFileName = [System.IO.Path]::GetFileName($resolvedPackagePath)
-    }
+    return Get-NovaPackageUploadFileInfo -PackageType $resolvedPackageType -PackagePath $resolvedPackagePath
 }
-

@@ -7,10 +7,7 @@ function Resolve-NovaPackageUploadExplicitFileList {
         [string[]]$PackageType
     )
 
-    $requestedTypeList = @()
-    if (@($PackageType).Count -gt 0) {
-        $requestedTypeList = @(Resolve-NovaPackageUploadTypeList -ProjectInfo $ProjectInfo -PackageType $PackageType)
-    }
+    $requestedTypeList = @(Get-NovaPackageUploadRequestedTypeList -ProjectInfo $ProjectInfo -PackageType $PackageType)
 
     $resolvedFileList = @(
     $PackagePath |
@@ -20,4 +17,3 @@ function Resolve-NovaPackageUploadExplicitFileList {
 
     return $resolvedFileList
 }
-
