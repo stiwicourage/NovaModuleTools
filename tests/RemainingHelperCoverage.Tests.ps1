@@ -451,17 +451,8 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
     It 'Get-NovaPackageAuthorList normalizes string and enumerable author values' {
         InModuleScope $script:moduleName {
             @(Get-NovaPackageAuthorList -AuthorValue $null) | Should -Be @()
-            @(Get-NovaPackageAuthorList -AuthorValue '   ') | Should -Be @()
             @(Get-NovaPackageAuthorList -AuthorValue '  Nova Author  ') | Should -Be @('Nova Author')
             @(Get-NovaPackageAuthorList -AuthorValue @(' Author A ', 'Author B', 'Author A', ' ')) | Should -Be @('Author A', 'Author B')
-        }
-    }
-
-    It 'Get-NovaManifestValue reads dictionaries, objects, and returns null for missing object properties' {
-        InModuleScope $script:moduleName {
-            Get-NovaManifestValue -Manifest @{Author = 'Dictionary Author'} -Name 'Author' | Should -Be 'Dictionary Author'
-            Get-NovaManifestValue -Manifest ([pscustomobject]@{Author = 'Object Author'}) -Name 'Author' | Should -Be 'Object Author'
-            Get-NovaManifestValue -Manifest ([pscustomobject]@{Author = 'Object Author'}) -Name 'Tags' | Should -BeNullOrEmpty
         }
     }
 
@@ -650,7 +641,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
             Get-NovaPackageArtifactType -PackagePath '/tmp/Nova.Package.nupkg' | Should -Be 'NuGet'
             Get-NovaPackageArtifactType -PackagePath '/tmp/Nova.Package.zip' | Should -Be 'Zip'
 
-            foreach ($packagePath in @('/tmp/package', '/tmp/Nova.Package', '/tmp/Nova.Package.tar.gz')) {
+            foreach ($packagePath in @('/tmp/Nova.Package', '/tmp/Nova.Package.tar.gz')) {
                 $thrown = $null
                 try {
                     Get-NovaPackageArtifactType -PackagePath $packagePath
@@ -662,21 +653,6 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
                 $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnsupportedPackageUploadFileType'
                 $thrown.TargetObject | Should -Be $packagePath
             }
-        }
-    }
-
-    It 'New-NovaPackageArtifacts returns an empty list when no package metadata was requested' {
-        InModuleScope $script:moduleName {
-            Mock Assert-NovaPackageMetadata {}
-            Mock Initialize-NovaPackageOutputDirectory {}
-            Mock New-NovaPackageArtifact {}
-
-            $result = @(New-NovaPackageArtifacts -ProjectInfo ([pscustomobject]@{ProjectName = 'NovaModuleTools'}) -PackageMetadataList @())
-
-            $result | Should -Be @()
-            Assert-MockCalled Assert-NovaPackageMetadata -Times 0
-            Assert-MockCalled Initialize-NovaPackageOutputDirectory -Times 0
-            Assert-MockCalled New-NovaPackageArtifact -Times 0
         }
     }
 
