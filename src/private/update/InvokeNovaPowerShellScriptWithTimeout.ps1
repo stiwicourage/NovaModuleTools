@@ -3,10 +3,11 @@ function Invoke-NovaPowerShellScriptWithTimeout {
     param(
         [Parameter(Mandatory)][string]$Script,
         [object[]]$ArgumentList = @(),
-        [int]$TimeoutMilliseconds = 3000
+        [int]$TimeoutMilliseconds = 3000,
+        [scriptblock]$PowerShellFactory = {[powershell]::Create()}
     )
 
-    $powershell = [powershell]::Create()
+    $powershell = & $PowerShellFactory
     try {
         $null = $powershell.AddScript($Script)
         foreach ($argument in $ArgumentList) {

@@ -5,6 +5,10 @@ $global:updateNotificationTestSupportFunctionNameList = @(
     'Invoke-TestNotificationPreferenceToggle'
     'Assert-TestNotificationPreferenceToggleResult'
     'Invoke-TestNovaSelfUpdate'
+    'New-TestPowerShellRunnerState'
+    'New-TestPowerShellWaitHandle'
+    'Add-TestPowerShellRunnerMethods'
+    'New-TestPowerShellRunner'
 )
 
 . $script:updateNotificationTestSupportPath
@@ -37,6 +41,7 @@ BeforeAll {
     Remove-Module $script:moduleName -ErrorAction SilentlyContinue
     Import-Module $script:distModuleDir -Force
 }
+
 
 Describe 'Update notification behavior' {
     It 'Get-NovaUpdateNotificationPreferenceStatus shapes the stored preference and settings path' {
@@ -634,6 +639,100 @@ throw 'offline'
 '@
 
             $result | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'Get-NovaPrereleaseModuleUpdateConfirmationPrompt returns the expected caption and message text' {
+        InModuleScope $script:moduleName {
+            $prompt = Get-NovaPrereleaseModuleUpdateConfirmationPrompt -CurrentVersion '1.2.3' -TargetVersion '1.3.0-preview1'
+
+            $prompt.Caption | Should -Be 'Confirm prerelease NovaModuleTools update'
+            $prompt.Message | Should -Be @"
+NovaModuleTools would update from 1.2.3 to prerelease 1.3.0-preview1.
+
+Prerelease updates may be less stable than released versions.
+Continue with the prerelease update?
+"@
+        }
+    }
+
+    It 'Confirm-NovaPrereleaseModuleUpdate delegates the generated prompt to ShouldContinue and returns the decision' {
+        InModuleScope $script:moduleName {
+            $calls = [System.Collections.Generic.List[object]]::new()
+            $cmdlet = [pscustomobject]@{
+                Calls = $calls
+                ShouldContinueResult = $false
+            }
+            $cmdlet | Add-Member -MemberType ScriptMethod -Name ShouldContinue -Value {
+                param($Message, $Caption)
+
+                $this.Calls.Add([pscustomobject]@{
+                    Message = $Message
+                    Caption = $Caption
+                }) | Out-Null
+                return $this.ShouldContinueResult
+            }
+
+            $result = Confirm-NovaPrereleaseModuleUpdate -Cmdlet $cmdlet -CurrentVersion '1.2.3' -TargetVersion '2.0.0-preview2'
+
+            $result | Should -BeFalse
+            $calls.Count | Should -Be 1
+            $calls[0].Caption | Should -Be 'Confirm prerelease NovaModuleTools update'
+            $calls[0].Message | Should -Match '1.2.3'
+            $calls[0].Message | Should -Match '2.0.0-preview2'
+        }
+    }
+
+    It 'Invoke-NovaPowerShellScriptWithTimeout returns the first pipeline result and forwards arguments when the script completes' {
+        $runner = New-TestPowerShellRunner -ShouldComplete:$true -EndInvokeResult @('first result', 'second result')
+
+        InModuleScope $script:moduleName -Parameters @{Runner = $runner} {
+            param($Runner)
+
+            $result = Invoke-NovaPowerShellScriptWithTimeout -Script 'param($name, $flag)' -ArgumentList @('NovaModuleTools', $true) -TimeoutMilliseconds 321 -PowerShellFactory {$runner}
+
+            $result | Should -Be 'first result'
+            $Runner.State.Script | Should -Be 'param($name, $flag)'
+            @($Runner.State.Arguments) | Should -Be @('NovaModuleTools', $true)
+            $Runner.State.LastTimeoutMilliseconds | Should -Be 321
+            $Runner.State.EndInvokeCalls | Should -Be 1
+            $Runner.State.StopCalls | Should -Be 0
+            $Runner.State.DisposeCalls | Should -Be 1
+        }
+    }
+
+    It 'Invoke-NovaPowerShellScriptWithTimeout returns nothing and stops the pipeline when the timeout is exceeded' {
+        $runner = New-TestPowerShellRunner -ShouldComplete:$false
+
+        InModuleScope $script:moduleName -Parameters @{Runner = $runner} {
+            param($Runner)
+
+            $result = Invoke-NovaPowerShellScriptWithTimeout -Script 'Start-Sleep -Seconds 30' -TimeoutMilliseconds 25 -PowerShellFactory {$Runner}
+
+            $result | Should -BeNullOrEmpty
+            $Runner.State.LastTimeoutMilliseconds | Should -Be 25
+            $Runner.State.StopCalls | Should -Be 1
+            $Runner.State.EndInvokeCalls | Should -Be 0
+            $Runner.State.DisposeCalls | Should -Be 1
+        }
+    }
+
+    It 'Invoke-NovaPowerShellScriptWithTimeout swallows stop and EndInvoke failures and still disposes the pipeline' {
+        $stopFailureRunner = New-TestPowerShellRunner -ShouldComplete:$false -ThrowOnStop
+        $endFailureRunner = New-TestPowerShellRunner -ShouldComplete:$true -ThrowOnEndInvoke
+
+        InModuleScope $script:moduleName -Parameters @{StopFailureRunner = $stopFailureRunner; EndFailureRunner = $endFailureRunner} {
+            param($StopFailureRunner, $EndFailureRunner)
+
+            $timedOutResult = Invoke-NovaPowerShellScriptWithTimeout -Script 'Start-Sleep -Seconds 30' -TimeoutMilliseconds 25 -PowerShellFactory {$StopFailureRunner}
+            $endFailureResult = Invoke-NovaPowerShellScriptWithTimeout -Script 'throw' -PowerShellFactory {$EndFailureRunner}
+
+            $timedOutResult | Should -BeNullOrEmpty
+            $endFailureResult | Should -BeNullOrEmpty
+            $StopFailureRunner.State.StopCalls | Should -Be 1
+            $StopFailureRunner.State.DisposeCalls | Should -Be 1
+            $EndFailureRunner.State.EndInvokeCalls | Should -Be 1
+            $EndFailureRunner.State.DisposeCalls | Should -Be 1
         }
     }
 

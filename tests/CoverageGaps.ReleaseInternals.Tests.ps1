@@ -380,6 +380,134 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
+    It 'Get-NovaPublishedLocalManifestPath returns nothing for non-local publish invocations and resolves the local manifest path when enabled' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+            $localInvocation = [pscustomobject]@{
+                IsLocal = $true
+                Target = '/tmp/modules'
+                Parameters = @{ProjectInfo = $projectInfo}
+            }
+
+            Get-NovaPublishedLocalManifestPath -PublishInvocation ([pscustomobject]@{IsLocal = $false; Target = '/tmp/ignored'; Parameters = @{ProjectInfo = $projectInfo}}) | Should -BeNullOrEmpty
+            Get-NovaPublishedLocalManifestPath -PublishInvocation $localInvocation | Should -Be (Join-Path '/tmp/modules/NovaModuleTools' 'NovaModuleTools.psd1')
+        }
+    }
+
+    It 'Get-NovaLocalPublishActivation returns nothing for non-local publishes and resolves import details for local publishes' {
+        InModuleScope $script:moduleName {
+            $importAction = {'imported'}
+
+            Mock Get-NovaPublishedLocalManifestPath {'/tmp/modules/NovaModuleTools/NovaModuleTools.psd1'}
+            Mock Get-Command {[pscustomobject]@{ScriptBlock = $importAction}} -ParameterFilter {
+                $Name -eq 'Import-NovaPublishedLocalModule' -and $CommandType -eq 'Function'
+            }
+
+            Get-NovaLocalPublishActivation -PublishInvocation ([pscustomobject]@{IsLocal = $false}) | Should -BeNullOrEmpty
+
+            $result = Get-NovaLocalPublishActivation -PublishInvocation ([pscustomobject]@{IsLocal = $true; Target = '/tmp/modules'; Parameters = @{ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}}})
+
+            $result.ManifestPath | Should -Be '/tmp/modules/NovaModuleTools/NovaModuleTools.psd1'
+            $result.ImportAction | Should -Be $importAction
+            Assert-MockCalled Get-NovaPublishedLocalManifestPath -Times 1
+            Assert-MockCalled Get-Command -Times 1 -ParameterFilter {
+                $Name -eq 'Import-NovaPublishedLocalModule' -and $CommandType -eq 'Function'
+            }
+        }
+    }
+
+    It 'Get-NovaInstalledProjectManifestPath delegates through the local publish manifest helper with the resolved target path' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'; ProjectRoot = '/tmp/project'}
+
+            Mock Resolve-NovaLocalPublishPath {'/tmp/modules'}
+            Mock Get-NovaPublishedLocalManifestPath {
+                $PublishInvocation.IsLocal | Should -BeTrue
+                $PublishInvocation.Target | Should -Be '/tmp/modules'
+                $PublishInvocation.Parameters.ProjectInfo | Should -Be $projectInfo
+                return '/tmp/modules/NovaModuleTools/NovaModuleTools.psd1'
+            }
+
+            $result = Get-NovaInstalledProjectManifestPath -ProjectInfo $projectInfo -ModuleDirectoryPath '/tmp/custom-modules'
+
+            $result | Should -Be '/tmp/modules/NovaModuleTools/NovaModuleTools.psd1'
+            Assert-MockCalled Resolve-NovaLocalPublishPath -Times 1 -ParameterFilter {$ModuleDirectoryPath -eq '/tmp/custom-modules'}
+            Assert-MockCalled Get-NovaPublishedLocalManifestPath -Times 1
+        }
+    }
+
+    It 'Get-NovaResolvedPublishParameterMap copies publish parameters and lets workflow values override matching keys' {
+        InModuleScope $script:moduleName {
+            $publishInvocation = [pscustomobject]@{
+                Parameters = [ordered]@{
+                    ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                    Repository = 'PSGallery'
+                    ApiKey = 'initial-key'
+                }
+            }
+
+            $result = Get-NovaResolvedPublishParameterMap -PublishInvocation $publishInvocation -WorkflowParams @{ApiKey = 'workflow-key'; Confirm = $false}
+
+            $result.ProjectInfo.ProjectName | Should -Be 'NovaModuleTools'
+            $result.Repository | Should -Be 'PSGallery'
+            $result.ApiKey | Should -Be 'workflow-key'
+            $result.Confirm | Should -BeFalse
+        }
+    }
+
+    It 'Import-NovaPublishedLocalModule fails clearly when the local manifest is missing' {
+        InModuleScope $script:moduleName {
+            Mock Test-Path {$false} -ParameterFilter {$LiteralPath -eq '/tmp/missing.psd1' -and $PathType -eq 'Leaf'}
+            Mock Stop-NovaOperation {throw [System.InvalidOperationException]::new($Message)}
+
+            {Import-NovaPublishedLocalModule -ProjectName 'NovaModuleTools' -ManifestPath '/tmp/missing.psd1'} | Should -Throw 'Expected locally published module manifest at: /tmp/missing.psd1'
+            Assert-MockCalled Stop-NovaOperation -Times 1 -ParameterFilter {
+                $Message -eq 'Expected locally published module manifest at: /tmp/missing.psd1' -and
+                        $ErrorId -eq 'Nova.Environment.LocalPublishedModuleManifestNotFound' -and
+                        $Category -eq 'ObjectNotFound' -and
+                        $TargetObject -eq '/tmp/missing.psd1'
+            }
+        }
+    }
+
+    It 'Import-NovaPublishedLocalModule imports the requested local module manifest as a global module' {
+        InModuleScope $script:moduleName {
+            $importedModule = [pscustomobject]@{Path = '/tmp/modules/NovaModuleTools/NovaModuleTools.psd1'; Name = 'NovaModuleTools'}
+
+            Mock Test-Path {$true}
+            Mock Get-Module {@()}
+            Mock Remove-Module {}
+            Mock Import-Module {$importedModule}
+
+            $result = Import-NovaPublishedLocalModule -ProjectName 'NovaModuleTools' -ManifestPath $importedModule.Path
+
+            $result | Should -Be $importedModule
+            Assert-MockCalled Import-Module -Times 1
+        }
+    }
+
+    It 'Import-NovaPublishedLocalModule removes matching and stale loaded module instances around the import' {
+        InModuleScope $script:moduleName {
+            $importedModule = [pscustomobject]@{Path = '/tmp/modules/NovaModuleTools/NovaModuleTools.psd1'; Name = 'NovaModuleTools'}
+
+            Mock Test-Path {$true} -ParameterFilter {$LiteralPath -eq $importedModule.Path -and $PathType -eq 'Leaf'}
+            Mock Get-Module {
+                @(
+                    [pscustomobject]@{Path = $importedModule.Path}
+                    [pscustomobject]@{Path = '/tmp/modules/NovaModuleTools/legacy.psd1'}
+                )
+            } -ParameterFilter {$Name -eq 'NovaModuleTools' -and $All}
+            Mock Remove-Module {}
+            Mock Import-Module {$importedModule} -ParameterFilter {
+                $Name -eq $importedModule.Path -and $Force -and $Global -and $PassThru -and $ErrorAction -eq 'Stop'
+            }
+
+            $null = Import-NovaPublishedLocalModule -ProjectName 'NovaModuleTools' -ManifestPath $importedModule.Path
+
+            Assert-MockCalled Remove-Module -Times 2
+        }
+    }
+
     It 'Get-GitCommitMessageForVersionBump returns empty when the project is not a git repository' {
         InModuleScope $script:moduleName {
             $projectRoot = Join-Path $TestDrive 'no-git-project'
