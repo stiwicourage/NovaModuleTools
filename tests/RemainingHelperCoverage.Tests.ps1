@@ -207,6 +207,72 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         }
     }
 
+    It 'Get-NovaModulePsDataValue returns null for null PSData and reads object properties when present' {
+        InModuleScope $script:moduleName {
+            $nullPsDataModule = [pscustomobject]@{
+                PrivateData = [pscustomobject]@{PSData = $null}
+            }
+            $objectPsDataModule = [pscustomobject]@{
+                PrivateData = [pscustomobject]@{
+                    PSData = [pscustomobject]@{
+                        Prerelease = 'preview'
+                    }
+                }
+            }
+
+            Get-NovaModulePsDataValue -Name 'Prerelease' -Module $nullPsDataModule | Should -BeNullOrEmpty
+            Get-NovaModulePsDataValue -Name 'Prerelease' -Module $objectPsDataModule | Should -Be 'preview'
+            Get-NovaModulePsDataValue -Name 'ReleaseNotes' -Module $objectPsDataModule | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'Get-NovaResolvedProjectManifestSettings returns a copy for manifest hashtables and an empty ordered table otherwise' {
+        InModuleScope $script:moduleName {
+            $projectDataWithManifest = @{
+                Manifest = [ordered]@{
+                    Author = 'Nova Author'
+                    Description = 'Manifest description'
+                }
+            }
+            $resolvedManifest = Get-NovaResolvedProjectManifestSettings -ProjectData $projectDataWithManifest
+
+            $resolvedManifest['Author'] | Should -Be 'Nova Author'
+            $resolvedManifest['Description'] | Should -Be 'Manifest description'
+            $resolvedManifest.GetType().Name | Should -Be 'OrderedDictionary'
+
+            $resolvedManifest['Author'] = 'Changed'
+            $projectDataWithManifest.Manifest.Author | Should -Be 'Nova Author'
+
+            (Get-NovaResolvedProjectManifestSettings -ProjectData @{}).Count | Should -Be 0
+            (Get-NovaResolvedProjectManifestSettings -ProjectData @{Manifest = 'invalid'}).Count | Should -Be 0
+        }
+    }
+
+    It 'Get-NovaProjectPackageOutputDirectorySettingsTable returns dictionary copies and wraps scalar paths' {
+        InModuleScope $script:moduleName {
+            $dictionarySettings = [ordered]@{
+                OutputDirectory = [ordered]@{
+                    Path = 'artifacts/packages'
+                    Clean = $true
+                }
+            }
+            $resolvedDictionarySettings = Get-NovaProjectPackageOutputDirectorySettingsTable -PackageSettings $dictionarySettings
+
+            $resolvedDictionarySettings.Path | Should -Be 'artifacts/packages'
+            $resolvedDictionarySettings.Clean | Should -BeTrue
+            $resolvedDictionarySettings.GetType().Name | Should -Be 'OrderedDictionary'
+
+            $resolvedDictionarySettings['Path'] = 'changed'
+            $dictionarySettings.OutputDirectory.Path | Should -Be 'artifacts/packages'
+
+            $resolvedStringSettings = Get-NovaProjectPackageOutputDirectorySettingsTable -PackageSettings @{OutputDirectory = 'dist/packages'}
+            $resolvedStringSettings.Path | Should -Be 'dist/packages'
+
+            $resolvedMissingSettings = Get-NovaProjectPackageOutputDirectorySettingsTable -PackageSettings @{}
+            $resolvedMissingSettings.Path | Should -BeNullOrEmpty
+        }
+    }
+
     It 'Test-ProjectSchema validates the Build schema' {
         InModuleScope $script:moduleName {
             Mock Get-ResourceFilePath {
@@ -385,8 +451,17 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
     It 'Get-NovaPackageAuthorList normalizes string and enumerable author values' {
         InModuleScope $script:moduleName {
             @(Get-NovaPackageAuthorList -AuthorValue $null) | Should -Be @()
+            @(Get-NovaPackageAuthorList -AuthorValue '   ') | Should -Be @()
             @(Get-NovaPackageAuthorList -AuthorValue '  Nova Author  ') | Should -Be @('Nova Author')
             @(Get-NovaPackageAuthorList -AuthorValue @(' Author A ', 'Author B', 'Author A', ' ')) | Should -Be @('Author A', 'Author B')
+        }
+    }
+
+    It 'Get-NovaManifestValue reads dictionaries, objects, and returns null for missing object properties' {
+        InModuleScope $script:moduleName {
+            Get-NovaManifestValue -Manifest @{Author = 'Dictionary Author'} -Name 'Author' | Should -Be 'Dictionary Author'
+            Get-NovaManifestValue -Manifest ([pscustomobject]@{Author = 'Object Author'}) -Name 'Author' | Should -Be 'Object Author'
+            Get-NovaManifestValue -Manifest ([pscustomobject]@{Author = 'Object Author'}) -Name 'Tags' | Should -BeNullOrEmpty
         }
     }
 
@@ -575,7 +650,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
             Get-NovaPackageArtifactType -PackagePath '/tmp/Nova.Package.nupkg' | Should -Be 'NuGet'
             Get-NovaPackageArtifactType -PackagePath '/tmp/Nova.Package.zip' | Should -Be 'Zip'
 
-            foreach ($packagePath in @('/tmp/Nova.Package', '/tmp/Nova.Package.tar.gz')) {
+            foreach ($packagePath in @('/tmp/package', '/tmp/Nova.Package', '/tmp/Nova.Package.tar.gz')) {
                 $thrown = $null
                 try {
                     Get-NovaPackageArtifactType -PackagePath $packagePath
@@ -587,6 +662,21 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
                 $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnsupportedPackageUploadFileType'
                 $thrown.TargetObject | Should -Be $packagePath
             }
+        }
+    }
+
+    It 'New-NovaPackageArtifacts returns an empty list when no package metadata was requested' {
+        InModuleScope $script:moduleName {
+            Mock Assert-NovaPackageMetadata {}
+            Mock Initialize-NovaPackageOutputDirectory {}
+            Mock New-NovaPackageArtifact {}
+
+            $result = @(New-NovaPackageArtifacts -ProjectInfo ([pscustomobject]@{ProjectName = 'NovaModuleTools'}) -PackageMetadataList @())
+
+            $result | Should -Be @()
+            Assert-MockCalled Assert-NovaPackageMetadata -Times 0
+            Assert-MockCalled Initialize-NovaPackageOutputDirectory -Times 0
+            Assert-MockCalled New-NovaPackageArtifact -Times 0
         }
     }
 

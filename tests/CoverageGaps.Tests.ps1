@@ -507,6 +507,28 @@ Describe 'Coverage gaps for scaffold internals' {
         }
     }
 
+    It 'Initialize-NovaModule defaults Path to the current location when Path is omitted' {
+        InModuleScope $script:moduleName {
+            Mock Get-Location {[pscustomobject]@{Path = '/tmp/default-scaffold-root'}}
+            Mock Get-NovaModuleInitializationWorkflowContext {
+                [pscustomobject]@{
+                    Target = '/tmp/default-scaffold-root/NovaDelegation'
+                    Action = 'Create Nova module scaffold'
+                }
+            }
+            Mock Invoke-NovaModuleInitializationWorkflow {}
+
+            Initialize-NovaModule -Confirm:$false
+
+            Assert-MockCalled Get-NovaModuleInitializationWorkflowContext -Times 1 -ParameterFilter {
+                $Path -eq '/tmp/default-scaffold-root' -and -not $Example
+            }
+            Assert-MockCalled Invoke-NovaModuleInitializationWorkflow -Times 1 -ParameterFilter {
+                $WorkflowContext.Target -eq '/tmp/default-scaffold-root/NovaDelegation'
+            }
+        }
+    }
+
     It 'Initialize-NovaModule -Example creates the packaged example scaffold without asking about Pester' {
         InModuleScope $script:moduleName {
             $answer = @{
