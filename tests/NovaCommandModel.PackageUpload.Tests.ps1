@@ -22,6 +22,7 @@ foreach ($functionName in $global:novaCommandModelTestSupportFunctionNameList) {
     $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
     Set-Item -Path "function:global:$functionName" -Value $scriptBlock
 }
+
 foreach ($functionName in $global:novaCommandModelPackageUploadTestSupportFunctionNameList) {
     $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
     Set-Item -Path "function:global:$functionName" -Value $scriptBlock
@@ -237,6 +238,131 @@ Describe 'Nova command model - package upload behavior' {
             Assert-MockCalled Resolve-NovaPackageUploadTarget -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'PackageProject' -and $Repository -eq 'LocalRaw' -and $UploadPath -eq 'modules'}
             Assert-MockCalled Resolve-NovaPackageUploadHeaders -Times 1 -ParameterFilter {$UploadTarget.Repository -eq 'LocalRaw' -and $UploadOption.Repository -eq 'LocalRaw'}
             Assert-MockCalled Get-NovaPackageUploadArtifact -Times 1 -ParameterFilter {$PackageFileInfo.PackageFileName -eq 'PackageProject.2.3.4.zip' -and $UploadTarget.Repository -eq 'LocalRaw'}
+        }
+    }
+
+    It 'Get-NovaPackageUploadFileList prefers explicit package paths over output discovery' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{ProjectName = 'PackageProject'}
+            $explicitFileList = @(
+                [pscustomobject]@{Type = 'Zip'; PackagePath = '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip'; PackageFileName = 'PackageProject.2.3.4.zip'}
+            )
+
+            Mock Resolve-NovaPackageUploadExplicitFileList {$explicitFileList}
+            Mock Resolve-NovaPackageUploadOutputFileList {throw 'explicit package selection should not fall back to output discovery'}
+
+            $result = @(Get-NovaPackageUploadFileList -ProjectInfo $projectInfo -PackagePath @(' ', '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip', '') -PackageType @('Zip'))
+
+            $result.PackagePath | Should -Be @('/tmp/project/artifacts/packages/PackageProject.2.3.4.zip')
+            Assert-MockCalled Resolve-NovaPackageUploadExplicitFileList -Times 1 -ParameterFilter {
+                $ProjectInfo.ProjectName -eq 'PackageProject' -and
+                        $PackagePath.Count -eq 1 -and
+                        $PackagePath[0] -eq '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip' -and
+                        $PackageType.Count -eq 1 -and
+                        $PackageType[0] -eq 'Zip'
+            }
+            Assert-MockCalled Resolve-NovaPackageUploadOutputFileList -Times 0
+        }
+    }
+
+    It 'Get-NovaPackageUploadFileList falls back to output discovery when explicit package paths are not provided' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{ProjectName = 'PackageProject'}
+            $outputFileList = @(
+                [pscustomobject]@{Type = 'Zip'; PackagePath = '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip'; PackageFileName = 'PackageProject.2.3.4.zip'}
+            )
+
+            Mock Resolve-NovaPackageUploadExplicitFileList {throw 'output discovery should be used when PackagePath is empty'}
+            Mock Resolve-NovaPackageUploadOutputFileList {$outputFileList}
+
+            $result = @(Get-NovaPackageUploadFileList -ProjectInfo $projectInfo -PackagePath @('', '   ') -PackageType @('Zip'))
+
+            $result.PackagePath | Should -Be @('/tmp/project/artifacts/packages/PackageProject.2.3.4.zip')
+            Assert-MockCalled Resolve-NovaPackageUploadExplicitFileList -Times 0
+            Assert-MockCalled Resolve-NovaPackageUploadOutputFileList -Times 1 -ParameterFilter {
+                $ProjectInfo.ProjectName -eq 'PackageProject' -and
+                        $PackageType.Count -eq 1 -and
+                        $PackageType[0] -eq 'Zip'
+            }
+        }
+    }
+
+    It 'Get-NovaPackageUploadRequestedTypeList returns an empty list when PackageType is omitted or whitespace' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{ProjectName = 'PackageProject'}
+
+            Mock Resolve-NovaPackageUploadTypeList {throw 'type resolution should be skipped when no package types were requested'}
+
+            $result = @(Get-NovaPackageUploadRequestedTypeList -ProjectInfo $projectInfo -PackageType @('', '   '))
+
+            $result.Count | Should -Be 0
+            Assert-MockCalled Resolve-NovaPackageUploadTypeList -Times 0
+        }
+    }
+
+    It 'Resolve-NovaPackageUploadExplicitFileList resolves requested types once and deduplicates by package path' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{ProjectName = 'PackageProject'}
+
+            Mock Get-NovaPackageUploadRequestedTypeList {@('Zip')}
+            Mock Resolve-NovaPackageUploadExplicitFile {
+                [pscustomobject]@{
+                    Type = 'Zip'
+                    PackagePath = '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip'
+                    PackageFileName = 'PackageProject.2.3.4.zip'
+                }
+            }
+
+            $result = @(Resolve-NovaPackageUploadExplicitFileList -ProjectInfo $projectInfo -PackagePath @('/tmp/project/artifacts/packages/PackageProject.2.3.4.zip', './artifacts/packages/PackageProject.2.3.4.zip') -PackageType @('Zip'))
+
+            $result.Count | Should -Be 1
+            $result[0].PackageFileName | Should -Be 'PackageProject.2.3.4.zip'
+            Assert-MockCalled Get-NovaPackageUploadRequestedTypeList -Times 1 -ParameterFilter {
+                $ProjectInfo.ProjectName -eq 'PackageProject' -and
+                        $PackageType.Count -eq 1 -and
+                        $PackageType[0] -eq 'Zip'
+            }
+            Assert-MockCalled Resolve-NovaPackageUploadExplicitFile -Times 2 -ParameterFilter {
+                $RequestedPackageTypeList.Count -eq 1 -and
+                        $RequestedPackageTypeList[0] -eq 'Zip'
+            }
+        }
+    }
+
+    It 'Resolve-NovaPackageUploadOutputFileList resolves types before discovering artifacts in the output directory' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{ProjectName = 'PackageProject'}
+
+            Mock Resolve-NovaPackageUploadTypeList {@('NuGet', 'Zip')}
+            Mock Get-NovaPackageOutputDirectory {'/tmp/project/artifacts/packages'}
+            Mock Test-Path {$true} -ParameterFilter {$LiteralPath -eq '/tmp/project/artifacts/packages' -and $PathType -eq 'Container'}
+            Mock Resolve-NovaPackageUploadOutputFileSet {
+                [pscustomobject]@{
+                    Type = $PackageType
+                    PackagePath = "/tmp/project/artifacts/packages/PackageProject.2.3.4.$($PackageType.ToLower() )"
+                    PackageFileName = "PackageProject.2.3.4.$($PackageType.ToLower() )"
+                }
+            }
+
+            $result = @(Resolve-NovaPackageUploadOutputFileList -ProjectInfo $projectInfo -PackageType @('NuGet', 'Zip'))
+
+            $result.Type | Should -Be @('NuGet', 'Zip')
+            Assert-MockCalled Resolve-NovaPackageUploadTypeList -Times 1 -ParameterFilter {
+                $ProjectInfo.ProjectName -eq 'PackageProject' -and
+                        $PackageType.Count -eq 2
+            }
+            Assert-MockCalled Resolve-NovaPackageUploadOutputFileSet -Times 1 -ParameterFilter {$PackageType -eq 'NuGet' -and $OutputDirectory -eq '/tmp/project/artifacts/packages'}
+            Assert-MockCalled Resolve-NovaPackageUploadOutputFileSet -Times 1 -ParameterFilter {$PackageType -eq 'Zip' -and $OutputDirectory -eq '/tmp/project/artifacts/packages'}
+        }
+    }
+
+    It 'Get-NovaPackageUploadFileInfo falls back to the package path file name when none is provided' {
+        InModuleScope $script:moduleName {
+            $result = Get-NovaPackageUploadFileInfo -PackageType 'Zip' -PackagePath '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip'
+
+            $result.Type | Should -Be 'Zip'
+            $result.PackagePath | Should -Be '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip'
+            $result.PackageFileName | Should -Be 'PackageProject.2.3.4.zip'
         }
     }
 
