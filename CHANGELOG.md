@@ -64,6 +64,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `latest` files in the configured package output directory.
 - Add opt-in skip-test support to the package, publish, and release workflows for CI/CD-oriented delivery paths where
   tests already ran earlier in the pipeline.
+
+### Fixed
+
+- Fix unsupported `nova` help invocations so they now return Nova's structured CLI validation error instead of a
+  PowerShell parameter-binding failure.
+- Keep manifest/package helper edge cases aligned with their intended behavior.
+    - Manifest settings resolution now accepts ordered dictionary metadata shapes in addition to plain hashtables.
+    - `New-NovaPackageArtifacts` now accepts an empty metadata list and returns an empty artifact result instead of
+      failing during parameter binding.
 - Centralize delivery configuration resolution so raw package upload, update notification settings, and PSGallery
   publishing now follow one explicit precedence model without surfacing configured secrets in error text.
     - Raw upload now resolves command overrides before named repository settings, then package defaults.
