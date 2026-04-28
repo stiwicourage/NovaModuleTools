@@ -16,4 +16,3 @@ function Initialize-NovaCommandModelTestSupport {
 }
 
 . Initialize-NovaCommandModelTestSupport
-

@@ -21,4 +21,3 @@ function Resolve-NovaPackageUploadTarget {
         Auth = $targetSettings.Auth
     }
 }
-

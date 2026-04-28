@@ -15,4 +15,3 @@ function Add-NovaZipTextEntry {
         $streamWriter.Dispose()
     }
 }
-

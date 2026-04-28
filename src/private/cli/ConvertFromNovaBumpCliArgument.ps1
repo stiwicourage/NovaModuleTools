@@ -11,4 +11,3 @@ function ConvertFrom-NovaBumpCliArgument {
         '-i' = 'ContinuousIntegration'
     }
 }
-

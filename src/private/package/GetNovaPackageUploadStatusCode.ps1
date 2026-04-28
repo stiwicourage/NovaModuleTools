@@ -14,4 +14,3 @@ function Get-NovaPackageUploadStatusCode {
 
     return $null
 }
-

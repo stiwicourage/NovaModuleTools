@@ -8,4 +8,3 @@ function Write-ProjectJsonData {
     $projectJsonContent = $Data | ConvertTo-Json -Depth 20
     Set-Content -LiteralPath $ProjectJsonPath -Value $projectJsonContent -Encoding utf8
 }
-

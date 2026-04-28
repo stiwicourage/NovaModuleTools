@@ -16,4 +16,3 @@ function Get-NovaResolvedProjectPackageOutputDirectorySettings {
     $outputDirectorySettings['Clean'] = [bool]$outputDirectorySettings['Clean']
     return $outputDirectorySettings
 }
-

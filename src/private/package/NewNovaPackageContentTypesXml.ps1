@@ -38,4 +38,3 @@ function New-NovaPackageContentTypesXml {
     $xmlLines += '</Types>'
     return $xmlLines -join [Environment]::NewLine
 }
-

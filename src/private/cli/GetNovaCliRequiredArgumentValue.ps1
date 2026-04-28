@@ -13,4 +13,3 @@ function Get-NovaCliRequiredArgumentValue {
 
     return $Arguments[$Index.Value]
 }
-

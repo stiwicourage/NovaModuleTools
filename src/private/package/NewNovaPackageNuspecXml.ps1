@@ -25,4 +25,3 @@ function New-NovaPackageNuspecXml {
         '</package>'
     ) -join [Environment]::NewLine
 }
-

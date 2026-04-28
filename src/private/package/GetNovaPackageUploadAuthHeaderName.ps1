@@ -11,4 +11,3 @@ function Get-NovaPackageUploadAuthHeaderName {
 
     return "$headerName".Trim()
 }
-

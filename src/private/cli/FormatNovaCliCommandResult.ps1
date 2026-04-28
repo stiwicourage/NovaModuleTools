@@ -70,4 +70,3 @@ function Format-NovaCliCommandResult {
 
     return $Result
 }
-

@@ -8,5 +8,3 @@ function Invoke-NovaCliDeployCommand {
     $options = ConvertFrom-NovaDeployCliArgument -Arguments $Arguments
     return Deploy-NovaPackage @options @ForwardedParameters
 }
-
-

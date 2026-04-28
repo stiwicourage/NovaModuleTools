@@ -12,4 +12,3 @@ function Get-NovaPackageArtifactSearchPattern {
 
     return "$( $patternInfo.Pattern )$( Get-NovaPackageTypeExtension -PackageType $PackageType )"
 }
-

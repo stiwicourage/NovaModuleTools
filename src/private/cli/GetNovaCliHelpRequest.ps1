@@ -44,7 +44,7 @@ function Get-NovaCliRootHelpRequest {
         return Get-NovaCliResolvedHelpRequest -Command $Arguments[0] -View Long -TargetType Command
     }
 
-    Assert-NovaCliHelpUsageSupported -Tokens @('--help') + $Arguments
+    Assert-NovaCliHelpUsageSupported -Tokens (@('--help') + $Arguments)
 }
 
 function Get-NovaCliSubcommandHelpRequest {
@@ -63,7 +63,7 @@ function Get-NovaCliSubcommandHelpRequest {
     }
 
     if (@($Arguments | Where-Object {Test-NovaCliHelpToken -Argument $_}).Count -gt 0) {
-        Assert-NovaCliHelpUsageSupported -Tokens @($Command) + $Arguments
+        Assert-NovaCliHelpUsageSupported -Tokens (@($Command) + $Arguments)
     }
 
     return $null
@@ -83,5 +83,3 @@ function Get-NovaCliHelpRequest {
 
     return Get-NovaCliSubcommandHelpRequest -Command $normalizedCommand -Arguments $Arguments
 }
-
-

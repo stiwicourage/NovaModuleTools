@@ -18,4 +18,3 @@ function Get-NovaProjectPackageSettingsTable {
 
     return $packageSettings
 }
-

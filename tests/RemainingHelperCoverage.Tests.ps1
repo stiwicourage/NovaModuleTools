@@ -207,6 +207,72 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         }
     }
 
+    It 'Get-NovaModulePsDataValue returns null for null PSData and reads object properties when present' {
+        InModuleScope $script:moduleName {
+            $nullPsDataModule = [pscustomobject]@{
+                PrivateData = [pscustomobject]@{PSData = $null}
+            }
+            $objectPsDataModule = [pscustomobject]@{
+                PrivateData = [pscustomobject]@{
+                    PSData = [pscustomobject]@{
+                        Prerelease = 'preview'
+                    }
+                }
+            }
+
+            Get-NovaModulePsDataValue -Name 'Prerelease' -Module $nullPsDataModule | Should -BeNullOrEmpty
+            Get-NovaModulePsDataValue -Name 'Prerelease' -Module $objectPsDataModule | Should -Be 'preview'
+            Get-NovaModulePsDataValue -Name 'ReleaseNotes' -Module $objectPsDataModule | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'Get-NovaResolvedProjectManifestSettings returns a copy for manifest hashtables and an empty ordered table otherwise' {
+        InModuleScope $script:moduleName {
+            $projectDataWithManifest = @{
+                Manifest = [ordered]@{
+                    Author = 'Nova Author'
+                    Description = 'Manifest description'
+                }
+            }
+            $resolvedManifest = Get-NovaResolvedProjectManifestSettings -ProjectData $projectDataWithManifest
+
+            $resolvedManifest['Author'] | Should -Be 'Nova Author'
+            $resolvedManifest['Description'] | Should -Be 'Manifest description'
+            $resolvedManifest.GetType().Name | Should -Be 'OrderedDictionary'
+
+            $resolvedManifest['Author'] = 'Changed'
+            $projectDataWithManifest.Manifest.Author | Should -Be 'Nova Author'
+
+            (Get-NovaResolvedProjectManifestSettings -ProjectData @{}).Count | Should -Be 0
+            (Get-NovaResolvedProjectManifestSettings -ProjectData @{Manifest = 'invalid'}).Count | Should -Be 0
+        }
+    }
+
+    It 'Get-NovaProjectPackageOutputDirectorySettingsTable returns dictionary copies and wraps scalar paths' {
+        InModuleScope $script:moduleName {
+            $dictionarySettings = [ordered]@{
+                OutputDirectory = [ordered]@{
+                    Path = 'artifacts/packages'
+                    Clean = $true
+                }
+            }
+            $resolvedDictionarySettings = Get-NovaProjectPackageOutputDirectorySettingsTable -PackageSettings $dictionarySettings
+
+            $resolvedDictionarySettings.Path | Should -Be 'artifacts/packages'
+            $resolvedDictionarySettings.Clean | Should -BeTrue
+            $resolvedDictionarySettings.GetType().Name | Should -Be 'OrderedDictionary'
+
+            $resolvedDictionarySettings['Path'] = 'changed'
+            $dictionarySettings.OutputDirectory.Path | Should -Be 'artifacts/packages'
+
+            $resolvedStringSettings = Get-NovaProjectPackageOutputDirectorySettingsTable -PackageSettings @{OutputDirectory = 'dist/packages'}
+            $resolvedStringSettings.Path | Should -Be 'dist/packages'
+
+            $resolvedMissingSettings = Get-NovaProjectPackageOutputDirectorySettingsTable -PackageSettings @{}
+            $resolvedMissingSettings.Path | Should -BeNullOrEmpty
+        }
+    }
+
     It 'Test-ProjectSchema validates the Build schema' {
         InModuleScope $script:moduleName {
             Mock Get-ResourceFilePath {

@@ -9,4 +9,3 @@ function ConvertFrom-NovaBuildCliArgument {
         '-i' = 'ContinuousIntegration'
     }
 }
-

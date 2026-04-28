@@ -69,4 +69,3 @@ function ConvertTo-NovaLatestPackageFileName {
 
     return $PackageFileName
 }
-

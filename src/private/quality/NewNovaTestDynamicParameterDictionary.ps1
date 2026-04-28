@@ -9,4 +9,3 @@ function New-NovaTestDynamicParameterDictionary {
     $dictionary.Add('Build',[System.Management.Automation.RuntimeDefinedParameter]::new('Build', [switch],$attributeCollection))
     return $dictionary
 }
-

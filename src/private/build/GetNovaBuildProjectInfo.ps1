@@ -10,4 +10,3 @@ function Get-NovaBuildProjectInfo {
 
     return Get-NovaProjectInfo
 }
-

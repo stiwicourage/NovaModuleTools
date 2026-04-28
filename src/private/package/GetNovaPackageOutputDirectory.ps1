@@ -17,4 +17,3 @@ function Get-NovaPackageOutputDirectory {
 
     return [System.IO.Path]::Join($ProjectInfo.ProjectRoot, $outputDirectory)
 }
-

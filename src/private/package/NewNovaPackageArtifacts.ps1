@@ -4,7 +4,7 @@ function New-NovaPackageArtifacts {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
-        [Parameter(Mandatory)][object[]]$PackageMetadataList
+        [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$PackageMetadataList
     )
 
     $resolvedPackageMetadataList = @($PackageMetadataList)

@@ -60,7 +60,3 @@ function Get-NovaTestOptionValue {
 
     return $null
 }
-
-
-
-

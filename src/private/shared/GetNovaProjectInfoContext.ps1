@@ -16,4 +16,3 @@ function Get-NovaProjectInfoContext {
         JsonData = Read-ProjectJsonData -ProjectJsonPath $projectJson
     }
 }
-

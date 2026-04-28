@@ -16,4 +16,3 @@ function Resolve-NovaPackageUploadAuthHeaderEntry {
         Value = Get-NovaPackageUploadAuthHeaderValue -AuthSettings $AuthSettings -AuthenticationScheme $UploadOption.AuthenticationScheme -HeaderName $headerName -Token $resolvedToken
     }
 }
-

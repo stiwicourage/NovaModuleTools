@@ -77,5 +77,3 @@ function Initialize-NovaPesterArtifactDirectory {
 
     $null = New-Item -ItemType Directory -Path $WorkflowContext.TestResultDirectory -Force
 }
-
-

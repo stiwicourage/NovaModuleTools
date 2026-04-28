@@ -14,5 +14,3 @@ function Invoke-NovaBuildValidation {
 
     Write-Verbose 'Skipping Test-NovaBuild because SkipTests was requested for this workflow.'
 }
-
-

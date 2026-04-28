@@ -5,10 +5,9 @@ function Get-NovaResolvedProjectManifestSettings {
         [Parameter(Mandatory)][hashtable]$ProjectData
     )
 
-    if ($ProjectData.ContainsKey('Manifest') -and $ProjectData['Manifest'] -is [hashtable]) {
+    if ($ProjectData.ContainsKey('Manifest') -and $ProjectData['Manifest'] -is [System.Collections.IDictionary]) {
         return [ordered]@{} + $ProjectData['Manifest']
     }
 
     return [ordered]@{}
 }
-

@@ -49,5 +49,3 @@ function ConvertFrom-NovaDeployCliArgument {
 
     return $options
 }
-
-

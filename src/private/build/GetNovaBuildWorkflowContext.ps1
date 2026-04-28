@@ -14,4 +14,3 @@ function Get-NovaBuildWorkflowContext {
         Operation = 'Build Nova module output'
     }
 }
-

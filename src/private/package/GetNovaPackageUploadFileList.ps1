@@ -14,4 +14,3 @@ function Get-NovaPackageUploadFileList {
 
     return @(Resolve-NovaPackageUploadOutputFileList -ProjectInfo $ProjectInfo -PackageType $PackageType)
 }
-

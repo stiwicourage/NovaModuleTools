@@ -13,4 +13,3 @@ function Invoke-NovaCliInitCommand {
     $options = ConvertFrom-NovaInitCliArgument -Arguments $Arguments
     return Initialize-NovaModule @options @ForwardedParameters
 }
-

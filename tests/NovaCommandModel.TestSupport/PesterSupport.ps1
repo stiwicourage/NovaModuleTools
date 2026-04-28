@@ -29,4 +29,3 @@ function New-TestPesterConfigStub {
 
     return [pscustomobject]$config
 }
-

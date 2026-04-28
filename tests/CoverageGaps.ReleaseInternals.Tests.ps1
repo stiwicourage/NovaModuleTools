@@ -436,6 +436,28 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
+    It 'Get-NovaInstalledProjectManifestPath resolves the default project info when ProjectInfo is omitted' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{ProjectName = 'AzureDevOpsAgentInstaller'; ProjectRoot = '/tmp/project'}
+            }
+            Mock Resolve-NovaLocalPublishPath {'/tmp/default-modules'}
+            Mock Get-NovaPublishedLocalManifestPath {
+                $PublishInvocation.IsLocal | Should -BeTrue
+                $PublishInvocation.Target | Should -Be '/tmp/default-modules'
+                $PublishInvocation.Parameters.ProjectInfo.ProjectName | Should -Be 'AzureDevOpsAgentInstaller'
+                return '/tmp/default-modules/AzureDevOpsAgentInstaller/AzureDevOpsAgentInstaller.psd1'
+            }
+
+            $result = Get-NovaInstalledProjectManifestPath
+
+            $result | Should -Be '/tmp/default-modules/AzureDevOpsAgentInstaller/AzureDevOpsAgentInstaller.psd1'
+            Assert-MockCalled Get-NovaProjectInfo -Times 1
+            Assert-MockCalled Resolve-NovaLocalPublishPath -Times 1
+            Assert-MockCalled Get-NovaPublishedLocalManifestPath -Times 1
+        }
+    }
+
     It 'Get-NovaResolvedPublishParameterMap copies publish parameters and lets workflow values override matching keys' {
         InModuleScope $script:moduleName {
             $publishInvocation = [pscustomobject]@{

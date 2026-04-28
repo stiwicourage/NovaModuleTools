@@ -20,4 +20,3 @@ function Get-NovaDynamicDeliveryParameterDictionary {
     Add-NovaDynamicSwitchParameter -ParameterDictionary $parameterDictionary -Name 'ContinuousIntegration'
     return $parameterDictionary
 }
-

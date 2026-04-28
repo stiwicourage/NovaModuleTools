@@ -7,4 +7,3 @@ function Write-NovaPublishWorkflowContext {
     Write-NovaLocalWorkflowMode -WorkflowName $WorkflowContext.WorkflowName -LocalRequested:$WorkflowContext.LocalRequested
     Write-NovaResolvedLocalPublishTarget -PublishInvocation $WorkflowContext.PublishInvocation
 }
-

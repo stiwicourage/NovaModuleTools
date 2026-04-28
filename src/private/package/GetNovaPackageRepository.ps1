@@ -26,4 +26,3 @@ function Get-NovaPackageRepository {
 
     Stop-NovaOperation -Message "Package repository not found: $Repository. Define it under Package.Repositories in project.json or provide -Url." -ErrorId 'Nova.Configuration.PackageRepositoryNotFound' -Category InvalidData -TargetObject $Repository
 }
-

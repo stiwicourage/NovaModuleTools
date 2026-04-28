@@ -13,4 +13,3 @@ function Get-NovaPackageUploadToken {
         ConfiguredValue = Get-NovaPackageSettingValue -InputObject $AuthSettings -Name 'Token'
     })
 }
-

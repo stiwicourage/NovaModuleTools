@@ -25,4 +25,3 @@ function Deploy-NovaPackage {
         return @(Invoke-NovaPackageUploadWorkflow -WorkflowContext $workflowContext -UploadArtifactList $workflowContext.UploadArtifactList)
     }
 }
-

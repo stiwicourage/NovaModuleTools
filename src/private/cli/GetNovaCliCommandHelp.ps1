@@ -17,4 +17,3 @@ function Get-NovaCliCommandHelp {
     $definition = Get-NovaCliCommandHelpDefinition -Command $Command
     return Format-NovaCliCommandHelp -Definition $definition -View $View
 }
-

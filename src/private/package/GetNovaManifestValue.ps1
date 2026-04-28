@@ -16,4 +16,3 @@ function Get-NovaManifestValue {
 
     return $property.Value
 }
-

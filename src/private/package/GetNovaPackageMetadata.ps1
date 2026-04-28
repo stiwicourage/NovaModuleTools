@@ -58,4 +58,3 @@ function Get-NovaPackageMetadata {
         ContentRoot = $contentRoot
     }
 }
-

@@ -73,4 +73,3 @@ function ConvertFrom-NovaPackageCliArgument {
 
     return ConvertFrom-NovaCliArgument -Arguments $Arguments -AllowedOptionNameList @('SkipTests')
 }
-

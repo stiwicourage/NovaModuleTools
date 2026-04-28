@@ -14,4 +14,3 @@ function Get-NovaPackageUploadPath {
 
     return "$( $resolvedUploadPath )".Trim()
 }
-

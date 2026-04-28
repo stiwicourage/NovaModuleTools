@@ -24,4 +24,3 @@ function Get-NovaPackageUploadAuthHeaderValue {
 
     return "$("$scheme".Trim() ) $Token"
 }
-

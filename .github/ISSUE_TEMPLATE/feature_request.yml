@@ -132,4 +132,3 @@ body:
           required: true
         - label: This is not a bug report or security vulnerability report.
           required: true
-

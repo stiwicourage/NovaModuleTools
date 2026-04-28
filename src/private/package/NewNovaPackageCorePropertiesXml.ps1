@@ -23,4 +23,3 @@ function New-NovaPackageCorePropertiesXml {
         '</coreProperties>'
     ) -join [Environment]::NewLine
 }
-

@@ -27,4 +27,3 @@ function Get-NovaSettingsRootPath {
 
     return Join-Path $HOME '.config'
 }
-

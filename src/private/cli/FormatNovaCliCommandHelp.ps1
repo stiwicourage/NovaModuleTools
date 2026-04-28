@@ -174,7 +174,3 @@ function Format-NovaCliCommandHelp {
 
     return Format-NovaCliShortCommandHelp -Definition $Definition
 }
-
-
-
-
