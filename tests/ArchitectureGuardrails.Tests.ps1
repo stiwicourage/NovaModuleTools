@@ -71,4 +71,49 @@ Describe 'Architecture guardrails' {
 
         (Compare-Object -ReferenceObject $expected -DifferenceObject $actual) | Should -BeNullOrEmpty -Because (($actual -join ', '), (& $script:formatMatches -MatchList $matches) -join [Environment]::NewLine)
     }
+
+    It 'self-update execution stays behind the update command adapter' {
+        $matches = & $script:findMatches -RootPath $script:srcRoot -Pattern '^\s*(?:return\s+)?Update-Module\b'
+        $actual = & $script:getMatchedPaths -MatchList $matches
+        $expected = @('src/private/update/InvokeNovaModuleUpdateCommand.ps1')
+
+        (Compare-Object -ReferenceObject $expected -DifferenceObject $actual) | Should -BeNullOrEmpty -Because (($actual -join ', '), (& $script:formatMatches -MatchList $matches) -join [Environment]::NewLine)
+    }
+
+    It 'public orchestration entrypoints keep delegating to their context and workflow helpers' {
+        $testCases = @(
+            [pscustomobject]@{Path = 'src/public/DeployNovaPackage.ps1'; ContextPattern = '\bGet-NovaPackageUploadWorkflowContext\b'; ActionPattern = '\bInvoke-NovaPackageUploadWorkflow\b'}
+            [pscustomobject]@{Path = 'src/public/InitializeNovaModule.ps1'; ContextPattern = '\bGet-NovaModuleInitializationWorkflowContext\b'; ActionPattern = '\bInvoke-NovaModuleInitializationWorkflow\b'}
+            [pscustomobject]@{Path = 'src/public/InstallNovaCli.ps1'; ContextPattern = '\bGet-NovaCliInstallWorkflowContext\b'; ActionPattern = '\bInvoke-NovaCliInstallWorkflow\b'}
+            [pscustomobject]@{Path = 'src/public/InvokeNovaBuild.ps1'; ContextPattern = '\bGet-NovaBuildWorkflowContext\b'; ActionPattern = '\bInvoke-NovaBuildWorkflow\b'}
+            [pscustomobject]@{Path = 'src/public/InvokeNovaCli.ps1'; ContextPattern = '\bGet-NovaCliInvocationContext\b'; ActionPattern = '\bInvoke-NovaCliCommandRoute\b'}
+            [pscustomobject]@{Path = 'src/public/InvokeNovaRelease.ps1'; ContextPattern = '\bGet-NovaPublishWorkflowContext\b'; ActionPattern = '\bInvoke-NovaReleaseWorkflow\b'}
+            [pscustomobject]@{Path = 'src/public/NewNovaModulePackage.ps1'; ContextPattern = '\bGet-NovaPackageWorkflowContext\b'; ActionPattern = '\bInvoke-NovaPackageWorkflow\b'}
+            [pscustomobject]@{Path = 'src/public/PublishNovaModule.ps1'; ContextPattern = '\bGet-NovaPublishWorkflowContext\b'; ActionPattern = '\bInvoke-NovaPublishWorkflow\b'}
+            [pscustomobject]@{Path = 'src/public/SetNovaUpdateNotificationPreference.ps1'; ContextPattern = '\bGet-NovaUpdateNotificationPreferenceChangeContext\b'; ActionPattern = '\bInvoke-NovaUpdateNotificationPreferenceChange\b'}
+            [pscustomobject]@{Path = 'src/public/TestNovaBuild.ps1'; ContextPattern = '\bGet-NovaTestWorkflowContext\b'; ActionPattern = '\bInvoke-NovaTestWorkflow\b'}
+            [pscustomobject]@{Path = 'src/public/UpdateNovaModuleTools.ps1'; ContextPattern = '\bGet-NovaModuleSelfUpdateWorkflowContext\b'; ActionPattern = '\bInvoke-NovaModuleSelfUpdateWorkflow\b'}
+            [pscustomobject]@{Path = 'src/public/UpdateNovaModuleVersion.ps1'; ContextPattern = '\bGet-NovaVersionUpdateWorkflowContext\b'; ActionPattern = '\bInvoke-NovaVersionUpdateWorkflow\b'}
+        )
+
+        foreach ($testCase in $testCases) {
+            $filePath = Join-Path $script:repoRoot $testCase.Path
+            $content = Get-Content -LiteralPath $filePath -Raw
+
+            $content | Should -Match $testCase.ContextPattern -Because "$( $testCase.Path ) should build or resolve its workflow/context state before orchestration"
+            $content | Should -Match $testCase.ActionPattern -Because "$( $testCase.Path ) should delegate execution to its workflow or routing helper"
+        }
+    }
+
+    It 'project.json persistence stays limited to the shared writer and its expected callers' {
+        $matches = & $script:findMatches -RootPath $script:srcRoot -Pattern '\bWrite-ProjectJsonData\b'
+        $actual = & $script:getMatchedPaths -MatchList $matches
+        $expected = @(
+            'src/private/release/SetNovaModuleVersion.ps1'
+            'src/private/scaffold/WriteNovaModuleProjectJson.ps1'
+            'src/private/shared/Write-ProjectJsonData.ps1'
+        )
+
+        (Compare-Object -ReferenceObject $expected -DifferenceObject $actual) | Should -BeNullOrEmpty -Because (($actual -join ', '), (& $script:formatMatches -MatchList $matches) -join [Environment]::NewLine)
+    }
 }
