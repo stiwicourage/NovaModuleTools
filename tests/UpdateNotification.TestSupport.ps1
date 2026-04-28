@@ -180,3 +180,105 @@ function Invoke-TestNovaSelfUpdate {
         }
     }
 }
+
+function New-TestPowerShellRunnerState {
+    [CmdletBinding()]
+    param()
+
+    return [pscustomobject]@{
+        Script = $null
+        Arguments = [System.Collections.Generic.List[object]]::new()
+        LastTimeoutMilliseconds = $null
+        StopCalls = 0
+        EndInvokeCalls = 0
+        DisposeCalls = 0
+    }
+}
+
+function New-TestPowerShellWaitHandle {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$State,
+        [Parameter(Mandatory)][bool]$ShouldComplete
+    )
+
+    $waitHandle = [pscustomobject]@{
+        ShouldComplete = $ShouldComplete
+        State = $State
+    }
+
+    $waitHandle | Add-Member -MemberType ScriptMethod -Name WaitOne -Value {
+        param($TimeoutMilliseconds)
+
+        $this.State.LastTimeoutMilliseconds = $TimeoutMilliseconds
+        return $this.ShouldComplete
+    }
+
+    return $waitHandle
+}
+
+function Add-TestPowerShellRunnerMethods {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$Runner
+    )
+
+    $runner | Add-Member -MemberType ScriptMethod -Name AddScript -Value {
+        param($ScriptText)
+
+        $this.State.Script = $ScriptText
+        return $this
+    }
+    $runner | Add-Member -MemberType ScriptMethod -Name AddArgument -Value {
+        param($Argument)
+
+        $this.State.Arguments.Add($Argument) | Out-Null
+        return $this
+    }
+    $runner | Add-Member -MemberType ScriptMethod -Name BeginInvoke -Value {
+        return $this.AsyncResult
+    }
+    $runner | Add-Member -MemberType ScriptMethod -Name Stop -Value {
+        $this.State.StopCalls++
+        if ($this.ThrowOnStop) {
+            throw 'stop failed'
+        }
+    }
+    $runner | Add-Member -MemberType ScriptMethod -Name EndInvoke -Value {
+        param($InvocationResult)
+
+        $this.State.EndInvokeCalls++
+        if ($this.ThrowOnEndInvoke) {
+            throw 'end failed'
+        }
+
+        return $this.EndInvokeResult
+    }
+    $runner | Add-Member -MemberType ScriptMethod -Name Dispose -Value {
+        $this.State.DisposeCalls++
+    }
+
+    return $Runner
+}
+
+function New-TestPowerShellRunner {
+    [CmdletBinding()]
+    param(
+        [bool]$ShouldComplete,
+        [object]$EndInvokeResult = $null,
+        [switch]$ThrowOnStop,
+        [switch]$ThrowOnEndInvoke
+    )
+
+    $state = New-TestPowerShellRunnerState
+    $waitHandle = New-TestPowerShellWaitHandle -State $state -ShouldComplete $ShouldComplete
+    $runner = [pscustomobject]@{
+        State = $state
+        AsyncResult = [pscustomobject]@{AsyncWaitHandle = $waitHandle}
+        EndInvokeResult = $EndInvokeResult
+        ThrowOnStop = $ThrowOnStop.IsPresent
+        ThrowOnEndInvoke = $ThrowOnEndInvoke.IsPresent
+    }
+
+    return Add-TestPowerShellRunnerMethods -Runner $runner
+}
