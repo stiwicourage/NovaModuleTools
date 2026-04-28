@@ -1,18 +1,3 @@
-function Get-NovaCliCommandHandler {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][hashtable]$CommandHandlerMap,
-        [Parameter(Mandatory)][string]$Command
-    )
-
-    $commandHandler = $CommandHandlerMap[$Command]
-    if ($null -eq $commandHandler) {
-        Stop-NovaOperation -Message "Unknown command: <$Command> | Use 'nova --help' to see available commands." -ErrorId 'Nova.Validation.UnknownCliCommand' -Category InvalidArgument -TargetObject $Command
-    }
-
-    return $commandHandler
-}
-
 function Confirm-NovaCliRoutedCommand {
     [CmdletBinding()]
     param(
@@ -156,7 +141,7 @@ function Invoke-NovaCliCommandRoute {
             return Get-NovaCliHelp
         }
         default {
-            return Get-NovaCliCommandHandler -CommandHandlerMap @{} -Command $command
+            Stop-NovaOperation -Message "Unknown command: <$command> | Use 'nova --help' to see available commands." -ErrorId 'Nova.Validation.UnknownCliCommand' -Category InvalidArgument -TargetObject $command
         }
     }
 }

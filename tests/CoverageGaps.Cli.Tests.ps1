@@ -115,6 +115,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 }
                 ModuleName = 'NovaModuleTools'
                 WhatIfEnabled = $false
+                CliConfirmEnabled = $false
             }
             Mock Get-NovaCliCommandHelp {'package-help'}
 
@@ -212,14 +213,33 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
-    It 'Get-NovaCliCommandHandler returns the mapped handler for a known command' {
+    It 'Invoke-NovaCliCommandRoute throws the stable unknown-command error for unmapped commands' {
         InModuleScope $script:moduleName {
-            $expectedHandler = [pscustomobject]@{Name = 'publish-handler'}
-            $handlerMap = @{publish = $expectedHandler}
+            $invocationContext = [pscustomobject]@{
+                Command = 'banana'
+                Arguments = @()
+                CommonParameters = @{}
+                MutatingCommonParameters = @{}
+                IsHelpRequest = $false
+                HelpRequest = $null
+                ModuleName = 'NovaModuleTools'
+                WhatIfEnabled = $false
+                CliConfirmEnabled = $false
+            }
 
-            $result = Get-NovaCliCommandHandler -CommandHandlerMap $handlerMap -Command 'publish'
+            $thrown = $null
+            try {
+                Invoke-NovaCliCommandRoute -InvocationContext $invocationContext
+            }
+            catch {
+                $thrown = $_
+            }
 
-            $result | Should -Be $expectedHandler
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be "Unknown command: <banana> | Use 'nova --help' to see available commands."
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnknownCliCommand'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidArgument)
+            $thrown.TargetObject | Should -Be 'banana'
         }
     }
 
@@ -290,6 +310,21 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             $buildContext.MutatingCommonParameters.ContainsKey('Confirm') | Should -BeFalse
             $buildContext.WhatIfEnabled | Should -BeTrue
             $buildContext.CliConfirmEnabled | Should -BeTrue
+        }
+    }
+
+    It 'Get-NovaCliInvocationContext strips raw Confirm from mutating parameters while preserving CLI confirm intent' {
+        InModuleScope $script:moduleName {
+            $invocationRequest = [pscustomobject]@{
+                Command = 'publish'
+                BoundParameters = @{Command = 'publish'; Arguments = @('--confirm'); Confirm = $true}
+                Arguments = @('--confirm')
+            }
+            $result = Get-NovaCliInvocationContext -InvocationRequest $invocationRequest
+
+            $result.Command | Should -Be 'publish'
+            $result.CliConfirmEnabled | Should -BeTrue
+            $result.MutatingCommonParameters.ContainsKey('Confirm') | Should -BeFalse
         }
     }
 

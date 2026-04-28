@@ -1,41 +1,41 @@
-function Get-NovaCliBaseInvocationData {
+function Get-NovaCliResolvedInvocationContext {
     [CmdletBinding()]
     param(
+        [Parameter(Mandatory)][string]$Command,
+        [AllowEmptyCollection()][string[]]$Arguments = @(),
         [Parameter(Mandatory)][hashtable]$CommonParameters,
         [Parameter(Mandatory)][hashtable]$MutatingCommonParameters,
         [Parameter(Mandatory)][string]$ModuleName,
-        [Parameter(Mandatory)][bool]$WhatIfEnabled
+        [Parameter(Mandatory)][bool]$WhatIfEnabled,
+        [Parameter(Mandatory)][bool]$CliConfirmEnabled,
+        [AllowNull()][pscustomobject]$HelpRequest = $null
     )
 
     return [pscustomobject]@{
+        Command = $Command
+        Arguments = @($Arguments)
         CommonParameters = $CommonParameters
         MutatingCommonParameters = $MutatingCommonParameters
+        IsHelpRequest = $null -ne $HelpRequest
+        HelpRequest = $HelpRequest
         ModuleName = $ModuleName
         WhatIfEnabled = $WhatIfEnabled
+        CliConfirmEnabled = $CliConfirmEnabled
     }
 }
 
-function Get-NovaCliHelpInvocationContext {
+function Get-NovaCliInvocationWhatIfState {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][pscustomobject]$HelpRequest,
-        [Parameter(Mandatory)][pscustomobject]$BaseInvocationData
+        [switch]$WhatIfEnabled,
+        [Parameter(Mandatory)][hashtable]$MutatingCommonParameters,
+        [switch]$RoutingWhatIfEnabled
     )
 
-    return [pscustomobject]@{
-        Command = $HelpRequest.Command
-        Arguments = @()
-        CommonParameters = $BaseInvocationData.CommonParameters
-        MutatingCommonParameters = $BaseInvocationData.MutatingCommonParameters
-        IsHelpRequest = $true
-        HelpRequest = $HelpRequest
-        ModuleName = $BaseInvocationData.ModuleName
-        WhatIfEnabled = $BaseInvocationData.WhatIfEnabled
-        CliConfirmEnabled = $false
-    }
+    return $WhatIfEnabled.IsPresent -or $RoutingWhatIfEnabled.IsPresent -or $MutatingCommonParameters.ContainsKey('WhatIf')
 }
 
-function Get-NovaCliConfirmState {
+function Get-NovaCliInvocationConfirmState {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][hashtable]$MutatingCommonParameters
@@ -48,27 +48,6 @@ function Get-NovaCliConfirmState {
     $cliConfirmEnabled = [bool]$MutatingCommonParameters.Confirm
     $MutatingCommonParameters.Remove('Confirm')
     return $cliConfirmEnabled
-}
-
-function Get-NovaCliRoutedInvocationContext {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][pscustomobject]$RoutingState,
-        [Parameter(Mandatory)][pscustomobject]$BaseInvocationData,
-        [Parameter(Mandatory)][bool]$CliConfirmEnabled
-    )
-
-    return [pscustomobject]@{
-        Command = $RoutingState.Command
-        Arguments = $RoutingState.Arguments
-        CommonParameters = $BaseInvocationData.CommonParameters
-        MutatingCommonParameters = $BaseInvocationData.MutatingCommonParameters
-        IsHelpRequest = $false
-        HelpRequest = $null
-        ModuleName = $BaseInvocationData.ModuleName
-        WhatIfEnabled = $BaseInvocationData.WhatIfEnabled
-        CliConfirmEnabled = $CliConfirmEnabled
-    }
 }
 
 function Get-NovaCliInvocationContext {
@@ -85,14 +64,14 @@ function Get-NovaCliInvocationContext {
     Assert-NovaCliArgumentSyntax -Arguments (@($InvocationRequest.Command) + $normalizedArguments)
     $helpRequest = Get-NovaCliHelpRequest -Command $InvocationRequest.Command -Arguments $normalizedArguments
     $moduleName = $ExecutionContext.SessionState.Module.Name
-    $helpBaseInvocationData = Get-NovaCliBaseInvocationData -CommonParameters $commonParameters -MutatingCommonParameters $mutatingCommonParameters -ModuleName $moduleName -WhatIfEnabled:($WhatIfEnabled.IsPresent -or $mutatingCommonParameters.ContainsKey('WhatIf'))
+    $whatIfState = Get-NovaCliInvocationWhatIfState -WhatIfEnabled:$WhatIfEnabled -MutatingCommonParameters $mutatingCommonParameters
 
     if ($null -ne $helpRequest) {
-        return Get-NovaCliHelpInvocationContext -HelpRequest $helpRequest -BaseInvocationData $helpBaseInvocationData
+        return Get-NovaCliResolvedInvocationContext -Command $helpRequest.Command -Arguments @() -CommonParameters $commonParameters -MutatingCommonParameters $mutatingCommonParameters -ModuleName $moduleName -WhatIfEnabled:$whatIfState -CliConfirmEnabled:$false -HelpRequest $helpRequest
     }
 
     $routingState = Get-NovaCliArgumentRoutingState -Command $InvocationRequest.Command -Arguments $normalizedArguments
-    $cliConfirmEnabled = Get-NovaCliConfirmState -MutatingCommonParameters $mutatingCommonParameters
+    $cliConfirmEnabled = Get-NovaCliInvocationConfirmState -MutatingCommonParameters $mutatingCommonParameters
 
     if ( $routingState.ForwardedParameters.ContainsKey('Verbose')) {
         $commonParameters.Verbose = $true
@@ -100,7 +79,7 @@ function Get-NovaCliInvocationContext {
 
     $mutatingCommonParameters = Merge-NovaCliParameterSet -BaseParameters $mutatingCommonParameters -AdditionalParameters $routingState.ForwardedParameters
     $cliConfirmEnabled = $cliConfirmEnabled -or $routingState.CliConfirmEnabled
-    $routedBaseInvocationData = Get-NovaCliBaseInvocationData -CommonParameters $commonParameters -MutatingCommonParameters $mutatingCommonParameters -ModuleName $moduleName -WhatIfEnabled:($WhatIfEnabled.IsPresent -or $routingState.WhatIfEnabled -or $mutatingCommonParameters.ContainsKey('WhatIf'))
+    $whatIfState = Get-NovaCliInvocationWhatIfState -WhatIfEnabled:$WhatIfEnabled -MutatingCommonParameters $mutatingCommonParameters -RoutingWhatIfEnabled:$routingState.WhatIfEnabled
 
-    return Get-NovaCliRoutedInvocationContext -RoutingState $routingState -BaseInvocationData $routedBaseInvocationData -CliConfirmEnabled:$cliConfirmEnabled
+    return Get-NovaCliResolvedInvocationContext -Command $routingState.Command -Arguments $routingState.Arguments -CommonParameters $commonParameters -MutatingCommonParameters $mutatingCommonParameters -ModuleName $moduleName -WhatIfEnabled:$whatIfState -CliConfirmEnabled:$cliConfirmEnabled
 }
