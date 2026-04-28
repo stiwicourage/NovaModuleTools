@@ -5,14 +5,6 @@ function Invoke-NovaModuleSelfUpdate {
         [switch]$AllowPrerelease
     )
 
-    $updateParameters = @{
-        Name = $ModuleName
-        ErrorAction = 'Stop'
-    }
-
-    if ($AllowPrerelease) {
-        $updateParameters.AllowPrerelease = $true
-    }
-
-    return Update-Module @updateParameters
+    $updateParameters = Get-NovaModuleUpdateParameterMap -ModuleName $ModuleName -AllowPrereleaseRequested:$AllowPrerelease.IsPresent
+    return Invoke-NovaModuleUpdateCommand -UpdateParameters $updateParameters
 }

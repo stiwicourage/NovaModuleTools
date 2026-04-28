@@ -52,14 +52,27 @@ function Read-NovaCliPromptKey {
     }
 }
 
+function Get-NovaCliConfirmResponseKey {
+    [CmdletBinding()]
+    param()
+
+    $response = Get-NovaEnvironmentVariableValue -Name 'NOVA_CLI_CONFIRM_RESPONSE'
+    if ( [string]::IsNullOrWhiteSpace($response)) {
+        return $null
+    }
+
+    return [char]$response[0]
+}
+
 function Get-NovaCliCommandPromptKey {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$Message
     )
 
-    if (-not [string]::IsNullOrWhiteSpace($env:NOVA_CLI_CONFIRM_RESPONSE)) {
-        return [char]$env:NOVA_CLI_CONFIRM_RESPONSE[0]
+    $configuredResponse = Get-NovaCliConfirmResponseKey
+    if ($null -ne $configuredResponse) {
+        return $configuredResponse
     }
 
     Write-Host 'Confirm'

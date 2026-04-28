@@ -5,7 +5,8 @@ function Test-NovaCliDirectoryOnPath {
     )
 
     $resolvedDirectory = [System.IO.Path]::GetFullPath($Directory)
-    foreach ($entry in @($env:PATH -split [regex]::Escape([string][System.IO.Path]::PathSeparator))) {
+    $pathValue = Get-NovaEnvironmentVariableValue -Name 'PATH'
+    foreach ($entry in @($pathValue -split [regex]::Escape([string][System.IO.Path]::PathSeparator))) {
         if ( [string]::IsNullOrWhiteSpace($entry)) {
             continue
         }

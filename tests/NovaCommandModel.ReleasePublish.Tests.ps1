@@ -642,6 +642,21 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
+    It 'Publish-NovaBuiltModuleToRepository delegates publish execution through the repository adapter' {
+        InModuleScope $script:moduleName {
+            Mock Invoke-NovaRepositoryPublishCommand {}
+
+            Publish-NovaBuiltModuleToRepository -ProjectInfo ([pscustomobject]@{OutputModuleDir = '/tmp/dist'}) -Repository PSGallery -ApiKey 'gallery-secret' -Verbose
+
+            Assert-MockCalled Invoke-NovaRepositoryPublishCommand -Times 1 -ParameterFilter {
+                $PublishParameters.Path -eq '/tmp/dist' -and
+                        $PublishParameters.Repository -eq 'PSGallery' -and
+                        $PublishParameters.ApiKey -eq 'gallery-secret' -and
+                        $PublishParameters.Verbose
+            }
+        }
+    }
+
     It 'Get-NovaPackageWorkflowContext resolves package metadata, target, and operation for all requested package types' {
         InModuleScope $script:moduleName {
             $projectInfo = [pscustomobject]@{

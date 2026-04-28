@@ -11,6 +11,29 @@ function Get-NovaPublishRepositoryDefaultApiKeyEnvironmentVariable {
     return $null
 }
 
+function Get-NovaRepositoryPublishParameterMap {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
+        [Parameter(Mandatory)][string]$Repository,
+        [string]$ApiKey,
+        [Parameter(Mandatory)][bool]$VerboseRequested
+    )
+
+    $publishParams = @{
+        Path = $ProjectInfo.OutputModuleDir
+        Repository = $Repository
+    }
+    if ($VerboseRequested) {
+        $publishParams.Verbose = $true
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ApiKey)) {
+        $publishParams.ApiKey = $ApiKey
+    }
+
+    return $publishParams
+}
+
 function Publish-NovaBuiltModuleToRepository {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
@@ -27,23 +50,11 @@ function Publish-NovaBuiltModuleToRepository {
         ExplicitValue = $ApiKey
         DefaultEnvironmentVariableName = Get-NovaPublishRepositoryDefaultApiKeyEnvironmentVariable -Repository $Repository
     })
-
-    $publishParams = @{
-        Path = $ProjectInfo.OutputModuleDir
-        Repository = $Repository
-    }
-
-    if ( $PSBoundParameters.ContainsKey('Verbose')) {
-        $publishParams.Verbose = $true
-    }
-
-    if (-not [string]::IsNullOrWhiteSpace($resolvedApiKey)) {
-        $publishParams.ApiKey = $resolvedApiKey
-    }
+    $publishParams = Get-NovaRepositoryPublishParameterMap -ProjectInfo $ProjectInfo -Repository $Repository -ApiKey $resolvedApiKey -VerboseRequested:$PSBoundParameters.ContainsKey('Verbose')
 
     if (-not $PSCmdlet.ShouldProcess($Repository, 'Publish built module to repository')) {
         return
     }
 
-    Publish-PSResource @publishParams
+    Invoke-NovaRepositoryPublishCommand -PublishParameters $publishParams
 }

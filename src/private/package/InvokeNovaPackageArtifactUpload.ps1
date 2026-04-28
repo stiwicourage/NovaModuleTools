@@ -9,22 +9,8 @@ function Invoke-NovaPackageArtifactUpload {
         Stop-NovaOperation -Message "Package file not found: $( $UploadArtifact.PackagePath )" -ErrorId 'Nova.Environment.PackageUploadFileNotFound' -Category ObjectNotFound -TargetObject $UploadArtifact.PackagePath
     }
 
-    $webRequestParameters = @{
-        Uri = $UploadArtifact.UploadUrl
-        Method = 'Put'
-        InFile = $UploadArtifact.PackagePath
-    }
-    if (@($UploadArtifact.Headers.Keys).Count -gt 0) {
-        $webRequestParameters.Headers = $UploadArtifact.Headers
-    }
-
-    $webRequestCommand = Get-Command -Name Invoke-WebRequest -CommandType Cmdlet -ErrorAction Stop
-    if ( $webRequestCommand.Parameters.ContainsKey('UseBasicParsing')) {
-        $webRequestParameters.UseBasicParsing = $true
-    }
-
     try {
-        $response = Invoke-WebRequest @webRequestParameters
+        $response = Invoke-NovaPackageUploadRequest -UploadArtifact $UploadArtifact
     }
     catch {
         Stop-NovaOperation -Message "Package upload failed for $( $UploadArtifact.PackagePath ) -> $( $UploadArtifact.UploadUrl ). $( $_.Exception.Message )" -ErrorId 'Nova.Dependency.PackageUploadRequestFailed' -Category ConnectionError -TargetObject $UploadArtifact.UploadUrl

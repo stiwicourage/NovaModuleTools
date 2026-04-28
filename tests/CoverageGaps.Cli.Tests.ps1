@@ -1012,6 +1012,15 @@ catch {
         }
     }
 
+    It 'Get-NovaCliInstallDirectory reads HOME through the shared environment helper' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaEnvironmentVariableValue {'/tmp/nova-home'} -ParameterFilter {$Name -eq 'HOME'}
+
+            Get-NovaCliInstallDirectory | Should -Be ([System.IO.Path]::Join('/tmp/nova-home', '.local', 'bin'))
+            Assert-MockCalled Get-NovaEnvironmentVariableValue -Times 1 -ParameterFilter {$Name -eq 'HOME'}
+        }
+    }
+
     It 'Invoke-NovaCliInitCommand rejects WhatIf with a structured validation error' {
         InModuleScope $script:moduleName {
             $unsupportedWhatIfError = $null
@@ -1243,6 +1252,17 @@ catch {
             finally {
                 $env:PATH = $originalPath
             }
+        }
+    }
+
+    It 'Test-NovaCliDirectoryOnPath reads PATH through the shared environment helper' {
+        InModuleScope $script:moduleName {
+            $separator = [string][System.IO.Path]::PathSeparator
+            $targetDirectory = [System.IO.Path]::GetFullPath($TestDrive)
+            Mock Get-NovaEnvironmentVariableValue {"/tmp/other${separator}$targetDirectory"} -ParameterFilter {$Name -eq 'PATH'}
+
+            Test-NovaCliDirectoryOnPath -Directory $TestDrive | Should -BeTrue
+            Assert-MockCalled Get-NovaEnvironmentVariableValue -Times 1 -ParameterFilter {$Name -eq 'PATH'}
         }
     }
 

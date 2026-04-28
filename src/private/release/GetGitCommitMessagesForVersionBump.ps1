@@ -9,20 +9,38 @@ function Get-GitCommitMessageForVersionBump {
     }
 
     $format = '%s%n%b%n--END-COMMIT--'
-    $lastTag = & git -C $ProjectRoot describe --tags --abbrev=0 2> $null
+    $lastTagResult = Invoke-NovaGitCommand -ProjectRoot $ProjectRoot -Arguments @('describe', '--tags', '--abbrev=0')
+    $logResult = Get-NovaVersionBumpCommitLogResult -ProjectRoot $ProjectRoot -Format $format -LastTagResult $lastTagResult
+    return @(ConvertFrom-NovaVersionBumpCommitLogResult -Result $logResult)
+}
 
-    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($lastTag)) {
-        $raw = & git -C $ProjectRoot log "$lastTag..HEAD" --format=$format 2> $null
-    }
-    else {
-        $raw = & git -C $ProjectRoot log --format=$format 2> $null
+function Get-NovaVersionBumpCommitLogResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot,
+        [Parameter(Mandatory)][string]$Format,
+        [Parameter(Mandatory)][pscustomobject]$LastTagResult
+    )
+
+    $lastTag = Get-NovaGitCommandOutputText -Result $LastTagResult
+    if ($LastTagResult.ExitCode -eq 0 -and -not [string]::IsNullOrWhiteSpace($lastTag)) {
+        return Invoke-NovaGitCommand -ProjectRoot $ProjectRoot -Arguments @('log', "$lastTag..HEAD", "--format=$format")
     }
 
-    if ($LASTEXITCODE -ne 0 -or -not $raw) {
+    return Invoke-NovaGitCommand -ProjectRoot $ProjectRoot -Arguments @('log', "--format=$format")
+}
+
+function ConvertFrom-NovaVersionBumpCommitLogResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Result
+    )
+
+    if ($Result.ExitCode -ne 0 -or @($Result.Output).Count -eq 0) {
         return @()
     }
 
-    $text = ($raw -join [Environment]::NewLine)
+    $text = (@($Result.Output) -join [Environment]::NewLine)
     $commits = $text -split '(?m)^--END-COMMIT--\r?$'
     return @($commits | ForEach-Object {$_.Trim()} | Where-Object {-not [string]::IsNullOrWhiteSpace($_)})
 }
