@@ -147,46 +147,27 @@ Describe 'Targeted coverage for smaller CLI helper internals' {
         }
     }
 
-    It 'Invoke-NovaCliNativeConsoleReadKey uses the default console reader when no override is provided' {
-        $runnerPath = Join-Path $TestDrive 'Invoke-NovaCliNativeConsoleReadKey.Runner.ps1'
-        $stdinPath = Join-Path $TestDrive 'Invoke-NovaCliNativeConsoleReadKey.stdin.txt'
-        $stdoutPath = Join-Path $TestDrive 'Invoke-NovaCliNativeConsoleReadKey.stdout.txt'
-        $stderrPath = Join-Path $TestDrive 'Invoke-NovaCliNativeConsoleReadKey.stderr.txt'
-        Set-Content -LiteralPath $stdinPath -Value '' -Encoding utf8 -NoNewline
-        Set-Content -LiteralPath $runnerPath -Encoding utf8 -Value @"
-`$module = Import-Module '$script:distModuleDir' -Force -PassThru
+    It 'Get-NovaCliNativeConsoleReadKeyReader exposes the native console read delegate' {
+        InModuleScope $script:moduleName {
+            $reader = Get-NovaCliNativeConsoleReadKeyReader
 
-try {
-    & `$module {
-        Invoke-NovaCliNativeConsoleReadKey | Out-Null
+            $reader | Should -BeOfType 'scriptblock'
+            ($reader.ToString()).Trim() | Should -Be '[Console]::ReadKey($true)'
+        }
     }
 
-    Write-Output 'NO_THROW'
-    exit 1
-}
-catch {
-    Write-Output `$_.FullyQualifiedErrorId
-    Write-Output `$_.Exception.Message
-    exit 0
-}
-"@
+    It 'Invoke-NovaCliNativeConsoleReadKey resolves the default native console reader when no override is provided' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaCliNativeConsoleReadKeyReader {
+                {
+                    [pscustomobject]@{KeyChar = [char]'y'}
+                }
+            }
 
-        $process = Start-Process pwsh -ArgumentList @('-NoLogo', '-NoProfile', '-File', $runnerPath) `
-            -RedirectStandardInput $stdinPath `
-            -RedirectStandardOutput $stdoutPath `
-            -RedirectStandardError $stderrPath `
-            -Wait `
-            -PassThru
-        $output = @(
-        if (Test-Path -LiteralPath $stdoutPath) {
-            Get-Content -LiteralPath $stdoutPath
-        }
-        if (Test-Path -LiteralPath $stderrPath) {
-            Get-Content -LiteralPath $stderrPath
-        }
-        )
+            $result = Invoke-NovaCliNativeConsoleReadKey
 
-        $process.ExitCode | Should -Be 0 -Because ($output -join [Environment]::NewLine)
-        ($output -join [Environment]::NewLine) | Should -Match 'Cannot read keys when either application does not have a console or when console input has been redirected'
+            $result.KeyChar | Should -Be ([char]'y')
+            Assert-MockCalled Get-NovaCliNativeConsoleReadKeyReader -Times 1
+        }
     }
 }
