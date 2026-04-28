@@ -146,4 +146,47 @@ Describe 'Targeted coverage for smaller CLI helper internals' {
             Assert-MockCalled Invoke-NovaCliNativeConsoleReadKey -Times 1
         }
     }
+
+    It 'Invoke-NovaCliNativeConsoleReadKey uses the default console reader when no override is provided' {
+        $runnerPath = Join-Path $TestDrive 'Invoke-NovaCliNativeConsoleReadKey.Runner.ps1'
+        $stdinPath = Join-Path $TestDrive 'Invoke-NovaCliNativeConsoleReadKey.stdin.txt'
+        $stdoutPath = Join-Path $TestDrive 'Invoke-NovaCliNativeConsoleReadKey.stdout.txt'
+        $stderrPath = Join-Path $TestDrive 'Invoke-NovaCliNativeConsoleReadKey.stderr.txt'
+        Set-Content -LiteralPath $stdinPath -Value '' -Encoding utf8 -NoNewline
+        Set-Content -LiteralPath $runnerPath -Encoding utf8 -Value @"
+`$module = Import-Module '$script:distModuleDir' -Force -PassThru
+
+try {
+    & `$module {
+        Invoke-NovaCliNativeConsoleReadKey | Out-Null
+    }
+
+    Write-Output 'NO_THROW'
+    exit 1
+}
+catch {
+    Write-Output `$_.FullyQualifiedErrorId
+    Write-Output `$_.Exception.Message
+    exit 0
+}
+"@
+
+        $process = Start-Process pwsh -ArgumentList @('-NoLogo', '-NoProfile', '-File', $runnerPath) `
+            -RedirectStandardInput $stdinPath `
+            -RedirectStandardOutput $stdoutPath `
+            -RedirectStandardError $stderrPath `
+            -Wait `
+            -PassThru
+        $output = @(
+        if (Test-Path -LiteralPath $stdoutPath) {
+            Get-Content -LiteralPath $stdoutPath
+        }
+        if (Test-Path -LiteralPath $stderrPath) {
+            Get-Content -LiteralPath $stderrPath
+        }
+        )
+
+        $process.ExitCode | Should -Be 0 -Because ($output -join [Environment]::NewLine)
+        ($output -join [Environment]::NewLine) | Should -Match 'Cannot read keys when either application does not have a console or when console input has been redirected'
+    }
 }

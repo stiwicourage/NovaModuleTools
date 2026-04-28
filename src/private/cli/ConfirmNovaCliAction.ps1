@@ -42,8 +42,10 @@ function Invoke-NovaCliConsoleReadKey {
 }
 
 function Invoke-NovaCliNativeConsoleReadKey {
-    [CmdletBinding()]
-    param([scriptblock]$Reader = {[Console]::ReadKey($true)})
+    [CmdletBinding()] param([scriptblock]$Reader)
+    if ($null -eq $Reader) {
+        return [Console]::ReadKey($true)
+    }
 
     return & $Reader
 }

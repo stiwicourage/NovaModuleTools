@@ -59,20 +59,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Add `Deploy-NovaPackage` and `% nova deploy` for raw HTTP package uploads that stay separate from PowerShell
     repository publishing.
       - Package upload resolves `-Url`, `Package.RepositoryUrl`, or named `Package.Repositories` targets and can merge
-    generic headers/auth settings.
+        generic headers/auth settings.
   - Package upload now discovers all matching artifacts for the selected package types, including versioned and
     `latest` files in the configured package output directory.
 - Add opt-in skip-test support to the package, publish, and release workflows for CI/CD-oriented delivery paths where
   tests already ran earlier in the pipeline.
-
-### Fixed
-
-- Fix unsupported `nova` help invocations so they now return Nova's structured CLI validation error instead of a
-  PowerShell parameter-binding failure.
-- Keep manifest/package helper edge cases aligned with their intended behavior.
-    - Manifest settings resolution now accepts ordered dictionary metadata shapes in addition to plain hashtables.
-    - `New-NovaPackageArtifacts` now accepts an empty metadata list and returns an empty artifact result instead of
-      failing during parameter binding.
 - Centralize delivery configuration resolution so raw package upload, update notification settings, and PSGallery
   publishing now follow one explicit precedence model without surfacing configured secrets in error text.
     - Raw upload now resolves command overrides before named repository settings, then package defaults.
@@ -126,8 +117,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `% nova --help <command>` and `% nova -h <command>` now show long CLI help.
   - Long command help now includes the matching public GitHub Pages guide URL for the selected command, while short help
     stays focused on command syntax and options.
-    - CLI help no longer delegates to PowerShell `Get-Help` and now consistently shows CLI option spellings such as
-      `--repository` and `-r`.
+      - CLI help no longer delegates to PowerShell `Get-Help` and now consistently shows CLI option spellings such as
+        `--repository` and `-r`.
 - **BREAKING CHANGE**: Rename the public Nova scaffold cmdlets.
     - `New-NovaModule` → `Initialize-NovaModule`
     - No compatibility aliases are exported for the retired cmdlet names or CLI subcommands.
@@ -191,11 +182,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Project settings:
-  - `BuildRecursiveFolders` (default `true`): recursive discovery for `src/classes`, `src/private` and `tests`.
-  - `SetSourcePath` (default `true`): include `# Source: <relative path>` before each concatenated source file in generated `dist/<Project>/<Project>.psm1`.
-  - `FailOnDuplicateFunctionNames` (default `true`): fail build when duplicate top-level function names exist in generated `dist/<Project>/<Project>.psm1`.
-  - Missing values for these settings are now treated as `true`.
-  - The rebranded `NovaModuleTools` module now uses its own module `GUID`.
+    - `BuildRecursiveFolders` (default `true`): recursive discovery for `src/classes`, `src/private` and `tests`.
+    - `SetSourcePath` (default `true`): include `# Source: <relative path>` before each concatenated source file in
+      generated `dist/<Project>/<Project>.psm1`.
+    - `FailOnDuplicateFunctionNames` (default `true`): fail build when duplicate top-level function names exist in
+      generated `dist/<Project>/<Project>.psm1`.
+    - Missing values for these settings are now treated as `true`.
+    - The rebranded `NovaModuleTools` module now uses its own module `GUID`.
 
 ### Changed
 - Build determinism: files are processed in a deterministic order by relative path (case-insensitive), and load order is always `classes → public → private`.
@@ -224,13 +217,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Now supports preview tag in Update-NovaModuleVersion
 - Now supports semver naming in both project.json and modulemanifest
 - Module build supports `preview` or `prerelease` tag
-- Preview version looks like `1.2.3-preview` 
+- Preview version looks like `1.2.3-preview`
 
 ## [1.1.0] - 2025-08-28
 
 ## Added
 
-- Now Module manifest includes `AliasesToExport`. This helps loading aliases without explicitly importing modules to session. 
+- Now Module manifest includes `AliasesToExport`. This helps loading aliases without explicitly importing modules to
+  session.
 - thanks to @djs-zmtc for suggesting the feature
 
 ## [1.0.0] - 2025-03-11
