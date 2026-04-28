@@ -17,4 +17,3 @@ function Add-NovaZipFileEntry {
         $entryStream.Dispose()
     }
 }
-

@@ -23,4 +23,3 @@ function Get-NovaPackageSettingValue {
 
     return $null
 }
-

@@ -356,4 +356,3 @@ function Assert-TestNovaCliPublishConfirmationResult {
 
     $Result.Text | Should -Match 'Operation cancelled\.'
 }
-

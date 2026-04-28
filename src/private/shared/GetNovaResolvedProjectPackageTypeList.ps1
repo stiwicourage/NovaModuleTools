@@ -30,4 +30,3 @@ function Get-NovaResolvedProjectPackageTypeList {
 
     return $resolvedTypeList
 }
-

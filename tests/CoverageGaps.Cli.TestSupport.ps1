@@ -124,4 +124,3 @@ function Get-TestNovaCliSyntaxGuidanceCaseList {
         @{Argument = '-continuousintegration'; Message = "Unsupported CLI option syntax: -continuousintegration. Use '--continuous-integration' or '-i' instead."}
     )
 }
-

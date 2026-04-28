@@ -15,4 +15,3 @@ function Assert-NovaPackageMetadata {
         Stop-NovaOperation -Message 'Missing package metadata value: Authors' -ErrorId 'Nova.Configuration.PackageMetadataValueMissing' -Category InvalidData -TargetObject 'Authors'
     }
 }
-

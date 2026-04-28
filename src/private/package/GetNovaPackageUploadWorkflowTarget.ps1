@@ -6,4 +6,3 @@ function Get-NovaPackageUploadWorkflowTarget {
 
     return ($UploadArtifactList | ForEach-Object {$_.UploadUrl}) -join ', '
 }
-

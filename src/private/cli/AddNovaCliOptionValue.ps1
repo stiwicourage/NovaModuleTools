@@ -13,4 +13,3 @@ function Add-NovaCliOptionValue {
 
     $Options[$Name] = @($existingValue + $Value)
 }
-

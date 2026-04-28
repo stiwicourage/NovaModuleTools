@@ -123,4 +123,3 @@ function Assert-TestPowerShellHelpExcludesCliSyntax {
         $Text | Should -Not -Match $forbiddenPattern.Pattern -Because "$Subject $( $forbiddenPattern.Reason )"
     }
 }
-

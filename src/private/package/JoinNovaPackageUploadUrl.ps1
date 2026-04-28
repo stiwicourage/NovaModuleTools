@@ -14,4 +14,3 @@ function Join-NovaPackageUploadUrl {
     $urlPartList += [System.Uri]::EscapeDataString($PackageFileName)
     return $urlPartList -join '/'
 }
-

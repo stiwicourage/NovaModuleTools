@@ -83,5 +83,3 @@ function Get-NovaCliHelpRequest {
 
     return Get-NovaCliSubcommandHelpRequest -Command $normalizedCommand -Arguments $Arguments
 }
-
-

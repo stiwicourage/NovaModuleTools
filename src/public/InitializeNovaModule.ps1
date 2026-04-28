@@ -13,4 +13,3 @@ function Initialize-NovaModule {
 
     Invoke-NovaModuleInitializationWorkflow -WorkflowContext $workflowContext
 }
-

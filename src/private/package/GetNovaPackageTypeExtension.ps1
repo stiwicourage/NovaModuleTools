@@ -11,4 +11,3 @@ function Get-NovaPackageTypeExtension {
 
     return '.nupkg'
 }
-

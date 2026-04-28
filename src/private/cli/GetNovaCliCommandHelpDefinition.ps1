@@ -39,4 +39,3 @@ function Get-NovaCliCommandHelpDefinition {
 
     return Import-PowerShellDataFile -Path (Get-NovaCliCommandHelpFilePath -Command $Command)
 }
-

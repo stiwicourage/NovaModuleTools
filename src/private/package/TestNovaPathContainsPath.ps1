@@ -13,4 +13,3 @@ function Test-NovaPathContainsPath {
 
     return $normalizedChildPath.StartsWith("$normalizedParentPath$( [System.IO.Path]::DirectorySeparatorChar )", [System.StringComparison]::OrdinalIgnoreCase)
 }
-

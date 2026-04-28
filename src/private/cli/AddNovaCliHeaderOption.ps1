@@ -24,4 +24,3 @@ function Add-NovaCliHeaderOption {
 
     $Options.Headers[$headerName] = $headerValue
 }
-

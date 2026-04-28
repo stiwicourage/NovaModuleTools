@@ -14,4 +14,3 @@ function New-NovaPackageRelationshipsXml {
         '</Relationships>'
     ) -join [Environment]::NewLine
 }
-

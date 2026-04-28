@@ -15,4 +15,3 @@ function Resolve-NovaPackageUploadHeaders {
     $resolvedHeaders[$authHeaderEntry.Name] = $authHeaderEntry.Value
     return $resolvedHeaders
 }
-

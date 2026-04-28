@@ -11,4 +11,3 @@ function Get-NovaPackageUploadTargetSettingBundle {
         Auth = Merge-NovaPackageSettingTable -BaseSettings (Get-NovaPackageSettingValue -InputObject $PackageSettings -Name 'Auth') -OverrideSettings (Get-NovaPackageSettingValue -InputObject $RepositorySettings -Name 'Auth')
     }
 }
-

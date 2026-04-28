@@ -11,4 +11,3 @@ function Get-NovaResolvedProjectManifestSettings {
 
     return [ordered]@{}
 }
-

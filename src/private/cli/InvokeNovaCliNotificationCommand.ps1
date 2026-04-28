@@ -20,4 +20,3 @@ function Invoke-NovaCliNotificationCommand {
         }
     }
 }
-

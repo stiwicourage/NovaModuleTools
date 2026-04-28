@@ -15,4 +15,3 @@ function Get-NovaPackageUploadArtifact {
         UploadUrl = Join-NovaPackageUploadUrl -Url $UploadTarget.Url -UploadPath $UploadTarget.UploadPath -PackageFileName $PackageFileInfo.PackageFileName
     }
 }
-

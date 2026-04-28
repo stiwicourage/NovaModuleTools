@@ -29,4 +29,3 @@ function Get-NovaPackageUploadWorkflowContext {
         Operation = Get-NovaPackageUploadWorkflowOperation -UploadArtifactList $uploadArtifactList
     }
 }
-

@@ -12,4 +12,3 @@ function Get-NovaPackageMetadataElement {
     $escapedValue = [System.Security.SecurityElement]::Escape($Value)
     return "    <$Name>$escapedValue</$Name>"
 }
-

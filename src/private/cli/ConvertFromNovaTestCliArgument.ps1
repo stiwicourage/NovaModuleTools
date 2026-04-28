@@ -9,4 +9,3 @@ function ConvertFrom-NovaTestCliArgument {
         '-b' = 'Build'
     }
 }
-

@@ -10,4 +10,3 @@ function Get-NovaPackageUploadWorkflowOperation {
 
     return "Upload $( $UploadArtifactList.Count ) package artifacts"
 }
-

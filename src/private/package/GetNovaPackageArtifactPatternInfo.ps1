@@ -20,4 +20,3 @@ function Get-NovaPackageArtifactPatternInfo {
         ExplicitPackageType = $explicitPackageType
     }
 }
-

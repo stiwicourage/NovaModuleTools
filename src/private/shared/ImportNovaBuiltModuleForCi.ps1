@@ -37,4 +37,3 @@ function Import-NovaBuiltModuleForCi {
     Get-Module -Name $resolvedProjectInfo.ProjectName -All | Remove-Module -Force -ErrorAction SilentlyContinue
     return Import-Module -Name $moduleManifestPath -Force -Global -PassThru -ErrorAction Stop
 }
-

@@ -18,4 +18,3 @@ function Get-NovaPackageUploadTargetUrl {
 
     return "$resolvedUrl".Trim()
 }
-

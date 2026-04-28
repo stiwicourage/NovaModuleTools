@@ -30,4 +30,3 @@ function Get-NovaResolvedProjectPackageSettings {
 
     return $packageSettings
 }
-

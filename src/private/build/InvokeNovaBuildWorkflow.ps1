@@ -44,4 +44,3 @@ function Invoke-NovaBuildUpdateNotificationSafely {
         $null = $_
     }
 }
-

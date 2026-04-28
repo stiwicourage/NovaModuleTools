@@ -78,5 +78,3 @@ function Get-TestNovaPesterReportWriter {
         $global:reportWasWritten = $null -ne $TestResult -and $OutputPath -eq $ExpectedOutputPath
     }.GetNewClosure()
 }
-
-

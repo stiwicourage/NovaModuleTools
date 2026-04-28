@@ -20,4 +20,3 @@ function Get-NovaProjectPackageOutputDirectorySettingsTable {
         Path = $outputDirectoryValue
     }
 }
-

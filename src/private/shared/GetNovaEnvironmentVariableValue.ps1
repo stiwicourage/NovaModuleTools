@@ -10,4 +10,3 @@ function Get-NovaEnvironmentVariableValue {
 
     return [System.Environment]::GetEnvironmentVariable($Name.Trim())
 }
-

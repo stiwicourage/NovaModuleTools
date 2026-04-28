@@ -15,4 +15,3 @@ function Get-NovaVersionUpdateCiActivatedCommand {
     $importedModule = Import-NovaBuiltModuleForCi -ProjectInfo $projectInfo
     return $importedModule.ExportedCommands['Update-NovaModuleVersion']
 }
-

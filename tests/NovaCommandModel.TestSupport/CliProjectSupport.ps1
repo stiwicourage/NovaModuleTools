@@ -184,4 +184,3 @@ function Get-TestNovaCliContinuousIntegrationForwardingCaseList {
         @{CommandName = 'release'; ActionCommand = 'Invoke-NovaRelease'; UsesPublishOption = $true; Arguments = @('--repository', 'PSGallery', '--api-key', 'key123', '--continuous-integration')}
     )
 }
-

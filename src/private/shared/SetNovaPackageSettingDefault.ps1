@@ -17,4 +17,3 @@ function Set-NovaPackageSettingDefault {
         $null = $PackageSettings[$Name] = $Value
     }
 }
-
