@@ -10,12 +10,8 @@ Force ALL output to be wrapped in a Markdown code block using this exact format:
 
 ## Rules (strict)
 
-1. The response MUST start with exactly:
-
-~~~markdown
-
-2. The response MUST end with exactly:
-~~~
+1. The response MUST start with exactly: ~~~markdown
+2. The response MUST end with exactly: ~~~
 
 3. There MUST be no text before or after the wrapper.
 
@@ -29,7 +25,7 @@ Inner content rules
     - Use triple backticks (```) for code examples.
     - Always include language hints when relevant.
 
-⸻
+---
 
 Example (correct nesting)
 
@@ -47,6 +43,8 @@ Or in PowerShell:
 PS> Invoke-NovaBuild
 ```
 
+---
+
 Self-check
 
 Before returning:
@@ -56,6 +54,8 @@ Before returning:
 -Code blocks use triple backticks?
 
 If any check fails → regenerate.
+
+---
 
 Expected behavior
 
