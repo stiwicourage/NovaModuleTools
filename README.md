@@ -56,6 +56,7 @@ Repository development expects:
 - `Microsoft.PowerShell.PlatyPS`
 
 Node.js is only required if you are working on the current semantic-release-based publish pipeline.
+Use Node.js 22.14.0 or newer for that release automation because the current `semantic-release` toolchain requires it.
 
 ### Build the module locally
 
@@ -571,6 +572,9 @@ The CI helper flow also produces JUnit and Cobertura artifacts for external syst
 ### Release automation
 
 The current publish pipeline is still semantic-release based.
+
+`.github/workflows/Publish.yml` now provisions Node.js 22.14.0 before `npx semantic-release` runs, so the release step
+stays aligned with the upstream runtime requirement after build and test succeed.
 
 Key pieces:
 
