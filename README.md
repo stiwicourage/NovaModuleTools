@@ -212,9 +212,15 @@ These switches keep the behavior explicit and opt-in:
 - `Update-NovaModuleVersion -ContinuousIntegration` also falls back to a patch bump when the current `HEAD` already
   matches the latest tag, so release automation can seed the next prerelease line without requiring an extra commit
   first
+- `Update-NovaModuleVersion` and `% nova bump` treat stable `0.y.z` versions as the SemVer initial-development phase,
+  so breaking-change bumps stay on the `0.y.z` line by planning the next minor version instead of jumping to `1.0.0`
 - `Publish-NovaModule -ContinuousIntegration` restores the built module after publish completes
 - `Invoke-NovaRelease -ContinuousIntegration` forwards that CI intent through the nested build/bump boundaries and then
   restores the built module again after publish
+
+When Nova reports that a breaking-change bump was detected while the current stable version is still `0.y.z`, it also
+prints guidance about manually setting `1.0.0` once the software is stable. Preview bumps keep their current behavior
+and are not remapped by this rule.
 
 Useful local helper:
 

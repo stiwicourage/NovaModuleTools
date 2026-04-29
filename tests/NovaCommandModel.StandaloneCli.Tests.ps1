@@ -311,6 +311,46 @@ Describe '$projectName tests' {
         }
     }
 
+    It 'Install-NovaCli keeps stable major-zero breaking-change bumps on the 0.y.z line and prints guidance about 1.0.0' {
+        $targetDirectory = Join-Path $TestDrive 'major-zero-bump-bin'
+        $installedPath = Join-Path $targetDirectory 'nova'
+        $projectRoot = Join-Path $TestDrive 'CliMajorZeroBumpProject'
+        $projectJsonPath = Join-Path $projectRoot 'project.json'
+        $originalModulePath = $env:PSModulePath
+        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
+        $distParent = Split-Path -Parent $script:distModuleDir
+
+        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
+
+        Initialize-TestNovaCliProjectLayout -ProjectRoot $projectRoot
+        Write-TestNovaCliProjectJson -ProjectRoot $projectRoot -ProjectName 'CliMajorZeroBumpProject' -ProjectGuid '55555555-5555-5555-5555-555555555555'
+        Write-TestNovaCliPublicFunction -ProjectRoot $projectRoot -FunctionName 'Invoke-TestCliMajorZeroBump'
+
+        $projectData = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json
+        $projectData.Version = '0.1.0'
+        $projectData | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $projectJsonPath -Encoding utf8
+
+        try {
+            Initialize-TestNovaCliGitRepository -ProjectRoot $projectRoot -CommitMessage 'feat!: add stable major zero bump coverage'
+
+            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
+
+            $bumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '--what-if')
+            $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
+
+            $bumpResult.ExitCode | Should -Be 0
+            $bumpResult.Text | Should -Match 'What if:'
+            $bumpResult.Text | Should -Match 'Version plan: 0\.1\.0 -> 0\.2\.0 \| Label: Major \| Commits: 1'
+            $bumpResult.Text | Should -Match 'Major version zero \(0\.y\.z\) is for initial development'
+            $bumpResult.Text | Should -Match 'Set 1\.0\.0 manually once the software is stable'
+            $bumpResult.Text | Should -Not -Match 'Version bumped to :'
+            $versionAfterBump | Should -Be '0.1.0'
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+    }
+
     It 'Install-NovaCli rejects unsupported nova init invocations with clear migration guidance' -ForEach @(
         @{
             Name = 'WhatIf'

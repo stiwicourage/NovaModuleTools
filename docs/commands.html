@@ -476,6 +476,10 @@ PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $
                             <li><strong>Notable behavior:</strong> falls back to a patch bump when the folder is not a
                                 Git repository, but throws when the repository exists and has no commits yet
                             </li>
+                            <li><strong>Major-zero rule:</strong> stable <code>0.y.z</code> projects keep
+                                breaking-change
+                                bumps on the initial-development line, so a detected <code>Major</code> bump plans the
+                                next minor version until you manually set <code>1.0.0</code></li>
                             <li><strong>Prerelease rule:</strong> finalizes matching prerelease targets like
                                 <code>2.0.0-preview7 -&gt; 2.0.0</code> instead of carrying the old prerelease label
                                 into

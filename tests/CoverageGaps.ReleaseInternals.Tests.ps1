@@ -148,6 +148,60 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
+    It 'Get-NovaVersionUpdateWorkflowContext handles stable and preview major bumps on the 0.y.z line as expected when <Name>' -ForEach @(
+        @{
+            Name = 'a stable bump stays on the initial-development line'
+            PreviewRelease = $false
+            PlannedVersion = '0.2.0'
+            ExpectedEffectiveLabel = 'Minor'
+            ExpectedAdvisoryPattern = 'Set 1\.0\.0 manually once the software is stable'
+            ExpectedPlanLabel = 'Minor'
+        }
+        @{
+            Name = 'preview mode remains unchanged'
+            PreviewRelease = $true
+            PlannedVersion = '1.0.0-preview'
+            ExpectedEffectiveLabel = 'Major'
+            ExpectedAdvisoryPattern = $null
+            ExpectedPlanLabel = 'Major'
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectJSON = '/tmp/project.json'
+                    Version = '0.1.0'
+                }
+            }
+            Mock Get-GitCommitMessageForVersionBump {@('feat!: breaking api')}
+            Mock Get-NovaVersionLabelForBump {'Major'}
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    NewVersion = [semver]$TestCase.PlannedVersion
+                }
+            }
+
+            $result = Get-NovaVersionUpdateWorkflowContext -ProjectRoot '/tmp/project' -PreviewRelease:$TestCase.PreviewRelease
+
+            $result.Label | Should -Be 'Major'
+            $result.EffectiveLabel | Should -Be $TestCase.ExpectedEffectiveLabel
+            $result.NewVersion | Should -Be $TestCase.PlannedVersion
+            if ($null -eq $TestCase.ExpectedAdvisoryPattern) {
+                $result.AdvisoryMessage | Should -BeNullOrEmpty
+            }
+            else {
+                $result.AdvisoryMessage | Should -Match $TestCase.ExpectedAdvisoryPattern
+            }
+
+            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
+                $Label -eq $TestCase.ExpectedPlanLabel -and
+                        ([bool]$PreviewRelease) -eq ([bool]$TestCase.PreviewRelease)
+            }
+        }
+    }
+
     It 'Get-NovaVersionUpdatePlan keeps the semantic core and increments an existing prerelease label when preview mode continues a prerelease' -ForEach @(
         @{CurrentVersion = '1.5.3-preview'; ExpectedVersion = '1.5.3-preview01'}
         @{CurrentVersion = '1.5.3-preview01'; ExpectedVersion = '1.5.3-preview02'}

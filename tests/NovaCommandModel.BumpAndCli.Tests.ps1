@@ -101,10 +101,42 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $result.PreviousVersion | Should -Be '1.0.0'
             $result.NewVersion | Should -Be '1.1.0'
             $result.Label | Should -Be 'Minor'
+            $result.EffectiveLabel | Should -Be 'Minor'
             $result.CommitCount | Should -Be 2
             $result.Target | Should -Be 'project.json'
             $result.Action | Should -Be 'Update module version using Minor release label'
             $result.'ContinuousIntegrationRequested' | Should -BeFalse
+            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
+                $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
+                        $Label -eq 'Minor' -and
+                        -not $PreviewRelease
+            }
+        }
+    }
+
+    It 'Get-NovaVersionUpdateWorkflowContext keeps the detected Major label but plans the next minor version for stable 0.y.z projects' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    Version = '0.1.0'
+                    ProjectJSON = '/tmp/project.json'
+                }
+            }
+            Mock Get-GitCommitMessageForVersionBump {@('feat!: breaking api')}
+            Mock Get-NovaVersionLabelForBump {'Major'}
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    NewVersion = [semver]'0.2.0'
+                }
+            }
+
+            $result = Get-NovaVersionUpdateWorkflowContext -ProjectRoot '/tmp/project'
+
+            $result.Label | Should -Be 'Major'
+            $result.EffectiveLabel | Should -Be 'Minor'
+            $result.NewVersion | Should -Be '0.2.0'
+            $result.AdvisoryMessage | Should -Match 'Major version zero \(0\.y\.z\) is for initial development'
             Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
                 $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
                         $Label -eq 'Minor' -and
@@ -206,6 +238,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $workflowContext = [pscustomobject]@{
                 ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
                 Label = 'Minor'
+                EffectiveLabel = 'Minor'
                 PreviewRelease = $true
                 PreviousVersion = '1.0.0'
                 NewVersion = '1.1.0-preview'
@@ -235,6 +268,40 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
+    It 'Invoke-NovaVersionUpdateWorkflow persists the effective minor label for stable 0.y.z major bumps' {
+        InModuleScope $script:moduleName {
+            $workflowContext = [pscustomobject]@{
+                ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                Label = 'Major'
+                EffectiveLabel = 'Minor'
+                AdvisoryMessage = 'Major version zero (0.y.z) is for initial development.'
+                PreviewRelease = $false
+                PreviousVersion = '0.1.0'
+                NewVersion = '0.2.0'
+                CommitCount = 34
+            }
+            Mock Set-NovaModuleVersion {
+                [pscustomobject]@{
+                    PreviousVersion = '0.1.0'
+                    NewVersion = '0.2.0'
+                    Applied = $true
+                }
+            }
+
+            $result = Invoke-NovaVersionUpdateWorkflow -WorkflowContext $workflowContext -ShouldRun
+
+            $result.Label | Should -Be 'Major'
+            $result.EffectiveLabel | Should -Be 'Minor'
+            $result.AdvisoryMessage | Should -Be 'Major version zero (0.y.z) is for initial development.'
+            Assert-MockCalled Set-NovaModuleVersion -Times 1 -ParameterFilter {
+                $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
+                        $Label -eq 'Minor' -and
+                        -not $PreviewRelease -and
+                        -not $Confirm
+            }
+        }
+    }
+
     It 'Update-NovaModuleVersion delegates orchestration to private bump workflow helpers' {
         InModuleScope $script:moduleName {
             Mock Get-NovaVersionUpdateWorkflowContext {
@@ -258,6 +325,36 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
                         -not $WhatIfEnabled
             }
             Assert-MockCalled Write-Host -Times 1 -ParameterFilter {$Object -eq 'Version bumped to : 1.1.0'}
+        }
+    }
+
+    It 'Update-NovaModuleVersion writes a warning when a stable major-zero bump stays on the initial-development line' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaVersionUpdateWorkflowContext {
+                [pscustomobject]@{
+                    Target = 'project.json'
+                    Action = 'Update module version using Major release label'
+                }
+            }
+            Mock Invoke-NovaVersionUpdateWorkflow {
+                [pscustomobject]@{
+                    PreviousVersion = '0.1.0'
+                    NewVersion = '0.2.0'
+                    Label = 'Major'
+                    EffectiveLabel = 'Minor'
+                    AdvisoryMessage = 'Major version zero (0.y.z) is for initial development.'
+                    CommitCount = 34
+                    Applied = $false
+                }
+            }
+            Mock Write-Host {throw 'WhatIf should not emit host output'}
+            $warningMessages = $null
+
+            $result = Update-NovaModuleVersion -Path (Get-Location).Path -WhatIf -WarningVariable warningMessages
+
+            $result.NewVersion | Should -Be '0.2.0'
+            ($warningMessages -join ' ') | Should -Match 'Major version zero \(0\.y\.z\) is for initial development'
+            Assert-MockCalled Write-Host -Times 0
         }
     }
 
