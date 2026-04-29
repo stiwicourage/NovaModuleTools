@@ -1,6 +1,14 @@
 temp/
-run.ps1
-dist/
 justfile
 testResults.xml
 node_modules/
+
+# CI/local test artifacts
+artifacts/
+dist/
+run.ps1
+reload.ps1
+.tmp-nova-bin/
+/*plan*.md
+/summary.md
+/coverage.xml

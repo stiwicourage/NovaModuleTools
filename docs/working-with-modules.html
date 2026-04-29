@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>NovaModuleTools — Work with the built module, reload safely, and learn from the packaged example</title>
+    <meta content="Learn why NovaModuleTools is designed around the built module in dist, how to reload after changes, how local publish differs, and how to use the packaged example project as a live reference."
+          name="description">
+    <meta content="index,follow,max-image-preview:large" name="robots">
+    <meta content="#0b1020" name="theme-color">
+    <link href="https://www.novamoduletools.com/working-with-modules.html" rel="canonical">
+    <link href="./assets/icon.png" rel="icon" type="image/png">
+    <link href="./assets/icon.png" rel="apple-touch-icon">
+    <meta content="article" property="og:type">
+    <meta content="NovaModuleTools — Work with the built module, reload safely, and learn from the packaged example"
+          property="og:title">
+    <meta content="Import the built output from dist, reload after changes, compare local publish with the normal build loop, and use the packaged example as a working reference."
+          property="og:description">
+    <meta content="https://www.novamoduletools.com/working-with-modules.html" property="og:url">
+    <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
+    <meta content="summary" name="twitter:card">
+    <meta content="NovaModuleTools — Work with the built module, reload safely, and learn from the packaged example"
+          name="twitter:title">
+    <meta content="Import the built output from dist, reload after changes, compare local publish with the normal build loop, and use the packaged example as a working reference."
+          name="twitter:description">
+    <link href="./assets/site.css" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            "headline": "Working with modules in NovaModuleTools",
+            "description": "How to work with the built module and packaged example in NovaModuleTools.",
+            "url": "https://www.novamoduletools.com/working-with-modules.html"
+        }
+    </script>
+</head>
+<body class="guide-page">
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">
+            <img alt="" class="site-brand__icon" src="./assets/icon.png">
+            <span class="site-brand__text">NovaModuleTools</span>
+        </a>
+        <div aria-label="Command display mode" class="site-header__command-surface">
+            <div aria-label="Command display mode" class="surface-tabs" role="tablist">
+                <button aria-selected="true" class="surface-tabs__button" data-command-mode="powershell" role="tab"
+                        type="button">PowerShell
+                </button>
+                <button aria-selected="false" class="surface-tabs__button" data-command-mode="command-line" role="tab"
+                        type="button">Command-line
+                </button>
+            </div>
+        </div>
+        <div class="site-header__actions">
+            <details class="site-menu">
+                <summary class="site-menu__button">
+                    <span class="site-menu__button-label">Menu</span>
+                    <span class="site-menu__current">Working with Modules</span>
+                </summary>
+                <nav aria-label="Primary" class="site-menu__panel">
+                    <a class="site-nav__link" href="./index.html">Home</a>
+                    <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+                    <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+                    <a aria-current="page" class="site-nav__link site-nav__link--active"
+                       href="./working-with-modules.html">Working
+                        with Modules</a>
+                    <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
+                    <a class="site-nav__link" href="./commands.html">Command Reference</a>
+                    <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
+                    <a class="site-nav__link" href="./versioning-and-updates.html">Versioning &amp; Updates</a>
+                    <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+                    <a class="site-nav__link" href="./advanced.html">Concepts</a>
+                    <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
+                </nav>
+            </details>
+        </div>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="guide-hero">
+        <p class="eyebrow">How-to Guides</p>
+        <h1>Work with the built module instead of loose source files</h1>
+        <p class="lead">NovaModuleTools is designed around the module it generates in <code>dist/</code>. This page
+            explains why that matters, how to reload safely during development, how local publish changes the import
+            story, and how to use the packaged example project as a live reference.</p>
+    </section>
+
+    <section class="content-grid">
+        <aside class="toc-card">
+            <h2>On this page</h2>
+            <ul class="toc-list">
+                <li><a href="#why-dist">Why dist matters</a></li>
+                <li><a href="#import-built">Import the built module</a></li>
+                <li><a href="#reload">Reload after changes</a></li>
+                <li><a href="#local-publish">Use local publish intentionally</a></li>
+                <li><a href="#example-project">Use the packaged example as a working reference</a></li>
+            </ul>
+        </aside>
+
+        <div class="guide-content">
+            <section class="content-section" id="why-dist">
+                <h2>Why <code>dist/</code> matters</h2>
+                <p>NovaModuleTools does not treat your project as a pile of loose scripts. It treats it as a buildable
+                    PowerShell module project.</p>
+                <p>That means the important runtime artifact is the generated module under <code>dist/&lt;ProjectName&gt;</code>,
+                    because that is the shape Nova later tests, packages, and publishes.</p>
+                <div class="notice">
+                    <strong>Practical rule:</strong>
+                    <p>When you want to validate behavior, import from <code>dist/</code>. If you only load source files
+                        ad hoc, you can miss real packaging or manifest issues that only show up in the built output.
+                    </p>
+                </div>
+            </section>
+
+            <section class="content-section" id="import-built">
+                <h2>Import the built module</h2>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Import the built module from dist</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Invoke-NovaBuild
+PS&gt; $project = Get-NovaProjectInfo
+PS&gt; Import-Module $project.OutputModuleDir -Force</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova build
+pwsh -NoLogo -Command 'Import-Module (Get-NovaProjectInfo).OutputModuleDir -Force; Get-Command -Module (Get-NovaProjectInfo).ProjectName'</code></pre>
+                    </div>
+                </div>
+                <div class="surface-note" data-command-visibility="command-line" hidden>
+                    <p><strong>Command-line note:</strong> importing from <code>dist/</code> still happens inside
+                        PowerShell, so the command-line flow hands off to a fresh <code>pwsh</code> process for the
+                        import step.</p>
+                </div>
+                <p>Use this after a successful build when you want the session to use the generated module exactly as
+                    Nova produced it.</p>
+                <p><strong>Expected result:</strong> the module imports from <code>dist/&lt;ProjectName&gt;</code>, not
+                    from your source folders.</p>
+            </section>
+
+            <section class="content-section" id="reload">
+                <h2>Reload after changes</h2>
+                <p>PowerShell can keep an older version of the module loaded in memory. The safe pattern is:</p>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Reload after source changes</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; $project = Get-NovaProjectInfo
+PS&gt; Remove-Module $project.ProjectName -ErrorAction SilentlyContinue
+PS&gt; Invoke-NovaBuild
+PS&gt; Import-Module $project.OutputModuleDir -Force</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova build
+pwsh -NoLogo -Command 'Import-Module (Get-NovaProjectInfo).OutputModuleDir -Force; Get-Command -Module (Get-NovaProjectInfo).ProjectName'</code></pre>
+                    </div>
+                </div>
+                <div class="surface-note" data-command-visibility="command-line" hidden>
+                    <p><strong>Command-line note:</strong> a fresh <code>pwsh -Command</code> process starts clean, so
+                        you normally do not need the explicit <code>Remove-Module</code> step unless you are already in
+                        a
+                        long-lived interactive PowerShell session.</p>
+                </div>
+                <p>Use this every time you edit functions, resources, or manifest-related settings and want to validate
+                    the current state.</p>
+                <p>If you skip the remove/rebuild/import cycle, you can think you are testing current code when you are
+                    really still using an older imported version.</p>
+            </section>
+
+            <section class="content-section" id="local-publish">
+                <h2>Use local publish intentionally</h2>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Run a local publish</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Publish-NovaModule -Local</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova publish --local
+% nova publish -l</code></pre>
+                    </div>
+                </div>
+                <p>Local publish is different from the normal build/import loop:</p>
+                <ul class="plain-list">
+                    <li>Nova builds the project</li>
+                    <li>Nova runs the tests</li>
+                    <li>Nova copies the module to the resolved local install directory</li>
+                    <li>Nova reloads the published copy into the current PowerShell session after success</li>
+                </ul>
+                <p>Use local publish when you want to simulate a real installed-module experience. Use the normal
+                    build/import loop when you just want fast iteration in <code>dist/</code>.</p>
+                <div class="notice notice--warning">
+                    <strong>Do not confuse local publish with local release.</strong>
+                    <p><code>Invoke-NovaRelease -PublishOption @{ Local = $true }</code> publishes locally too, but it
+                        does <strong>not</strong> import the published module into the current session afterward. That
+                        special import behavior belongs to <code>Publish-NovaModule -Local</code>.</p>
+                </div>
+            </section>
+
+            <section class="content-section" id="example-project">
+                <h2>Use the packaged example as a working reference</h2>
+                <p>The packaged example is more than sample content. It is a maintained project that demonstrates the
+                    Nova workflow in one place.</p>
+                <h3>What the example includes</h3>
+                <ul class="plain-list">
+                    <li>a full <code>project.json</code> with current configuration examples</li>
+                    <li>a public function</li>
+                    <li>a private helper</li>
+                    <li>a resource file</li>
+                    <li>Pester tests that validate the built module output</li>
+                    <li>package and raw-upload examples, including <code>Package.Types</code>,
+                        <code>Package.Latest</code>, and named repositories
+                    </li>
+                </ul>
+                <h3>How to learn from it</h3>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Walk the example project end to end</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Initialize-NovaModule -Example -Path ~/Work
+PS&gt; Set-Location ~/Work/&lt;YourProjectName&gt;
+PS&gt; Invoke-NovaBuild
+PS&gt; Test-NovaBuild
+PS&gt; $project = Get-NovaProjectInfo
+PS&gt; Import-Module $project.OutputModuleDir -Force
+PS&gt; Get-ExampleGreeting</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova init --example --path ~/Work
+% cd ~/Work/&lt;YourProjectName&gt;
+% nova build
+% nova test
+pwsh -NoLogo -Command "Import-Module (Get-NovaProjectInfo).OutputModuleDir -Force; Get-ExampleGreeting"</code></pre>
+                    </div>
+                </div>
+                <p>Once you understand the example, copy the patterns you want into your own project instead of copying
+                    the whole project blindly.</p>
+                <p><a class="text-link" href="./project-json-reference.html#example">See the example configuration
+                    reference</a></p>
+            </section>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="footer__inner">
+        <h2>The built module is the product you are developing</h2>
+        <p>Keep coming back to that idea and Nova becomes much easier to reason about. Build it, test it, import it, and
+            only then decide whether you need packaging, upload, publish, or release.</p>
+        <div class="hero__actions">
+            <a class="button button--primary" href="./packaging-and-delivery.html">Open Packaging &amp; Delivery</a>
+            <a class="button button--secondary" href="./troubleshooting.html">Open Troubleshooting</a>
+        </div>
+        <p class="footer__legal">Also available: <a class="legal-link" href="./commands.html">Command Reference</a>, <a
+                class="legal-link" href="./release-notes.html">Release Notes</a>, and the <a class="legal-link"
+                                                                                             href="./license.html">MIT
+            License</a>.</p>
+    </div>
+</footer>
+<script>
+    (() => {
+        const storageKey = 'nova-doc-command-surface';
+        const supportedModes = ['powershell', 'command-line'];
+
+        function readStoredMode() {
+            try {
+                const stored = window.localStorage.getItem(storageKey);
+                return supportedModes.includes(stored) ? stored : 'powershell';
+            } catch {
+                return 'powershell';
+            }
+        }
+
+        function writeStoredMode(mode) {
+            try {
+                window.localStorage.setItem(storageKey, mode);
+            } catch {
+                // Ignore storage failures and keep the page interactive.
+            }
+        }
+
+        function getModeLabel(mode) {
+            return mode === 'command-line' ? 'Command-line' : 'PowerShell';
+        }
+
+        function applyMode(mode) {
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                const selected = button.dataset.commandMode === mode;
+                button.setAttribute('aria-selected', selected ? 'true' : 'false');
+            });
+
+            document.querySelectorAll('[data-command-example]').forEach((example) => {
+                example.querySelectorAll('[data-command-surface]').forEach((surface) => {
+                    surface.hidden = surface.dataset.commandSurface !== mode;
+                });
+            });
+
+            document.querySelectorAll('[data-command-surface-label]').forEach((label) => {
+                label.textContent = getModeLabel(mode);
+            });
+
+            document.querySelectorAll('[data-command-visibility]').forEach((element) => {
+                element.hidden = element.dataset.commandVisibility !== mode;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialMode = readStoredMode();
+            applyMode(initialMode);
+
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const nextMode = button.dataset.commandMode;
+                    if (!supportedModes.includes(nextMode)) {
+                        return;
+                    }
+
+                    applyMode(nextMode);
+                    writeStoredMode(nextMode);
+                });
+            });
+        });
+    })();
+</script>
+</body>
+</html>

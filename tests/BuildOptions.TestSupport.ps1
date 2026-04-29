@@ -37,7 +37,6 @@ function Write-TestProjectJson {
         ProjectName = ('' + $Options.ProjectName)
         Description = 'Test project'
         Version = '0.0.1'
-        copyResourcesToModuleRoot = $false
         Manifest = [ordered]@{
             Author = 'Test'
             PowerShellHostVersion = '7.4'
@@ -68,6 +67,14 @@ function Write-TestProjectJson {
         $project.FailOnDuplicateFunctionNames = [bool]$Options.FailOnDuplicateFunctionNames
     }
 
+    if ( $Options.ContainsKey('Preamble')) {
+        $project.Preamble = $Options.Preamble
+    }
+
+    if ( $Options.ContainsKey('CopyResourcesToModuleRoot')) {
+        $project.CopyResourcesToModuleRoot = [bool]$Options.CopyResourcesToModuleRoot
+    }
+
     $json = $project | ConvertTo-Json -Depth 10
     Set-Content -LiteralPath (Join-Path $ProjectRoot 'project.json') -Value $json -Encoding utf8
 }
@@ -80,7 +87,7 @@ function Get-BuiltModuleFilePath {
 
     Push-Location -LiteralPath $ProjectRoot
     try {
-        $info = Get-MTProjectInfo
+        $info = Get-NovaProjectInfo
         return (Join-Path $ProjectRoot ("dist/{0}/{0}.psm1" -f $info.ProjectName))
     }
     finally {
@@ -96,7 +103,7 @@ function Invoke-TestProjectBuild {
 
     Push-Location -LiteralPath $ProjectRoot
     try {
-        Invoke-MTBuild
+        Invoke-NovaBuild
         $psm1 = Get-BuiltModuleFilePath -ProjectRoot $ProjectRoot
         if (-not (Test-Path -LiteralPath $psm1)) {
             throw "Expected built psm1 not found: $psm1"
@@ -145,7 +152,7 @@ function Get-TestProjectInfoValue {
 
     Push-Location -LiteralPath $ProjectRoot
     try {
-        return (Get-MTProjectInfo).$PropertyName
+        return (Get-NovaProjectInfo).$PropertyName
     }
     finally {
         Pop-Location
@@ -208,22 +215,50 @@ function New-TestProjectWithDuplicateFunctions {
     return $root
 }
 
-function Assert-InvokeMTBuildThrows {
+function Assert-InvokeNovaBuildThrows {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][string]$ProjectRoot
+        [Parameter(Mandatory)][string]$ProjectRoot,
+        [AllowNull()][pscustomobject]$ExpectedError
     )
 
-    {
+    $invokeAction = {
         Push-Location -LiteralPath $ProjectRoot
         try {
-            Invoke-MTBuild
+            Invoke-NovaBuild
         }
         finally {
             Pop-Location
         }
-    } | Should -Throw
+    }
+
+    $thrown = $null
+    try {
+        & $invokeAction
+    }
+    catch {
+        $thrown = $_
+    }
+
+    $thrown | Should -Not -BeNullOrEmpty
+    if ($null -eq $ExpectedError) {
+        return
+    }
+
+    if ($ExpectedError.PSObject.Properties.Name -contains 'Message') {
+        $thrown.Exception.Message | Should -BeLike $ExpectedError.Message
+    }
+    if ($ExpectedError.PSObject.Properties.Name -contains 'ErrorId') {
+        $thrown.FullyQualifiedErrorId | Should -Be $ExpectedError.ErrorId
+    }
+    if ($ExpectedError.PSObject.Properties.Name -contains 'Category') {
+        $thrown.CategoryInfo.Category | Should -Be $ExpectedError.Category
+    }
+    if ($ExpectedError.PSObject.Properties.Name -contains 'TargetObject') {
+        $thrown.TargetObject | Should -Be $ExpectedError.TargetObject
+    }
 }
+
 
 function Get-TopLevelFunctionAstFromAst {
     [CmdletBinding()]
@@ -278,16 +313,24 @@ function Invoke-TestProjectTests {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot,
-        [Parameter(Mandatory)][string]$ModulePath
+        [Parameter(Mandatory)][string]$ModulePath,
+        [switch]$BuildBeforeTest
     )
 
-    $scriptPath = Join-Path $ProjectRoot 'Run-InvokeMTTest.ps1'
+    $scriptPath = Join-Path $ProjectRoot 'Run-TestNovaBuild.ps1'
+    $testCommand = if ($BuildBeforeTest) {
+        'Test-NovaBuild -Build'
+    }
+    else {
+        @(
+            'Invoke-NovaBuild'
+            'Test-NovaBuild'
+        ) -join [Environment]::NewLine
+    }
     $script = @"
-`$ErrorActionPreference = 'Stop'
 Import-Module '$ModulePath' -Force
 Set-Location -LiteralPath '$ProjectRoot'
-Invoke-MTBuild
-Invoke-MTTest
+$testCommand
 "@
 
     Set-Content -LiteralPath $scriptPath -Value $script -Encoding utf8
@@ -301,6 +344,34 @@ Invoke-MTTest
     }
     finally {
         Remove-Item -LiteralPath $scriptPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function New-TestProjectWithResources {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$TestDriveRoot,
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][bool]$CopyResourcesToModuleRoot
+    )
+
+    $root = New-TestProjectRoot -TestDriveRoot $TestDriveRoot -Name $Name
+    Write-TestProjectJson -ProjectRoot $root -Options @{
+        ProjectName = $Name
+        BuildRecursiveFolders = $false
+        FailOnDuplicateFunctionNames = $false
+        CopyResourcesToModuleRoot = $CopyResourcesToModuleRoot
+    }
+
+    New-Item -ItemType Directory -Path (Join-Path $root 'src/resources/nested') -Force | Out-Null
+    Set-Content -LiteralPath (Join-Path $root 'src/public/PublicTop.ps1') -Value 'function Invoke-PublicTop { }' -Encoding utf8
+    Set-Content -LiteralPath (Join-Path $root 'src/resources/config.json') -Value '{"key":"value"}' -Encoding utf8
+    Set-Content -LiteralPath (Join-Path $root 'src/resources/nested/child.txt') -Value 'child' -Encoding utf8
+
+    $psm1 = Invoke-TestProjectBuild -ProjectRoot $root
+    return [pscustomobject]@{
+        Root = $root
+        ModuleDir = Split-Path -Parent $psm1
     }
 }
 
@@ -350,3 +421,36 @@ function New-TestProjectWithMarkerTests {
     }
 }
 
+function New-TestProjectWithPreamble {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$TestDriveRoot,
+        [Parameter(Mandatory)][string]$Name,
+        [hashtable]$Options = @{}
+    )
+
+    $includeClassAndPrivate = $Options.ContainsKey('IncludeClassAndPrivate') -and [bool]$Options.IncludeClassAndPrivate
+    $setSourcePath = $Options.ContainsKey('SetSourcePath') -and [bool]$Options.SetSourcePath
+
+    $projectOptions = @{
+        ProjectName = $Name
+        BuildRecursiveFolders = $includeClassAndPrivate
+        SetSourcePath = $setSourcePath
+        FailOnDuplicateFunctionNames = $false
+    }
+    if ( $Options.ContainsKey('Preamble')) {
+        $projectOptions.Preamble = $Options.Preamble
+    }
+
+    $root = New-TestProjectRoot -TestDriveRoot $TestDriveRoot -Name $Name
+    Write-TestProjectJson -ProjectRoot $root -Options $projectOptions
+
+    Set-Content -LiteralPath (Join-Path $root 'src/public/PublicTop.ps1') -Value 'function Invoke-PublicTop { "public" }' -Encoding utf8
+    if (-not $projectOptions.BuildRecursiveFolders) {
+        return $root
+    }
+
+    Set-Content -LiteralPath (Join-Path $root 'src/classes/nested/Thing.ps1') -Value 'class NestedThing { [string]$Name }' -Encoding utf8
+    Set-Content -LiteralPath (Join-Path $root 'src/private/a/PrivateA.ps1') -Value 'function Invoke-PrivateA { "private" }' -Encoding utf8
+    return $root
+}

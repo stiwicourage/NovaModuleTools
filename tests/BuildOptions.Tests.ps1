@@ -1,5 +1,40 @@
+$script:buildOptionsTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1')).Path
+$global:buildOptionsTestSupportFunctionNameList = @(
+    'New-TestProjectRoot'
+    'Write-TestProjectJson'
+    'Get-BuiltModuleFilePath'
+    'Invoke-TestProjectBuild'
+    'Get-BuiltModuleContent'
+    'Invoke-BuildAndParsePsm1Ast'
+    'Get-TestProjectInfoValue'
+    'New-TestProjectWithNestedSourceFiles'
+    'Get-NestedSourceBuildSummary'
+    'New-TestProjectWithDuplicateFunctions'
+    'Assert-InvokeNovaBuildThrows'
+    'Get-TopLevelFunctionAstFromAst'
+    'Write-TestMarkerPesterFile'
+    'Invoke-TestProjectTests'
+    'New-TestProjectWithResources'
+    'New-TestProjectWithMarkerTests'
+)
+
+. $script:buildOptionsTestSupportPath
+
+foreach ($functionName in $global:buildOptionsTestSupportFunctionNameList) {
+    $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+    Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+}
+
 BeforeAll {
-    Import-Module (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1') -Force -Global
+    $buildOptionsTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1')).Path
+    $buildOptionsTestSupportFunctionNameList = $global:buildOptionsTestSupportFunctionNameList
+
+    . $buildOptionsTestSupportPath
+
+    foreach ($functionName in $buildOptionsTestSupportFunctionNameList) {
+        $scriptBlock = (Get-Command -Name $functionName -CommandType Function -ErrorAction Stop).ScriptBlock
+        Set-Item -Path "function:global:$functionName" -Value $scriptBlock
+    }
 
     $here = Split-Path -Parent $PSCommandPath
     $repoRoot = Split-Path -Parent $here
@@ -7,27 +42,121 @@ BeforeAll {
 
     $distModuleDir = Join-Path $repoRoot "dist/$moduleName"
     if (-not (Test-Path -LiteralPath $distModuleDir)) {
-        throw "Expected built $moduleName module at: $distModuleDir. Run Invoke-MTBuild in the repo root first."
+        throw "Expected built $moduleName module at: $distModuleDir. Run Invoke-NovaBuild in the repo root first."
     }
 
     Remove-Module $moduleName -ErrorAction SilentlyContinue
     Import-Module $distModuleDir -Force
 }
 
-Describe 'Invoke-MTBuild options' {
-    BeforeEach {
-        . (Join-Path $PSScriptRoot 'BuildOptions.TestSupport.ps1')
+Describe 'Invoke-NovaBuild options' {
+
+    It 'project template can omit CopyResourcesToModuleRoot because the default is false' {
+        $template = Get-Content -LiteralPath (Join-Path $repoRoot 'src/resources/ProjectTemplate.json') -Raw | ConvertFrom-Json
+
+        $template.PSObject.Properties.Name | Should -Not -Contain 'CopyResourcesToModuleRoot'
     }
 
-    It 'project template and example project use enterprise defaults' {
-        $template = Get-Content -LiteralPath (Join-Path $repoRoot 'src/resources/ProjectTemplate.json') -Raw | ConvertFrom-Json
-        $example = Get-Content -LiteralPath (Join-Path $repoRoot 'example/project.json') -Raw | ConvertFrom-Json
+    It 'packaged example project shows CopyResourcesToModuleRoot explicitly for discoverability' {
+        $example = Get-Content -LiteralPath (Join-Path $repoRoot 'src/resources/example/project.json') -Raw | ConvertFrom-Json
 
-        foreach ($project in @($template, $example)) {
-            $project.BuildRecursiveFolders | Should -BeTrue
-            $project.SetSourcePath | Should -BeTrue
-            $project.FailOnDuplicateFunctionNames | Should -BeTrue
+        $example.PSObject.Properties.Name | Should -Contain 'CopyResourcesToModuleRoot'
+        $example.CopyResourcesToModuleRoot | Should -BeFalse
+    }
+
+    It 'packaged example project builds and tests successfully as a working reference project' {
+        $exampleRoot = Join-Path $repoRoot 'src/resources/example'
+        $result = Invoke-TestProjectTests -ProjectRoot $exampleRoot -ModulePath $distModuleDir
+        $exampleProject = Get-Content -LiteralPath (Join-Path $exampleRoot 'project.json') -Raw | ConvertFrom-Json
+        $builtModulePath = Join-Path $exampleRoot ("dist/{0}/{0}.psm1" -f $exampleProject.ProjectName)
+
+        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
+        (Test-Path -LiteralPath $builtModulePath) | Should -BeTrue
+    }
+
+    It 'module build output includes the packaged example project resources' {
+        (Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/example/project.json')) | Should -BeTrue
+        (Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/example/README.md')) | Should -BeTrue
+        (Test-Path -LiteralPath (Join-Path $distModuleDir 'resources/example/tests/Pester.Some.Tests.ps1')) | Should -BeTrue
+    }
+
+    It 'Get-ExampleConfiguration exposes a structured error when the packaged example config is missing' {
+        $newNovaErrorRecordPath = Join-Path $repoRoot 'src/private/shared/NewNovaErrorRecord.ps1'
+        $stopNovaOperationPath = Join-Path $repoRoot 'src/private/shared/StopNovaOperation.ps1'
+        $exampleConfigurationPath = Join-Path $repoRoot 'src/resources/example/src/private/Get-ExampleConfiguration.ps1'
+        $expectedConfigurationPath = Join-Path $repoRoot 'src/resources/example/src/private/resources/greeting-config.json'
+
+        . $newNovaErrorRecordPath
+        . $stopNovaOperationPath
+        . $exampleConfigurationPath
+
+        Mock Test-Path {$false} -ParameterFilter {$LiteralPath -eq $expectedConfigurationPath}
+
+        $thrown = $null
+        try {
+            Get-ExampleConfiguration
         }
+        catch {
+            $thrown = $_
+        }
+
+        $thrown | Should -Not -BeNullOrEmpty
+        $thrown.Exception.Message | Should -Be "Example configuration not found: $expectedConfigurationPath"
+        $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.ExampleConfigurationNotFound'
+        $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+        $thrown.TargetObject | Should -Be $expectedConfigurationPath
+    }
+
+    It 'ScriptAnalyzer ignores generated packaged example dist and artifacts content' {
+        if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
+            Set-ItResult -Skipped -Because 'PSScriptAnalyzer is not available in this environment'
+            return
+        }
+
+        $exampleDistRoot = Join-Path $repoRoot 'src/resources/example/dist/NovaExampleModule'
+        $exampleArtifactsRoot = Join-Path $repoRoot 'src/resources/example/artifacts'
+        $manifestPath = Join-Path $exampleDistRoot 'NovaExampleModule.psd1'
+        $brokenScriptPath = Join-Path $exampleArtifactsRoot 'Broken.Generated.ps1'
+        $analyzerScriptPath = Join-Path $repoRoot 'scripts/build/Invoke-ScriptAnalyzerCI.ps1'
+
+        New-Item -ItemType Directory -Path $exampleDistRoot -Force | Out-Null
+        New-Item -ItemType Directory -Path $exampleArtifactsRoot -Force | Out-Null
+
+        @'
+@{
+    RootModule = 'NovaExampleModule.psm1'
+    ModuleVersion = '0.1.0'
+    GUID = '44444444-4444-4444-4444-444444444444'
+    Author = 'Test'
+    CmdletsToExport = '*'
+}
+'@ | Set-Content -LiteralPath $manifestPath -Encoding utf8
+
+        "function Invoke-BrokenGenerated {" | Set-Content -LiteralPath $brokenScriptPath -Encoding utf8
+
+        try {
+            $output = & pwsh -NoLogo -NoProfile -File $analyzerScriptPath 2>&1
+            $report = Get-Content -LiteralPath (Join-Path $repoRoot 'artifacts/scriptanalyzer.txt') -Raw
+
+            $LASTEXITCODE | Should -Be 0 -Because (@($output) -join [Environment]::NewLine)
+            $report | Should -Match 'PSScriptAnalyzer: no findings\.'
+        }
+        finally {
+            Remove-Item -LiteralPath (Join-Path $repoRoot 'src/resources/example/dist') -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath $exampleArtifactsRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'empty projects fail with a readable no-source-files error' {
+        $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'EmptyProject'
+        Write-TestProjectJson -ProjectRoot $root -Options @{ProjectName = 'EmptyProject'; BuildRecursiveFolders = $false}
+
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root -ExpectedError ([pscustomobject]@{
+            Message = 'No source files found to build*'
+            ErrorId = 'Nova.Environment.BuildSourceFilesNotFound'
+            Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+            TargetObject = 'src'
+        })
     }
 
     It 'BuildRecursiveFolders=false excludes nested classes/private and nested public' {
@@ -84,7 +213,7 @@ Describe 'Invoke-MTBuild options' {
 
         Push-Location -LiteralPath $root
         try {
-            (Get-MTProjectInfo).SetSourcePath | Should -BeTrue
+            (Get-NovaProjectInfo).SetSourcePath | Should -BeTrue
         }
         finally {
             Pop-Location
@@ -151,7 +280,24 @@ Describe 'Invoke-MTBuild options' {
         Get-Command Invoke-PublicTop -Module SetSourceOn | Should -Not -BeNullOrEmpty
         Remove-Module SetSourceOn -ErrorAction SilentlyContinue
     }
-    Context 'Invoke-MTTest discovery for BuildRecursiveFolders=<BuildRecursiveFolders>' -ForEach @(
+
+    It 'CopyResourcesToModuleRoot=true copies resource content directly into the built module root' {
+        $project = New-TestProjectWithResources -TestDriveRoot $TestDrive -Name 'ResourceToRoot' -CopyResourcesToModuleRoot $true
+
+        (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'config.json')) | Should -BeTrue
+        (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'nested/child.txt')) | Should -BeTrue
+        (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'resources')) | Should -BeFalse
+    }
+
+    It 'CopyResourcesToModuleRoot=false keeps resources inside a resources folder in the built module' {
+        $project = New-TestProjectWithResources -TestDriveRoot $TestDrive -Name 'ResourceToFolder' -CopyResourcesToModuleRoot $false
+
+        (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'resources/config.json')) | Should -BeTrue
+        (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'resources/nested/child.txt')) | Should -BeTrue
+        (Test-Path -LiteralPath (Join-Path $project.ModuleDir 'config.json')) | Should -BeFalse
+    }
+
+    Context 'Test-NovaBuild discovery for BuildRecursiveFolders=<BuildRecursiveFolders>' -ForEach @(
         @{ Name = 'TestsTopOnly'; BuildRecursiveFolders = $false; ExpectedNestedMarker = $false }
         @{ Name = 'TestsRecursive'; BuildRecursiveFolders = $true; ExpectedNestedMarker = $true }
     ) {
@@ -165,16 +311,72 @@ Describe 'Invoke-MTBuild options' {
         }
     }
 
+    It 'Test-NovaBuild -Build rebuilds the project before running tests' {
+        $project = New-TestProjectWithMarkerTests -TestDriveRoot $TestDrive -Name 'TestsWithBuildFlag' -BuildRecursiveFolders $true
+        $builtModulePath = Join-Path $project.Root 'dist/TestsWithBuildFlag/TestsWithBuildFlag.psm1'
+
+        $result = Invoke-TestProjectTests -ProjectRoot $project.Root -ModulePath $distModuleDir -BuildBeforeTest
+
+        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
+        (Test-Path -LiteralPath $builtModulePath) | Should -BeTrue
+        (Test-Path -LiteralPath $project.TopMarker) | Should -BeTrue
+        (Test-Path -LiteralPath $project.NestedMarker) | Should -BeTrue
+    }
+
     It 'missing FailOnDuplicateFunctionNames defaults to true and fails on duplicate top-level function names' {
         $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupDefault' -Options @{ ProjectName = 'DupDefault'; BuildRecursiveFolders = $false; SetSourcePath = $false }
+        $expectedModulePath = Get-BuiltModuleFilePath -ProjectRoot $root
 
         (Get-TestProjectInfoValue -ProjectRoot $root -PropertyName 'FailOnDuplicateFunctionNames') | Should -BeTrue
-        Assert-InvokeMTBuildThrows -ProjectRoot $root
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root -ExpectedError ([pscustomobject]@{
+            Message = 'Duplicate top-level function names detected in built module:*'
+            ErrorId = 'Nova.Validation.BuiltModuleDuplicateFunctionName'
+            Category = [System.Management.Automation.ErrorCategory]::InvalidData
+            TargetObject = $expectedModulePath
+        })
+    }
+
+    It 'fails build when Manifest contains unsupported New-ModuleManifest parameters' {
+        $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'BadManifestParameter'
+        Write-TestProjectJson -ProjectRoot $root -Options @{ProjectName = 'BadManifestParameter'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false}
+        Set-Content -LiteralPath (Join-Path $root 'src/public/PublicTop.ps1') -Value 'function Invoke-PublicTop { }' -Encoding utf8
+
+        $projectJsonPath = Join-Path $root 'project.json'
+        $project = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json -AsHashtable
+        $project.Manifest['BogusKey'] = 'nope'
+        $project | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $projectJsonPath -Encoding utf8
+
+        $thrown = $null
+        try {
+            Push-Location -LiteralPath $root
+            try {
+                Invoke-NovaBuild
+            }
+            finally {
+                Pop-Location
+            }
+        }
+        catch {
+            $thrown = $_
+        }
+
+        $thrown | Should -Not -BeNullOrEmpty
+        $thrown.Exception.Message | Should -Be 'Unknown parameter(s) in Manifest: BogusKey'
+        $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.ManifestUnknownParameter'
+        $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+        @($thrown.TargetObject) | Should -Be @('BogusKey')
     }
 
     It 'FailOnDuplicateFunctionNames=true fails when built psm1 contains duplicate top-level function names' {
         $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupFail' -Options @{ ProjectName = 'DupFail'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $true }
-        Assert-InvokeMTBuildThrows -ProjectRoot $root
+        $expectedModulePath = Get-BuiltModuleFilePath -ProjectRoot $root
+
+        Assert-InvokeNovaBuildThrows -ProjectRoot $root -ExpectedError ([pscustomobject]@{
+            Message = 'Duplicate top-level function names detected in built module:*'
+            ErrorId = 'Nova.Validation.BuiltModuleDuplicateFunctionName'
+            Category = [System.Management.Automation.ErrorCategory]::InvalidData
+            TargetObject = $expectedModulePath
+        })
     }
 
     It 'FailOnDuplicateFunctionNames=false allows duplicates (last wins) for backward compatibility' {

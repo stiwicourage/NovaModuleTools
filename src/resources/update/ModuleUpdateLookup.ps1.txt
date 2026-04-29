@@ -1,0 +1,68 @@
+param($ResolvedModuleName, $IncludePrerelease)
+$ProgressPreference = 'SilentlyContinue'
+$WarningPreference = 'SilentlyContinue'
+$InformationPreference = 'SilentlyContinue'
+$VerbosePreference = 'SilentlyContinue'
+$ErrorActionPreference = 'Stop'
+$repositoryName = 'PSGallery'
+
+function Get-PrereleaseLabel {
+    param([object]$Item)
+
+    if ($null -eq $Item) {
+        return $null
+    }
+
+    $metadata = $Item.AdditionalMetadata
+    if ($metadata -is [System.Collections.IDictionary]) {
+        return $metadata['Prerelease']
+    }
+
+    if ($null -ne $metadata -and $metadata.PSObject.Properties.Name -contains 'Prerelease') {
+        return $metadata.Prerelease
+    }
+
+    if ($Item.PSObject.Properties.Name -contains 'Prerelease') {
+        return $Item.Prerelease
+    }
+
+    return $null
+}
+
+function ConvertTo-VersionInfo {
+    param(
+        [object]$Item,
+        [string]$Channel
+    )
+
+    if ($null -eq $Item) {
+        return $null
+    }
+
+    $versionText = $Item.Version.ToString()
+    $prereleaseLabel = Get-PrereleaseLabel -Item $Item
+    if (-not [string]::IsNullOrWhiteSpace($prereleaseLabel) -and $versionText -notmatch '-[^-]+$') {
+        $versionText = "$versionText-$prereleaseLabel"
+    }
+
+    return [pscustomobject]@{
+        ModuleName = $ResolvedModuleName
+        Channel = $Channel
+        Repository = $repositoryName
+        Version = $versionText
+    }
+}
+
+$stableItem = Find-Module $ResolvedModuleName -Repository $repositoryName -ErrorAction Stop -WarningAction SilentlyContinue
+$prereleaseItem = if ($IncludePrerelease) {
+    Find-Module $ResolvedModuleName -Repository $repositoryName -AllowPrerelease -ErrorAction Stop -WarningAction SilentlyContinue
+}
+else {
+    $null
+}
+
+[pscustomobject]@{
+    SourceRepository = $repositoryName
+    Stable = ConvertTo-VersionInfo -Item $stableItem -Channel 'Stable'
+    Prerelease = ConvertTo-VersionInfo -Item $prereleaseItem -Channel 'Prerelease'
+}

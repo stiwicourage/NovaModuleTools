@@ -2,10 +2,7 @@
     "ProjectName": "",
     "Description": "",
     "Version": "",
-    "copyResourcesToModuleRoot": false,
-    "BuildRecursiveFolders": true,
-    "SetSourcePath": true,
-    "FailOnDuplicateFunctionNames": true,
+  "Preamble": [],
     "Manifest": {
         "Author": "",
         "PowerShellHostVersion": "",
@@ -13,6 +10,15 @@
         "Tags": [],
         "ProjectUri": ""
     },
+  "Package": {
+    "Types": [
+      "NuGet"
+    ],
+    "OutputDirectory": {
+      "Path": "artifacts/packages",
+      "Clean": true
+    }
+  },
     "Pester": {
         "TestResult": {
             "Enabled": true,

@@ -1,0 +1,300 @@
+---
+document type: cmdlet
+external help file: NovaModuleTools-Help.xml
+HelpUri: ''
+Locale: en-US
+Module Name: NovaModuleTools
+  ms.date: 04/26/2026
+PlatyPS schema version: 2024-05-01
+title: Publish-NovaModule
+---
+
+# Publish-NovaModule
+
+## SYNOPSIS
+
+Builds, tests, and publishes the current project either locally or to a PowerShell repository.
+
+## SYNTAX
+
+### Local
+
+```text
+PS> Publish-NovaModule [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+### Repository
+
+```text
+PS> Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+`Publish-NovaModule` runs the normal NovaModuleTools build and test flow, then publishes the built module.
+
+Use `-SkipTests` when tests already ran earlier in your pipeline and you only want to skip `Test-NovaBuild` for this
+publish run. `Invoke-NovaBuild` still runs before the publish step.
+
+Use local mode when you want to copy the built module into a module directory on the current machine.
+After a successful local publish, the command reloads the published module from that local install path into the active
+PowerShell session so the newly published module is ready to use immediately.
+
+Use repository mode when you want to publish the built module to a registered PowerShell repository such as
+`PSGallery`.
+
+Use `-ContinuousIntegration` when the same CI/self-hosting session should switch back to the built `dist/` module after
+publish completes. This keeps later commands aligned with the built module state instead of whatever publish imported or
+left loaded.
+
+This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
+resolved publish target and workflow without building, testing, or publishing.
+
+Use `-Confirm` when you want PowerShell to prompt before the publish workflow starts.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```text
+PS> Publish-NovaModule -Local
+```
+
+Builds, tests, and copies the module to the default local module path.
+When the copy succeeds, the published module is also imported from that local path.
+
+### EXAMPLE 2
+
+```text
+PS> Publish-NovaModule -Local -ModuleDirectoryPath ~/Modules
+```
+
+Builds, tests, and copies the module to a custom local directory.
+When the copy succeeds, the published module is imported from `~/Modules/<ProjectName>/<ProjectName>.psd1`.
+
+### EXAMPLE 3
+
+```text
+PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
+```
+
+Builds, tests, and publishes the module to `PSGallery`.
+
+### EXAMPLE 4
+
+```text
+PS> Publish-NovaModule -Repository PSGallery -Confirm
+```
+
+Prompts before the repository publish workflow starts.
+
+### EXAMPLE 5
+
+```text
+PS> Publish-NovaModule -Local -WhatIf
+```
+
+Previews the local publish workflow and target directory without making changes.
+No module copy or import happens when `-WhatIf` is used.
+
+### EXAMPLE 6
+
+```text
+PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
+```
+
+Builds and publishes the module to `PSGallery` without re-running `Test-NovaBuild`.
+
+### EXAMPLE 7
+
+```text
+PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -ContinuousIntegration
+```
+
+Publishes the module and then re-imports the built `dist/<ProjectName>/<ProjectName>.psd1` so later CI steps in the
+same session continue from the built module state.
+
+## PARAMETERS
+
+### -Local
+
+Use local publish mode. When no repository is supplied, the command publishes to a local module directory.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Local
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Repository
+
+Target repository name for repository publishing, for example `PSGallery`.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Repository
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ModuleDirectoryPath
+
+Custom destination directory for local publishing.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Local
+  Position: Named
+- Name: Repository
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ApiKey
+
+Repository API key used when publishing to a repository. This value is ignored for normal local publishing.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Local
+  Position: Named
+- Name: Repository
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SkipTests
+
+Skip `Test-NovaBuild` for this publish run. `Invoke-NovaBuild` still runs before the publish step.
+
+This option is mainly intended for CI/CD flows where tests already passed earlier in the pipeline.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: Local
+    Position: Named
+  - Name: Repository
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
+### -ContinuousIntegration
+
+Re-import the built module from `dist/` after publish completes.
+
+Use this when your CI/self-hosting workflow continues in the same session after publish and must keep using the built
+module state for later commands.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: Local
+    Position: Named
+  - Name: Repository
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None
+
+You can't pipe objects to this cmdlet.
+
+## OUTPUTS
+
+### None
+
+This cmdlet does not emit an output object. In local mode it updates the active PowerShell session by importing the
+published module from the local install path.
+
+## NOTES
+
+The command always builds before publishing.
+
+When `-SkipTests` is omitted, `Publish-NovaModule` also runs `Test-NovaBuild`. When `-SkipTests` is used, only the test
+step is skipped.
+
+Local publish imports the published module from the resolved local install directory. It does not import directly from
+the
+source project or from `dist/`.
+
+When `-ContinuousIntegration` is used, Nova restores the built `dist/` module after publish so later commands in the
+same session keep using the built module state.
+
+`Publish-NovaModule` uses `SupportsShouldProcess`, so `Get-Help Publish-NovaModule -Full` should surface native
+`-WhatIf` and `-Confirm` support.
+
+
+## RELATED LINKS
+
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Test-NovaBuild.md
+- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaRelease.md

@@ -1,318 +1,633 @@
-# NovaModuleTools
+# NovaModuleTools | [![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/78904) ![WorkFlow Status][WorkFlowStatus]
 
-[![CodeScene Hotspot Code Health](https://codescene.io/projects/78904/status-badges/hotspot-code-health)](https://codescene.io/projects/78904) [![CodeScene Average Code Health](https://codescene.io/projects/78904/status-badges/average-code-health)](https://codescene.io/projects/78904) [![CodeScene System Mastery](https://codescene.io/projects/78904/status-badges/system-mastery)](https://codescene.io/projects/78904)
+NovaModuleTools is an enterprise-focused evolution of ModuleTools for structured PowerShell module development,
+repository automation, and maintainable Nova workflows.
 
-NovaModuleTools is an enterprise-focused evolution of ModuleTools, designed for large-scale PowerShell projects (10k+ lines of code) with a strong emphasis on structure, maintainability, and automated CI/CD pipelines.
+This README is the single developer-documentation entry point for the repository.
 
-## 💬 Description
+### If you are looking for end-user guides, go to [www.novamoduletools.com](https://www.novamoduletools.com/).
 
-Whether you're creating simple or robust modules, NovaModuleTools streamlines the process, making it perfect for CI/CD and automation environments. With comprehensive features included, you can start building PowerShell modules in less than 30 seconds. Let NovaModuleTools handle the build logic, so you can focus on developing the core functionality of your module.
+## Documentation split
 
-[![NovaModuleTools@PowerShell Gallery][BadgeIOCount]][PSGalleryLink]
-![WorkFlow Status][WorkFlowStatus]
+| Audience                     | Location          | Purpose                                                   |
+|------------------------------|-------------------|-----------------------------------------------------------|
+| Contributors and maintainers | GitHub repository | Build, test, debug, document, and release NovaModuleTools |
+| End users                    | GitHub Pages      | Install NovaModuleTools and follow guided usage workflows |
 
-The structure of the NovaModuleTools module is meticulously designed according to PowerShell best practices for module development. While some design decisions may seem unconventional, they are made to ensure that NovaModuleTools and the process of building modules remain straightforward and easy to manage.
+## Table of contents
 
-> [!IMPORTANT]
-> Check out this [original blog article](https://blog.belibug.com/post/ps-modulebuild) from Manjunath Beli explaining the core concepts that NovaModuleTools builds on.
+- [Contributor entry points](#contributor-entry-points)
+- [Development workflow](#development-workflow)
+- [Repository structure and ownership](#repository-structure-and-ownership)
+- [CI/CD and release automation](#cicd-and-release-automation)
+- [Documentation ownership rules](#documentation-ownership-rules)
+- [End-user docs on GitHub Pages](#end-user-docs-on-github-pages)
+- [License](#license)
 
-## ⚙️ Install
+## Contributor entry points
 
-```PowerShell
-Install-Module -Name NovaModuleTools
+Start here when you work on NovaModuleTools itself:
+
+- [CONTRIBUTING.md](./CONTRIBUTING.md) — contribution expectations and review checklist
+- [Development workflow](#development-workflow) — local setup, build, test, reload, and quality loop
+- [Repository structure and ownership](#repository-structure-and-ownership) — architecture and folder responsibilities
+- [CI/CD and release automation](#cicd-and-release-automation) — workflow, release, and publish responsibilities
+
+Suggested reading order:
+
+1. Read [CONTRIBUTING.md](./CONTRIBUTING.md)
+2. Follow [Development workflow](#development-workflow) for local iteration
+3. Use [Repository structure and ownership](#repository-structure-and-ownership) when deciding where changes belong
+4. Use [CI/CD and release automation](#cicd-and-release-automation) when your change touches workflows, release
+   automation, or publishing
+
+## Development workflow
+
+This section describes how to work on the NovaModuleTools repository itself.
+
+### Prerequisites
+
+Repository development expects:
+
+- PowerShell 7.4 or newer
+- Git
+- `Pester`
+- `PSScriptAnalyzer`
+- `Microsoft.PowerShell.PlatyPS`
+
+Node.js is only required if you are working on the current semantic-release-based publish pipeline.
+
+### Build the module locally
+
+From the repository root:
+
+```powershell
+PS> Set-Location $PSScriptRoot
+PS> Invoke-NovaBuild
 ```
 
-> Note: NovaModuleTools is still in an early development phase and lots of changes are expected. Please read through the [changelog](/CHANGELOG.md) for all updates.
+This creates the built module under `dist/NovaModuleTools/`.
 
-## 🧵 Design
+When you want the test workflow to rebuild first, use:
 
-To ensure this module works correctly, you need to maintain the folder structure and the `project.json` file path. The best way to get started is by running the `New-MTModule` command, which guides you through a series of questions and creates the necessary scaffolding.
-
-## 📂 Folder Structure
-
-All module files should be inside the `src` folder.
-
-```
-.
-├── project.json
-├── private
-│  └── New-PrivateFunction.ps1
-├── public
-│  └── New-PublicFunction.ps1
-├── resources
-│  └── some-config.json
-└── classes
-   └── Person.classes.ps1
-   └── Person.enums.ps1
+```powershell
+PS> Test-NovaBuild -Build
+% nova test --build
+% nova test -b
 ```
 
-### Dist Folder
+NovaModuleTools can self-update the installed module from PowerShell or the `nova` CLI launcher.
 
-The generated module is stored in the `dist` folder. You can easily import it or publish it to a PowerShell repository.
+- Stable self-updates are always available.
+- Prerelease self-updates are optional and can be managed with:
 
-```
-dist
-└── TestModule
-   ├── TestModule.psd1
-   └── TestModule.psm1
-```
-
-### Docs Folder
-
-Store `Microsoft.PowerShell.PlatyPS` generated Markdown files in the `docs` folder. If the `docs` folder exists and contains valid Markdown files, the build will generate a MAML help file in the built module.
-
-```
-docs
-├── NovaModuleTools.md
-└── Invoke-MTBuild.md
+```powershell
+PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
+PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
+PS> Get-NovaUpdateNotificationPreference
+PS> Update-NovaModuleTool
+PS> Update-NovaModuleTools   # alias
+% nova notification --disable
+% nova notification --enable
+% nova notification
+% nova update
 ```
 
-### Project JSON File
+Use `% nova notification` when you want the CLI-oriented workflow and the `Set-` / `Get-` cmdlets when you want the
+PowerShell function form in scripts.
 
-The `project.json` file contains all the important details about your module and is used during the module build. It should comply with a specific schema. You can refer to the sample `project-sample.json` file in the `example` directory for guidance.
+Update notification preferences use one shared settings location:
 
-Run `New-MTModule` to generate the scaffolding; this will also create the `project.json` file.
+- Windows: `%APPDATA%/NovaModuleTools/settings.json`
+- macOS/Linux with `XDG_CONFIG_HOME`: `$XDG_CONFIG_HOME/NovaModuleTools/settings.json`
+- macOS/Linux fallback: `~/.config/NovaModuleTools/settings.json`
 
-#### Build settings (optional)
+`Update-NovaModuleTool` (and its `Update-NovaModuleTools` alias), CLI:`% nova update` use that stored prerelease
+preference to decide whether prerelease self-updates are eligible. When prerelease self-updates are disabled,
+self-update stays on stable releases. When they are enabled, self-update may target a prerelease, but it asks for
+explicit confirmation before proceeding.
 
-NovaModuleTools supports these optional settings at the top level of `project.json`.
-If a setting is omitted, NovaModuleTools now treats it as `true` by default:
 
-- `BuildRecursiveFolders` (default: `true`)
-  - When `true`, NovaModuleTools will discover `.ps1` files recursively in `src/classes` and `src/private`.
-  - `src/public` is always **top-level only** (never recursive).
-  - For `Invoke-MTTest`, `BuildRecursiveFolders=false` runs only top-level `tests/*.Tests.ps1` files (the usual Pester naming convention), while `BuildRecursiveFolders=true` also includes tests in subfolders.
-- `SetSourcePath` (default: `true`)
-  - When `true`, NovaModuleTools writes exactly one `# Source: <relative path>` line before each concatenated source file in the generated `dist/<Project>/<Project>.psm1`.
-  - Relative paths are project-relative and normalized to `/`, for example `# Source: src/private/core/security/SetTls12SecurityProtocol.ps1`.
-  - This is useful when parser errors or runtime exceptions point at line numbers in the generated `.psm1` and you need to map them back to files under `src`.
-- `FailOnDuplicateFunctionNames` (default: `true`)
-  - When `true`, NovaModuleTools will parse the generated `dist/<Project>/<Project>.psm1` and fail the build if duplicate **top-level** function names exist.
+Successful `Update-NovaModuleTool`, CLI:`% nova update`, and `Install-NovaCli` runs print the release notes link from
+the
+installed module manifest. When `Invoke-NovaBuild` detects a newer `NovaModuleTools` version after a build, the update
+warning also includes that same release notes link.
 
-Example:
+To compare the current project version with what is installed locally for that same module, use:
+
+```powershell
+% nova version
+% nova version --installed
+% nova version -i
+% nova --version
+% nova -v
+```
+
+- `% nova version` shows the version from the current project's `project.json`
+- `% nova version --installed` / `% nova version -i` shows the locally installed version of the current project/module
+  from
+  the local module path
+- `% nova --version` / `% nova -v` shows the installed `NovaModuleTools` version
+
+### CLI help
+
+Use the launcher-oriented help forms when you want CLI syntax instead of PowerShell cmdlet help:
+
+```powershell
+% nova --help
+% nova build --help
+% nova build -h
+% nova --help build
+% nova -h build
+```
+
+- `% nova <command> --help` / `% nova <command> -h` shows short command help
+- `% nova --help <command>` / `% nova -h <command>` shows long command help
+- Long command help now includes the matching public GitHub Pages guide URL for the selected command, while short help
+  stays link-free
+- CLI help is launcher-native and uses CLI option spellings such as `--repository` and `-r`
+- Use PowerShell `Get-Help` when you want cmdlet help such as `Get-Help Publish-NovaModule -Full`
+- Root `% nova -v` means version, while command-level `% nova build -v` means verbose for supported routed commands
+
+### Confirmation behavior
+
+Use `% nova <mutating-command> --confirm` / `% nova <mutating-command> -c` when you want a CLI-safe confirmation prompt.
+
+- `Y` / `Yes` and `A` / `Yes to All` continue
+- `N` / `No` and `L` / `No to All` cancel with a non-zero exit code
+- `S` / `Suspend` is not supported in CLI mode and is treated as cancel so `nova` returns directly to your original
+  shell instead of opening a nested PowerShell prompt
+
+Only the supported mutating `nova` commands accept `--confirm` / `-c`. Read-only routes and `% nova init` now reject the
+CLI confirm flag with a clear validation error instead of silently treating it as a PowerShell-style concept.
+
+Direct PowerShell cmdlets such as `Publish-NovaModule`, `Deploy-NovaPackage`, and `Update-NovaModuleVersion` keep their
+native `-Confirm` behavior. The CLI-safe confirmation flow applies to `nova` CLI usage, while `Invoke-NovaCli` remains
+the explicit PowerShell cmdlet entrypoint for routed command dispatch.
+
+The module does not export a PowerShell alias named `nova`. Install the bundled launcher with `Install-NovaCli` when you
+want `% nova ...` available directly from your shell.
+
+### Reload the built module while iterating
+
+Use the built output during development so you validate the same shape CI uses:
+
+```powershell
+PS> Remove-Module NovaModuleTools -ErrorAction SilentlyContinue
+PS> Invoke-NovaBuild
+PS> Import-Module ./dist/NovaModuleTools -Force
+```
+
+If you are testing local publish behavior:
+
+```powershell
+PS> Remove-Module NovaModuleTools -ErrorAction SilentlyContinue
+PS> Publish-NovaModule -Local
+```
+
+`Publish-NovaModule -Local` now copies the module to the resolved local module path and reloads that published copy into
+the active PowerShell session. If your repository workflow needs to switch back to the built `dist/` output afterward,
+re-import `./dist/NovaModuleTools` explicitly.
+
+When the same CI/self-hosting session must stay aligned with the built `dist/` output automatically, use the new
+continuous-integration activation switches instead of handling re-imports manually:
+
+```powershell
+PS> Invoke-NovaBuild -ContinuousIntegration
+PS> Update-NovaModuleVersion -ContinuousIntegration
+PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -ContinuousIntegration
+PS> Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API} -ContinuousIntegration
+
+% nova build --continuous-integration
+% nova bump --continuous-integration
+% nova publish --repository PSGallery --api-key $env:PSGALLERY_API --continuous-integration
+% nova release --repository PSGallery --api-key $env:PSGALLERY_API --continuous-integration
+```
+
+These switches keep the behavior explicit and opt-in:
+
+- `Invoke-NovaBuild -ContinuousIntegration` re-imports the freshly built module after the build succeeds
+- `Update-NovaModuleVersion -ContinuousIntegration` re-imports the built module before the bump workflow starts
+- `Publish-NovaModule -ContinuousIntegration` restores the built module after publish completes
+- `Invoke-NovaRelease -ContinuousIntegration` forwards that CI intent through the nested build/bump boundaries and then
+  restores the built module again after publish
+
+Useful local helper:
+
+```powershell
+# reload.ps1
+Set-Location $PSScriptRoot
+
+$projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
+$distModuleDir = Join-Path $PSScriptRoot "dist/$projectName"
+$distManifestPath = Join-Path $distModuleDir "$projectName.psd1"
+
+Get-Module $projectName -All | Remove-Module -Force -ErrorAction SilentlyContinue
+Invoke-NovaBuild
+Get-Module $projectName -All | Remove-Module -Force -ErrorAction SilentlyContinue
+$module = Import-Module $distManifestPath -Force -PassThru
+
+& $module {
+    Publish-NovaModule -Local
+}
+
+Get-Module $projectName -All | Remove-Module -Force -ErrorAction SilentlyContinue
+$module = Import-Module $distManifestPath -Force -PassThru
+
+# Only use Install-NovaCli for macOS/Linux users.
+# & $module {
+#     Install-NovaCli -Force
+# }
+```
+
+### Run tests
+
+Run the repository test workflow from the repository root:
+
+```powershell
+PS> Test-NovaBuild
+```
+
+Notes:
+
+- `Test-NovaBuild` validates the built module output, not just loose source files
+- it writes NUnit XML to `artifacts/TestResults.xml`
+- it respects `BuildRecursiveFolders` when discovering tests
+
+### Create a package artifact
+
+Use the explicit packaging workflow when you want a package artifact for a Nova project without publishing to a
+PowerShell repository:
+
+```powershell
+PS> New-NovaModulePackage
+% nova package
+```
+
+The package command runs the normal build and test flow, then writes the generated package artifacts to
+`artifacts/packages/` by default by using the generic `Package` section in `project.json` when present.
+When `Manifest.Tags`, `Manifest.ProjectUri`, `Manifest.ReleaseNotes`, or `Manifest.LicenseUri` are present, Nova
+copies them into the generated package metadata; when they are omitted, packaging still succeeds and the matching
+package metadata fields are simply left out.
+
+When tests already ran earlier in CI/CD, you can skip only the test step while still rebuilding before packaging:
+
+```powershell
+PS> New-NovaModulePackage -SkipTests
+% nova package --skip-tests
+% nova package -s
+```
+
+`-SkipTests` / `--skip-tests` skips `Test-NovaBuild` only. `Invoke-NovaBuild` still runs.
+
+Use this `project.json` shape when you want to control the package types and output directory:
 
 ```json
 {
-  "BuildRecursiveFolders": true,
-  "SetSourcePath": true,
-  "FailOnDuplicateFunctionNames": true
+  "Package": {
+    "PackageFileName": "AgentInstaller",
+    "AddVersionToFileName": true,
+    "Types": ["NuGet", "Zip"],
+    "Latest": true,
+    "OutputDirectory": {
+      "Path": "artifacts/packages",
+      "Clean": true
+    }
+  }
 }
 ```
 
-When `SetSourcePath` is enabled, the generated `.psm1` contains one marker line before each source block:
+- `Types` is optional. When it is missing, empty, or null, Nova defaults to `NuGet` and creates a `.nupkg`.
+- Supported `Types` values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
+- Use `Types = ["Zip"]` when you only want a `.zip`, or `Types = ["NuGet", "Zip"]` when you want both files.
+- `Latest` is optional and defaults to `false`. When set to `true`, Nova also creates a companion `*.latest.*`
+  artifact for each selected package type, such as `NovaModuleTools.latest.nupkg` next to the normal versioned file.
+- `PackageFileName` lets you override the base artifact name.
+- `AddVersionToFileName` defaults to `false`. When set to `true`, Nova appends `.<Version>` from `project.json` to the
+  configured `PackageFileName`, so `AgentInstaller` becomes `AgentInstaller.2.3.4` before the package
+  extension is applied.
+- When both `AddVersionToFileName` and `Latest` are enabled, the companion artifact substitutes that appended version
+  suffix with `.latest`, such as `AgentInstaller.latest.nupkg`.
+- `Path` selects where the package artifact(s) are written.
+- `Clean` defaults to `true` and removes that output directory before a new package is created.
+- Set `Clean` to `false` when you want to keep existing files in the package output directory.
+
+### Upload package artifacts to a raw endpoint
+
+Use the upload workflow when a Nova project must push existing package artifacts to a raw HTTP endpoint instead of a
+PowerShell repository:
 
 ```powershell
-# Source: src/classes/AgentListing.ps1
-class AgentListing {
-    # ...
+PS> Deploy-NovaPackage -Repository LocalNexus
+% nova deploy --repository LocalNexus
+% nova deploy --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN
+```
+
+Use this `project.json` shape when you want Nova to resolve upload targets from named repositories:
+
+```json
+{
+  "Package": {
+    "Types": ["Zip"],
+    "OutputDirectory": {
+      "Path": "artifacts/packages",
+      "Clean": true
+    },
+    "Repositories": [
+      {
+        "Name": "LocalNexus",
+        "Url": "http://localhost:8081/repository/raw/com/novamoduletools/"
+      }
+    ]
+  }
 }
-
-# Source: src/private/core/security/SetTls12SecurityProtocol.ps1
-function Set-Tls12SecurityProtocol {
-    # ...
-}
 ```
 
-### Src Folder
+- `Deploy-NovaPackage` uploads existing package files only; it does not build, test, or create packages.
+- `% nova deploy` is the CLI entrypoint for the same raw upload workflow and uses POSIX/GNU-style options such as
+  `--repository`, `--url`, and `--token`.
+- Upload target precedence is explicit: `-Url` / `--url` and `-UploadPath` / `--upload-path` win first, then matching
+  `Package.Repositories[]` values, then package-level `Package.RepositoryUrl` / `Package.RawRepositoryUrl` and
+  `Package.UploadPath`.
+- Secret precedence is explicit too: `-Token` / `--token` wins first, then `-TokenEnvironmentVariable` /
+  `--token-env`, then merged repository/package `Auth.TokenEnvironmentVariable`, then merged repository/package
+  `Auth.Token`.
+- When `-PackagePath` is omitted, Nova resolves package files from `Package.OutputDirectory.Path`.
+- `Package.FileNamePattern` overrides the default upload discovery pattern. When omitted, Nova falls back to
+  `<Package.Id>*` and then applies the selected package type extension.
+- If `Package.PackageFileName` uses a different base name than `Package.Id`, update `Package.FileNamePattern` too so
+  automatic upload discovery keeps matching the generated files.
+- When `Package.FileNamePattern` already ends with `.zip` or `.nupkg`, Nova treats that extension as authoritative.
+  For example, `MyModule.*.zip` discovers `MyModule.1.2.3.zip` and `MyModule.latest.zip` without picking up
+  `MyModule.1.2.3.nupkg`.
+- When multiple matching files exist for a selected package type, Nova uploads all of them, including versioned and
+  `latest` variants.
+- `Package.Headers`, `Package.Auth`, `Package.RepositoryUrl`, and repository-specific overrides remain generic so the
+  workflow works with raw endpoints such as Nexus or Artifactory without turning `Publish-NovaModule` into a vendor-
+  specific upload command.
+- `Publish-NovaModule` and `Invoke-NovaRelease` keep a matching secret rule for PowerShell repositories: `-ApiKey` /
+  `--api-key` overrides any fallback, and `PSGallery` still checks `PSGALLERY_API` when no explicit API key was
+  provided.
 
-- Place all your functions in the `private` and `public` folders within the `src` directory.
-- All functions in the `public` folder are exported during the module build.
-- All functions in the `private` folder are accessible internally within the module but are not exposed outside the module.
-- `src/classes` should contain classes and enums. These files are placed at the top of the generated `psm1`.
-- `src/resources` content is handled based on `copyResourcesToModuleRoot`.
-
-#### Deterministic processing order
-
-To ensure builds are deterministic across platforms, files are processed in this order:
-
-1. `src/classes`
-2. `src/public`
-3. `src/private`
-
-Within each folder group, files are processed in a deterministic order by relative path (case-insensitive).
-
-#### Recursive folder support
-
-By default, NovaModuleTools loads `src/classes` and `src/private` recursively, while `src/public` remains top-level only.
-
-If `BuildRecursiveFolders` is set to `false`:
-
-- `src/classes`, `src/private`, and `tests` switch to top-level-only discovery.
-- `src/public` remains top-level only.
-- This preserves the legacy top-level-only behavior for test discovery and source loading.
-
-#### Resources Folder
-
-The `resources` folder within the `src` directory is intended for including any additional resources required by your module. This can include files such as:
-
-- **Configuration files**: Store any JSON, XML, or other configuration files needed by your module.
-- **Script files**: Place any scripts that are used by your functions or modules, but are not directly part of the public or private functions.
-- **formatdata files**: Store `Example.Format.ps1xml` file for custom format data types to be imported to manifest
-- **types files**: Store `Example.Types.ps1xml` file for custom types data types to be imported to manifest
-- **Documentation files**: Include any supplementary documentation that supports the usage or development of the module.
-- **Data files**: Store any data files that are used by your module, such as CSV or JSON files.
-- **Subfolder**: Include any additional folders and their content to be included with the module, such as dependant Modules, APIs, DLLs, etc... organized by a subfolder.
-
-
-
-By default, resource files from `src/resources` go into `dist/resources`. To place them directly in dist (avoiding the resources subfolder), set `copyResourcesToModuleRoot` to `true`. This provides greater control in certain deployment scenarios where resources files are preferred in module root directory.
-
-Leave `src\resources` empty if there is no need to include any additional content in the `dist` folder.
-
-An example of the module build where resources were included and `copyResourcesToModuleRoot` is set to true.
+For module publishing and release flows, the same opt-in skip-tests behavior is available when tests already ran earlier
+in the pipeline:
 
 ```powershell
-dist
-└── TestModule
-        ├── TestModule.psd1
-        ├── TestModule.psm1
-        ├── config.json
-        ├── additionalScript.ps1
-        ├── helpDocumentation.md
-        ├── sampleData.csv
-        └── subfolder
-            ├── subConfig.json
-            ├── subScript.ps1
-            └── subData.csv
+PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
+PS> Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -SkipTests
+% nova publish --repository PSGallery --api-key $env:PSGALLERY_API --skip-tests
+% nova release --repository PSGallery --api-key $env:PSGALLERY_API -s
 ```
 
-### Tests Folder
+These forms skip `Test-NovaBuild` only. `Publish-NovaModule` still builds before publishing, and `Invoke-NovaRelease`
+still runs both build steps around the version bump.
 
-If you want to run Pester tests, keep them in the `tests` folder. Otherwise, you can ignore this feature.
+When your pipeline continues in the same PowerShell session after build, bump, publish, or release, add
+`-ContinuousIntegration` / `--continuous-integration` / `-i` to the supported commands so Nova re-activates the built
+`dist/` module at the workflow boundaries where session state matters.
 
-## 💻 Commands
+### Run code quality checks
 
-### New-MTModule
-
-This interactive command helps you create the module structure. Easily create the skeleton of your module and get started with module building in no time.
+Run ScriptAnalyzer with the repository helper:
 
 ```powershell
-## Create a module skeleton in Work Directory
-New-MTModule ~/Work
+PS> ./scripts/build/Invoke-ScriptAnalyzerCI.ps1
 ```
 
-![image-20240625210008896](./assets/image-20240625210008896.png)
+This writes findings to `artifacts/scriptanalyzer.txt`.
 
-### Invoke-MTBuild
-
-`NovaModuleTools` is designed so that you don't need any additional tools like `make` or `psake` to run the build commands. There's no need to maintain complex `build.ps1` files or sample `.psd1` files. Simply follow the structure outlined above, and you can run `Invoke-MTBuild` to build the module. The output will be saved in the `dist` folder, ready for distribution.
-
-If `SetSourcePath` is enabled in `project.json`, `Invoke-MTBuild` also annotates the generated `.psm1` with `# Source: src/...` comments before each concatenated file block to make debugging easier.
+For CI-parity coverage and report generation, use:
 
 ```powershell
-# From the Module root 
-Invoke-MTBuild
-
-## Verbose for more details
-Invoke-MTBuild -Verbose
+PS> ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1
 ```
 
-### Get-MTProjectInfo
+That flow builds the module, runs ScriptAnalyzer, runs the normal test workflow, and emits CI-friendly reports such as:
 
-This function provides complete info about the project, which can be used in Pester tests or for general troubleshooting.
+- `artifacts/novamoduletools-nunit.xml`
+- `artifacts/pester-junit.xml`
+- `artifacts/pester-coverage.cobertura.xml`
+- `artifacts/coverage-low.txt`
 
-### Invoke-MTTest
+### Recommended local quality loop
 
-All Pester configuration is stored in `project.json`. Run `Invoke-MTTest` from the project root. With the default `BuildRecursiveFolders=true`, it discovers test files in nested folders under `tests`; set `BuildRecursiveFolders=false` to run only top-level `tests/*.Tests.ps1` files, matching Pester's normal test-file convention.
+```powershell
+# run.ps1
+Set-Location $PSScriptRoot
 
-- To skip a test inside the test directory, use `-skip` in a `Describe`/`It`/`Context` block within the Pester test.
-- Use `Get-MTProjectInfo` command inside pester to get great amount of info about project and files
+$projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
+$distModuleDir = Join-Path $PSScriptRoot "dist/$projectName"
 
-### Update-MTModuleVersion
-
-A simple command to update the module version by modifying the values in `project.json`. You can also manually edit the file in your favorite editor. This command makes it easy to update the semantic version.
-
-- Running `Update-MTModuleVersion` without any parameters will update the patch version (e.g., 1.2.3 -> 1.2.4)
-- Running `Update-MTModuleVersion -Label Major` updates the major version and resets Minor, Patch to 0 (e.g., 1.2.1 -> 2.0.0)
-- Running `Update-MTModuleVersion -Label Minor` updates the minor version and resets Patch to 0 (e.g., 1.2.3 -> 1.3.0)
-
-## Advanced - Use it in Github Actions
-
-> [!TIP]
-> This repository uses Github actions to run tests and publish to PowerShell Gallery, use it as reference.
-
-This is not required for local module builds. In this repository, GitHub Actions uses `semantic-release` on `main` to determine the next version from conventional commits, update `project.json` and `CHANGELOG.md`, create the `Version_<semver>` tag, create the GitHub release, and then publish the built module to PowerShell Gallery.
-
-If you are running GitHub Actions, use the following yaml workflow template to test, build and publish a module, which helps to automate the process of:
-
-1. Checking out the repository code.
-1. Installing the `NovaModuleTools` bootstrap module from the PowerShell Gallery.
-1. Building the module.
-1. Running Pester tests.
-1. Running semantic-release to choose the version, update release files, tag, and publish.
-
-This allows for seamless and automated management of your PowerShell module, ensuring consistency and reliability in your build, test, and release processes.
-
-```yaml
-name: Build, Test and Publish
-
-on:
-  push:
-    branches:
-      - main
-
-permissions:
-  contents: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install npm dependencies
-        run: |
-          npm ci
-        shell: pwsh
-
-      - name: Install NovaModuleTools bootstrap module form PSGallery
-        run: |
-          Install-PSResource -Repository PSGallery -Name NovaModuleTools -TrustRepository
-          Install-PSResource -Repository PSGallery -Name Microsoft.PowerShell.PlatyPS -TrustRepository
-          Install-PSResource -Repository PSGallery -Name Pester -TrustRepository
-        shell: pwsh
-
-      - name: Build Module
-        run: Invoke-MTBuild -Verbose
-        shell: pwsh
-
-      - name: Run Pester Tests
-        run: Invoke-MTTest
-        shell: pwsh
-
-      - name: Run semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
-        run: npx semantic-release
-        shell: pwsh
+Invoke-NovaBuild
+& (Join-Path $PSScriptRoot 'scripts/build/Invoke-ScriptAnalyzerCI.ps1')
+Remove-Module $projectName -ErrorAction SilentlyContinue
+Import-Module $distModuleDir -Force
+Test-NovaBuild
 ```
 
-## 📝 Requirement
+### Working on help and docs
 
-- Only tested on PowerShell 7.4, so it most likely will not work on 5.1. The underlying module can still support older versions; only the NovaModuleTools builder won't work on older versions.
-- No dependencies. This module doesn’t depend on any other module. Completely self-contained.
+Command help markdown lives under `docs/NovaModuleTools/en-US/` and is consumed by `Invoke-NovaBuild`.
 
-## ✅ ToDo
+Important distinction:
 
-- [ ] Add more tests
+- `docs/NovaModuleTools/en-US/*.md` → PlatyPS command-help source
+- `docs/*.html` → GitHub Pages end-user guides
+- `README.md` and `CONTRIBUTING.md` → contributor documentation
 
-## 🤝 Contributing
+Do not place general developer markdown under `docs/`, because the build scans `docs/**/*.md` when generating help.
 
-Contributions are welcome! Please fork the repository and submit a pull request with your changes. Ensure that your code adheres to the existing style and includes appropriate tests.
+## Repository structure and ownership
 
-## 📃 License
+This section explains how the NovaModuleTools repository is organized and what each major area owns.
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+### Top-level overview
 
-[BadgeIOCount]: https://img.shields.io/powershellgallery/dt/NovaModuleTools?label=NovaModuleTools%40PowerShell%20Gallery
+```text
+.
+├── .github/                    # GitHub Actions workflows
+├── docs/                       # GitHub Pages HTML + PlatyPS help markdown
+├── scripts/                    # build, CI, and release automation
+├── src/                        # production PowerShell code and packaged resources
+├── tests/                      # Pester suites and reusable test helpers
+├── project.json                # NovaModuleTools project definition
+├── package.json                # semantic-release tooling for current publish automation
+└── CHANGELOG.md                # release notes and unreleased change tracking
+```
+
+### Source code layout
+
+#### `src/public/`
+
+Public cmdlets that make up the NovaModuleTools API surface, for example:
+
+- `Invoke-NovaBuild`
+- `Test-NovaBuild`
+- `Initialize-NovaModule`
+- `Update-NovaModuleVersion`
+
+#### `src/private/`
+
+Internal implementation helpers grouped by concern, including:
+
+- `build/`
+- `cli/`
+- `quality/`
+- `release/`
+- `scaffold/`
+- `shared/`
+- `update/`
+
+Keep new helpers small, focused, and near the concern they belong to.
+
+#### `src/resources/`
+
+Packaged resources that ship with the module, including:
+
+- schemas
+- the standalone `nova` launcher
+- the packaged example project under `src/resources/example/`
+
+The example project is both a shipped resource and a maintained working reference.
+
+### Test layout
+
+#### `tests/`
+
+Repository-level Pester coverage for:
+
+- public command behavior
+- internal helper behavior
+- build and packaging expectations
+- CI/report generation flows
+
+Shared test utilities live alongside the tests, for example:
+
+- `GitTestSupport.ps1`
+- `BuildOptions.TestSupport.ps1`
+- `NovaCommandModel.TestSupport.ps1`
+
+### Documentation layout
+
+#### `README.md` and `CONTRIBUTING.md`
+
+These are the top-level GitHub entry points for contributors and maintainers.
+
+#### `docs/`
+
+This folder has two different responsibilities that must stay separated by file type:
+
+- `docs/*.html` → GitHub Pages end-user guides
+- `docs/NovaModuleTools/en-US/*.md` → PlatyPS command-help source
+
+The build treats markdown under `docs/` as help input, so general-purpose developer documentation should not be added
+there.
+
+### Scripts and automation
+
+#### `scripts/build/`
+
+Build, analyzer, and CI helper scripts.
+
+#### `scripts/release/`
+
+Release preparation and publish helpers used by the current release workflow.
+
+These scripts are currently part of a wider GitHub Actions + semantic-release pipeline, not a standalone replacement for
+it.
+
+## CI/CD and release automation
+
+This section describes the current repository automation used to validate and publish NovaModuleTools.
+
+### CI expectations
+
+The repository uses GitHub Actions under `.github/workflows/`.
+
+At a minimum, contributor changes are expected to keep these workflows healthy:
+
+- build
+- test
+- analyzer / coverage
+- publish / release automation
+
+Repository scripts under `scripts/build/ci/` provide local parity for CI-oriented reporting.
+
+### Build and test automation
+
+The normal repository workflow is:
+
+1. `Invoke-NovaBuild`
+2. `Test-NovaBuild`
+3. ScriptAnalyzer via `scripts/build/Invoke-ScriptAnalyzerCI.ps1`
+4. Optional CI helper flow via `scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
+
+When you test local publish behavior during development, remember that `Publish-NovaModule -Local` reloads the
+published module from the local install directory into the current PowerShell session. Re-import `dist/` if your next
+step depends on the built-but-unpublished output instead.
+
+The CI helper flow also produces JUnit and Cobertura artifacts for external systems.
+
+### Release automation
+
+The current publish pipeline is still semantic-release based.
+
+Key pieces:
+
+- `.github/workflows/Publish.yml`
+- `.releaserc.json`
+- `package.json`
+- `scripts/release/Prepare-SemanticRelease.ps1`
+- `scripts/release/Publish-ToPSGallery.ps1`
+- `scripts/release/SemanticReleaseSupport.ps1`
+
+Responsibilities currently covered by the release pipeline include:
+
+- choosing the next release version from commit history
+- updating `project.json`
+- finalizing `CHANGELOG.md`
+- rebuilding after version changes
+- creating release tags
+- creating GitHub releases
+- publishing to PowerShell Gallery
+
+### Where NovaModuleTools cmdlets fit
+
+NovaModuleTools already provides strong release building blocks:
+
+- `Update-NovaModuleVersion`
+- `Publish-NovaModule`
+- `Invoke-NovaRelease`
+
+But these do not yet replace every semantic-release responsibility in the current repository workflow.
+
+If you work on release automation, treat `package.json` and `.releaserc.json` as active parts of the present release
+system.
+
+### Contributor expectations for workflow changes
+
+When you change CI, build, or release behavior:
+
+- update tests
+- update command help if public command behavior changes
+- update `README.md` when contributor workflow changes
+- update `CHANGELOG.md` when the change is relevant to users or maintainers
+
+## Documentation ownership rules
+
+- Keep contributor workflow, architecture, and automation documentation in `README.md`
+- Keep `CONTRIBUTING.md` focused on contribution expectations and review checklist items
+- Keep `docs/NovaModuleTools/en-US/*.md` focused on command-help source material
+- Keep `docs/*.html` focused on end-user guides
+- Do not duplicate the same workflow or setup prose across multiple contributor documents
+
+## End-user docs on GitHub Pages
+
+### [www.novamoduletools.com](https://www.novamoduletools.com/)
+
+## License
+
+This project is licensed under the MIT License. See LICENSE for details.
+
 [PSGalleryLink]: https://www.powershellgallery.com/packages/NovaModuleTools/
 [WorkFlowStatus]: https://img.shields.io/github/actions/workflow/status/stiwicourage/NovaModuleTools/Tests.yml

@@ -1,5 +1,5 @@
 function Publish-NovaModule {
-    [CmdletBinding(DefaultParameterSetName = 'Local')]
+    [CmdletBinding(DefaultParameterSetName = 'Local', SupportsShouldProcess = $true)]
     param(
         [Parameter(ParameterSetName = 'Local')]
         [switch]$Local,
@@ -11,19 +11,33 @@ function Publish-NovaModule {
         [string]$ApiKey
     )
 
-    Invoke-NovaBuild
-    Test-NovaBuild
-
-    if ($Local) {
-        Write-Verbose 'Using local publish mode.'
+    dynamicparam {
+        return Get-NovaDynamicDeliveryParameterDictionary
     }
 
-    if ($PSCmdlet.ParameterSetName -eq 'Repository') {
-        Publish-NovaBuiltModule -Repository $Repository -ApiKey $ApiKey
-        return
-    }
+    begin {
+        $skipTests = $PSBoundParameters.ContainsKey('SkipTests') -and $PSBoundParameters.SkipTests
+        $continuousIntegration = $PSBoundParameters.ContainsKey('ContinuousIntegration') -and $PSBoundParameters.ContinuousIntegration
 
-    Publish-NovaBuiltModule -ModuleDirectoryPath $ModuleDirectoryPath
+        $workflowContext = Get-NovaPublishWorkflowContext -ProjectInfo (Get-NovaProjectInfo) -PublishOption @{
+            Local = [bool]$Local
+            Repository = $Repository
+            ModuleDirectoryPath = $ModuleDirectoryPath
+            ApiKey = $ApiKey
+            SkipTests = [bool]$skipTests
+            'ContinuousIntegration' = [bool]$continuousIntegration
+        } -WorkflowParams (Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference) -WorkflowSettings @{
+            WorkflowName = 'publish'
+            IncludeLocalPublishActivation = $true
+        }
+
+        Write-NovaPublishWorkflowContext -WorkflowContext $workflowContext
+
+        $shouldRun = $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Operation)
+        if (-not $shouldRun -and -not $WhatIfPreference) {
+            return
+        }
+
+        Invoke-NovaPublishWorkflow -WorkflowContext $workflowContext -ShouldRun:$shouldRun
+    }
 }
-
-

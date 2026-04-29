@@ -1,34 +1,36 @@
 function Invoke-NovaRelease {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [hashtable]$PublishOption = @{},
+        [switch]$SkipTests,
+        [switch]$ContinuousIntegration,
         [string]$Path = (Get-Location).Path
     )
 
     Push-Location -LiteralPath $Path
     try {
-        if ($PublishOption.Local) {
-            Write-Verbose 'Using local release mode.'
+        $releasePublishOption = @{}
+        foreach ($optionName in $PublishOption.Keys) {
+            $releasePublishOption[$optionName] = $PublishOption[$optionName]
         }
 
-        Invoke-NovaBuild
-        Test-NovaBuild
-        $versionResult = Update-NovaModuleVersion
-        Invoke-NovaBuild
-
-        if ( $PublishOption.ContainsKey('Repository')) {
-            Publish-NovaBuiltModule -Repository $PublishOption.Repository -ApiKey $PublishOption.ApiKey
-        }
-        else {
-            Publish-NovaBuiltModule -ModuleDirectoryPath $PublishOption.ModuleDirectoryPath
+        $releasePublishOption.SkipTests = [bool]$SkipTests
+        $releasePublishOption['ContinuousIntegration'] = [bool]$ContinuousIntegration
+        $workflowContext = Get-NovaPublishWorkflowContext -ProjectInfo (Get-NovaProjectInfo) -PublishOption $releasePublishOption -WorkflowParams (Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference) -WorkflowSettings @{
+            WorkflowName = 'release'
+            Release = $true
         }
 
-        return $versionResult
+        Write-NovaPublishWorkflowContext -WorkflowContext $workflowContext
+
+        $shouldRun = $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Operation)
+        if (-not $shouldRun -and -not $WhatIfPreference) {
+            return
+        }
+
+        return Invoke-NovaReleaseWorkflow -WorkflowContext $workflowContext
     }
     finally {
         Pop-Location
     }
 }
-
-
-

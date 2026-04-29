@@ -3,15 +3,8 @@ function Get-NovaProjectInfo {
     param(
         [Parameter(Position = 0)]
         [string]$Path = (Get-Location).Path,
-
         [switch]$Version
     )
-
-    $projectInfo = Get-MTProjectInfo -Path $Path
-
-    if ($Version) {
-        return $projectInfo.Version
-    }
-
-    return $projectInfo
+    $workflowContext = Get-NovaProjectInfoContext -Path $Path
+    return Get-NovaProjectInfoResult -WorkflowContext $workflowContext -Version:$Version
 }

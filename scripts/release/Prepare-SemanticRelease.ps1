@@ -5,7 +5,6 @@ param(
 )
 
 Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
 
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $scriptRoot 'SemanticReleaseSupport.ps1')
@@ -16,7 +15,4 @@ Write-ProjectJsonVersion -Path $ProjectFile -Version $Version
 Write-ChangelogFileForRelease -Path $ChangelogFile -Version $Version -Date (Get-ReleaseDateString)
 
 Import-Module NovaModuleTools -Force
-Invoke-MTBuild -Verbose
-
-
-
+Invoke-NovaBuild -Verbose

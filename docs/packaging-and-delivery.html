@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>NovaModuleTools — Package, upload, publish, and release PowerShell modules</title>
+    <meta content="Learn when to use New-NovaModulePackage, Deploy-NovaPackage, Publish-NovaModule, and Invoke-NovaRelease, with examples for package creation, raw upload, PowerShell repository publish, and release orchestration."
+          name="description">
+    <meta content="index,follow,max-image-preview:large" name="robots">
+    <meta content="#0b1020" name="theme-color">
+    <link href="https://www.novamoduletools.com/packaging-and-delivery.html" rel="canonical">
+    <link href="./assets/icon.png" rel="icon" type="image/png">
+    <link href="./assets/icon.png" rel="apple-touch-icon">
+    <meta content="article" property="og:type">
+    <meta content="NovaModuleTools — Package, upload, publish, and release PowerShell modules" property="og:title">
+    <meta content="Compare NovaModuleTools packaging and delivery workflows so you can choose the right command for artifact creation, raw upload, repository publishing, or release orchestration."
+          property="og:description">
+    <meta content="https://www.novamoduletools.com/packaging-and-delivery.html" property="og:url">
+    <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
+    <meta content="summary" name="twitter:card">
+    <meta content="NovaModuleTools — Package, upload, publish, and release PowerShell modules" name="twitter:title">
+    <meta content="Compare NovaModuleTools packaging and delivery workflows so you can choose the right command for artifact creation, raw upload, repository publishing, or release orchestration."
+          name="twitter:description">
+    <link href="./assets/site.css" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            "headline": "NovaModuleTools packaging and delivery guide",
+            "description": "How to package, upload, publish, and release modules with NovaModuleTools.",
+            "url": "https://www.novamoduletools.com/packaging-and-delivery.html"
+        }
+    </script>
+</head>
+<body class="guide-page">
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">
+            <img alt="" class="site-brand__icon" src="./assets/icon.png">
+            <span class="site-brand__text">NovaModuleTools</span>
+        </a>
+        <div aria-label="Command display mode" class="site-header__command-surface">
+            <div aria-label="Command display mode" class="surface-tabs" role="tablist">
+                <button aria-selected="true" class="surface-tabs__button" data-command-mode="powershell" role="tab"
+                        type="button">PowerShell
+                </button>
+                <button aria-selected="false" class="surface-tabs__button" data-command-mode="command-line" role="tab"
+                        type="button">Command-line
+                </button>
+            </div>
+        </div>
+        <div class="site-header__actions">
+            <details class="site-menu">
+                <summary class="site-menu__button">
+                    <span class="site-menu__button-label">Menu</span>
+                    <span class="site-menu__current">Packaging &amp; Delivery</span>
+                </summary>
+                <nav aria-label="Primary" class="site-menu__panel">
+                    <a class="site-nav__link" href="./index.html">Home</a>
+                    <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+                    <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+                    <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
+                    <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
+                    <a class="site-nav__link" href="./commands.html">Command Reference</a>
+                    <a aria-current="page" class="site-nav__link site-nav__link--active"
+                       href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
+                    <a class="site-nav__link" href="./versioning-and-updates.html">Versioning &amp; Updates</a>
+                    <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+                    <a class="site-nav__link" href="./advanced.html">Concepts</a>
+                    <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
+                </nav>
+            </details>
+        </div>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="guide-hero">
+        <p class="eyebrow">How-to Guides</p>
+        <h1>Know whether you need pack, upload, publish, or release</h1>
+        <p class="lead">NovaModuleTools gives you four different delivery commands because they solve four different
+            problems. This page shows you what each command does, what it does not do, and how to configure the related
+            workflow safely.</p>
+    </section>
+
+    <section class="content-grid">
+        <aside class="toc-card">
+            <h2>On this page</h2>
+            <ul class="toc-list">
+                <li><a href="#choose-command">Choose the right command</a></li>
+                <li><a href="#pack">Create package artifacts</a></li>
+                <li><a href="#upload">Upload package artifacts to a raw endpoint</a></li>
+                <li><a href="#publish">Publish to a PowerShell repository</a></li>
+                <li><a href="#release">Run the release workflow</a></li>
+            </ul>
+        </aside>
+
+        <div class="guide-content">
+            <section class="content-section" id="choose-command">
+                <h2>Choose the right command</h2>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>What it does</th>
+                            <th>What it does not do</th>
+                            <th>Use it when…</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><code>New-NovaModulePackage</code> / <code>% nova package</code></td>
+                            <td>Builds, tests, and creates package artifacts such as <code>.nupkg</code> and
+                                <code>.zip</code>.
+                            </td>
+                            <td>Does not upload or publish the package anywhere.</td>
+                            <td>You need artifacts in <code>artifacts/packages/</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Deploy-NovaPackage</code> / <code>% nova deploy</code></td>
+                            <td>Uploads existing artifacts to a raw HTTP endpoint.</td>
+                            <td>Does not build, test, or create the package first.</td>
+                            <td>You already have artifacts and need to push them to Nexus, Artifactory, or another raw
+                                endpoint.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>Publish-NovaModule</code> / <code>% nova publish</code></td>
+                            <td>Builds, tests, and publishes the module locally or to a PowerShell repository.</td>
+                            <td>Does not create generic raw HTTP uploads.</td>
+                            <td>You want the PowerShell module itself published, not just an arbitrary artifact.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Invoke-NovaRelease</code> / <code>% nova release</code></td>
+                            <td>Builds, tests, bumps the version, rebuilds, and then publishes.</td>
+                            <td>Does not replace <code>New-NovaModulePackage</code> or raw upload as a generic artifact
+                                workflow.
+                            </td>
+                            <td>You want one orchestrated release command instead of separate steps.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="notice notice--warning">
+                    <strong>Most confusion comes from this difference:</strong>
+                    <p><code>New-NovaModulePackage</code> creates files. <code>Deploy-NovaPackage</code> sends those
+                        files to
+                        a raw endpoint. <code>Publish-NovaModule</code> publishes the module itself to a PowerShell
+                        repository. <code>Invoke-NovaRelease</code> coordinates versioning plus publishing.</p>
+                </div>
+            </section>
+
+            <section class="content-section" id="pack">
+                <h2>Create package artifacts</h2>
+                <p>Use <code>New-NovaModulePackage</code> or <code>% nova package</code> when you want a package
+                    artifact
+                    generated
+                    from the built module output.</p>
+                <h3>What happens</h3>
+                <ol class="plain-list plain-list--ordered">
+                    <li>Nova builds the project.</li>
+                    <li>Nova runs the test workflow.</li>
+                    <li>Nova creates one or more package artifacts under <code>Package.OutputDirectory.Path</code>,
+                        which defaults to <code>artifacts/packages/</code>.
+                    </li>
+                </ol>
+                <div class="notice">
+                    <strong>CI/CD shortcut:</strong>
+                    <p>Use <code>-SkipTests</code>, <code>--skip-tests</code>, or <code>-s</code> when tests already
+                        ran earlier in your pipeline. Nova still rebuilds before packaging; it only skips
+                        <code>Test-NovaBuild</code>.</p>
+                </div>
+                <h3>Common examples</h3>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Create package artifacts</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; New-NovaModulePackage
+PS&gt; New-NovaModulePackage -SkipTests</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova package
+% nova package --skip-tests
+% nova package -s</code></pre>
+                    </div>
+                </div>
+                <p>This creates a <code>.nupkg</code> by default when <code>Package.Types</code> is omitted.</p>
+                <pre><code>{
+  "Package": {
+    "Types": ["Zip"]
+  }
+}</code></pre>
+                <p>This creates only a <code>.zip</code>.</p>
+                <pre><code>{
+  "Package": {
+    "Types": ["NuGet", "Zip"],
+    "Latest": true,
+    "OutputDirectory": {
+      "Path": "artifacts/packages",
+      "Clean": true
+    }
+  }
+}</code></pre>
+                <p>This creates both formats and also adds <code>latest</code> aliases, such as:</p>
+                <pre><code>MyModule.2.0.0.nupkg
+MyModule.latest.nupkg
+MyModule.2.0.0.zip
+MyModule.latest.zip</code></pre>
+                <h3>What metadata is reused</h3>
+                <ul class="plain-list">
+                    <li>top-level <code>ProjectName</code>, <code>Description</code>, and <code>Version</code></li>
+                    <li><code>Manifest.Author</code></li>
+                    <li><code>Manifest.Tags</code></li>
+                    <li><code>Manifest.ProjectUri</code></li>
+                    <li><code>Manifest.ReleaseNotes</code></li>
+                    <li><code>Manifest.LicenseUri</code></li>
+                </ul>
+                <p><a class="text-link" href="./project-json-reference.html#package">See package settings in the
+                    configuration reference</a></p>
+            </section>
+
+            <section class="content-section" id="upload">
+                <h2>Upload package artifacts to a raw endpoint</h2>
+                <p>Use <code>Deploy-NovaPackage</code> or <code>% nova deploy</code> when you already have package files
+                    and you need to push them to a raw HTTP endpoint.</p>
+                <div class="notice">
+                    <strong>Upload works on existing files only.</strong>
+                    <p>If you have not run <code>New-NovaModulePackage</code> yet, upload has nothing to send unless you
+                        explicitly point it at existing package files with <code>-PackagePath</code>.</p>
+                </div>
+                <h3>Common ways to target artifacts</h3>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Upload to a named repository target</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Deploy-NovaPackage -Repository LocalNexus</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova deploy --repository LocalNexus</code></pre>
+                    </div>
+                </div>
+                <p>Use a named repository from <code>Package.Repositories</code>.</p>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Upload to a direct URL target</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Deploy-NovaPackage -Url 'https://packages.example/raw/' -Token $env:NOVA_PACKAGE_TOKEN</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova deploy --url https://packages.example/raw/ --token $env:NOVA_PACKAGE_TOKEN</code></pre>
+                    </div>
+                </div>
+                <p>Use a direct URL when CI or a one-off script already knows the endpoint.</p>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Filter upload to one package type</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Deploy-NovaPackage -PackageType Zip -Repository LocalNexus</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova deploy --type Zip --repository LocalNexus</code></pre>
+                    </div>
+                </div>
+                <p>Filter to only one package type.</p>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Upload explicit package files</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Deploy-NovaPackage -PackagePath @(
+  'artifacts/packages/MyModule.2.0.0.zip',
+  'artifacts/packages/MyModule.latest.zip'
+) -Url 'https://packages.example/raw/releases/'</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova deploy --path artifacts/packages/MyModule.2.0.0.zip \
+    --path artifacts/packages/MyModule.latest.zip \
+    --url https://packages.example/raw/releases/</code></pre>
+                    </div>
+                </div>
+                <p>Use explicit file paths when you do not want Nova to discover package files from the configured
+                    output directory.</p>
+                <h3>How upload target resolution works</h3>
+                <ol class="plain-list plain-list--ordered">
+                    <li>If you pass <code>-Url</code>, Nova uses it.</li>
+                    <li>Otherwise, if you pass <code>-Repository</code>, Nova resolves the matching entry from <code>Package.Repositories</code>.
+                    </li>
+                    <li>Otherwise, Nova falls back to package-level defaults such as <code>Package.RepositoryUrl</code>.
+                    </li>
+                </ol>
+                <p>If no target can be resolved, upload fails fast with a clear error telling you to provide
+                    <code>-Url</code> or configure package-level upload settings.</p>
+                <h3>Headers and auth</h3>
+                <p>Upload uses a generic auth model so you can target many raw repository types without turning the
+                    command into a vendor-specific integration.</p>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Scenario</th>
+                            <th>Recommended configuration</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Bearer token</td>
+                            <td><code>HeaderName = "Authorization"</code>, <code>Scheme = "Bearer"</code>, <code>TokenEnvironmentVariable
+                                = "NOVA_PACKAGE_TOKEN"</code></td>
+                        </tr>
+                        <tr>
+                            <td>Custom API key header</td>
+                            <td><code>HeaderName = "X-Api-Key"</code>, <code>TokenEnvironmentVariable =
+                                "NOVA_PACKAGE_API_KEY"</code></td>
+                        </tr>
+                        <tr>
+                            <td>HTTP Basic auth</td>
+                            <td><code>HeaderName = "Authorization"</code>, <code>Scheme = "Basic"</code>, and an
+                                environment variable whose value is the Base64-encoded <code>username:password</code>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>When multiple matching files exist, Nova uploads all matching artifacts for the selected type or
+                    configured types. That includes versioned and <code>latest</code> artifacts.</p>
+                <p><a class="text-link" href="./troubleshooting.html#upload-auth">See upload auth troubleshooting</a>
+                </p>
+            </section>
+
+            <section class="content-section" id="publish">
+                <h2>Publish to a PowerShell repository</h2>
+                <p>Use <code>Publish-NovaModule</code> or <code>% nova publish</code> when you want to publish the built
+                    module itself either locally or to a PowerShell repository.</p>
+                <h3>Local publish</h3>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Publish locally</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Publish-NovaModule -Local</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova publish --local
+% nova publish -l</code></pre>
+                    </div>
+                </div>
+                <p>Local publish is useful when you want to validate a realistic install/import cycle without pushing to
+                    a shared repository. After a successful local publish, Nova reloads the published module from the
+                    local install path into the current PowerShell session.</p>
+                <h3>Repository publish</h3>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Publish to a PowerShell repository</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API
+PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
+PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -ContinuousIntegration</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova publish --repository PSGallery --api-key $env:PSGALLERY_API
+% nova publish --repository PSGallery --api-key $env:PSGALLERY_API --skip-tests
+% nova publish --repository PSGallery --api-key $env:PSGALLERY_API --continuous-integration</code></pre>
+                    </div>
+                </div>
+                <p>Repository mode is for registered PowerShell repositories such as PowerShell Gallery.</p>
+                <h3>Custom local path</h3>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Publish locally to a custom module path</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Publish-NovaModule -Local -ModuleDirectoryPath ~/Modules</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova publish --local --path ~/Modules</code></pre>
+                    </div>
+                </div>
+                <div class="surface-note" data-command-visibility="command-line" hidden>
+                    <p><strong>Command-line note:</strong> the launcher uses <code>--path</code> / <code>-p</code> for
+                        the custom module directory target in this flow.</p>
+                </div>
+                <p>Use this when you want local publishing to target a custom module directory.</p>
+                <div class="notice">
+                    <strong>CI/CD shortcut:</strong>
+                    <p>Use <code>-SkipTests</code>, <code>--skip-tests</code>, or <code>-s</code> when tests already ran
+                        earlier in the pipeline. Publish still rebuilds before copying or repository publishing.</p>
+                </div>
+                <div class="notice">
+                    <strong>CI/self-hosting activation:</strong>
+                    <p>Use <code>-ContinuousIntegration</code>, <code>--continuous-integration</code>, or
+                        <code>-i</code>
+                        when later commands in the same session must switch back to the built <code>dist/</code> module
+                        after publish completes.</p>
+                </div>
+                <h3>What <code>-WhatIf</code> means here</h3>
+                <p>When you preview local publish, Nova does not build, test, copy, or import the module. The preview is
+                    safe and side-effect free.</p>
+            </section>
+
+            <section class="content-section" id="release">
+                <h2>Run the release workflow</h2>
+                <p>Use <code>Invoke-NovaRelease</code> or <code>% nova release</code> when you want one command to
+                    coordinate build, test, version bump, rebuild, and publish.</p>
+                <h3>What happens</h3>
+                <ol class="plain-list plain-list--ordered">
+                    <li>Build the module.</li>
+                    <li>Run the tests.</li>
+                    <li>Calculate and write the next semantic version.</li>
+                    <li>Build again so the output reflects the new version.</li>
+                    <li>Publish locally or to a repository.</li>
+                </ol>
+                <div class="notice">
+                    <strong>CI/CD shortcut:</strong>
+                    <p>Use <code>-SkipTests</code>, <code>--skip-tests</code>, or <code>-s</code> when tests already ran
+                        earlier in your pipeline. Release still runs both build steps; it only skips the pre-release
+                        <code>Test-NovaBuild</code> step.</p>
+                </div>
+                <h3>Examples</h3>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Run the release workflow</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Invoke-NovaRelease -PublishOption @{ Local = $true }
+PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API }
+PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -SkipTests
+PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -ContinuousIntegration</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova release --repository PSGallery --api-key $env:PSGALLERY_API
+% nova release --repository PSGallery --api-key $env:PSGALLERY_API --skip-tests
+% nova release --repository PSGallery --api-key $env:PSGALLERY_API --continuous-integration</code></pre>
+                    </div>
+                </div>
+                <div class="surface-note" data-command-visibility="command-line" hidden>
+                    <p><strong>Command-line note:</strong> the launcher flow covers the repository-oriented release
+                        path.
+                        The PowerShell view is still the place for advanced hashtable-style publish options such as
+                        <code>@{ Local = $true }</code>.</p>
+                </div>
+                <h3>Important difference from local publish</h3>
+                <p>Local release does <strong>not</strong> import the published module into your current session
+                    afterward. That behavior is specific to <code>Publish-NovaModule -Local</code>.</p>
+                <p>When you use the continuous-integration form, Nova still restores the built <code>dist/</code> module
+                    after the CI-sensitive release boundaries so later commands in the same session keep using the built
+                    module state.</p>
+                <h3>When to prefer release over separate steps</h3>
+                <ul class="plain-list">
+                    <li>Use release when your version bump and publish should happen together.</li>
+                    <li>Use separate commands when you want to inspect artifacts, review versioning, or pause between
+                        steps.
+                    </li>
+                </ul>
+                <p><a class="text-link" href="./versioning-and-updates.html#bump">See how version bump selection
+                    works</a></p>
+            </section>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="footer__inner">
+        <h2>Still deciding which workflow you need?</h2>
+        <p>Use the command reference when you want a quick lookup, or jump back to the configuration reference if the
+            next step is changing package behavior in <code>project.json</code>.</p>
+        <div class="hero__actions">
+            <a class="button button--primary" href="./commands.html">Open Command Reference</a>
+            <a class="button button--secondary" href="./project-json-reference.html">Open project.json Reference</a>
+        </div>
+        <p class="footer__legal">Also available: <a class="legal-link" href="./versioning-and-updates.html">Versioning
+            &amp; Updates</a>, <a class="legal-link" href="./release-notes.html">Release Notes</a>, and the <a
+                class="legal-link" href="./license.html">MIT License</a>.</p>
+    </div>
+</footer>
+<script>
+    (() => {
+        const storageKey = 'nova-doc-command-surface';
+        const supportedModes = ['powershell', 'command-line'];
+
+        function readStoredMode() {
+            try {
+                const stored = window.localStorage.getItem(storageKey);
+                return supportedModes.includes(stored) ? stored : 'powershell';
+            } catch {
+                return 'powershell';
+            }
+        }
+
+        function writeStoredMode(mode) {
+            try {
+                window.localStorage.setItem(storageKey, mode);
+            } catch {
+                // Ignore storage failures and keep the page interactive.
+            }
+        }
+
+        function getModeLabel(mode) {
+            return mode === 'command-line' ? 'Command-line' : 'PowerShell';
+        }
+
+        function applyMode(mode) {
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                const selected = button.dataset.commandMode === mode;
+                button.setAttribute('aria-selected', selected ? 'true' : 'false');
+            });
+
+            document.querySelectorAll('[data-command-example]').forEach((example) => {
+                example.querySelectorAll('[data-command-surface]').forEach((surface) => {
+                    surface.hidden = surface.dataset.commandSurface !== mode;
+                });
+            });
+
+            document.querySelectorAll('[data-command-surface-label]').forEach((label) => {
+                label.textContent = getModeLabel(mode);
+            });
+
+            document.querySelectorAll('[data-command-visibility]').forEach((element) => {
+                element.hidden = element.dataset.commandVisibility !== mode;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialMode = readStoredMode();
+            applyMode(initialMode);
+
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const nextMode = button.dataset.commandMode;
+                    if (!supportedModes.includes(nextMode)) {
+                        return;
+                    }
+
+                    applyMode(nextMode);
+                    writeStoredMode(nextMode);
+                });
+            });
+        });
+    })();
+</script>
+</body>
+</html>

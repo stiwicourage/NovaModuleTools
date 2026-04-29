@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>NovaModuleTools — Quickstart for installing and using your first PowerShell module project</title>
+    <meta content="Install NovaModuleTools, understand the PowerShell and CLI entrypoints, scaffold the packaged example, and get your first successful build, test, and import within minutes."
+          name="description">
+    <meta content="index,follow,max-image-preview:large" name="robots">
+    <meta content="#0b1020" name="theme-color">
+    <link href="https://www.novamoduletools.com/getting-started.html" rel="canonical">
+    <link href="./assets/icon.png" rel="icon" type="image/png">
+    <link href="./assets/icon.png" rel="apple-touch-icon">
+    <meta content="article" property="og:type">
+    <meta content="NovaModuleTools — Quickstart for installing and using your first PowerShell module project"
+          property="og:title">
+    <meta content="Follow this quickstart to install NovaModuleTools, scaffold the example project, and reach your first successful build and test quickly."
+          property="og:description">
+    <meta content="https://www.novamoduletools.com/getting-started.html" property="og:url">
+    <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
+    <meta content="summary" name="twitter:card">
+    <meta content="NovaModuleTools — Quickstart for installing and using your first PowerShell module project"
+          name="twitter:title">
+    <meta content="Follow this quickstart to install NovaModuleTools, scaffold the example project, and reach your first successful build and test quickly."
+          name="twitter:description">
+    <link href="./assets/site.css" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            "headline": "NovaModuleTools quickstart",
+            "description": "Install NovaModuleTools and complete your first successful PowerShell module workflow.",
+            "url": "https://www.novamoduletools.com/getting-started.html"
+        }
+    </script>
+</head>
+<body class="guide-page">
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">
+            <img alt="" class="site-brand__icon" src="./assets/icon.png">
+            <span class="site-brand__text">NovaModuleTools</span>
+        </a>
+        <div aria-label="Command display mode" class="site-header__command-surface">
+            <div aria-label="Command display mode" class="surface-tabs" role="tablist">
+                <button aria-selected="true" class="surface-tabs__button" data-command-mode="powershell" role="tab"
+                        type="button">PowerShell
+                </button>
+                <button aria-selected="false" class="surface-tabs__button" data-command-mode="command-line" role="tab"
+                        type="button">Command-line
+                </button>
+            </div>
+        </div>
+        <div class="site-header__actions">
+            <details class="site-menu">
+                <summary class="site-menu__button">
+                    <span class="site-menu__button-label">Menu</span>
+                    <span class="site-menu__current">Getting Started</span>
+                </summary>
+                <nav aria-label="Primary" class="site-menu__panel">
+                    <a class="site-nav__link" href="./index.html">Home</a>
+                    <a aria-current="page" class="site-nav__link site-nav__link--active" href="./getting-started.html">Getting
+                        Started</a>
+                    <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+                    <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
+                    <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
+                    <a class="site-nav__link" href="./commands.html">Command Reference</a>
+                    <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
+                    <a class="site-nav__link" href="./versioning-and-updates.html">Versioning &amp; Updates</a>
+                    <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+                    <a class="site-nav__link" href="./advanced.html">Concepts</a>
+                    <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
+                </nav>
+            </details>
+        </div>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="guide-hero">
+        <p class="eyebrow">Tutorial</p>
+        <h1>Install NovaModuleTools and prove the workflow works</h1>
+        <p class="lead">This quickstart is optimized for first success. You will install the module, choose the right
+            entrypoint, scaffold the packaged example, build it, test it, import the built module, and run a working
+            command.</p>
+    </section>
+
+    <section class="content-grid">
+        <aside class="toc-card">
+            <h2>On this page</h2>
+            <ul class="toc-list">
+                <li><a href="#prerequisites">1. Prerequisites</a></li>
+                <li><a href="#install-module">2. Install the module</a></li>
+                <li><a href="#entrypoints">3. Choose PowerShell or CLI entrypoints</a></li>
+                <li><a href="#scaffold-example">4. Scaffold the packaged example</a></li>
+                <li><a href="#build-and-test">5. Build and test the example</a></li>
+                <li><a href="#import-and-run">6. Import the built module and run a command</a></li>
+                <li><a href="#minimal-scaffold">7. Start from the minimal scaffold instead</a></li>
+                <li><a href="#next-steps">8. Next steps</a></li>
+            </ul>
+        </aside>
+
+        <div class="guide-content">
+            <section class="content-section" id="prerequisites">
+                <h2>1. Prerequisites</h2>
+                <p>You need:</p>
+                <ul class="plain-list">
+                    <li>PowerShell 7.4 or newer</li>
+                    <li>permission to install modules from PowerShell Gallery</li>
+                    <li>Git if you plan to use Git-driven version bumping later</li>
+                </ul>
+                <p>You do <strong>not</strong> need to understand the entire tool before starting. The example-based
+                    path below is designed to show you a complete working project quickly.</p>
+            </section>
+
+            <section class="content-section" id="install-module">
+                <h2>2. Install the module</h2>
+                <p>Install NovaModuleTools from PowerShell Gallery and import it into the current session:</p>
+                <pre><code>PS&gt; Install-Module -Name NovaModuleTools
+PS&gt; Import-Module NovaModuleTools</code></pre>
+                <div class="surface-note">
+                    <p><strong>PowerShell only:</strong> module installation and import happen in PowerShell, even if
+                        you
+                        plan to use the standalone command-line launcher later.</p>
+                </div>
+                <p>After import, you can use the PowerShell cmdlets directly. If you explicitly need the routed Nova
+                    command surface from PowerShell, use <code>Invoke-NovaCli</code>.</p>
+                <p><strong>Expected result:</strong> commands such as <code>Get-NovaProjectInfo</code>, <code>Invoke-NovaBuild</code>,
+                    and <code>nova</code> resolve in your PowerShell session.</p>
+            </section>
+
+            <section class="content-section" id="entrypoints">
+                <h2>3. Choose PowerShell or CLI entrypoints</h2>
+                <p>Nova supports two normal ways of working:</p>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Mode</th>
+                            <th>Use it when…</th>
+                            <th>How it works</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>PowerShell cmdlets in <code>pwsh</code></td>
+                            <td>You are already inside <code>pwsh</code>.</td>
+                            <td>Import the module once, then use cmdlets directly. Use <code>Invoke-NovaCli</code>
+                                only when you explicitly want the routed CLI surface from PowerShell.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Standalone <code>nova</code> launcher</td>
+                            <td>You want to run Nova from zsh or bash on macOS/Linux.</td>
+                            <td>Install the launcher once with <code>Install-NovaCli</code>.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Install the standalone launcher on macOS/Linux</h3>
+                <pre><code>PS&gt; Install-NovaCli</code></pre>
+                <p>By default, the launcher is installed to <code>~/.local/bin/nova</code>. If that directory is not
+                    already on <code>PATH</code>, add it to your shell profile:</p>
+                <pre><code>% echo 'export PATH="$HOME/.local/bin:$PATH"' &gt;&gt; ~/.zshrc
+% source ~/.zshrc</code></pre>
+                <p>On Windows, keep using the PowerShell cmdlets after you import the module.
+                    <code>Install-NovaCli</code> is intentionally for macOS/Linux only.</p>
+            </section>
+
+            <section class="content-section" id="scaffold-example">
+                <h2>4. Scaffold the packaged example</h2>
+                <p>The fastest way to understand Nova is to start from the packaged example, because it already contains
+                    a real public command, a private helper, a resource file, tests, and a complete
+                    <code>project.json</code>.</p>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Scaffold the packaged example</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova init --example --path ~/Work</code></pre>
+                    </div>
+                </div>
+                <p>Nova asks for the project name, description, version, author, minimum PowerShell version, and whether
+                    Git should be initialized. It then creates a project folder under the path you selected.</p>
+                <div class="notice" data-command-visibility="command-line" hidden>
+                    <strong>CLI caveat:</strong>
+                    <p>Use <code>% nova init --path ~/Work</code> or <code>% nova init -p ~/Work</code>, not positional
+                        path
+                        syntax such as <code>% nova init
+                        ~/Work</code>. Positional paths are intentionally rejected with migration guidance.</p>
+                </div>
+                <div class="notice notice--warning" data-command-visibility="command-line" hidden>
+                    <strong>Another important caveat:</strong>
+                    <p><code>% nova init --what-if</code> / <code>% nova init -w</code> is intentionally rejected. If
+                        you
+                        want preview support, switch to the PowerShell view and use
+                        <code>PS&gt; Initialize-NovaModule -WhatIf</code>.</p>
+                </div>
+                <p><strong>Expected result:</strong> a new project folder that contains <code>src/</code>,
+                    <code>tests/</code>, <code>docs/</code>, and <code>project.json</code>.</p>
+            </section>
+
+            <section class="content-section" id="build-and-test">
+                <h2>5. Build and test the example</h2>
+                <p>Change into the newly created project and run the normal build and test flow:</p>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Build and test the project</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Set-Location ~/Work/&lt;YourProjectName&gt;
+PS&gt; Invoke-NovaBuild
+PS&gt; Test-NovaBuild</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% cd ~/Work/&lt;YourProjectName&gt;
+% nova build
+% nova test</code></pre>
+                    </div>
+                </div>
+                <p><strong>Expected result:</strong></p>
+                <ul class="plain-list">
+                    <li>the built module is written to <code>dist/&lt;ProjectName&gt;/</code></li>
+                    <li>the test run writes results to <code>artifacts/TestResults.xml</code></li>
+                </ul>
+            </section>
+
+            <section class="content-section" id="import-and-run">
+                <h2>6. Import the built module and run a command</h2>
+                <p>Now take the built module into the environment you want to use and run the example command.</p>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Use the built module</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; $project = Get-NovaProjectInfo
+PS&gt; Import-Module $project.OutputModuleDir -Force
+PS&gt; Get-ExampleGreeting
+PS&gt; Get-ExampleGreeting -Name 'Nova user' -AsObject</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova publish --local
+# or
+% nova publish -l
+
+pwsh -NoLogo -Command "Get-ExampleGreeting"
+pwsh -NoLogo -Command "Get-ExampleGreeting -Name 'Nova user' -AsObject"</code></pre>
+                    </div>
+                </div>
+                <div class="surface-note" data-command-visibility="powershell">
+                    <p><strong>PowerShell only:</strong> this path imports the module directly from <code>dist/</code>
+                        and
+                        then runs the exported example command in the current PowerShell session.</p>
+                </div>
+                <div class="surface-note" data-command-visibility="command-line" hidden>
+                    <p><strong>Command-line note:</strong> <code>% nova publish --local</code> / <code>% nova publish
+                        -l</code>
+                        builds, tests, and publishes the module to the local module path, so the follow-up
+                        <code>pwsh -NoLogo -Command "Get-ExampleGreeting"</code> one-liners can resolve the published
+                        module directly from a fresh PowerShell process.</p>
+                </div>
+                <p><strong>Expected result:</strong> in PowerShell mode, the first call returns the example greeting
+                    text
+                    and the second call returns a structured object form. In command-line mode, local publish completes
+                    successfully and the two <code>pwsh</code> one-liners return the same text and structured object
+                    output from the published module.</p>
+                <p>This is the key Nova habit: you work with the built output in <code>dist/</code>, not loose source
+                    files, because that matches what will eventually be packaged or published. Local publish is useful
+                    when you specifically want the installed-module experience instead of the direct <code>dist/</code>
+                    import loop.</p>
+            </section>
+
+            <section class="content-section" id="minimal-scaffold">
+                <h2>7. Start from the minimal scaffold instead</h2>
+                <p>Use the minimal scaffold when you already understand the Nova project shape and want a clean starting
+                    point rather than the full working example.</p>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Start from the minimal scaffold</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Initialize-NovaModule -Path ~/Work</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova init</code></pre>
+                    </div>
+                </div>
+                <p>The minimal scaffold still asks for the same core project metadata, but it gives you a smaller
+                    starter layout than the example project.</p>
+                <p>Use the example scaffold when you want the fastest learning path. Use the minimal scaffold when you
+                    want the leanest new project.</p>
+            </section>
+
+            <section class="content-section" id="next-steps">
+                <h2>8. Next steps</h2>
+                <div class="guide-links">
+                    <a class="button button--primary" href="./core-workflows.html">Continue to Core Workflows</a>
+                    <a class="button button--secondary" href="./project-json-reference.html">Explore project.json
+                        settings</a>
+                </div>
+                <p>After the quickstart, most developers need one of these pages next:</p>
+                <ul class="plain-list">
+                    <li><a class="text-link" href="./core-workflows.html">Core Workflows</a> for the normal daily
+                        build/test/import loop
+                    </li>
+                    <li><a class="text-link" href="./working-with-modules.html">Working with Modules</a> for reload
+                        habits, local publish, and example-project usage
+                    </li>
+                    <li><a class="text-link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a> when you
+                        are ready to create artifacts, upload them, or publish a module
+                    </li>
+                </ul>
+            </section>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="footer__inner">
+        <h2>Once the first run works, the rest of the docs become much easier</h2>
+        <p>After you have seen a project build, test, and import successfully, use the workflow guides and reference
+            pages to tune the parts you care about instead of trying to learn everything at once.</p>
+        <div class="hero__actions">
+            <a class="button button--primary" href="./core-workflows.html">Open Core Workflows</a>
+            <a class="button button--secondary" href="./working-with-modules.html">Open Working with Modules</a>
+        </div>
+        <p class="footer__legal">Also available: <a class="legal-link" href="./commands.html">Command Reference</a>, <a
+                class="legal-link" href="./release-notes.html">Release Notes</a>, and the <a class="legal-link"
+                                                                                             href="./license.html">MIT
+            License</a>.</p>
+    </div>
+</footer>
+<script>
+    (() => {
+        const storageKey = 'nova-doc-command-surface';
+        const supportedModes = ['powershell', 'command-line'];
+
+        function readStoredMode() {
+            try {
+                const stored = window.localStorage.getItem(storageKey);
+                return supportedModes.includes(stored) ? stored : 'powershell';
+            } catch {
+                return 'powershell';
+            }
+        }
+
+        function writeStoredMode(mode) {
+            try {
+                window.localStorage.setItem(storageKey, mode);
+            } catch {
+                // Ignore storage failures and keep the page interactive.
+            }
+        }
+
+        function getModeLabel(mode) {
+            return mode === 'command-line' ? 'Command-line' : 'PowerShell';
+        }
+
+        function applyMode(mode) {
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                const selected = button.dataset.commandMode === mode;
+                button.setAttribute('aria-selected', selected ? 'true' : 'false');
+            });
+
+            document.querySelectorAll('[data-command-example]').forEach((example) => {
+                example.querySelectorAll('[data-command-surface]').forEach((surface) => {
+                    surface.hidden = surface.dataset.commandSurface !== mode;
+                });
+            });
+
+            document.querySelectorAll('[data-command-surface-label]').forEach((label) => {
+                label.textContent = getModeLabel(mode);
+            });
+
+            document.querySelectorAll('[data-command-visibility]').forEach((element) => {
+                element.hidden = element.dataset.commandVisibility !== mode;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialMode = readStoredMode();
+            applyMode(initialMode);
+
+            document.querySelectorAll('[data-command-mode]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const nextMode = button.dataset.commandMode;
+                    if (!supportedModes.includes(nextMode)) {
+                        return;
+                    }
+
+                    applyMode(nextMode);
+                    writeStoredMode(nextMode);
+                });
+            });
+        });
+    })();
+</script>
+</body>
+</html>

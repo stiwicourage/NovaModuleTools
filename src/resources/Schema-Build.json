@@ -12,7 +12,7 @@
         "Version": {
             "type": "string"
         },
-        "copyResourcesToModuleRoot": {
+      "CopyResourcesToModuleRoot": {
             "type": "boolean"
         },
         "BuildRecursiveFolders": {
@@ -27,6 +27,13 @@
             "type": "boolean",
             "description": "Default enabled validation: fail build when duplicate top-level function names exist in the generated dist/<Project>/<Project>.psm1."
         },
+      "Preamble": {
+        "type": "array",
+        "description": "Optional module-level lines written at the very top of the generated dist/<Project>/<Project>.psm1 before any source markers or other generated content.",
+        "items": {
+          "type": "string"
+        }
+      },
         "Manifest": {
             "type": "object",
             "properties": {
@@ -54,6 +61,143 @@
                 "PowerShellHostVersion",
                 "GUID"
             ]
+        },
+      "Package": {
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": "string"
+          },
+          "Types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(?:[Nn][Uu][Gg][Ee][Tt]|[Zz][Ii][Pp]|\\.[Nn][Uu][Pp][Kk][Gg]|\\.[Zz][Ii][Pp])$"
+            }
+          },
+          "Latest": {
+            "type": "boolean"
+          },
+          "OutputDirectory": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "Path": {
+                    "type": "string"
+                  },
+                  "Clean": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            ]
+          },
+          "PackageFileName": {
+            "type": "string"
+          },
+          "AddVersionToFileName": {
+            "type": "boolean"
+          },
+          "FileNamePattern": {
+            "type": "string"
+          },
+          "Authors": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "Description": {
+            "type": "string"
+          },
+          "RepositoryUrl": {
+            "type": "string"
+          },
+          "RawRepositoryUrl": {
+            "type": "string"
+          },
+          "UploadPath": {
+            "type": "string"
+          },
+          "Headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "Auth": {
+            "type": "object",
+            "properties": {
+              "HeaderName": {
+                "type": "string"
+              },
+              "Scheme": {
+                "type": "string"
+              },
+              "Token": {
+                "type": "string"
+              },
+              "TokenEnvironmentVariable": {
+                "type": "string"
+              }
+            }
+          },
+          "Repositories": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "Name": {
+                  "type": "string"
+                },
+                "Url": {
+                  "type": "string"
+                },
+                "UploadPath": {
+                  "type": "string"
+                },
+                "Headers": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "Auth": {
+                  "type": "object",
+                  "properties": {
+                    "HeaderName": {
+                      "type": "string"
+                    },
+                    "Scheme": {
+                      "type": "string"
+                    },
+                    "Token": {
+                      "type": "string"
+                    },
+                    "TokenEnvironmentVariable": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "required": [
+                "Name",
+                "Url"
+              ]
+            }
+          }
+        }
         }
     },
     "required": [

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>NovaModuleTools — Concepts and mental models for structured PowerShell module development</title>
+    <meta content="Understand how NovaModuleTools thinks about a PowerShell module project, why it builds into dist, how project settings shape generated output, and how the main workflows fit together."
+          name="description">
+    <meta content="index,follow,max-image-preview:large" name="robots">
+    <meta content="#0b1020" name="theme-color">
+    <link href="https://www.novamoduletools.com/advanced.html" rel="canonical">
+    <link href="./assets/icon.png" rel="icon" type="image/png">
+    <link href="./assets/icon.png" rel="apple-touch-icon">
+    <meta content="article" property="og:type">
+    <meta content="NovaModuleTools — Concepts and mental models for structured PowerShell module development"
+          property="og:title">
+    <meta content="Build a mental model for how NovaModuleTools structures source files, generated output, project.json settings, and command workflows."
+          property="og:description">
+    <meta content="https://www.novamoduletools.com/advanced.html" property="og:url">
+    <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
+    <meta content="summary" name="twitter:card">
+    <meta content="NovaModuleTools — Concepts and mental models for structured PowerShell module development"
+          name="twitter:title">
+    <meta content="Build a mental model for how NovaModuleTools structures source files, generated output, project.json settings, and command workflows."
+          name="twitter:description">
+    <link href="./assets/site.css" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            "headline": "NovaModuleTools concepts guide",
+            "description": "Mental models and explanation content for NovaModuleTools.",
+            "url": "https://www.novamoduletools.com/advanced.html"
+        }
+    </script>
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">
+            <img alt="" class="site-brand__icon" src="./assets/icon.png">
+            <span class="site-brand__text">NovaModuleTools</span>
+        </a>
+        <details class="site-menu">
+            <summary class="site-menu__button">
+                <span class="site-menu__button-label">Menu</span>
+                <span class="site-menu__current">Concepts</span>
+            </summary>
+            <nav aria-label="Primary" class="site-menu__panel">
+                <a class="site-nav__link" href="./index.html">Home</a>
+                <a class="site-nav__link" href="./getting-started.html">Getting Started</a>
+                <a class="site-nav__link" href="./core-workflows.html">Core Workflows</a>
+                <a class="site-nav__link" href="./working-with-modules.html">Working with Modules</a>
+                <a class="site-nav__link" href="./project-json-reference.html">project.json Reference</a>
+                <a class="site-nav__link" href="./commands.html">Command Reference</a>
+                <a class="site-nav__link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a>
+                <a class="site-nav__link" href="./versioning-and-updates.html">Versioning &amp; Updates</a>
+                <a class="site-nav__link" href="./troubleshooting.html">Troubleshooting</a>
+                <a aria-current="page" class="site-nav__link site-nav__link--active" href="./advanced.html">Concepts</a>
+                <a class="site-nav__link" href="./release-notes.html">Release Notes</a>
+            </nav>
+        </details>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="guide-hero">
+        <p class="eyebrow">Explanation</p>
+        <h1>How NovaModuleTools thinks about your project</h1>
+        <p class="lead">Nova is easiest to use when you understand its model: source files are the inputs, the generated
+            module in <code>dist/</code> is the real runtime artifact, and <code>project.json</code> shapes every
+            workflow from build to release.</p>
+    </section>
+
+    <section class="guide-content guide-content--single">
+        <section class="content-section">
+            <h2>Nova treats your project as a buildable module, not a loose script folder</h2>
+            <p>That sounds simple, but it changes how you should work. Instead of importing individual files manually,
+                you let Nova build the project and then validate the generated result.</p>
+            <p>This is why the normal loop is <code>build → test → import from dist</code>. It keeps the behavior you
+                validate aligned with the behavior you package, publish, and release later.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Your source tree and your built tree have different jobs</h2>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Area</th>
+                        <th>Purpose</th>
+                        <th>How to think about it</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><code>src/</code></td>
+                        <td>Authoring input</td>
+                        <td>Where you edit public functions, private helpers, classes, and resources.</td>
+                    </tr>
+                    <tr>
+                        <td><code>tests/</code></td>
+                        <td>Project validation</td>
+                        <td>Where Pester tests live for the current project workflow.</td>
+                    </tr>
+                    <tr>
+                        <td><code>docs/</code></td>
+                        <td>Help and site content</td>
+                        <td>PowerShell help markdown and the end-user site are both part of the finished project
+                            experience.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>dist/&lt;ProjectName&gt;</code></td>
+                        <td>Generated runtime artifact</td>
+                        <td>This is the module you should import and validate.</td>
+                    </tr>
+                    <tr>
+                        <td><code>artifacts/</code></td>
+                        <td>Generated reports and package output</td>
+                        <td>This is where test results and package files go.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2><code>project.json</code> is not just metadata</h2>
+            <p>In Nova, <code>project.json</code> is the contract for how your project behaves. It is not only
+                descriptive. It actively controls:</p>
+            <ul class="plain-list">
+                <li>recursive discovery</li>
+                <li>source markers in generated output</li>
+                <li>resource copy layout</li>
+                <li>duplicate function validation</li>
+                <li>package creation behavior</li>
+                <li>raw upload defaults</li>
+                <li>Pester output behavior</li>
+            </ul>
+            <p>This is why the configuration reference matters so much: small changes in <code>project.json</code> can
+                affect how the generated module behaves, how tests are discovered, and what delivery commands do later.
+            </p>
+        </section>
+
+        <section class="content-section">
+            <h2>Why package, upload, publish, and release are separate commands</h2>
+            <p>Nova keeps these commands separate so the workflow remains explicit:</p>
+            <ul class="plain-list">
+                <li><strong>pack</strong> creates artifacts</li>
+                <li><strong>upload</strong> sends existing artifacts to a raw endpoint</li>
+                <li><strong>publish</strong> publishes the module itself locally or to a PowerShell repository</li>
+                <li><strong>release</strong> orchestrates build, test, version bump, rebuild, and publish</li>
+            </ul>
+            <p>This separation reduces hidden side effects and makes CI/CD flows easier to reason about.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Why source markers and duplicate-function validation exist</h2>
+            <p>Two settings often surprise new users because they exist to protect maintainability, not just make builds
+                pass:</p>
+            <ul class="plain-list">
+                <li><code>SetSourcePath</code> adds <code># Source:</code> markers to the generated module so you can
+                    map errors back to the original files.
+                </li>
+                <li><code>FailOnDuplicateFunctionNames</code> stops the build when two top-level functions would collide
+                    in the generated module.
+                </li>
+            </ul>
+            <p>These settings are enabled by default because they reduce debugging time and help keep the generated
+                module trustworthy.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Why the packaged example matters so much</h2>
+            <p>Many developer tools ship only a minimal hello-world sample. Nova ships a working example project that is
+                meant to act as a living reference for the full workflow.</p>
+            <p>The example is valuable because it shows the interaction between configuration, source files, tests,
+                resources, packaging, and upload settings all at once.</p>
+            <p>If you learn well by reading working code, the example project is one of the fastest ways to understand
+                Nova.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>How to use this site after you understand the mental model</h2>
+            <p>Once these concepts are clear, use the docs like this:</p>
+            <ul class="plain-list">
+                <li>go to <a class="text-link" href="./core-workflows.html">Core Workflows</a> for the normal daily loop
+                </li>
+                <li>go to <a class="text-link" href="./project-json-reference.html">project.json Reference</a> when
+                    changing configuration
+                </li>
+                <li>go to <a class="text-link" href="./packaging-and-delivery.html">Packaging &amp; Delivery</a> when
+                    deciding between pack, upload, publish, and release
+                </li>
+                <li>go to <a class="text-link" href="./troubleshooting.html">Troubleshooting</a> when the workflow
+                    outcome does not match your expectation
+                </li>
+            </ul>
+        </section>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="footer__inner">
+        <h2>Once the model clicks, Nova becomes predictable</h2>
+        <p>That predictability is the real value: you know what the commands do, which file owns which settings, and
+            where to look when a workflow needs adjustment.</p>
+        <div class="hero__actions">
+            <a class="button button--primary" href="./project-json-reference.html">Open project.json Reference</a>
+            <a class="button button--secondary" href="./commands.html">Open Command Reference</a>
+        </div>
+        <p class="footer__legal">Also available: <a class="legal-link" href="./release-notes.html">Release Notes</a> and
+            the <a class="legal-link" href="./license.html">MIT License</a>.</p>
+    </div>
+</footer>
+</body>
+</html>
