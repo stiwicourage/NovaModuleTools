@@ -1,5 +1,3 @@
-markdown
-
 # NovaModuleTools PR Description Generator
 
 ## Purpose

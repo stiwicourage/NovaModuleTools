@@ -706,6 +706,19 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
+    It 'Get-NovaCliReplayWarningMessage converts non-warning records to text and skips blank values' {
+        InModuleScope $script:moduleName {
+            $result = Get-NovaCliReplayWarningMessage -WarningMessages @(
+                'plain warning'
+                ''
+                '   '
+                42
+            )
+
+            $result | Should -Be @('plain warning', '42')
+        }
+    }
+
     It 'Confirm-NovaCliCommandAction accepts Enter as the default confirmation response' {
         Invoke-ConfirmNovaCliCommandActionEnterAssertion -ModuleName $script:moduleName
     }

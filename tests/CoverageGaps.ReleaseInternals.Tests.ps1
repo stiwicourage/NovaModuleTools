@@ -216,6 +216,17 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
+    It 'Get-NovaVersionUpdateEffectiveLabel falls back to Label when EffectiveLabel is missing or blank' -ForEach @(
+        @{Name = 'missing'; WorkflowContext = [pscustomobject]@{Label = 'Patch'}; Expected = 'Patch'}
+        @{Name = 'blank'; WorkflowContext = [pscustomobject]@{Label = 'Minor'; EffectiveLabel = '   '}; Expected = 'Minor'}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            Get-NovaVersionUpdateEffectiveLabel -WorkflowContext $TestCase.WorkflowContext | Should -Be $TestCase.Expected
+        }
+    }
+
     It 'Get-NovaVersionUpdatePlan keeps the semantic core and increments an existing prerelease label when preview mode continues a prerelease' -ForEach @(
         @{CurrentVersion = '1.5.3-preview'; ExpectedVersion = '1.5.3-preview01'}
         @{CurrentVersion = '1.5.3-preview01'; ExpectedVersion = '1.5.3-preview02'}
