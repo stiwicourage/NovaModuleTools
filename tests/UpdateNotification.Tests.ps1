@@ -275,6 +275,39 @@ Describe 'Update notification behavior' {
         }
     }
 
+    It 'Get-NovaModuleSelfUpdatePlanContext returns empty lookup fields when no lookup result is available' {
+        InModuleScope $script:moduleName {
+            $result = Get-NovaModuleSelfUpdatePlanContext -LookupResult $null -PrereleaseNotificationsEnabled:$true
+
+            $result.LookupCandidateVersion | Should -BeNullOrEmpty
+            $result.LookupCandidateChannel | Should -BeNullOrEmpty
+            $result.LookupRepository | Should -BeNullOrEmpty
+            $result.PrereleaseNotificationsEnabled | Should -BeTrue
+        }
+    }
+
+    It 'Get-NovaModuleSelfUpdatePlanContext falls back to SourceRepository when the selected lookup candidate omits Repository' {
+        InModuleScope $script:moduleName {
+            $lookupResult = [pscustomobject]@{
+                SourceRepository = 'PSGallery'
+                Stable = [pscustomobject]@{
+                    Version = '1.9.1'
+                    Channel = 'Stable'
+                }
+                Prerelease = [pscustomobject]@{
+                    Version = '2.0.0-beta'
+                    Channel = 'Prerelease'
+                }
+            }
+
+            $result = Get-NovaModuleSelfUpdatePlanContext -LookupResult $lookupResult -PrereleaseNotificationsEnabled:$true
+
+            $result.LookupCandidateVersion | Should -Be '2.0.0-beta'
+            $result.LookupCandidateChannel | Should -Be 'Prerelease'
+            $result.LookupRepository | Should -Be 'PSGallery'
+        }
+    }
+
     It 'Get-NovaModuleSelfUpdateWorkflowContext throws when update lookup cannot resolve a candidate' {
         InModuleScope $script:moduleName {
             Mock Read-NovaUpdateNotificationPreference {[pscustomobject]@{PrereleaseNotificationsEnabled = $true}}
