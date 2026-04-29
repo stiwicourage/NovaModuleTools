@@ -11,8 +11,9 @@ function Install-CiModule {
         [Parameter(Mandatory)][string]$Name
     )
 
+    $repositoryName = 'PSGallery'
     Write-Host "Installing PowerShell module '$Name'..."
-    Install-Module -Name $Name -AllowPrerelease -Scope CurrentUser -Force -ErrorAction Stop | Out-Null
+    Install-Module -Name $Name -Repository $repositoryName -AllowPrerelease -Scope CurrentUser -Force -ErrorAction Stop | Out-Null
 
     $installedModule = Get-InstalledModule -Name $Name -ErrorAction Stop |
             Sort-Object Version -Descending |

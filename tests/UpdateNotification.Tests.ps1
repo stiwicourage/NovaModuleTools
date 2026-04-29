@@ -243,6 +243,71 @@ Describe 'Update notification behavior' {
         }
     }
 
+    It 'Get-NovaModuleSelfUpdatePlan preserves the lookup candidate and repository for no-update results' {
+        InModuleScope $script:moduleName {
+            $installedModule = [pscustomobject]@{
+                ModuleName = 'NovaModuleTools'
+                Version = '2.0.0-preview9920'
+                SemanticVersion = [semver]'2.0.0-preview9920'
+                IsPrerelease = $true
+            }
+            $lookupResult = [pscustomobject]@{
+                SourceRepository = 'PSGallery'
+                Stable = [pscustomobject]@{
+                    Version = '1.9.1'
+                    Channel = 'Stable'
+                    Repository = 'PSGallery'
+                }
+                Prerelease = [pscustomobject]@{
+                    Version = '2.0.0-beta'
+                    Channel = 'Prerelease'
+                    Repository = 'PSGallery'
+                }
+            }
+
+            $result = Get-NovaModuleSelfUpdatePlan -InstalledModule $installedModule -LookupResult $lookupResult -PrereleaseNotificationsEnabled:$true
+
+            $result.UpdateAvailable | Should -BeFalse
+            $result.TargetVersion | Should -BeNullOrEmpty
+            $result.LookupCandidateVersion | Should -Be '2.0.0-beta'
+            $result.LookupCandidateChannel | Should -Be 'Prerelease'
+            $result.LookupRepository | Should -Be 'PSGallery'
+        }
+    }
+
+    It 'Get-NovaModuleSelfUpdatePlanContext returns empty lookup fields when no lookup result is available' {
+        InModuleScope $script:moduleName {
+            $result = Get-NovaModuleSelfUpdatePlanContext -LookupResult $null -PrereleaseNotificationsEnabled:$true
+
+            $result.LookupCandidateVersion | Should -BeNullOrEmpty
+            $result.LookupCandidateChannel | Should -BeNullOrEmpty
+            $result.LookupRepository | Should -BeNullOrEmpty
+            $result.PrereleaseNotificationsEnabled | Should -BeTrue
+        }
+    }
+
+    It 'Get-NovaModuleSelfUpdatePlanContext falls back to SourceRepository when the selected lookup candidate omits Repository' {
+        InModuleScope $script:moduleName {
+            $lookupResult = [pscustomobject]@{
+                SourceRepository = 'PSGallery'
+                Stable = [pscustomobject]@{
+                    Version = '1.9.1'
+                    Channel = 'Stable'
+                }
+                Prerelease = [pscustomobject]@{
+                    Version = '2.0.0-beta'
+                    Channel = 'Prerelease'
+                }
+            }
+
+            $result = Get-NovaModuleSelfUpdatePlanContext -LookupResult $lookupResult -PrereleaseNotificationsEnabled:$true
+
+            $result.LookupCandidateVersion | Should -Be '2.0.0-beta'
+            $result.LookupCandidateChannel | Should -Be 'Prerelease'
+            $result.LookupRepository | Should -Be 'PSGallery'
+        }
+    }
+
     It 'Get-NovaModuleSelfUpdateWorkflowContext throws when update lookup cannot resolve a candidate' {
         InModuleScope $script:moduleName {
             Mock Read-NovaUpdateNotificationPreference {[pscustomobject]@{PrereleaseNotificationsEnabled = $true}}
@@ -549,6 +614,9 @@ Describe 'Update notification behavior' {
                     ModuleName = 'NovaModuleTools'
                     CurrentVersion = '2.0.0-prerelease3'
                     TargetVersion = $null
+                    LookupCandidateVersion = '2.0.0-beta'
+                    LookupCandidateChannel = 'Prerelease'
+                    LookupRepository = 'PSGallery'
                     PrereleaseNotificationsEnabled = $true
                     UpdateAvailable = $false
                     Updated = $false
@@ -564,6 +632,17 @@ Describe 'Update notification behavior' {
             $result[0] | Should -Be "You're up to date!"
             $result[1] | Should -Be 'NovaModuleTools 2.0.0-prerelease3 is currently the newest version available.'
             Assert-MockCalled Update-NovaModuleTool -Times 1
+        }
+    }
+
+    It 'Get-NovaModuleUpdateLookupScript pins lookups to PSGallery and returns repository metadata' {
+        InModuleScope $script:moduleName {
+            $scriptText = Get-NovaModuleUpdateLookupScript
+
+            $scriptText | Should -Match 'Find-Module \$ResolvedModuleName -Repository \$repositoryName'
+            $scriptText | Should -Match 'Find-Module \$ResolvedModuleName -Repository \$repositoryName -AllowPrerelease'
+            $scriptText | Should -Match 'SourceRepository = \$repositoryName'
+            $scriptText | Should -Match 'Repository = \$repositoryName'
         }
     }
 

@@ -4,6 +4,7 @@ $WarningPreference = 'SilentlyContinue'
 $InformationPreference = 'SilentlyContinue'
 $VerbosePreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
+$repositoryName = 'PSGallery'
 
 function Get-PrereleaseLabel {
     param([object]$Item)
@@ -47,19 +48,21 @@ function ConvertTo-VersionInfo {
     return [pscustomobject]@{
         ModuleName = $ResolvedModuleName
         Channel = $Channel
+        Repository = $repositoryName
         Version = $versionText
     }
 }
 
-$stableItem = Find-Module $ResolvedModuleName -ErrorAction Stop -WarningAction SilentlyContinue
+$stableItem = Find-Module $ResolvedModuleName -Repository $repositoryName -ErrorAction Stop -WarningAction SilentlyContinue
 $prereleaseItem = if ($IncludePrerelease) {
-    Find-Module $ResolvedModuleName -AllowPrerelease -ErrorAction Stop -WarningAction SilentlyContinue
+    Find-Module $ResolvedModuleName -Repository $repositoryName -AllowPrerelease -ErrorAction Stop -WarningAction SilentlyContinue
 }
 else {
     $null
 }
 
 [pscustomobject]@{
+    SourceRepository = $repositoryName
     Stable = ConvertTo-VersionInfo -Item $stableItem -Channel 'Stable'
     Prerelease = ConvertTo-VersionInfo -Item $prereleaseItem -Channel 'Prerelease'
 }

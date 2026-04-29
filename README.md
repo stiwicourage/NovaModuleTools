@@ -107,6 +107,7 @@ preference to decide whether prerelease self-updates are eligible. When prerelea
 self-update stays on stable releases. When they are enabled, self-update may target a prerelease, but it asks for
 explicit confirmation before proceeding.
 
+
 Successful `Update-NovaModuleTool`, CLI:`% nova update`, and `Install-NovaCli` runs print the release notes link from
 the
 installed module manifest. When `Invoke-NovaBuild` detects a newer `NovaModuleTools` version after a build, the update
