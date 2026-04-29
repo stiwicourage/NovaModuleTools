@@ -23,18 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-### Fixed
-
-### Changed
-
-### Documentation
-
-### Removed
-
-## [2.0.0] - 2026-04-29
-
-### Added
-
 - Add `Install-NovaCli` and a packaged `nova` launcher so macOS and Linux users can install and run `nova` directly
   from zsh or bash.
     - `nova` now remains the launcher-facing CLI surface, while `Invoke-NovaCli` stays the explicit PowerShell cmdlet
