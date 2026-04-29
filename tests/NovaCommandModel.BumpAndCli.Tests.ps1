@@ -133,6 +133,10 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $result = Get-NovaVersionUpdateWorkflowContext -ProjectRoot '/tmp/project' -ContinuousIntegrationRequested
 
             $result.'ContinuousIntegrationRequested' | Should -BeTrue
+            Assert-MockCalled Get-NovaVersionLabelForBump -Times 1 -ParameterFilter {
+                $ProjectRoot -eq '/tmp/project' -and
+                        $ContinuousIntegrationRequested
+            }
         }
     }
 
@@ -520,6 +524,36 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $thrown.TargetObject | Should -Be $projectRoot
 
             Assert-MockCalled Get-NovaVersionUpdatePlan -Times 0
+            Assert-MockCalled Set-NovaModuleVersion -Times 0
+        }
+    }
+
+    It 'Update-NovaModuleVersion -Preview -ContinuousIntegration -WhatIf still bumps from a tagged head with no new commits' -Skip:(-not [bool](Get-Command git -ErrorAction SilentlyContinue)) {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'tagged-head-ci-bump-project'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            & git -C $projectRoot init --quiet | Out-Null
+            & git -C $projectRoot config user.name 'NovaModuleTools Tests' | Out-Null
+            & git -C $projectRoot config user.email 'tests@example.invalid' | Out-Null
+            Set-Content -LiteralPath (Join-Path $projectRoot 'first.txt') -Value 'first' -Encoding utf8
+            & git -C $projectRoot add first.txt | Out-Null
+            & git -C $projectRoot commit --quiet -m 'feat: initial release' | Out-Null
+            & git -C $projectRoot tag v2.0.0 | Out-Null
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    Version = '2.0.0'
+                    ProjectJSON = (Join-Path $projectRoot 'project.json')
+                }
+            }
+            Mock Set-NovaModuleVersion {throw 'WhatIf should not write project.json'}
+
+            $result = Update-NovaModuleVersion -Path $projectRoot -Preview -ContinuousIntegration -WhatIf
+
+            $result.PreviousVersion | Should -Be '2.0.0'
+            $result.NewVersion | Should -Be '2.0.1-preview'
+            $result.Label | Should -Be 'Patch'
+            $result.CommitCount | Should -Be 0
             Assert-MockCalled Set-NovaModuleVersion -Times 0
         }
     }

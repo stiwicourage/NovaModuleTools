@@ -2,7 +2,8 @@ function Get-NovaVersionLabelForBump {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot,
-        [string[]]$CommitMessages = @()
+        [string[]]$CommitMessages = @(),
+        [switch]$ContinuousIntegrationRequested
     )
 
     if ($CommitMessages.Count -gt 0) {
@@ -18,6 +19,10 @@ function Get-NovaVersionLabelForBump {
     }
 
     if (-not (Test-GitRepositoryHasCommitsSinceLatestTag -ProjectRoot $ProjectRoot)) {
+        if ($ContinuousIntegrationRequested) {
+            return 'Patch'
+        }
+
         Stop-NovaOperation -Message 'Cannot bump version because there are no commits since the latest tag.' -ErrorId 'Nova.Workflow.NoCommitsSinceLatestTag' -Category InvalidOperation -TargetObject $ProjectRoot
     }
 

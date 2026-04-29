@@ -620,6 +620,33 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
+    It 'Get-NovaVersionLabelForBump returns Patch in CI mode when the current head already matches the latest tag' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'mocked-ci-git-state'
+            New-Item -ItemType Directory -Path (Join-Path $projectRoot '.git') -Force | Out-Null
+
+            Mock Invoke-NovaGitCommand {
+                switch ($Arguments[0]) {
+                    'rev-parse' {
+                        return [pscustomobject]@{ExitCode = 0; Output = @('.git')}
+                    }
+                    'describe' {
+                        return [pscustomobject]@{ExitCode = 0; Output = @('v1.0.0')}
+                    }
+                    'rev-list' {
+                        return [pscustomobject]@{ExitCode = 0; Output = @('0')}
+                    }
+                    default {
+                        throw "Unexpected git args: $( $Arguments -join ' ' )"
+                    }
+                }
+            }
+
+            Get-NovaVersionLabelForBump -ProjectRoot $projectRoot -ContinuousIntegrationRequested | Should -Be 'Patch'
+            Assert-MockCalled Invoke-NovaGitCommand -Times 1 -ParameterFilter {$Arguments[0] -eq 'rev-list' -and $Arguments[2] -eq 'v1.0.0..HEAD'}
+        }
+    }
+
     It 'Get-NovaVersionLabelForBump returns Patch when the repository has commits but no tags yet' {
         InModuleScope $script:moduleName {
             $projectRoot = Join-Path $TestDrive 'mocked-git-without-tags'

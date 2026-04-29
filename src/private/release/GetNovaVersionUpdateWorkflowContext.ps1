@@ -8,7 +8,7 @@ function Get-NovaVersionUpdateWorkflowContext {
 
     $projectInfo = Get-NovaProjectInfo -Path $ProjectRoot
     $commitMessages = @(Get-GitCommitMessageForVersionBump -ProjectRoot $ProjectRoot)
-    $label = Get-NovaVersionLabelForBump -ProjectRoot $ProjectRoot -CommitMessages $commitMessages
+    $label = Get-NovaVersionLabelForBump -ProjectRoot $ProjectRoot -CommitMessages $commitMessages -ContinuousIntegrationRequested:$ContinuousIntegrationRequested
     $versionUpdatePlan = Get-NovaVersionUpdatePlan -ProjectInfo $projectInfo -Label $label -PreviewRelease:$PreviewRelease
 
     return Get-NovaVersionUpdateWorkflowContextObject -ProjectRoot $ProjectRoot -ProjectInfo $projectInfo -CommitMessages $commitMessages -Label $label -VersionUpdatePlan $versionUpdatePlan -PreviewRelease:$PreviewRelease -ContinuousIntegrationRequested:$ContinuousIntegrationRequested

@@ -7,6 +7,8 @@ Describe 'Semantic release support' {
         $expectedFunctionList = @(
             'Get-ReleaseDateString'
             'Get-ReleaseRepositoryUrl'
+            'Get-PSResourceRepositoryStoreDirectory'
+            'Initialize-PSGalleryRepository'
             'ConvertTo-ReleaseTagName'
             'Read-JsonFile'
             'Write-JsonFile'
@@ -119,5 +121,46 @@ All notable changes to this project will be documented in this file.
 
         $project = Get-Content -LiteralPath $projectFile -Raw | ConvertFrom-Json
         $project.Version | Should -Be '2.0.0'
+    }
+
+    It 'Initialize-PSGalleryRepository creates the PSResourceGet store directory and registers PSGallery when missing' {
+        Mock Get-PSResourceRepositoryStoreDirectory {'/tmp/psresource-store'}
+        Mock Test-Path {$false} -ParameterFilter {$LiteralPath -eq '/tmp/psresource-store'}
+        Mock New-Item {}
+        Mock Get-PSResourceRepository {$null}
+        Mock Register-PSResourceRepository {}
+
+        Initialize-PSGalleryRepository
+
+        Assert-MockCalled New-Item -Times 1 -ParameterFilter {
+            $ItemType -eq 'Directory' -and
+                    $Path -eq '/tmp/psresource-store' -and
+                    $Force
+        }
+        Assert-MockCalled Get-PSResourceRepository -Times 1 -ParameterFilter {$Name -eq 'PSGallery' -and $ErrorAction -eq 'SilentlyContinue'}
+        Assert-MockCalled Register-PSResourceRepository -Times 1 -ParameterFilter {$PSGallery}
+    }
+
+    It 'Initialize-PSGalleryRepository leaves the repository store alone when PSGallery is already registered' {
+        Mock Get-PSResourceRepositoryStoreDirectory {'/tmp/psresource-store'}
+        Mock Test-Path {$true} -ParameterFilter {$LiteralPath -eq '/tmp/psresource-store'}
+        Mock New-Item {}
+        Mock Get-PSResourceRepository {[pscustomobject]@{Name = 'PSGallery'}}
+        Mock Register-PSResourceRepository {}
+
+        Initialize-PSGalleryRepository
+
+        Assert-MockCalled New-Item -Times 0
+        Assert-MockCalled Register-PSResourceRepository -Times 0
+    }
+
+    It 'Publish-ToPSGallery bootstraps semantic-release support before publishing to PSGallery' {
+        $scriptPath = Join-Path $PSScriptRoot '..' 'scripts' 'release' 'Publish-ToPSGallery.ps1'
+        $scriptText = Get-Content -LiteralPath $scriptPath -Raw
+
+        $scriptText | Should -Match 'SemanticReleaseSupport\.ps1'
+        $scriptText | Should -Match 'Initialize-PSGalleryRepository'
+        $scriptText | Should -Match '\$ErrorActionPreference = ''Stop'''
+        $scriptText | Should -Match 'Publish-PSResource .* -ErrorAction Stop'
     }
 }

@@ -89,6 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - CI bump now reuses the already activated built-module command when the current session is already running from
       `dist/`, so publish-then-bump prerelease automation can continue in the same session without losing private helper
       bindings.
+  - `Update-NovaModuleVersion -ContinuousIntegration` now also falls back to a patch bump when `HEAD` already matches
+    the latest tag, so release automation can prepare the next prerelease version without requiring an extra commit.
 - Keep standalone `nova bump` output stable by formatting version-update results in the CLI layer instead of relying on
   PowerShell's default object rendering.
     - `nova bump --what-if` and `% run.ps1` now surface a predictable summary for previous version, new version, label,
@@ -104,6 +106,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       failing during parameter binding.
 - Fix configuration and validation errors so empty `project.json` files and unsupported `Manifest` keys fail fast with
   clear messages.
+- Fix semantic-release PSGallery publishing on fresh CI runners by bootstrapping the PSResourceGet repository store
+  before
+  `Publish-PSResource` runs.
 
 ### Changed
 
