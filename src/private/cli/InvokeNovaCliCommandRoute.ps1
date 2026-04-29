@@ -39,6 +39,83 @@ function Invoke-NovaCliParsedCommand {
     return & $ActionCommand @options @mutatingCommonParameters
 }
 
+function Invoke-NovaCliBumpCommand {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$InvocationContext
+    )
+
+    $commandOutput = @(Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaBumpCliArgument' -ActionCommand 'Update-NovaModuleVersion' 3>&1)
+    $capturedOutput = Read-NovaCliCapturedOutput -OutputRecords $commandOutput
+    Write-NovaCliCapturedWarning -WarningMessages $capturedOutput.WarningMessages
+    return $capturedOutput.Result
+}
+
+function Read-NovaCliCapturedOutput {
+    [CmdletBinding()]
+    param(
+        [object[]]$OutputRecords = @()
+    )
+
+    $warningMessages = @()
+    $result = $null
+    foreach ($outputRecord in @($OutputRecords)) {
+        if ($outputRecord -is [System.Management.Automation.WarningRecord]) {
+            $warningMessages += $outputRecord
+            continue
+        }
+
+        $result = $outputRecord
+    }
+
+    return [pscustomobject]@{
+        Result = $result
+        WarningMessages = @($warningMessages)
+    }
+}
+
+function Write-NovaCliCapturedWarning {
+    [CmdletBinding()]
+    param(
+        [object[]]$WarningMessages = @()
+    )
+
+    foreach ($message in (Get-NovaCliReplayWarningMessage -WarningMessages $WarningMessages)) {
+        Write-Warning $message
+    }
+}
+
+function Get-NovaCliReplayWarningMessage {
+    [CmdletBinding()]
+    param(
+        [object[]]$WarningMessages = @()
+    )
+
+    $messages = foreach ($warningMessage in @($WarningMessages)) {
+        $text = ConvertTo-NovaCliWarningMessageText -WarningMessage $warningMessage
+        if ( [string]::IsNullOrWhiteSpace($text)) {
+            continue
+        }
+
+        $text
+    }
+
+    return @($messages)
+}
+
+function ConvertTo-NovaCliWarningMessageText {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$WarningMessage
+    )
+
+    if ($WarningMessage -is [System.Management.Automation.WarningRecord]) {
+        return $WarningMessage.Message
+    }
+
+    return [string]$WarningMessage
+}
+
 function Invoke-NovaCliUpdateRouteCommand {
     [CmdletBinding()]
     param(
@@ -55,7 +132,7 @@ function Invoke-NovaCliBumpRouteCommand {
         [Parameter(Mandatory)][pscustomobject]$InvocationContext
     )
 
-    $result = Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaBumpCliArgument' -ActionCommand 'Update-NovaModuleVersion'
+    $result = Invoke-NovaCliBumpCommand -InvocationContext $InvocationContext
     return Format-NovaCliCommandResult -Command $InvocationContext.Command -Result $result
 }
 

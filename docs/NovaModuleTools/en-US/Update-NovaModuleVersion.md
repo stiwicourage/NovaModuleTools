@@ -42,6 +42,11 @@ The release label is inferred from the commit set:
 - `Minor` for `feat:` commits
 - `Patch` for `fix:` commits and all other cases
 
+When the current stable version is still on `0.y.z` and the inferred label is `Major`, Nova keeps the release on the
+initial-development line and plans the next minor version instead of jumping straight to `1.0.0`. The result still
+reports the detected `Major` label so you can see that the commit set contained a breaking change, and Nova prints
+guidance about manually setting `1.0.0` once the software is stable. `-Preview` behavior stays unchanged.
+
 When Git tags exist, only commits since the latest tag are considered. If the folder is not a Git repository, the
 command falls back to a patch bump.
 
@@ -161,6 +166,23 @@ PS> Update-NovaModuleVersion -ContinuousIntegration
 ```
 
 Re-imports the built `dist/<ProjectName>/<ProjectName>.psd1` first and then runs the normal version bump workflow.
+
+### EXAMPLE 9
+
+```text
+PS> Update-NovaModuleVersion -WhatIf
+
+What if: Performing the operation "Update module version using Major release label" on target "project.json".
+WARNING: Major version zero (0.y.z) is for initial development, so Nova keeps stable bumps on the 0.y.z line and plans breaking-change bumps as the next minor version instead of 1.0.0. Set 1.0.0 manually once the software is stable; after that, automatic major-version bumps work normally.
+
+PreviousVersion: 0.1.0
+NewVersion: 0.2.0
+Label: Major
+CommitCount: 34
+```
+
+Shows how stable `0.y.z` bumps still warn that `1.0.0` must be set manually when the API becomes stable, while
+breaking-change commits on that line continue to plan the next minor version instead of jumping straight to `1.0.0`.
 
 ## PARAMETERS
 

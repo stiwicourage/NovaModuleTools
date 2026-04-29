@@ -148,6 +148,85 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
+    It 'Get-NovaVersionUpdateWorkflowContext handles stable and preview major-zero bumps as expected when <Name>' -ForEach @(
+        @{
+            Name = 'a stable breaking-change bump stays on the initial-development line'
+            CurrentVersion = '0.1.0'
+            Label = 'Major'
+            PreviewRelease = $false
+            PlannedVersion = '0.2.0'
+            ExpectedEffectiveLabel = 'Minor'
+            ExpectedAdvisoryPattern = 'Set 1\.0\.0 manually once the software is stable'
+            ExpectedPlanLabel = 'Minor'
+        }
+        @{
+            Name = 'a stable feature bump still warns that 1.0.0 must be set manually'
+            CurrentVersion = '0.0.1'
+            Label = 'Minor'
+            PreviewRelease = $false
+            PlannedVersion = '0.1.0'
+            ExpectedEffectiveLabel = 'Minor'
+            ExpectedAdvisoryPattern = 'Set 1\.0\.0 manually once the software is stable'
+            ExpectedPlanLabel = 'Minor'
+        }
+        @{
+            Name = 'preview mode remains unchanged'
+            CurrentVersion = '0.1.0'
+            Label = 'Major'
+            PreviewRelease = $true
+            PlannedVersion = '1.0.0-preview'
+            ExpectedEffectiveLabel = 'Major'
+            ExpectedAdvisoryPattern = $null
+            ExpectedPlanLabel = 'Major'
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectJSON = '/tmp/project.json'
+                    Version = $TestCase.CurrentVersion
+                }
+            }
+            Mock Get-GitCommitMessageForVersionBump {@('feat!: breaking api')}
+            Mock Get-NovaVersionLabelForBump {$TestCase.Label}
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    NewVersion = [semver]$TestCase.PlannedVersion
+                }
+            }
+
+            $result = Get-NovaVersionUpdateWorkflowContext -ProjectRoot '/tmp/project' -PreviewRelease:$TestCase.PreviewRelease
+
+            $result.Label | Should -Be $TestCase.Label
+            $result.EffectiveLabel | Should -Be $TestCase.ExpectedEffectiveLabel
+            $result.NewVersion | Should -Be $TestCase.PlannedVersion
+            if ($null -eq $TestCase.ExpectedAdvisoryPattern) {
+                $result.AdvisoryMessage | Should -BeNullOrEmpty
+            }
+            else {
+                $result.AdvisoryMessage | Should -Match $TestCase.ExpectedAdvisoryPattern
+            }
+
+            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
+                $Label -eq $TestCase.ExpectedPlanLabel -and
+                        ([bool]$PreviewRelease) -eq ([bool]$TestCase.PreviewRelease)
+            }
+        }
+    }
+
+    It 'Get-NovaVersionUpdateEffectiveLabel falls back to Label when EffectiveLabel is missing or blank' -ForEach @(
+        @{Name = 'missing'; WorkflowContext = [pscustomobject]@{Label = 'Patch'}; Expected = 'Patch'}
+        @{Name = 'blank'; WorkflowContext = [pscustomobject]@{Label = 'Minor'; EffectiveLabel = '   '}; Expected = 'Minor'}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            Get-NovaVersionUpdateEffectiveLabel -WorkflowContext $TestCase.WorkflowContext | Should -Be $TestCase.Expected
+        }
+    }
+
     It 'Get-NovaVersionUpdatePlan keeps the semantic core and increments an existing prerelease label when preview mode continues a prerelease' -ForEach @(
         @{CurrentVersion = '1.5.3-preview'; ExpectedVersion = '1.5.3-preview01'}
         @{CurrentVersion = '1.5.3-preview01'; ExpectedVersion = '1.5.3-preview02'}

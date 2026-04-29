@@ -9,9 +9,75 @@ function Get-NovaVersionUpdateWorkflowContext {
     $projectInfo = Get-NovaProjectInfo -Path $ProjectRoot
     $commitMessages = @(Get-GitCommitMessageForVersionBump -ProjectRoot $ProjectRoot)
     $label = Get-NovaVersionLabelForBump -ProjectRoot $ProjectRoot -CommitMessages $commitMessages -ContinuousIntegrationRequested:$ContinuousIntegrationRequested
-    $versionUpdatePlan = Get-NovaVersionUpdatePlan -ProjectInfo $projectInfo -Label $label -PreviewRelease:$PreviewRelease
+    $labelResolution = Get-NovaVersionUpdateLabelResolution -ProjectInfo $projectInfo -Label $label -PreviewRelease:$PreviewRelease
+    $versionUpdatePlan = Get-NovaVersionUpdatePlan -ProjectInfo $projectInfo -Label $labelResolution.EffectiveLabel -PreviewRelease:$PreviewRelease
 
-    return Get-NovaVersionUpdateWorkflowContextObject -ProjectRoot $ProjectRoot -ProjectInfo $projectInfo -CommitMessages $commitMessages -Label $label -VersionUpdatePlan $versionUpdatePlan -PreviewRelease:$PreviewRelease -ContinuousIntegrationRequested:$ContinuousIntegrationRequested
+    return Get-NovaVersionUpdateWorkflowContextObject -ProjectRoot $ProjectRoot -ProjectInfo $projectInfo -CommitMessages $commitMessages -Label $label -EffectiveLabel $labelResolution.EffectiveLabel -AdvisoryMessage $labelResolution.AdvisoryMessage -VersionUpdatePlan $versionUpdatePlan -PreviewRelease:$PreviewRelease -ContinuousIntegrationRequested:$ContinuousIntegrationRequested
+}
+
+function Get-NovaVersionUpdateLabelResolution {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
+        [Parameter(Mandatory)][string]$Label,
+        [switch]$PreviewRelease
+    )
+
+    $effectiveLabel = $Label
+    $advisoryMessage = $null
+    $currentVersion = Get-NovaCurrentVersionForUpdatePlan -ProjectInfo $ProjectInfo
+    if (Test-NovaVersionUpdateUsesInitialDevelopmentAdvisory -CurrentVersion $currentVersion -PreviewRelease:$PreviewRelease) {
+        $advisoryMessage = Get-NovaInitialDevelopmentVersioningMessage
+    }
+
+    if (Test-NovaVersionUpdateUsesMajorZeroFallback -CurrentVersion $currentVersion -Label $Label -PreviewRelease:$PreviewRelease) {
+        $effectiveLabel = 'Minor'
+    }
+
+    return [pscustomobject]@{
+        EffectiveLabel = $effectiveLabel
+        AdvisoryMessage = $advisoryMessage
+    }
+}
+
+function Test-NovaVersionUpdateUsesInitialDevelopmentAdvisory {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][semver]$CurrentVersion,
+        [switch]$PreviewRelease
+    )
+
+    if ($PreviewRelease) {
+        return $false
+    }
+
+    return $CurrentVersion.Major -eq 0
+}
+
+function Test-NovaVersionUpdateUsesMajorZeroFallback {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][semver]$CurrentVersion,
+        [Parameter(Mandatory)][string]$Label,
+        [switch]$PreviewRelease
+    )
+
+    if ($PreviewRelease) {
+        return $false
+    }
+
+    if ($Label -ne 'Major') {
+        return $false
+    }
+
+    return $CurrentVersion.Major -eq 0
+}
+
+function Get-NovaInitialDevelopmentVersioningMessage {
+    [CmdletBinding()]
+    param()
+
+    return 'Major version zero (0.y.z) is for initial development, so Nova keeps stable bumps on the 0.y.z line and plans breaking-change bumps as the next minor version instead of 1.0.0. Set 1.0.0 manually once the software is stable; after that, automatic major-version bumps work normally.'
 }
 
 function Get-NovaVersionUpdateWorkflowContextObject {
@@ -21,6 +87,8 @@ function Get-NovaVersionUpdateWorkflowContextObject {
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [AllowEmptyCollection()][string[]]$CommitMessages = @(),
         [Parameter(Mandatory)][string]$Label,
+        [Parameter(Mandatory)][string]$EffectiveLabel,
+        [AllowEmptyString()][string]$AdvisoryMessage,
         [Parameter(Mandatory)][pscustomobject]$VersionUpdatePlan,
         [switch]$PreviewRelease,
         [switch]$ContinuousIntegrationRequested
@@ -32,6 +100,8 @@ function Get-NovaVersionUpdateWorkflowContextObject {
         CommitMessages = $CommitMessages
         CommitCount = $CommitMessages.Count
         Label = $Label
+        EffectiveLabel = $EffectiveLabel
+        AdvisoryMessage = $AdvisoryMessage
         PreviewRelease = [bool]$PreviewRelease
         ContinuousIntegrationRequested = [bool]$ContinuousIntegrationRequested
         Target = [System.IO.Path]::GetFileName($ProjectInfo.ProjectJSON)

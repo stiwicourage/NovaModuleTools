@@ -8,7 +8,7 @@ function Invoke-NovaVersionUpdateWorkflow {
 
     $versionWriteResult = $null
     if ($ShouldRun) {
-        $versionWriteResult = Set-NovaModuleVersion -ProjectInfo $WorkflowContext.ProjectInfo -Label $WorkflowContext.Label -PreviewRelease:$WorkflowContext.PreviewRelease -Confirm:$false
+        $versionWriteResult = Set-NovaModuleVersion -ProjectInfo $WorkflowContext.ProjectInfo -Label (Get-NovaVersionUpdateEffectiveLabel -WorkflowContext $WorkflowContext) -PreviewRelease:$WorkflowContext.PreviewRelease -Confirm:$false
     }
 
     if (-not (Test-NovaVersionUpdateResultRequired -ShouldRun:$ShouldRun -WhatIfEnabled:$WhatIfEnabled)) {
@@ -28,6 +28,19 @@ function Test-NovaVersionUpdateResultRequired {
     return $ShouldRun -or $WhatIfEnabled
 }
 
+function Get-NovaVersionUpdateEffectiveLabel {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext
+    )
+
+    if ($WorkflowContext.PSObject.Properties.Name -contains 'EffectiveLabel' -and -not [string]::IsNullOrWhiteSpace($WorkflowContext.EffectiveLabel)) {
+        return $WorkflowContext.EffectiveLabel
+    }
+
+    return $WorkflowContext.Label
+}
+
 function Get-NovaVersionUpdateResult {
     [CmdletBinding()]
     param(
@@ -39,7 +52,23 @@ function Get-NovaVersionUpdateResult {
         PreviousVersion = $WorkflowContext.PreviousVersion
         NewVersion = $WorkflowContext.NewVersion
         Label = $WorkflowContext.Label
+        EffectiveLabel = Get-NovaVersionUpdateEffectiveLabel -WorkflowContext $WorkflowContext
+        AdvisoryMessage = Get-NovaVersionUpdateAdvisoryMessage -WorkflowContext $WorkflowContext
         CommitCount = $WorkflowContext.CommitCount
         Applied = [bool]$Applied
     }
 }
+
+function Get-NovaVersionUpdateAdvisoryMessage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext
+    )
+
+    if ($WorkflowContext.PSObject.Properties.Name -notcontains 'AdvisoryMessage') {
+        return $null
+    }
+
+    return $WorkflowContext.AdvisoryMessage
+}
+

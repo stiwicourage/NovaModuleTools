@@ -141,6 +141,23 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
         }
     }
 
+    It 'Format-NovaCliCommandResult keeps bump summaries stable even when a major-zero advisory is present' {
+        InModuleScope $script:moduleName {
+            $versionUpdateResult = [pscustomobject]@{
+                PreviousVersion = '0.1.0'
+                NewVersion = '0.2.0'
+                Label = 'Major'
+                EffectiveLabel = 'Minor'
+                AdvisoryMessage = 'Major version zero (0.y.z) is for initial development.'
+                CommitCount = 34
+                Applied = $false
+            }
+            $result = Format-NovaCliCommandResult -Command 'bump' -Result $versionUpdateResult
+
+            $result | Should -Be 'Version plan: 0.1.0 -> 0.2.0 | Label: Major | Commits: 34'
+        }
+    }
+
     It 'Format-NovaCliCommandResult renders applied bump results as a completed CLI summary' {
         InModuleScope $script:moduleName {
             $versionUpdateResult = [pscustomobject]@{

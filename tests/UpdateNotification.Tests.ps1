@@ -825,7 +825,7 @@ Continue with the prerelease update?
         $result.Warnings[0] | Should -Match 'newer NovaModuleTools release is available'
         $result.Warnings[0] | Should -Match 'Release notes: https://www\.novamoduletools\.com/release-notes\.html'
         $result.Warnings[0] | Should -Match 'Update-Module NovaModuleTools'
-        $result.Warnings[0] | Should -Match 'nova update'
+        $result.Warnings[0] | Should -Match '% nova update'
     }
 
     It 'Invoke-NovaBuildUpdateNotification warns about a newer prerelease only when prerelease notifications are enabled' {
@@ -838,9 +838,9 @@ Continue with the prerelease update?
         $result.Warnings[0] | Should -Match 'newer NovaModuleTools prerelease is available'
         $result.Warnings[0] | Should -Match 'Release notes: https://www\.novamoduletools\.com/release-notes\.html'
         $result.Warnings[0] | Should -Match 'Update-Module NovaModuleTools -AllowPrerelease'
-        $result.Warnings[0] | Should -Match 'nova update'
+        $result.Warnings[0] | Should -Match '% nova update'
         $result.Warnings[0] | Should -Match 'Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications'
-        $result.Warnings[0] | Should -Match 'nova notification --disable'
+        $result.Warnings[0] | Should -Match '% nova notification --disable'
     }
 
     It 'Write-NovaAvailableModuleUpdateWarning preserves host rendering so warning text can stay colored' {
@@ -873,7 +873,7 @@ Continue with the prerelease update?
                 ''
                 'Update:'
                 'PS> Update-Module NovaModuleTools'
-                'nova update'
+                '% nova update'
             )
         }
     }

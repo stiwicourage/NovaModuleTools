@@ -165,6 +165,17 @@
                     <li><strong>Minor</strong> for <code>feat:</code> commits</li>
                     <li><strong>Patch</strong> for <code>fix:</code> commits and all other cases</li>
                 </ul>
+                <p>While your project is still on a stable <code>0.y.z</code> version, Nova treats SemVer major zero as
+                    the initial-development phase. Stable bumps stay on the <code>0.y.z</code> line, and a
+                    breaking-change
+                    bump still reports the detected <strong>Major</strong> label while advancing to the next minor
+                    version
+                    instead of jumping to <code>1.0.0</code>. Nova prints one warning that you should set
+                    <code>1.0.0</code> manually once the API is stable. Preview mode stays unchanged.
+                </p>
+                <pre><code>0.0.1 + Patch -> 0.0.2
+0.1.0 + Minor -> 0.2.0
+0.1.0 + Major -> 0.2.0</code></pre>
                 <p>When Git tags exist, Nova uses commits since the latest tag. When the folder is not a Git repository,
                     Nova falls back to a patch bump. When the repository exists but has no commits yet, Nova stops with
                     a clear error.</p>
