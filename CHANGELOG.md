@@ -14,8 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer major-zero development line.
     - When the current stable version is `0.y.z` and commit history implies a breaking change, Nova now plans the next
       minor version instead of auto-jumping to `1.0.0`.
-    - The bump result still reports the detected `Major` label and now prints guidance about manually setting `1.0.0`
-      once the software is stable.
+  - Stable `0.y.z` bump results now print one warning about manually setting `1.0.0` once the software is stable,
+    while breaking-change bumps still report the detected `Major` label.
     - `-Preview` behavior is unchanged.
 
 ### Deprecated

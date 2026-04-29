@@ -148,9 +148,11 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
-    It 'Get-NovaVersionUpdateWorkflowContext handles stable and preview major bumps on the 0.y.z line as expected when <Name>' -ForEach @(
+    It 'Get-NovaVersionUpdateWorkflowContext handles stable and preview major-zero bumps as expected when <Name>' -ForEach @(
         @{
-            Name = 'a stable bump stays on the initial-development line'
+            Name = 'a stable breaking-change bump stays on the initial-development line'
+            CurrentVersion = '0.1.0'
+            Label = 'Major'
             PreviewRelease = $false
             PlannedVersion = '0.2.0'
             ExpectedEffectiveLabel = 'Minor'
@@ -158,7 +160,19 @@ Describe 'Coverage gaps for release and git internals' {
             ExpectedPlanLabel = 'Minor'
         }
         @{
+            Name = 'a stable feature bump still warns that 1.0.0 must be set manually'
+            CurrentVersion = '0.0.1'
+            Label = 'Minor'
+            PreviewRelease = $false
+            PlannedVersion = '0.1.0'
+            ExpectedEffectiveLabel = 'Minor'
+            ExpectedAdvisoryPattern = 'Set 1\.0\.0 manually once the software is stable'
+            ExpectedPlanLabel = 'Minor'
+        }
+        @{
             Name = 'preview mode remains unchanged'
+            CurrentVersion = '0.1.0'
+            Label = 'Major'
             PreviewRelease = $true
             PlannedVersion = '1.0.0-preview'
             ExpectedEffectiveLabel = 'Major'
@@ -172,11 +186,11 @@ Describe 'Coverage gaps for release and git internals' {
             Mock Get-NovaProjectInfo {
                 [pscustomobject]@{
                     ProjectJSON = '/tmp/project.json'
-                    Version = '0.1.0'
+                    Version = $TestCase.CurrentVersion
                 }
             }
             Mock Get-GitCommitMessageForVersionBump {@('feat!: breaking api')}
-            Mock Get-NovaVersionLabelForBump {'Major'}
+            Mock Get-NovaVersionLabelForBump {$TestCase.Label}
             Mock Get-NovaVersionUpdatePlan {
                 [pscustomobject]@{
                     NewVersion = [semver]$TestCase.PlannedVersion
@@ -185,7 +199,7 @@ Describe 'Coverage gaps for release and git internals' {
 
             $result = Get-NovaVersionUpdateWorkflowContext -ProjectRoot '/tmp/project' -PreviewRelease:$TestCase.PreviewRelease
 
-            $result.Label | Should -Be 'Major'
+            $result.Label | Should -Be $TestCase.Label
             $result.EffectiveLabel | Should -Be $TestCase.ExpectedEffectiveLabel
             $result.NewVersion | Should -Be $TestCase.PlannedVersion
             if ($null -eq $TestCase.ExpectedAdvisoryPattern) {

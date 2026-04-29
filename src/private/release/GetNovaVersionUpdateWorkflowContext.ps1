@@ -26,15 +26,32 @@ function Get-NovaVersionUpdateLabelResolution {
     $effectiveLabel = $Label
     $advisoryMessage = $null
     $currentVersion = Get-NovaCurrentVersionForUpdatePlan -ProjectInfo $ProjectInfo
+    if (Test-NovaVersionUpdateUsesInitialDevelopmentAdvisory -CurrentVersion $currentVersion -PreviewRelease:$PreviewRelease) {
+        $advisoryMessage = Get-NovaInitialDevelopmentVersioningMessage
+    }
+
     if (Test-NovaVersionUpdateUsesMajorZeroFallback -CurrentVersion $currentVersion -Label $Label -PreviewRelease:$PreviewRelease) {
         $effectiveLabel = 'Minor'
-        $advisoryMessage = Get-NovaInitialDevelopmentVersioningMessage
     }
 
     return [pscustomobject]@{
         EffectiveLabel = $effectiveLabel
         AdvisoryMessage = $advisoryMessage
     }
+}
+
+function Test-NovaVersionUpdateUsesInitialDevelopmentAdvisory {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][semver]$CurrentVersion,
+        [switch]$PreviewRelease
+    )
+
+    if ($PreviewRelease) {
+        return $false
+    }
+
+    return $CurrentVersion.Major -eq 0
 }
 
 function Test-NovaVersionUpdateUsesMajorZeroFallback {
@@ -60,7 +77,7 @@ function Get-NovaInitialDevelopmentVersioningMessage {
     [CmdletBinding()]
     param()
 
-    return 'Major version zero (0.y.z) is for initial development, so Nova keeps breaking-change bumps on the 0.y.z line and plans the next minor version instead of 1.0.0. Set 1.0.0 manually once the software is stable; after that, automatic major-version bumps work normally.'
+    return 'Major version zero (0.y.z) is for initial development, so Nova keeps stable bumps on the 0.y.z line and plans breaking-change bumps as the next minor version instead of 1.0.0. Set 1.0.0 manually once the software is stable; after that, automatic major-version bumps work normally.'
 }
 
 function Get-NovaVersionUpdateWorkflowContextObject {

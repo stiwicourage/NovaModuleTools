@@ -218,9 +218,9 @@ These switches keep the behavior explicit and opt-in:
 - `Invoke-NovaRelease -ContinuousIntegration` forwards that CI intent through the nested build/bump boundaries and then
   restores the built module again after publish
 
-When Nova reports that a breaking-change bump was detected while the current stable version is still `0.y.z`, it also
-prints guidance about manually setting `1.0.0` once the software is stable. Preview bumps keep their current behavior
-and are not remapped by this rule.
+When the current stable version is still `0.y.z`, Nova also prints one warning that major version zero is still the
+initial-development line and that `1.0.0` must be set manually once the software is stable. Preview bumps keep their
+current behavior and are not remapped by this rule.
 
 Useful local helper:
 

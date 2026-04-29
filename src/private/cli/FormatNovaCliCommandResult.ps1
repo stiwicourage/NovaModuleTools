@@ -47,29 +47,7 @@ function Format-NovaCliVersionUpdateResult {
         'Version plan:'
     }
 
-    $summary = "$summaryPrefix $( $Result.PreviousVersion ) -> $( $Result.NewVersion ) | Label: $( $Result.Label ) | Commits: $( $Result.CommitCount )"
-    $advisoryMessage = Get-NovaCliVersionUpdateAdvisoryMessage -Result $Result
-    if ( [string]::IsNullOrWhiteSpace($advisoryMessage)) {
-        return $summary
-    }
-
-    return @(
-        $summary
-        $advisoryMessage
-    ) -join [Environment]::NewLine
-}
-
-function Get-NovaCliVersionUpdateAdvisoryMessage {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][object]$Result
-    )
-
-    if ($Result.PSObject.Properties.Name -notcontains 'AdvisoryMessage') {
-        return $null
-    }
-
-    return $Result.AdvisoryMessage
+    return "$summaryPrefix $( $Result.PreviousVersion ) -> $( $Result.NewVersion ) | Label: $( $Result.Label ) | Commits: $( $Result.CommitCount )"
 }
 
 function Format-NovaCliCommandResult {

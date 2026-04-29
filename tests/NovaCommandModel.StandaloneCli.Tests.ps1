@@ -19,6 +19,7 @@ Publish-TestSupportFunctions -FunctionNameList @(
     'New-TestPesterConfigStub'
     'Get-TestInstalledNovaCliSnapshot'
     'Assert-TestInstalledNovaCliSnapshot'
+    'Assert-TestInstalledNovaCliBumpBehavior'
 )
 
 BeforeAll {
@@ -54,6 +55,7 @@ BeforeAll {
         'New-TestPesterConfigStub'
         'Get-TestInstalledNovaCliSnapshot'
         'Assert-TestInstalledNovaCliSnapshot'
+        'Assert-TestInstalledNovaCliBumpBehavior'
     )
 }
 
@@ -272,83 +274,67 @@ Describe '$projectName tests' {
         }
     }
 
-    It 'Install-NovaCli forwards --preview so prerelease bumps keep the same semantic core and increment the current prerelease label' {
-        $targetDirectory = Join-Path $TestDrive 'preview-bump-bin'
-        $installedPath = Join-Path $targetDirectory 'nova'
-        $projectRoot = Join-Path $TestDrive 'CliPreviewBumpProject'
-        $projectJsonPath = Join-Path $projectRoot 'project.json'
-        $originalModulePath = $env:PSModulePath
-        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
-        $distParent = Split-Path -Parent $script:distModuleDir
-
-        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
-
-        Initialize-TestNovaCliProjectLayout -ProjectRoot $projectRoot
-        Write-TestNovaCliProjectJson -ProjectRoot $projectRoot -ProjectName 'CliPreviewBumpProject' -ProjectGuid '44444444-4444-4444-4444-444444444444'
-        Write-TestNovaCliPublicFunction -ProjectRoot $projectRoot -FunctionName 'Invoke-TestCliPreviewBump'
-
-        $projectData = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json
-        $projectData.Version = '0.0.1-rc1'
-        $projectData | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $projectJsonPath -Encoding utf8
-
-        try {
-            Initialize-TestNovaCliGitRepository -ProjectRoot $projectRoot -CommitMessage 'feat!: add prerelease cli bump coverage'
-
-            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
-
-            $previewBumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '--preview', '--what-if')
-            $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
-
-            $previewBumpResult.ExitCode | Should -Be 0
-            $previewBumpResult.Text | Should -Match 'What if:'
-            $previewBumpResult.Text | Should -Match 'Version plan: 0\.0\.1-rc1 -> 0\.0\.1-rc2 \| Label: Major \| Commits: 1'
-            $previewBumpResult.Text | Should -Not -Match 'Unknown argument:'
-            $previewBumpResult.Text | Should -Not -Match 'Version bumped to :'
-            $versionAfterBump | Should -Be '0.0.1-rc1'
+    It 'Install-NovaCli handles preview and stable major-zero bump flows correctly' {
+        Assert-TestInstalledNovaCliBumpBehavior -DistModuleDir $script:distModuleDir -TestDriveRoot $TestDrive -TestCase @{
+            TargetDirectory = 'preview-bump-bin'
+            ProjectName = 'CliPreviewBumpProject'
+            ProjectGuid = '44444444-4444-4444-4444-444444444444'
+            FunctionName = 'Invoke-TestCliPreviewBump'
+            CurrentVersion = '0.0.1-rc1'
+            CommitMessage = 'feat!: add prerelease cli bump coverage'
+            Arguments = @('bump', '--preview', '--what-if')
+            ExpectedPatterns = @(
+                'What if:'
+                'Version plan: 0\.0\.1-rc1 -> 0\.0\.1-rc2 \| Label: Major \| Commits: 1'
+            )
+            UnexpectedPatterns = @(
+                'Unknown argument:'
+                'Version bumped to :'
+                'Major version zero \(0\.y\.z\) is for initial development'
+            )
+            ExpectedWarningCount = 0
+            ExpectedVersionAfterBump = '0.0.1-rc1'
         }
-        finally {
-            $env:PSModulePath = $originalModulePath
+
+        Assert-TestInstalledNovaCliBumpBehavior -DistModuleDir $script:distModuleDir -TestDriveRoot $TestDrive -TestCase @{
+            TargetDirectory = 'major-zero-bump-bin'
+            ProjectName = 'CliMajorZeroBumpProject'
+            ProjectGuid = '55555555-5555-5555-5555-555555555555'
+            FunctionName = 'Invoke-TestCliMajorZeroBump'
+            CurrentVersion = '0.1.0'
+            CommitMessage = 'feat!: add stable major zero bump coverage'
+            Arguments = @('bump', '--what-if')
+            ExpectedPatterns = @(
+                'What if:'
+                'Version plan: 0\.1\.0 -> 0\.2\.0 \| Label: Major \| Commits: 1'
+                'WARNING: Major version zero \(0\.y\.z\) is for initial development'
+                'Set 1\.0\.0 manually once the software is stable'
+            )
+            UnexpectedPatterns = @(
+                'Version bumped to :'
+            )
+            ExpectedWarningCount = 1
+            ExpectedVersionAfterBump = '0.1.0'
         }
-    }
 
-    It 'Install-NovaCli keeps stable major-zero breaking-change bumps on the 0.y.z line and prints guidance about 1.0.0' {
-        $targetDirectory = Join-Path $TestDrive 'major-zero-bump-bin'
-        $installedPath = Join-Path $targetDirectory 'nova'
-        $projectRoot = Join-Path $TestDrive 'CliMajorZeroBumpProject'
-        $projectJsonPath = Join-Path $projectRoot 'project.json'
-        $originalModulePath = $env:PSModulePath
-        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
-        $distParent = Split-Path -Parent $script:distModuleDir
-
-        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
-
-        Initialize-TestNovaCliProjectLayout -ProjectRoot $projectRoot
-        Write-TestNovaCliProjectJson -ProjectRoot $projectRoot -ProjectName 'CliMajorZeroBumpProject' -ProjectGuid '55555555-5555-5555-5555-555555555555'
-        Write-TestNovaCliPublicFunction -ProjectRoot $projectRoot -FunctionName 'Invoke-TestCliMajorZeroBump'
-
-        $projectData = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json
-        $projectData.Version = '0.1.0'
-        $projectData | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $projectJsonPath -Encoding utf8
-
-        try {
-            Initialize-TestNovaCliGitRepository -ProjectRoot $projectRoot -CommitMessage 'feat!: add stable major zero bump coverage'
-
-            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
-
-            $bumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '--what-if')
-            $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
-
-            $bumpResult.ExitCode | Should -Be 0
-            $bumpResult.Text | Should -Match 'What if:'
-            $bumpResult.Text | Should -Match 'Version plan: 0\.1\.0 -> 0\.2\.0 \| Label: Major \| Commits: 1'
-            $bumpResult.Text | Should -Match 'Major version zero \(0\.y\.z\) is for initial development'
-            $bumpResult.Text | Should -Match 'Set 1\.0\.0 manually once the software is stable'
-            ([regex]::Matches($bumpResult.Text, 'Major version zero \(0\.y\.z\) is for initial development')).Count | Should -Be 1
-            $bumpResult.Text | Should -Not -Match 'Version bumped to :'
-            $versionAfterBump | Should -Be '0.1.0'
-        }
-        finally {
-            $env:PSModulePath = $originalModulePath
+        Assert-TestInstalledNovaCliBumpBehavior -DistModuleDir $script:distModuleDir -TestDriveRoot $TestDrive -TestCase @{
+            TargetDirectory = 'major-zero-minor-bump-bin'
+            ProjectName = 'CliMajorZeroMinorBumpProject'
+            ProjectGuid = '56555555-5555-5555-5555-555555555555'
+            FunctionName = 'Invoke-TestCliMajorZeroMinorBump'
+            CurrentVersion = '0.0.1'
+            CommitMessage = 'feat: add stable minor major zero bump coverage'
+            Arguments = @('bump')
+            ExpectedPatterns = @(
+                'WARNING: Major version zero \(0\.y\.z\) is for initial development'
+                'Version bumped to : 0\.1\.0'
+                'Version bump completed: 0\.0\.1 -> 0\.1\.0 \| Label: Minor \| Commits: 1'
+            )
+            UnexpectedPatterns = @(
+                'What if:'
+            )
+            ExpectedWarningCount = 1
+            ExpectedVersionAfterBump = '0.1.0'
         }
     }
 

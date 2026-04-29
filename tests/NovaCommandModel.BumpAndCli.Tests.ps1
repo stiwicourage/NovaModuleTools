@@ -35,6 +35,8 @@ $global:novaCommandModelBumpAndCliTestSupportFunctionNameList = @(
     'Invoke-ConfirmNovaCliCommandActionEnterAssertion'
     'Invoke-ConfirmNovaCliCommandActionRetryAssertion'
     'Invoke-ConfirmNovaCliCommandActionCancellationAssertion'
+    'Assert-TestNovaVersionUpdateWorkflowContextMajorZeroAdvisory'
+    'Assert-TestUpdateNovaModuleVersionMajorZeroWarning'
 )
 . $script:testSupportPath
 
@@ -114,34 +116,25 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
-    It 'Get-NovaVersionUpdateWorkflowContext keeps the detected Major label but plans the next minor version for stable 0.y.z projects' {
-        InModuleScope $script:moduleName {
-            Mock Get-NovaProjectInfo {
-                [pscustomobject]@{
-                    ProjectName = 'NovaModuleTools'
-                    Version = '0.1.0'
-                    ProjectJSON = '/tmp/project.json'
-                }
-            }
-            Mock Get-GitCommitMessageForVersionBump {@('feat!: breaking api')}
-            Mock Get-NovaVersionLabelForBump {'Major'}
-            Mock Get-NovaVersionUpdatePlan {
-                [pscustomobject]@{
-                    NewVersion = [semver]'0.2.0'
-                }
-            }
+    It 'Get-NovaVersionUpdateWorkflowContext keeps the detected Major label but plans the next minor version for stable 0.y.z breaking-change bumps' {
+        Assert-TestNovaVersionUpdateWorkflowContextMajorZeroAdvisory -ModuleName $script:moduleName -TestCase @{
+            CurrentVersion = '0.1.0'
+            CommitMessages = @('feat!: breaking api')
+            Label = 'Major'
+            PlannedVersion = '0.2.0'
+            ExpectedEffectiveLabel = 'Minor'
+            ExpectedPlanLabel = 'Minor'
+        }
+    }
 
-            $result = Get-NovaVersionUpdateWorkflowContext -ProjectRoot '/tmp/project'
-
-            $result.Label | Should -Be 'Major'
-            $result.EffectiveLabel | Should -Be 'Minor'
-            $result.NewVersion | Should -Be '0.2.0'
-            $result.AdvisoryMessage | Should -Match 'Major version zero \(0\.y\.z\) is for initial development'
-            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
-                $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
-                        $Label -eq 'Minor' -and
-                        -not $PreviewRelease
-            }
+    It 'Get-NovaVersionUpdateWorkflowContext warns feature bumps that stable 0.y.z is still the initial-development line' {
+        Assert-TestNovaVersionUpdateWorkflowContextMajorZeroAdvisory -ModuleName $script:moduleName -TestCase @{
+            CurrentVersion = '0.0.1'
+            CommitMessages = @('feat: add command')
+            Label = 'Minor'
+            PlannedVersion = '0.1.0'
+            ExpectedEffectiveLabel = 'Minor'
+            ExpectedPlanLabel = 'Minor'
         }
     }
 
@@ -274,7 +267,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
                 ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
                 Label = 'Major'
                 EffectiveLabel = 'Minor'
-                AdvisoryMessage = 'Major version zero (0.y.z) is for initial development.'
+                AdvisoryMessage = 'Major version zero (0.y.z) is for initial development, so Nova keeps stable bumps on the 0.y.z line and plans breaking-change bumps as the next minor version instead of 1.0.0. Set 1.0.0 manually once the software is stable; after that, automatic major-version bumps work normally.'
                 PreviewRelease = $false
                 PreviousVersion = '0.1.0'
                 NewVersion = '0.2.0'
@@ -292,7 +285,8 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
 
             $result.Label | Should -Be 'Major'
             $result.EffectiveLabel | Should -Be 'Minor'
-            $result.AdvisoryMessage | Should -Be 'Major version zero (0.y.z) is for initial development.'
+            $result.AdvisoryMessage | Should -Match 'Major version zero \(0\.y\.z\) is for initial development'
+            $result.AdvisoryMessage | Should -Match 'Set 1\.0\.0 manually once the software is stable'
             Assert-MockCalled Set-NovaModuleVersion -Times 1 -ParameterFilter {
                 $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
                         $Label -eq 'Minor' -and
@@ -328,33 +322,21 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
-    It 'Update-NovaModuleVersion writes a warning when a stable major-zero bump stays on the initial-development line' {
-        InModuleScope $script:moduleName {
-            Mock Get-NovaVersionUpdateWorkflowContext {
-                [pscustomobject]@{
-                    Target = 'project.json'
-                    Action = 'Update module version using Major release label'
-                }
-            }
-            Mock Invoke-NovaVersionUpdateWorkflow {
-                [pscustomobject]@{
-                    PreviousVersion = '0.1.0'
-                    NewVersion = '0.2.0'
-                    Label = 'Major'
-                    EffectiveLabel = 'Minor'
-                    AdvisoryMessage = 'Major version zero (0.y.z) is for initial development.'
-                    CommitCount = 34
-                    Applied = $false
-                }
-            }
-            Mock Write-Host {throw 'WhatIf should not emit host output'}
-            $warningMessages = $null
+    It 'Update-NovaModuleVersion writes the initial-development warning for stable 0.y.z breaking-change bumps' {
+        Assert-TestUpdateNovaModuleVersionMajorZeroWarning -ModuleName $script:moduleName -TestCase @{
+            PreviousVersion = '0.1.0'
+            NewVersion = '0.2.0'
+            Label = 'Major'
+            EffectiveLabel = 'Minor'
+        }
+    }
 
-            $result = Update-NovaModuleVersion -Path (Get-Location).Path -WhatIf -WarningVariable warningMessages
-
-            $result.NewVersion | Should -Be '0.2.0'
-            ($warningMessages -join ' ') | Should -Match 'Major version zero \(0\.y\.z\) is for initial development'
-            Assert-MockCalled Write-Host -Times 0
+    It 'Update-NovaModuleVersion writes the initial-development warning for stable 0.y.z feature bumps' {
+        Assert-TestUpdateNovaModuleVersionMajorZeroWarning -ModuleName $script:moduleName -TestCase @{
+            PreviousVersion = '0.0.1'
+            NewVersion = '0.1.0'
+            Label = 'Minor'
+            EffectiveLabel = 'Minor'
         }
     }
 
@@ -707,18 +689,20 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
-    It 'Invoke-NovaCli bump formats the major-zero advisory once when the routed bump command returns the same advisory warning' {
+    It 'Invoke-NovaCli bump replays the initial-development advisory once as a warning and keeps the summary clean' {
         InModuleScope $script:moduleName {
             $advisoryMessage = 'Major version zero (0.y.z) is for initial development.'
             Mock Update-NovaModuleVersion {
                 Write-Warning $advisoryMessage
                 [pscustomobject]@{PreviousVersion = '0.1.0'; NewVersion = '0.2.0'; Label = 'Major'; EffectiveLabel = 'Minor'; AdvisoryMessage = $advisoryMessage; CommitCount = 1; Applied = $false}
             }
+            $warningMessages = $null
 
-            $result = Invoke-NovaCli bump -WhatIf
+            $result = Invoke-NovaCli bump -WhatIf -WarningVariable warningMessages
 
-            $result | Should -Be "Version plan: 0.1.0 -> 0.2.0 | Label: Major | Commits: 1$( [Environment]::NewLine )$advisoryMessage"
-            ([regex]::Matches($result,[regex]::Escape($advisoryMessage))).Count | Should -Be 1
+            $result | Should -Be 'Version plan: 0.1.0 -> 0.2.0 | Label: Major | Commits: 1'
+            ($warningMessages -join ' ') | Should -Match ([regex]::Escape($advisoryMessage))
+            @($warningMessages | ForEach-Object {[string]$_} | Select-Object -Unique | Where-Object {$_ -match ([regex]::Escape($advisoryMessage))}).Count | Should -Be 1
         }
     }
 

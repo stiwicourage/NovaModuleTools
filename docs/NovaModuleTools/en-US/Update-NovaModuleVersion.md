@@ -173,7 +173,7 @@ Re-imports the built `dist/<ProjectName>/<ProjectName>.psd1` first and then runs
 PS> Update-NovaModuleVersion -WhatIf
 
 What if: Performing the operation "Update module version using Major release label" on target "project.json".
-WARNING: Major version zero (0.y.z) is for initial development, so Nova keeps breaking-change bumps on the 0.y.z line and plans the next minor version instead of 1.0.0. Set 1.0.0 manually once the software is stable; after that, automatic major-version bumps work normally.
+WARNING: Major version zero (0.y.z) is for initial development, so Nova keeps stable bumps on the 0.y.z line and plans breaking-change bumps as the next minor version instead of 1.0.0. Set 1.0.0 manually once the software is stable; after that, automatic major-version bumps work normally.
 
 PreviousVersion: 0.1.0
 NewVersion: 0.2.0
@@ -181,8 +181,8 @@ Label: Major
 CommitCount: 34
 ```
 
-Shows how breaking-change commits stay on the `0.y.z` initial-development line for stable bumps, while still warning
-that `1.0.0` should be set manually when the API becomes stable.
+Shows how stable `0.y.z` bumps still warn that `1.0.0` must be set manually when the API becomes stable, while
+breaking-change commits on that line continue to plan the next minor version instead of jumping straight to `1.0.0`.
 
 ## PARAMETERS
 

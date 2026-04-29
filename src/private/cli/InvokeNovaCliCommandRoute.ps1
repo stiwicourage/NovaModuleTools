@@ -45,20 +45,42 @@ function Invoke-NovaCliBumpCommand {
         [Parameter(Mandatory)][pscustomobject]$InvocationContext
     )
 
+    $commandOutput = @(Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaBumpCliArgument' -ActionCommand 'Update-NovaModuleVersion' 3>&1)
+    $capturedOutput = Read-NovaCliCapturedOutput -OutputRecords $commandOutput
+    Write-NovaCliCapturedWarning -WarningMessages $capturedOutput.WarningMessages
+    return $capturedOutput.Result
+}
+
+function Read-NovaCliCapturedOutput {
+    [CmdletBinding()]
+    param(
+        [object[]]$OutputRecords = @()
+    )
+
     $warningMessages = @()
-    $result = Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaBumpCliArgument' -ActionCommand 'Update-NovaModuleVersion' -WarningAction SilentlyContinue -WarningVariable warningMessages
-    Write-NovaCliCapturedWarning -WarningMessages $warningMessages -SkippedMessage (Get-NovaCliVersionUpdateAdvisoryMessage -Result $result)
-    return $result
+    $result = $null
+    foreach ($outputRecord in @($OutputRecords)) {
+        if ($outputRecord -is [System.Management.Automation.WarningRecord]) {
+            $warningMessages += $outputRecord
+            continue
+        }
+
+        $result = $outputRecord
+    }
+
+    return [pscustomobject]@{
+        Result = $result
+        WarningMessages = @($warningMessages)
+    }
 }
 
 function Write-NovaCliCapturedWarning {
     [CmdletBinding()]
     param(
-        [object[]]$WarningMessages = @(),
-        [string]$SkippedMessage
+        [object[]]$WarningMessages = @()
     )
 
-    foreach ($message in (Get-NovaCliReplayWarningMessage -WarningMessages $WarningMessages -SkippedMessage $SkippedMessage)) {
+    foreach ($message in (Get-NovaCliReplayWarningMessage -WarningMessages $WarningMessages)) {
         Write-Warning $message
     }
 }
@@ -66,13 +88,12 @@ function Write-NovaCliCapturedWarning {
 function Get-NovaCliReplayWarningMessage {
     [CmdletBinding()]
     param(
-        [object[]]$WarningMessages = @(),
-        [string]$SkippedMessage
+        [object[]]$WarningMessages = @()
     )
 
     $messages = foreach ($warningMessage in @($WarningMessages)) {
         $text = ConvertTo-NovaCliWarningMessageText -WarningMessage $warningMessage
-        if ([string]::IsNullOrWhiteSpace($text) -or $text -eq $SkippedMessage) {
+        if ( [string]::IsNullOrWhiteSpace($text)) {
             continue
         }
 
