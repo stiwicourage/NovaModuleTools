@@ -707,6 +707,21 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
+    It 'Invoke-NovaCli bump formats the major-zero advisory once when the routed bump command returns the same advisory warning' {
+        InModuleScope $script:moduleName {
+            $advisoryMessage = 'Major version zero (0.y.z) is for initial development.'
+            Mock Update-NovaModuleVersion {
+                Write-Warning $advisoryMessage
+                [pscustomobject]@{PreviousVersion = '0.1.0'; NewVersion = '0.2.0'; Label = 'Major'; EffectiveLabel = 'Minor'; AdvisoryMessage = $advisoryMessage; CommitCount = 1; Applied = $false}
+            }
+
+            $result = Invoke-NovaCli bump -WhatIf
+
+            $result | Should -Be "Version plan: 0.1.0 -> 0.2.0 | Label: Major | Commits: 1$( [Environment]::NewLine )$advisoryMessage"
+            ([regex]::Matches($result,[regex]::Escape($advisoryMessage))).Count | Should -Be 1
+        }
+    }
+
     It 'Confirm-NovaCliCommandAction accepts Enter as the default confirmation response' {
         Invoke-ConfirmNovaCliCommandActionEnterAssertion -ModuleName $script:moduleName
     }

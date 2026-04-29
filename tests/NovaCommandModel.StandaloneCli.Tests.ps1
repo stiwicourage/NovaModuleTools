@@ -343,6 +343,7 @@ Describe '$projectName tests' {
             $bumpResult.Text | Should -Match 'Version plan: 0\.1\.0 -> 0\.2\.0 \| Label: Major \| Commits: 1'
             $bumpResult.Text | Should -Match 'Major version zero \(0\.y\.z\) is for initial development'
             $bumpResult.Text | Should -Match 'Set 1\.0\.0 manually once the software is stable'
+            ([regex]::Matches($bumpResult.Text, 'Major version zero \(0\.y\.z\) is for initial development')).Count | Should -Be 1
             $bumpResult.Text | Should -Not -Match 'Version bumped to :'
             $versionAfterBump | Should -Be '0.1.0'
         }
