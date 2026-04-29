@@ -4,6 +4,8 @@ $script:supportRoot = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path
 $script:supportFileList = @(
     'Get-ReleaseDateString.ps1'
     'Get-ReleaseRepositoryUrl.ps1'
+    'Get-PSResourceRepositoryStoreDirectory.ps1'
+    'Initialize-PSGalleryRepository.ps1'
     'ConvertTo-ReleaseTagName.ps1'
     'Read-JsonFile.ps1'
     'Write-JsonFile.ps1'

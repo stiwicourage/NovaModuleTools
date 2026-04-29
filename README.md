@@ -209,6 +209,9 @@ These switches keep the behavior explicit and opt-in:
 
 - `Invoke-NovaBuild -ContinuousIntegration` re-imports the freshly built module after the build succeeds
 - `Update-NovaModuleVersion -ContinuousIntegration` re-imports the built module before the bump workflow starts
+- `Update-NovaModuleVersion -ContinuousIntegration` also falls back to a patch bump when the current `HEAD` already
+  matches the latest tag, so release automation can seed the next prerelease line without requiring an extra commit
+  first
 - `Publish-NovaModule -ContinuousIntegration` restores the built module after publish completes
 - `Invoke-NovaRelease -ContinuousIntegration` forwards that CI intent through the nested build/bump boundaries and then
   restores the built module again after publish
@@ -594,6 +597,11 @@ Responsibilities currently covered by the release pipeline include:
 - creating release tags
 - creating GitHub releases
 - publishing to PowerShell Gallery
+
+The semantic-release publish script also bootstraps the local PSResourceGet repository store before calling
+`Publish-PSResource`, which keeps fresh GitHub Actions runners from failing when the PSGallery repository registration
+file
+does not exist yet.
 
 ### Where NovaModuleTools cmdlets fit
 
