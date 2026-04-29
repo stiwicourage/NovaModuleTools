@@ -107,9 +107,6 @@ preference to decide whether prerelease self-updates are eligible. When prerelea
 self-update stays on stable releases. When they are enabled, self-update may target a prerelease, but it asks for
 explicit confirmation before proceeding.
 
-`% nova update` checks PowerShell Gallery (`PSGallery`) for its current update candidate. When no update is applied,
-the CLI reports the installed version together with the candidate returned from that lookup instead of claiming the
-installed version is universally the newest available.
 
 Successful `Update-NovaModuleTool`, CLI:`% nova update`, and `Install-NovaCli` runs print the release notes link from
 the

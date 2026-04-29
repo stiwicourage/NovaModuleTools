@@ -596,8 +596,8 @@ Describe 'Update notification behavior' {
             $result = @(Invoke-NovaCli update)
 
             $result | Should -HaveCount 2
-            $result[0] | Should -Be 'No update was applied.'
-            $result[1] | Should -Be 'Installed: NovaModuleTools 2.0.0-prerelease3. PSGallery currently reports 2.0.0-beta as the latest update candidate checked.'
+            $result[0] | Should -Be "You're up to date!"
+            $result[1] | Should -Be 'NovaModuleTools 2.0.0-prerelease3 is currently the newest version available.'
             Assert-MockCalled Update-NovaModuleTool -Times 1
         }
     }

@@ -34,8 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     usage.
   - Uses the stored prerelease update preference to decide whether prerelease self-updates are eligible.
   - Requires explicit confirmation before a prerelease self-update proceeds.
-  - `% nova update` now reports the current `PSGallery` lookup candidate in no-update output instead of claiming the
-    installed version is universally the newest available.
 - Add `% nova version --installed` / `% nova version -i` so users can compare the locally installed version of the
   current project/module with the current project version from `project.json`, while keeping `% nova --version` /
   `% nova -v` dedicated to the installed NovaModuleTools version.
