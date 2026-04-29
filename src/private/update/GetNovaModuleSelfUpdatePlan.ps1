@@ -6,14 +6,15 @@ function Get-NovaModuleSelfUpdatePlan {
         [Parameter(Mandatory)][bool]$PrereleaseNotificationsEnabled
     )
 
+    $planContext = Get-NovaModuleSelfUpdatePlanContext -LookupResult $LookupResult -PrereleaseNotificationsEnabled:$PrereleaseNotificationsEnabled
     $stableVersion = Get-NovaAvailableSemanticVersion -VersionInfo $LookupResult.Stable
     if (Test-NovaPrereleaseUpdateAvailable -LookupResult $LookupResult -InstalledVersion $InstalledModule.SemanticVersion -StableVersion $stableVersion -PrereleaseNotificationsEnabled $PrereleaseNotificationsEnabled) {
-        return ConvertTo-NovaModuleSelfUpdatePlan -InstalledModule $InstalledModule -PrereleaseNotificationsEnabled:$PrereleaseNotificationsEnabled -TargetVersion $LookupResult.Prerelease.Version -PrereleaseTarget
+        return ConvertTo-NovaModuleSelfUpdatePlan -InstalledModule $InstalledModule -PlanContext $planContext -TargetVersion $LookupResult.Prerelease.Version -PrereleaseTarget
     }
 
     if (Test-NovaStableUpdateAvailable -StableVersion $stableVersion -InstalledVersion $InstalledModule.SemanticVersion) {
-        return ConvertTo-NovaModuleSelfUpdatePlan -InstalledModule $InstalledModule -PrereleaseNotificationsEnabled:$PrereleaseNotificationsEnabled -TargetVersion $LookupResult.Stable.Version
+        return ConvertTo-NovaModuleSelfUpdatePlan -InstalledModule $InstalledModule -PlanContext $planContext -TargetVersion $LookupResult.Stable.Version
     }
 
-    return ConvertTo-NovaModuleSelfUpdatePlan -InstalledModule $InstalledModule -PrereleaseNotificationsEnabled:$PrereleaseNotificationsEnabled
+    return ConvertTo-NovaModuleSelfUpdatePlan -InstalledModule $InstalledModule -PlanContext $planContext
 }

@@ -50,6 +50,21 @@ function Format-NovaCliVersionUpdateResult {
     return "$summaryPrefix $( $Result.PreviousVersion ) -> $( $Result.NewVersion ) | Label: $( $Result.Label ) | Commits: $( $Result.CommitCount )"
 }
 
+function Get-NovaCliNoUpdateDetail {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][object]$Result)
+
+    if (-not [string]::IsNullOrWhiteSpace($Result.LookupCandidateVersion) -and -not [string]::IsNullOrWhiteSpace($Result.LookupRepository)) {
+        return "Installed: $( $Result.ModuleName ) $( $Result.CurrentVersion ). $( $Result.LookupRepository ) currently reports $( $Result.LookupCandidateVersion ) as the latest update candidate checked."
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($Result.LookupCandidateVersion)) {
+        return "Installed: $( $Result.ModuleName ) $( $Result.CurrentVersion ). The current update lookup reports $( $Result.LookupCandidateVersion ) as the latest candidate checked."
+    }
+
+    return "Installed: $( $Result.ModuleName ) $( $Result.CurrentVersion ). No update candidate is currently available from the configured update source."
+}
+
 function Format-NovaCliCommandResult {
     [CmdletBinding()]
     param(
@@ -59,8 +74,8 @@ function Format-NovaCliCommandResult {
 
     if (Test-NovaCliNoUpdateResult -Command $Command -Result $Result) {
         return @(
-            "You're up to date!"
-            "$( $Result.ModuleName ) $( $Result.CurrentVersion ) is currently the newest version available."
+            'No update was applied.'
+            (Get-NovaCliNoUpdateDetail -Result $Result)
         )
     }
 
