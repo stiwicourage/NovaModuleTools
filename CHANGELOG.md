@@ -19,6 +19,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [2.1.0] - 2026-04-29
+
+### Added
+
+### Fixed
+
+### Changed
+
+### Documentation
+
+### Removed
+
 ## [2.0.0] - 2026-04-29
 
 ### Added
@@ -324,7 +336,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 
-[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_2.0.0...HEAD
+[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_2.1.0...HEAD
+[2.1.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_2.0.0...Version_2.1.0
 [2.0.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.9.1...Version_2.0.0
 [1.9.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.8.0...Version_1.9.0
 [1.8.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.7.0...Version_1.8.0
