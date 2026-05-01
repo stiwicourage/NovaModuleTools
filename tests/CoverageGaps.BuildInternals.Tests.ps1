@@ -167,7 +167,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
         }
     }
 
-    It 'Build-Help only searches for help markdown under docs/<ProjectName>' {
+    It 'Build-Help only searches for help markdown under the project help docs folder' {
         InModuleScope $script:moduleName {
             Mock Get-NovaBuildProjectInfo {[pscustomobject]@{DocsDir = '/tmp/docs'; ProjectName = 'NovaModuleTools'}}
             Mock Get-ChildItem {@()}
