@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer major-zero development line.
+- **[2.1.1-preview01]** Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer major-zero
+  development line.
     - When the current stable version is `0.y.z` and commit history implies a breaking change, Nova now plans the next
       minor version instead of auto-jumping to `1.0.0`.
   - Stable `0.y.z` bump results now print one warning about manually setting `1.0.0` once the software is stable,
@@ -24,7 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix `Invoke-NovaBuild` help discovery so it only scans `docs/<ProjectName>/` for PlatyPS markdown.
+- **[2.1.1-preview02]** Fix `Invoke-NovaBuild` help discovery so it only scans `docs/<ProjectName>/` for PlatyPS
+  markdown.
     - Regular markdown elsewhere under `docs/` no longer breaks the help-generation step.
     - When PlatyPS export does not create the expected help folder, Nova now raises a stable documentation error instead
       of a raw rename-path failure.
