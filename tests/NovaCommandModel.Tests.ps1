@@ -42,10 +42,11 @@ BeforeAll {
     }
 
     $helpMetadata = & {
-        $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:projectInfo.DocsDir -Filter '*.md' -Recurse
+        $script:helpDocsDir = [System.IO.Path]::Join($script:projectInfo.DocsDir, $script:moduleName)
+        $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:helpDocsDir -Filter '*.md' -File -Recurse
         [pscustomobject]@{
             HelpLocale = Get-TestHelpLocaleFromMarkdownFiles -Files $helpMarkdownFiles
-            HelpActivationTestCases = Get-CommandHelpActivationTestCases -DocsDir $script:projectInfo.DocsDir
+            HelpActivationTestCases = Get-CommandHelpActivationTestCases -HelpDocsDir $script:helpDocsDir
         }
     }
 
@@ -465,7 +466,7 @@ Describe 'Nova command model - project, help, and build behavior' {
     }
 
     It 'PowerShell help markdown stays free of launcher syntax and GNU-style options' {
-        $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:projectInfo.DocsDir -Filter '*.md' -Recurse
+        $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:helpDocsDir -Filter '*.md' -File -Recurse
 
         foreach ($file in $helpMarkdownFiles) {
             $content = Get-Content -LiteralPath $file.FullName -Raw

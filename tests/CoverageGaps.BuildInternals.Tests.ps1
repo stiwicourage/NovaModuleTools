@@ -167,22 +167,23 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
         }
     }
 
-    It 'Build-Help skips when no markdown files exist' {
+    It 'Build-Help only searches for help markdown under docs/<ProjectName>' {
         InModuleScope $script:moduleName {
-            Mock Get-NovaBuildProjectInfo {[pscustomobject]@{DocsDir = '/tmp/docs'}}
+            Mock Get-NovaBuildProjectInfo {[pscustomobject]@{DocsDir = '/tmp/docs'; ProjectName = 'NovaModuleTools'}}
             Mock Get-ChildItem {@()}
             Mock Get-Module {}
 
             Build-Help
 
+            Assert-MockCalled Get-ChildItem -Times 1 -ParameterFilter {$LiteralPath -eq '/tmp/docs/NovaModuleTools'}
             Assert-MockCalled Get-Module -Times 0
         }
     }
 
     It 'Build-Help throws when PlatyPS is unavailable and docs exist' {
         InModuleScope $script:moduleName {
-            Mock Get-NovaBuildProjectInfo {[pscustomobject]@{DocsDir = '/tmp/docs'}}
-            Mock Get-ChildItem {@([pscustomobject]@{FullName = '/tmp/docs/Invoke-NovaBuild.md'})}
+            Mock Get-NovaBuildProjectInfo {[pscustomobject]@{DocsDir = '/tmp/docs'; ProjectName = 'NovaModuleTools'}}
+            Mock Get-ChildItem {@([pscustomobject]@{FullName = '/tmp/docs/NovaModuleTools/Invoke-NovaBuild.md'})}
             Mock Get-Module {$null}
 
             $thrown = $null
@@ -202,7 +203,8 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
 
     It 'Build-Help imports markdown help and renames the generated locale folder' {
         InModuleScope $script:moduleName {
-            $docPath = Join-Path $TestDrive 'Invoke-NovaBuild.md'
+            $docPath = Join-Path $TestDrive 'NovaModuleTools/en-US/Invoke-NovaBuild.md'
+            New-Item -ItemType Directory -Path (Split-Path -Parent $docPath) -Force | Out-Null
             Set-Content -LiteralPath $docPath -Value "---`nLocale: da-DK`n---"
 
             Mock Get-NovaBuildProjectInfo {
@@ -216,6 +218,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             Mock Get-Module {[pscustomobject]@{Name = 'Microsoft.PowerShell.PlatyPS'}}
             Mock Measure-PlatyPSMarkdown {[pscustomobject]@{FileType = 'CommandHelp'; FilePath = '/tmp/docs/Invoke-NovaBuild.md'}}
             Mock Get-NovaHelpLocale {'da-DK'}
+            Mock Test-Path {$true} -ParameterFilter {$LiteralPath -eq '/tmp/dist/NovaModuleTools'}
             Mock Rename-Item {}
 
             $script:buildHelpExportOutputFolder = $null
@@ -256,7 +259,115 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             }
 
             $script:buildHelpExportOutputFolder | Should -Be '/tmp/dist'
+            Assert-MockCalled Get-ChildItem -Times 1 -ParameterFilter {$LiteralPath -eq '/tmp/docs/NovaModuleTools'}
             Assert-MockCalled Rename-Item -Times 1 -ParameterFilter {$Path -eq '/tmp/dist/NovaModuleTools' -and $NewName -eq '/tmp/dist/da-DK'}
+        }
+    }
+
+    It 'Build-Help skips when scoped markdown files are not PlatyPS command help' {
+        InModuleScope $script:moduleName {
+            $docPath = Join-Path $TestDrive 'NovaModuleTools/notes.md'
+            New-Item -ItemType Directory -Path (Split-Path -Parent $docPath) -Force | Out-Null
+            Set-Content -LiteralPath $docPath -Value '# Notes'
+
+            Mock Get-NovaBuildProjectInfo {
+                [pscustomobject]@{
+                    DocsDir = '/tmp/docs'
+                    ProjectName = 'NovaModuleTools'
+                }
+            }
+            Mock Get-ChildItem {@(Get-Item -LiteralPath $docPath)}
+            Mock Get-Module {[pscustomobject]@{Name = 'Microsoft.PowerShell.PlatyPS'}}
+            Mock Measure-PlatyPSMarkdown {[pscustomobject]@{FileType = 'Other'; FilePath = $docPath}}
+            Mock Get-NovaHelpLocale {throw 'should not resolve locale without command help'}
+            Mock Test-Path {throw 'should not inspect output without command help'}
+            Mock Rename-Item {throw 'should not rename without command help'}
+
+            function Import-MarkdownCommandHelp {
+                throw 'should not import without command help'
+            }
+            function Export-MamlCommandHelp {
+                throw 'should not export without command help'
+            }
+
+            try {
+                {Build-Help} | Should -Not -Throw
+                Assert-MockCalled Get-NovaHelpLocale -Times 0
+                Assert-MockCalled Rename-Item -Times 0
+            }
+            finally {
+                Remove-Item function:Import-MarkdownCommandHelp -ErrorAction SilentlyContinue
+                Remove-Item function:Export-MamlCommandHelp -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    It 'Build-Help throws a stable error when PlatyPS export does not create the expected help folder' {
+        InModuleScope $script:moduleName {
+            $docPath = Join-Path $TestDrive 'NovaModuleTools/en-US/Invoke-NovaBuild.md'
+            New-Item -ItemType Directory -Path (Split-Path -Parent $docPath) -Force | Out-Null
+            Set-Content -LiteralPath $docPath -Value "---`nLocale: en-US`n---"
+
+            Mock Get-NovaBuildProjectInfo {
+                [pscustomobject]@{
+                    DocsDir = '/tmp/docs'
+                    OutputModuleDir = '/tmp/dist'
+                    ProjectName = 'NovaModuleTools'
+                }
+            }
+            Mock Get-ChildItem {@(Get-Item -LiteralPath $docPath)}
+            Mock Get-Module {[pscustomobject]@{Name = 'Microsoft.PowerShell.PlatyPS'}}
+            Mock Measure-PlatyPSMarkdown {[pscustomobject]@{FileType = 'CommandHelp'; FilePath = $docPath}}
+            Mock Get-NovaHelpLocale {'en-US'}
+            Mock Test-Path {$false} -ParameterFilter {$LiteralPath -eq '/tmp/dist/NovaModuleTools'}
+            Mock Rename-Item {throw 'should not rename missing output folder'}
+
+            function Import-MarkdownCommandHelp {
+                [CmdletBinding()]
+                param(
+                    [Parameter(ValueFromPipeline)]
+                    [object]$InputObject,
+
+                    [object]$Path
+                )
+
+                process {
+                    [pscustomobject]@{Name = 'Invoke-NovaBuild'}
+                }
+            }
+
+            function Export-MamlCommandHelp {
+                [CmdletBinding()]
+                param(
+                    [Parameter(ValueFromPipeline)]
+                    [object]$InputObject,
+
+                    [string]$OutputFolder
+                )
+
+                process {
+                }
+            }
+
+            try {
+                $thrown = $null
+                try {
+                    Build-Help
+                }
+                catch {
+                    $thrown = $_
+                }
+
+                $thrown.Exception.Message | Should -BeLike 'Expected generated help directory was not created:*'
+                $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.GeneratedHelpDirectoryNotFound'
+                $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+                $thrown.TargetObject | Should -Be '/tmp/dist/NovaModuleTools'
+                Assert-MockCalled Rename-Item -Times 0
+            }
+            finally {
+                Remove-Item function:Import-MarkdownCommandHelp -ErrorAction SilentlyContinue
+                Remove-Item function:Export-MamlCommandHelp -ErrorAction SilentlyContinue
+            }
         }
     }
 

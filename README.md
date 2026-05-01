@@ -437,15 +437,18 @@ Test-NovaBuild
 
 ### Working on help and docs
 
-Command help markdown lives under `docs/NovaModuleTools/en-US/` and is consumed by `Invoke-NovaBuild`.
+Command help markdown lives under `docs/<ProjectName>/<Locale>/` and is consumed by `Invoke-NovaBuild`.
+
+In this repository, that means `docs/NovaModuleTools/en-US/`.
 
 Important distinction:
 
-- `docs/NovaModuleTools/en-US/*.md` → PlatyPS command-help source
+- `docs/<ProjectName>/**/*.md` → PlatyPS command-help source
 - `docs/*.html` → GitHub Pages end-user guides
 - `README.md` and `CONTRIBUTING.md` → contributor documentation
 
-Do not place general developer markdown under `docs/`, because the build scans `docs/**/*.md` when generating help.
+If you want build-generated PowerShell help, place it under `docs/<ProjectName>/`.
+Markdown elsewhere under `docs/` is ignored by help generation, so you can keep non-help docs there when needed.
 
 ## Repository structure and ownership
 
@@ -528,10 +531,10 @@ These are the top-level GitHub entry points for contributors and maintainers.
 This folder has two different responsibilities that must stay separated by file type:
 
 - `docs/*.html` → GitHub Pages end-user guides
-- `docs/NovaModuleTools/en-US/*.md` → PlatyPS command-help source
+- `docs/<ProjectName>/**/*.md` → PlatyPS command-help source for the current project
 
-The build treats markdown under `docs/` as help input, so general-purpose developer documentation should not be added
-there.
+The build only treats markdown under `docs/<ProjectName>/` as help input.
+Markdown elsewhere under `docs/` can be used for other documentation without affecting help generation.
 
 ### Scripts and automation
 
@@ -635,7 +638,7 @@ When you change CI, build, or release behavior:
 
 - Keep contributor workflow, architecture, and automation documentation in `README.md`
 - Keep `CONTRIBUTING.md` focused on contribution expectations and review checklist items
-- Keep `docs/NovaModuleTools/en-US/*.md` focused on command-help source material
+- Keep `docs/<ProjectName>/**/*.md` focused on command-help source material for the current project
 - Keep `docs/*.html` focused on end-user guides
 - Do not duplicate the same workflow or setup prose across multiple contributor documents
 

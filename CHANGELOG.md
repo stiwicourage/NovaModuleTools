@@ -24,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix `Invoke-NovaBuild` help discovery so it only scans `docs/<ProjectName>/` for PlatyPS markdown.
+    - Regular markdown elsewhere under `docs/` no longer breaks the help-generation step.
+    - When PlatyPS export does not create the expected help folder, Nova now raises a stable documentation error instead
+      of a raw rename-path failure.
+
 ### Security
 
 ## [2.1.0] - 2026-04-29

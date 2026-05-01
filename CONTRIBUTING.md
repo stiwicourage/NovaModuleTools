@@ -63,7 +63,8 @@ Documentation ownership is intentionally split:
 
 - GitHub repository docs are for contributors and maintainers
 - GitHub Pages content under `docs/*.html` is for end users
-- command-help markdown under `docs/NovaModuleTools/en-US/` is build input, not general prose documentation
+- command-help markdown under `docs/<ProjectName>/` (for this repo `docs/NovaModuleTools/en-US/`) is build input
+- markdown elsewhere under `docs/` is allowed for non-help documentation because the build ignores it
 
 When updating documentation, write it for humans first. A reader should quickly understand:
 

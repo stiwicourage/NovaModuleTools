@@ -84,10 +84,10 @@ function Get-CommandHelpActivationTestCase {
 function Get-CommandHelpActivationTestCases {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][string]$DocsDir
+        [Parameter(Mandatory)][string]$HelpDocsDir
     )
 
-    $helpMarkdownFiles = Get-ChildItem -LiteralPath $DocsDir -Filter '*.md' -Recurse
+    $helpMarkdownFiles = Get-ChildItem -LiteralPath $HelpDocsDir -Filter '*.md' -File -Recurse -ErrorAction SilentlyContinue
     return @(
     $helpMarkdownFiles |
             ForEach-Object {Get-CommandHelpActivationTestCase -File $_} |
