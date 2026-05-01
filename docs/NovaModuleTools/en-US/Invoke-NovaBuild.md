@@ -39,7 +39,7 @@ The command:
 2. generates the module `.psm1`
 3. validates duplicate top-level function names when enabled
 4. writes the module manifest
-5. builds external help from the Markdown files in `docs/`
+5. builds external help from the Markdown files under `docs/<ProjectName>/`
 6. copies project resources into the built module output
 
 To update the installed `NovaModuleTools` module itself, use `Update-NovaModuleTool` (alias:
@@ -147,7 +147,7 @@ This cmdlet does not emit an output object.
 
 ## NOTES
 
-Run this command from the project root so `project.json`, `src/`, `docs/`, and `tests/` resolve correctly.
+Run this command from the project root so `project.json`, `src/`, `docs/<ProjectName>/`, and `tests/` resolve correctly.
 
 `Invoke-NovaBuild` uses `SupportsShouldProcess`, so `Get-Help Invoke-NovaBuild -Full` shows the native `-WhatIf` and
 `-Confirm` behavior.
