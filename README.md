@@ -422,6 +422,8 @@ That flow builds the module, runs ScriptAnalyzer, runs the normal test workflow,
 The `Tests.yml` workflow reuses that Cobertura artifact for both Codecov and CodeScene.
 The CodeScene step uploads coverage through `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1` before it triggers a
 follow-up analysis run.
+If coverage upload succeeds but the trigger fails with an OAuth/project-owner error, fix the repository authorization in
+CodeScene for the project owner. That trigger-side repository authorization is separate from `CS_ACCESS_TOKEN`.
 
 ### Recommended local quality loop
 
@@ -574,6 +576,8 @@ When CodeScene coverage upload is needed, run
 `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`.
 That script auto-discovers a single `*.cobertura.xml` file under `artifacts/` unless you pass `-CoveragePath`
 explicitly.
+If `-TriggerAnalysis` fails after a successful upload, review the CodeScene response body: repository OAuth problems for
+the project owner must be fixed in CodeScene itself and are not solved by rotating `CS_ACCESS_TOKEN` alone.
 
 ### Build and test automation
 

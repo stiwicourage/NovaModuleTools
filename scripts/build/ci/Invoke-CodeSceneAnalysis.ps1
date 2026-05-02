@@ -23,6 +23,25 @@ function Test-CodeSceneRateLimitResponse {
     return $Body -match 'rate limit for daily analysis jobs'
 }
 
+function Test-CodeSceneInvalidProjectOwnerTokenResponse {
+    param([string]$Body)
+
+    return $Body -match 'OAuth token of project owner invalid'
+}
+
+function Get-CodeSceneAnalysisTriggerFailureMessage {
+    param(
+        [int]$StatusCode,
+        [string]$Body
+    )
+
+    if (Test-CodeSceneInvalidProjectOwnerTokenResponse -Body $Body) {
+        return "CodeScene rejected the analysis trigger because the project owner's repository OAuth token is invalid. Re-authorize the repository connection for the CodeScene project owner, then rerun the workflow. This is separate from CS_ACCESS_TOKEN, so coverage upload can still succeed while run-analysis fails."
+    }
+
+    return "CodeScene API call failed with HTTP $StatusCode. Review the response above for details."
+}
+
 function Test-CodeSceneCoverageUploadRequested {
     param(
         [string]$CoveragePath,
@@ -82,7 +101,7 @@ function Invoke-CodeSceneAnalysisTrigger {
             return
         }
 
-        throw "CodeScene API call failed with HTTP $statusCode. Review the response above for details."
+        throw (Get-CodeSceneAnalysisTriggerFailureMessage -StatusCode $statusCode -Body $body)
     }
 
     if ($body -match '"error"') {

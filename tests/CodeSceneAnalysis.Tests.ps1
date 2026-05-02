@@ -50,6 +50,36 @@ function Invoke-WebRequest {
         (Get-Content -LiteralPath $requestLogPath -Raw) | Should -BeLike 'Post|https://codescene.example.test/v2/projects/123/run-analysis|Bearer token*'
     }
 
+    It 'fails clearly when CodeScene rejects the analysis trigger because the project owner OAuth token is invalid' {
+        $runnerContent = @"
+function Invoke-WebRequest {
+    param(
+        [string]`$Uri,
+        [string]`$Method,
+        [hashtable]`$Headers,
+        [switch]`$SkipHttpErrorCheck
+    )
+
+    return [pscustomobject]@{
+        StatusCode = 400
+        Content = '{"error":"OAuth token of project owner invalid"}'
+    }
+}
+
+[Environment]::SetEnvironmentVariable('CS_URL', 'https://codescene.example.test')
+[Environment]::SetEnvironmentVariable('CS_PROJECT_ID', '123')
+[Environment]::SetEnvironmentVariable('CS_ACCESS_TOKEN', 'token')
+
+& '$codeSceneAnalysisScriptPath' -TriggerAnalysis
+"@
+
+        $result = Invoke-CodeSceneAnalysisTestScript -RunnerContent $runnerContent
+
+        $result.ExitCode | Should -Not -Be 0
+        ($result.Output -join [Environment]::NewLine) | Should -Match 'project owner'
+        ($result.Output -join [Environment]::NewLine) | Should -Match 'separate from CS_ACCESS_TOKEN'
+    }
+
     It 'still uploads coverage when CoveragePath is provided' {
         $coveragePath = Join-Path $TestDrive 'pester-coverage.cobertura.xml'
         $uploadLogPath = Join-Path $TestDrive 'cs-coverage-upload.txt'

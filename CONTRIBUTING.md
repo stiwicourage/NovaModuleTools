@@ -57,6 +57,8 @@ CodeScene upload step consumes:
 - generate coverage with `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
 - then upload/trigger with `./scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`
 - the upload helper auto-discovers a single `artifacts/*.cobertura.xml` file unless you pass `-CoveragePath`
+- if upload succeeds but `-TriggerAnalysis` fails with a project-owner OAuth error, re-authorize the repository in
+  CodeScene for the project owner; that failure is separate from `CS_ACCESS_TOKEN`
 
 Please also make sure your contribution includes the right kind of follow-up work:
 
