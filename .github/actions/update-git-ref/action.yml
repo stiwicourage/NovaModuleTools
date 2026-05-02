@@ -1,0 +1,39 @@
+name: Update git ref
+description: Update an existing branch ref to a specific SHA.
+
+inputs:
+  ref:
+    description: Full git ref, for example refs/heads/main.
+    required: true
+  sha:
+    description: Commit SHA the ref should point to.
+    required: true
+  force:
+    description: Whether to force-update the ref.
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/github-script@v7
+      env:
+        TARGET_REF: ${{ inputs.ref }}
+        TARGET_SHA: ${{ inputs.sha }}
+        FORCE_UPDATE: ${{ inputs.force }}
+      with:
+        script: |
+          const owner = context.repo.owner
+          const repo = context.repo.repo
+          const refInput = process.env.TARGET_REF
+          const ref = refInput.replace(/^refs\//, '')
+          const sha = process.env.TARGET_SHA
+          const force = process.env.FORCE_UPDATE === 'true'
+
+          await github.rest.git.updateRef({
+            owner,
+            repo,
+            ref,
+            sha,
+            force
+          })

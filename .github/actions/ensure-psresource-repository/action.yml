@@ -1,0 +1,26 @@
+name: Ensure PSResource repository
+description: Ensure the local PSResourceGet store exists and the requested repository is registered.
+
+inputs:
+  repository-name:
+    description: PSResource repository name to ensure.
+    required: false
+    default: PSGallery
+
+runs:
+  using: composite
+  steps:
+    - shell: pwsh
+      run: |
+        $repositoryName = '${{ inputs.repository-name }}'
+        $psResourcePath = Join-Path $HOME '.local/share/PSResourceGet'
+        New-Item -ItemType Directory -Path $psResourcePath -Force | Out-Null
+
+        if (-not (Get-PSResourceRepository -Name $repositoryName -ErrorAction SilentlyContinue)) {
+          if ($repositoryName -eq 'PSGallery') {
+            Register-PSResourceRepository -PSGallery
+          }
+          else {
+            throw "PSResource repository '$repositoryName' is not registered."
+          }
+        }

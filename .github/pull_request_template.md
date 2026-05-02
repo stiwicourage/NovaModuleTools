@@ -11,13 +11,13 @@
 - [ ] Scaffolding or `project.json` handling
 - [ ] Build, test, analyzer, coverage, or CI helper flow
 - [ ] Package, raw upload, or package metadata workflow
-- [ ] Publish, release, semantic-release, or GitHub Actions automation
+- [ ] Publish, release, or GitHub Actions automation
 - [ ] Self-update or notification preference behavior
 - [ ] Contributor documentation (`README.md`, `CONTRIBUTING.md`, repository workflow docs)
 - [ ] End-user docs (`docs/*.html`)
 - [ ] Command help (`docs/NovaModuleTools/en-US/*.md`)
 - [ ] `src/resources/example/`
-- [ ] Dependency or manifest changes (`package.json`, workflow dependencies, release tooling)
+- [ ] Dependency or manifest changes (`project.json`, workflow dependencies, release tooling)
 - [ ] Security-sensitive change
 - [ ] Documentation-only change
 - [ ] Other
@@ -72,7 +72,7 @@ Risk, rollout, or rollback notes:
 
 ```text
 Describe compatibility impact, migration notes, rollback steps, or maintainer follow-up if they matter.
-Call out workflow-specific risk if this touches package upload, semantic-release, or GitHub Actions.
+Call out workflow-specific risk if this touches package upload, release automation, or GitHub Actions.
 ```
 
 > [!IMPORTANT]

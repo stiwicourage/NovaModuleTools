@@ -55,8 +55,7 @@ Repository development expects:
 - `PSScriptAnalyzer`
 - `Microsoft.PowerShell.PlatyPS`
 
-Node.js is only required if you are working on the current semantic-release-based publish pipeline.
-Use Node.js 22.14.0 or newer for that release automation because the current `semantic-release` toolchain requires it.
+Node.js is not required for the repository's current build, test, or publish automation.
 
 ### Build the module locally
 
@@ -467,11 +466,10 @@ This section explains how the NovaModuleTools repository is organized and what e
 .
 ├── .github/                    # GitHub Actions workflows
 ├── docs/                       # GitHub Pages HTML + PlatyPS help markdown
-├── scripts/                    # build, CI, and release automation
+├── scripts/                    # build and CI automation
 ├── src/                        # production PowerShell code and packaged resources
 ├── tests/                      # Pester suites and reusable test helpers
 ├── project.json                # NovaModuleTools project definition
-├── package.json                # semantic-release tooling for current publish automation
 └── CHANGELOG.md                # release notes and unreleased change tracking
 ```
 
@@ -549,13 +547,6 @@ Markdown elsewhere under `docs/` can be used for other documentation without aff
 
 Build, analyzer, and CI helper scripts.
 
-#### `scripts/release/`
-
-Release preparation and publish helpers used by the current release workflow.
-
-These scripts are currently part of a wider GitHub Actions + semantic-release pipeline, not a standalone replacement for
-it.
-
 ## CI/CD and release automation
 
 This section describes the current repository automation used to validate and publish NovaModuleTools.
@@ -599,47 +590,39 @@ CodeScene workflow upload step consumes.
 
 ### Release automation
 
-The current publish pipeline is still semantic-release based.
-
-`.github/workflows/Publish.yml` now provisions Node.js 22.14.0 before `npx semantic-release` runs, so the release step
-stays aligned with the upstream runtime requirement after build and test succeed.
+The current publish pipeline is PowerShell-based and no longer depends on Node.js or semantic-release tooling.
 
 Key pieces:
 
 - `.github/workflows/Publish.yml`
-- `.releaserc.json`
-- `package.json`
-- `scripts/release/Prepare-SemanticRelease.ps1`
-- `scripts/release/Publish-ToPSGallery.ps1`
-- `scripts/release/SemanticReleaseSupport.ps1`
+- `.github/actions/create-verified-commit/action.yml`
+- `.github/actions/update-git-ref/action.yml`
+- `.github/actions/create-annotated-tag/action.yml`
+- `.github/actions/ensure-psresource-repository/action.yml`
+- `scripts/build/ci/Install-CiPowerShellModules.ps1`
 
 Responsibilities currently covered by the release pipeline include:
 
-- choosing the next release version from commit history
 - updating `project.json`
 - finalizing `CHANGELOG.md`
-- rebuilding after version changes
 - creating release tags
-- creating GitHub releases
+- committing release changes back to `main`
 - publishing to PowerShell Gallery
+- preparing the next prerelease version on `develop`
 
-The semantic-release publish script also bootstraps the local PSResourceGet repository store before calling
-`Publish-PSResource`, which keeps fresh GitHub Actions runners from failing when the PSGallery repository registration
-file
-does not exist yet.
+The workflow now uses `KeepAChangelog` for changelog release moves, creates annotated git tags named directly from the
+release version, and bootstraps the local PSResourceGet repository store before calling `Publish-NovaModule`.
 
 ### Where NovaModuleTools cmdlets fit
 
-NovaModuleTools already provides strong release building blocks:
+NovaModuleTools already provides the core release building blocks:
 
 - `Update-NovaModuleVersion`
 - `Publish-NovaModule`
 - `Invoke-NovaRelease`
 
-But these do not yet replace every semantic-release responsibility in the current repository workflow.
-
-If you work on release automation, treat `package.json` and `.releaserc.json` as active parts of the present release
-system.
+The repository workflow combines these with the `KeepAChangelog` module and local reusable GitHub actions instead of a
+separate semantic-release toolchain.
 
 ### Contributor expectations for workflow changes
 

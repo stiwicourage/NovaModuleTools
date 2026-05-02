@@ -53,13 +53,13 @@ Select all relevant:
 - [ ] Scaffolding or `project.json` handling
 - [ ] Build, test, analyzer, coverage, or CI helper flow
 - [ ] Package, raw upload, or package metadata workflow
-- [ ] Publish, release, semantic-release, or GitHub Actions automation
+- [ ] Publish, release, or GitHub Actions automation
 - [ ] Self-update or notification preference behavior
 - [ ] Contributor documentation (`README.md`, `CONTRIBUTING.md`, repository workflow docs)
 - [ ] End-user docs (`docs/*.html`)
 - [ ] Command help (`docs/NovaModuleTools/en-US/*.md`)
 - [ ] `src/resources/example/`
-- [ ] Dependency or manifest changes (`package.json`, workflow dependencies, release tooling)
+- [ ] Dependency or manifest changes (`project.json`, workflow dependencies, release tooling)
 - [ ] Security-sensitive change
 - [ ] Documentation-only change
 - [ ] Other
