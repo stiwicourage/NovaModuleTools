@@ -1,6 +1,7 @@
 param(
     [string[]]$ModuleName = @(
-    'NovaModuleTools'
+    'NovaModuleTools',
+    'KeepAChangelog'
 )
 )
 
