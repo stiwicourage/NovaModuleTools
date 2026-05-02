@@ -1,5 +1,6 @@
 param(
     [string]$CoveragePath,
+    [switch]$UploadCoverage,
     [switch]$TriggerAnalysis
 )
 
@@ -20,6 +21,36 @@ function Test-CodeSceneRateLimitResponse {
     param([string]$Body)
 
     return $Body -match 'rate limit for daily analysis jobs'
+}
+
+function Test-CodeSceneCoverageUploadRequested {
+    param(
+        [string]$CoveragePath,
+        [switch]$UploadCoverage
+    )
+
+    return $UploadCoverage.IsPresent -or -not [string]::IsNullOrWhiteSpace($CoveragePath)
+}
+
+function Resolve-CodeSceneCoveragePath {
+    param([string]$CoveragePath)
+
+    if (-not [string]::IsNullOrWhiteSpace($CoveragePath)) {
+        return (Resolve-Path -LiteralPath $CoveragePath -ErrorAction Stop).Path
+    }
+
+    $artifactsDir = Join-Path (Get-Location) 'artifacts'
+    $coverageCandidates = @(Get-ChildItem -LiteralPath $artifactsDir -Filter '*.cobertura.xml' -File -Recurse -ErrorAction SilentlyContinue | Sort-Object FullName)
+    if (-not $coverageCandidates) {
+        throw "No Cobertura coverage file was found under '$artifactsDir'. Provide -CoveragePath explicitly or run the CI coverage workflow first."
+    }
+
+    if ($coverageCandidates.Count -gt 1) {
+        $candidateList = ($coverageCandidates | ForEach-Object FullName) -join ', '
+        throw "Multiple Cobertura coverage files were found under '$artifactsDir'. Provide -CoveragePath explicitly. Candidates: $candidateList"
+    }
+
+    return $coverageCandidates[0].FullName
 }
 
 function Invoke-CodeSceneAnalysisTrigger {
@@ -59,7 +90,7 @@ function Invoke-CodeSceneAnalysisTrigger {
     }
 }
 
-$shouldUploadCoverage = -not [string]::IsNullOrWhiteSpace($CoveragePath)
+$shouldUploadCoverage = Test-CodeSceneCoverageUploadRequested -CoveragePath $CoveragePath -UploadCoverage:$UploadCoverage
 $shouldRunAnalysis = $TriggerAnalysis.IsPresent
 
 if (-not ($shouldUploadCoverage -or $shouldRunAnalysis)) {
@@ -72,7 +103,7 @@ $projectId = Get-RequiredCodeSceneValue -Name 'CS_PROJECT_ID'
 $accessToken = Get-RequiredCodeSceneValue -Name 'CS_ACCESS_TOKEN'
 
 if ($shouldUploadCoverage) {
-    $resolvedCoveragePath = (Resolve-Path -LiteralPath $CoveragePath -ErrorAction Stop).Path
+    $resolvedCoveragePath = Resolve-CodeSceneCoveragePath -CoveragePath $CoveragePath
 
     if (-not (Get-Command -Name 'cs-coverage' -ErrorAction SilentlyContinue)) {
         throw "The 'cs-coverage' CLI was not found on PATH. Install the CodeScene coverage upload tool before running this script."

@@ -51,6 +51,13 @@ Import-Module $distModuleDir -Force
 Test-NovaBuild
 ```
 
+If you are working on the CodeScene integration, the CI coverage helper writes the Cobertura artifact that the
+CodeScene upload step consumes:
+
+- generate coverage with `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
+- then upload/trigger with `./scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`
+- the upload helper auto-discovers a single `artifacts/*.cobertura.xml` file unless you pass `-CoveragePath`
+
 Please also make sure your contribution includes the right kind of follow-up work:
 
 - add or update tests when behavior changes
@@ -77,6 +84,6 @@ For changelog entries, follow the existing project format:
 
 - Keep a Changelog structure
 - Semantic Versioning intent
-- reader-friendly wording under sections such as `Added`, `Changed`, `Fixed`, `Removed`, and `Documentation`
+- reader-friendly wording under sections such as `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed` and `Security`
 
 In short: build it, analyze it, test it, document it, and leave it in better shape than you found it.

@@ -122,4 +122,4 @@ jobs:
           CS_URL: ${{ vars.CS_URL }}
           CS_PROJECT_ID: ${{ vars.CS_PROJECT_ID }}
           CS_ACCESS_TOKEN: ${{ secrets.CS_ACCESS_TOKEN }}
-        run: ./scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -TriggerAnalysis
+        run: ./scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis

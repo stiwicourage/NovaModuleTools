@@ -419,6 +419,10 @@ That flow builds the module, runs ScriptAnalyzer, runs the normal test workflow,
 - `artifacts/pester-coverage.cobertura.xml`
 - `artifacts/coverage-low.txt`
 
+The `Tests.yml` workflow reuses that Cobertura artifact for both Codecov and CodeScene.
+The CodeScene step uploads coverage through `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1` before it triggers a
+follow-up analysis run.
+
 ### Recommended local quality loop
 
 ```powershell
@@ -566,6 +570,11 @@ At a minimum, contributor changes are expected to keep these workflows healthy:
 
 Repository scripts under `scripts/build/ci/` provide local parity for CI-oriented reporting.
 
+When CodeScene coverage upload is needed, run
+`scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`.
+That script auto-discovers a single `*.cobertura.xml` file under `artifacts/` unless you pass `-CoveragePath`
+explicitly.
+
 ### Build and test automation
 
 The normal repository workflow is:
@@ -579,7 +588,9 @@ When you test local publish behavior during development, remember that `Publish-
 published module from the local install directory into the current PowerShell session. Re-import `dist/` if your next
 step depends on the built-but-unpublished output instead.
 
-The CI helper flow also produces JUnit and Cobertura artifacts for external systems.
+The CI helper flow also produces JUnit and Cobertura artifacts for external systems, including the coverage file that
+the
+CodeScene workflow upload step consumes.
 
 ### Release automation
 
