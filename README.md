@@ -412,7 +412,8 @@ For CI-parity coverage and report generation, use:
 PS> ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1
 ```
 
-That flow builds the module, runs ScriptAnalyzer, runs the normal test workflow, and emits CI-friendly reports such as:
+That flow builds the module, runs ScriptAnalyzer, executes one coverage-enabled Pester run using the same Nova test
+workflow configuration, and emits CI-friendly reports such as:
 
 - `artifacts/novamoduletools-nunit.xml`
 - `artifacts/pester-junit.xml`

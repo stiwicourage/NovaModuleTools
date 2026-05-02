@@ -9,48 +9,56 @@ Set-StrictMode -Version Latest
 . (Join-Path $PSScriptRoot 'CodeSceneCoverageXml.ps1')
 . (Join-Path $PSScriptRoot 'CoverageLowReport.ps1')
 
-function Get-CiTestPath {
-    param([Parameter(Mandatory)][pscustomobject]$ProjectInfo)
+function Get-CiTestWorkflowContext {
+    param(
+        [Parameter(Mandatory)][string]$ProjectName,
+        [string[]]$ExcludedTags = @()
+    )
 
-    if ($ProjectInfo.BuildRecursiveFolders) {
-        return $ProjectInfo.TestsDir
+    $module = Get-Module -Name $ProjectName -ErrorAction Stop
+    $testOption = @{}
+    if (@($ExcludedTags).Count -gt 0) {
+        $testOption.ExcludeTagFilter = @($ExcludedTags)
     }
 
-    return [System.IO.Path]::Join($ProjectInfo.TestsDir, '*.Tests.ps1')
+    return & $module {
+        param($ContextTestOption)
+
+        Get-NovaTestWorkflowContext -TestOption $ContextTestOption -BoundParameters @{}
+    } $testOption
 }
 
 function Get-CiPesterConfiguration {
     param(
-        [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [Parameter(Mandatory)][string]$ArtifactsDirectory,
         [string[]]$ExcludedTags = @()
     )
 
-    $configuration = New-PesterConfiguration
-    $configuration.Run.Path = Get-CiTestPath -ProjectInfo $ProjectInfo
+    $configuration = $WorkflowContext.PesterConfig
     $configuration.Run.PassThru = $true
+    $configuration.Run.Exit = $false
+    $configuration.Run.Throw = $false
     $configuration.Filter.ExcludeTag = @($ExcludedTags)
     $configuration.TestResult.Enabled = $true
     $configuration.TestResult.OutputFormat = 'JUnitXml'
     $configuration.TestResult.OutputPath = (Join-Path $ArtifactsDirectory 'pester-junit.xml')
     $configuration.CodeCoverage.Enabled = $true
-    $configuration.CodeCoverage.Path = @($ProjectInfo.ModuleFilePSM1)
+    $configuration.CodeCoverage.Path = @($WorkflowContext.ProjectInfo.ModuleFilePSM1)
     $configuration.CodeCoverage.OutputFormat = 'Cobertura'
     $configuration.CodeCoverage.OutputPath = (Join-Path $ArtifactsDirectory 'pester-coverage.cobertura.xml')
 
     return $configuration
 }
 
-function Copy-NovaModuleToolsTestResultIfPresent {
+function Write-CiNovaModuleToolsTestResult {
     param(
-        [Parameter(Mandatory)][string]$ProjectRoot,
-        [Parameter(Mandatory)][string]$ArtifactsDirectory
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
+        [Parameter(Mandatory)][string]$ArtifactsDirectory,
+        [Parameter(Mandatory)][object]$TestResult
     )
 
-    $sourcePath = Join-Path $ProjectRoot 'artifacts/TestResults.xml'
-    if (Test-Path -LiteralPath $sourcePath) {
-        Copy-Item -LiteralPath $sourcePath -Destination (Join-Path $ArtifactsDirectory 'novamoduletools-nunit.xml') -Force
-    }
+    & $WorkflowContext.TestResultReportWriter.ScriptBlock -TestResult $TestResult -OutputPath (Join-Path $ArtifactsDirectory 'novamoduletools-nunit.xml')
 }
 
 $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..' '..' '..')).Path
@@ -72,28 +80,13 @@ if (-not $projectInfo.SetSourcePath) {
     throw "Code coverage upload requires project.json to set SetSourcePath=true so dist line coverage can be remapped back to src/ files for CodeScene."
 }
 
-$novaModuleToolsTestFailed = $false
-try {
-    if (@($ExcludeTag).Count -gt 0) {
-        Test-NovaBuild -ExcludeTagFilter $ExcludeTag
-    }
-    else {
-        Test-NovaBuild
-    }
-}
-catch {
-    $novaModuleToolsTestFailed = $true
-    Write-Warning "Test-NovaBuild failed: $( $_.Exception.Message )"
-}
-finally {
-    Copy-NovaModuleToolsTestResultIfPresent -ProjectRoot $projectInfo.ProjectRoot -ArtifactsDirectory $OutputDirectory
-}
-
-$configuration = Get-CiPesterConfiguration -ProjectInfo $projectInfo -ArtifactsDirectory $OutputDirectory -ExcludedTags $ExcludeTag
+$workflowContext = Get-CiTestWorkflowContext -ProjectName $projectInfo.ProjectName -ExcludedTags $ExcludeTag
+$configuration = Get-CiPesterConfiguration -WorkflowContext $workflowContext -ArtifactsDirectory $OutputDirectory -ExcludedTags $ExcludeTag
 $result = Invoke-Pester -Configuration $configuration
+Write-CiNovaModuleToolsTestResult -WorkflowContext $workflowContext -ArtifactsDirectory $OutputDirectory -TestResult $result
 Convert-CoberturaCoverageToSourcePath -CoveragePath (Join-Path $OutputDirectory 'pester-coverage.cobertura.xml') -BuiltModulePath $projectInfo.ModuleFilePSM1 -RepoRoot $projectInfo.ProjectRoot
 Write-CoverageLowReport -CoveragePath (Join-Path $OutputDirectory 'pester-coverage.cobertura.xml') -OutputPath (Join-Path $OutputDirectory 'coverage-low.txt')
 
-if ($novaModuleToolsTestFailed -or $result.FailedCount -gt 0) {
+if ($result.FailedCount -gt 0) {
     exit 1
 }
