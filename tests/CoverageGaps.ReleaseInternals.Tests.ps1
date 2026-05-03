@@ -55,13 +55,11 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
-    It 'Get-NovaVersionPartForLabel finalizes prerelease targets or advances to the next stable core when <Name>' -ForEach @(
-        @{Name = 'major prerelease already targets the current release line'; CurrentVersion = '2.0.0-preview7'; Label = 'Major'; Expected = '2.0.0'}
-        @{Name = 'minor prerelease already targets the current release line'; CurrentVersion = '1.3.0-preview7'; Label = 'Minor'; Expected = '1.3.0'}
-        @{Name = 'patch prerelease already targets the current release line'; CurrentVersion = '1.2.4-preview7'; Label = 'Patch'; Expected = '1.2.4'}
-        @{Name = 'major prerelease on a lower release line advances to the next major'; CurrentVersion = '1.2.3-preview7'; Label = 'Major'; Expected = '2.0.0'}
-        @{Name = 'minor prerelease on a lower release line advances to the next minor'; CurrentVersion = '1.2.3-preview7'; Label = 'Minor'; Expected = '1.3.0'}
-        @{Name = 'patch prerelease on the current patch line finalizes that line'; CurrentVersion = '1.2.3-preview7'; Label = 'Patch'; Expected = '1.2.3'}
+    It 'Get-NovaVersionPartForLabel finalizes any existing prerelease on the current semantic core when <Name>' -ForEach @(
+        @{Name = 'a breaking-change label targets a major prerelease'; CurrentVersion = '2.0.0-preview7'; Label = 'Major'; Expected = '2.0.0'}
+        @{Name = 'a feature label still finalizes a major prerelease'; CurrentVersion = '2.0.0-preview7'; Label = 'Minor'; Expected = '2.0.0'}
+        @{Name = 'a patch label still finalizes a minor prerelease'; CurrentVersion = '1.3.0-preview7'; Label = 'Patch'; Expected = '1.3.0'}
+        @{Name = 'a breaking-change label still finalizes a patch prerelease'; CurrentVersion = '1.2.4-preview7'; Label = 'Major'; Expected = '1.2.4'}
     ) {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
             param($TestCase)
@@ -109,11 +107,11 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
-    It 'Get-NovaVersionUpdatePlan resolves prerelease versions to the expected next stable target when <Name>' -ForEach @(
-        @{Name = 'finalizing a major prerelease line'; CurrentVersion = '2.0.0-preview7'; Label = 'Major'; ExpectedVersion = '2.0.0'}
-        @{Name = 'finalizing a minor prerelease line'; CurrentVersion = '1.3.0-preview7'; Label = 'Minor'; ExpectedVersion = '1.3.0'}
-        @{Name = 'finalizing a patch prerelease line'; CurrentVersion = '1.2.4-preview7'; Label = 'Patch'; ExpectedVersion = '1.2.4'}
-        @{Name = 'advancing from an earlier prerelease line to the next minor'; CurrentVersion = '1.2.3-preview7'; Label = 'Minor'; ExpectedVersion = '1.3.0'}
+    It 'Get-NovaVersionUpdatePlan resolves prerelease versions to the current stable target when <Name>' -ForEach @(
+        @{Name = 'finalizing a major prerelease after a breaking change'; CurrentVersion = '2.0.0-preview7'; Label = 'Major'; ExpectedVersion = '2.0.0'}
+        @{Name = 'finalizing a major prerelease after a feature change'; CurrentVersion = '2.0.0-preview7'; Label = 'Minor'; ExpectedVersion = '2.0.0'}
+        @{Name = 'finalizing a minor prerelease after a patch change'; CurrentVersion = '1.3.0-preview7'; Label = 'Patch'; ExpectedVersion = '1.3.0'}
+        @{Name = 'finalizing a patch prerelease after a breaking change'; CurrentVersion = '1.2.4-preview7'; Label = 'Major'; ExpectedVersion = '1.2.4'}
     ) {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
             param($TestCase)
