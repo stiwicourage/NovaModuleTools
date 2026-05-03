@@ -6,7 +6,7 @@ function Get-NovaVersionPartForLabel {
         [string]$Label = 'Patch'
     )
 
-    if (Test-NovaVersionShouldFinalizePrereleaseTarget -CurrentVersion $CurrentVersion) {
+    if (Test-NovaVersionShouldFinalizePrereleaseTarget -CurrentVersion $CurrentVersion -Label $Label) {
         return Get-NovaVersionPartObject -CurrentVersion $CurrentVersion
     }
 
@@ -38,10 +38,32 @@ function Get-NovaVersionPartForLabel {
 function Test-NovaVersionShouldFinalizePrereleaseTarget {
     [CmdletBinding()]
     param(
+        [Parameter(Mandatory)][semver]$CurrentVersion,
+        [Parameter(Mandatory)][string]$Label
+    )
+
+    if ( [string]::IsNullOrWhiteSpace($CurrentVersion.PreReleaseLabel)) {
+        return $false
+    }
+
+    return (Get-NovaVersionTargetLabelForPrerelease -CurrentVersion $CurrentVersion) -eq $Label
+}
+
+function Get-NovaVersionTargetLabelForPrerelease {
+    [CmdletBinding()]
+    param(
         [Parameter(Mandatory)][semver]$CurrentVersion
     )
 
-    return -not [string]::IsNullOrWhiteSpace($CurrentVersion.PreReleaseLabel)
+    if ($CurrentVersion.Patch -gt 0) {
+        return 'Patch'
+    }
+
+    if ($CurrentVersion.Minor -gt 0) {
+        return 'Minor'
+    }
+
+    return 'Major'
 }
 
 function Get-NovaVersionPartObject {

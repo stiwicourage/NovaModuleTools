@@ -34,10 +34,6 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 
 ### Fixed
 
-- Fix stable `Update-NovaModuleVersion` / `% nova bump` prerelease planning so existing prerelease versions finalize
-  their current semantic core before any later semantic bump is considered.
-    - `nova bump --what-if` now plans `2.0.0-preview01 -> 2.0.0` instead of `2.1.0` when commit history resolves to a
-      `Minor` label.
 - Fix `Invoke-NovaBuild` help discovery so it only scans `docs/<ProjectName>/` for PlatyPS
   markdown.
     - Regular markdown elsewhere under `docs/` no longer breaks the help-generation step.

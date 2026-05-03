@@ -59,9 +59,9 @@ calculated release label and the exact next version without changing the stored 
 Use `-ContinuousIntegration` when the same session should first re-activate the built `dist/` module before the version
 bump workflow starts. This is useful in CI/self-hosting flows where an earlier command changed the active module state.
 
-When the current version is already a prerelease, Nova finalizes that same semantic version by default instead of
-incrementing to the next semantic core. For example, a `Minor` bump from `2.0.0-preview7` resolves to `2.0.0`, not
-`2.1.0`. Use `-Preview` when you want to continue the prerelease sequence instead.
+When the current version is already a prerelease for the selected release line, Nova finalizes that same semantic
+version instead of incrementing again. For example, a `Major` bump from `2.0.0-preview7` resolves to `2.0.0`, not
+`3.0.0-preview7`.
 
 
 ## EXAMPLES

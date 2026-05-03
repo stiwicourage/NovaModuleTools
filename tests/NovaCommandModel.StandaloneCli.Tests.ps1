@@ -338,29 +338,6 @@ Describe '$projectName tests' {
         }
     }
 
-    It 'Install-NovaCli finalizes prerelease versions during stable what-if bumps' {
-        Assert-TestInstalledNovaCliBumpBehavior -DistModuleDir $script:distModuleDir -TestDriveRoot $TestDrive -TestCase @{
-            TargetDirectory = 'prerelease-finalize-bin'
-            ProjectName = 'CliPrereleaseFinalizeProject'
-            ProjectGuid = '45444444-4444-4444-4444-444444444444'
-            FunctionName = 'Invoke-TestCliPrereleaseFinalize'
-            CurrentVersion = '2.0.0-preview01'
-            CommitMessage = 'feat: finalize prerelease stable bump planning'
-            Arguments = @('bump', '--what-if')
-            ExpectedPatterns = @(
-                'What if:'
-                'Version plan: 2\.0\.0-preview01 -> 2\.0\.0 \| Label: Minor \| Commits: 1'
-            )
-            UnexpectedPatterns = @(
-                'Version plan: 2\.0\.0-preview01 -> 2\.1\.0'
-                'Unknown argument:'
-                'Version bumped to :'
-            )
-            ExpectedWarningCount = 0
-            ExpectedVersionAfterBump = '2.0.0-preview01'
-        }
-    }
-
     It 'Install-NovaCli rejects unsupported nova init invocations with clear migration guidance' -ForEach @(
         @{
             Name = 'WhatIf'

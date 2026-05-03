@@ -211,9 +211,6 @@ These switches keep the behavior explicit and opt-in:
 - `Update-NovaModuleVersion -ContinuousIntegration` also falls back to a patch bump when the current `HEAD` already
   matches the latest tag, so release automation can seed the next prerelease line without requiring an extra commit
   first
-- Stable `Update-NovaModuleVersion` / `% nova bump` finalizes any existing prerelease by removing its suffix before
-  planning a new semantic-core increment, so `2.0.0-preview01` becomes `2.0.0` unless you explicitly pass
-  `-Preview` / `--preview`
 - `Update-NovaModuleVersion` and `% nova bump` treat stable `0.y.z` versions as the SemVer initial-development phase,
   so breaking-change bumps stay on the `0.y.z` line by planning the next minor version instead of jumping to `1.0.0`
 - `Publish-NovaModule -ContinuousIntegration` restores the built module after publish completes

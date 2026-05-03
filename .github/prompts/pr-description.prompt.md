@@ -28,22 +28,12 @@ Analyze the provided input and:
 
 Be pragmatic: if information is missing, make reasonable assumptions but call them out briefly.
 
-Before generating the PR description, you MUST:
-
-- Read this prompt file from `.github/prompts/pr-description.prompt.md` directly, even if hidden folders were not
-  surfaced by an earlier search.
-- Read `.github/pull_request_template.md` directly and treat it as authoritative.
-- Resolve all relative paths from the repository root.
-- Treat `./pr-descriptions/` as a repository-root-relative output folder.
-- Never assume `.github/` content is missing just because a previous listing or glob search did not show hidden folders.
-
 ---
 
 ## Output format
 
-You MUST return the PR description using this exact structure, you will find the template in
-`.github/pull_request_template.md`:
-You MUST fill in all sections, and you MUST NOT modify the template structure.
-You MUST create a *.md file in the `./pr-descriptions/` folder with the same name as the PR title, and write the
-generated description there.
-If the folder does not exist yet, you MUST create it under the repository root before writing the file.
+You MUST return the PR description using this exact structure:
+
+### Pull Request Template
+
+.github/pull_request_template.md

@@ -491,7 +491,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
-    It 'Update-NovaModuleVersion finalizes an existing prerelease while preserving nested package repository objects' {
+    It 'Update-NovaModuleVersion preserves nested package repository objects when writing the bumped version' {
         InModuleScope $script:moduleName {
             $projectRoot = Join-Path $TestDrive 'package-repository-bump-project'
             New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
@@ -531,9 +531,9 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $updatedProject = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json
 
             $result.PreviousVersion | Should -Be '1.5.2-preview'
-            $result.NewVersion | Should -Be '1.5.2'
+            $result.NewVersion | Should -Be '2.0.0'
             $result.Label | Should -Be 'Major'
-            $updatedProject.Version | Should -Be '1.5.2'
+            $updatedProject.Version | Should -Be '2.0.0'
             ($updatedProject.Package.Repositories[0] -is [string]) | Should -BeFalse
             $updatedProject.Package.Repositories[0].Name | Should -Be 'staging'
             $updatedProject.Package.Repositories[0].Auth.TokenEnvironmentVariable | Should -Be 'NEXUS_STAGING_TOKEN'
