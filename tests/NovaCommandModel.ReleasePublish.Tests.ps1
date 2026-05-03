@@ -95,7 +95,7 @@ Describe 'Nova command model - release and publish behavior' {
 
             $thrown = $null
             try {
-                Invoke-NovaRelease -PublishOption @{Local = $true} -Path (Get-Location).Path
+                Invoke-NovaRelease -Local -Path (Get-Location).Path
             }
             catch {
                 $thrown = $_
@@ -250,7 +250,7 @@ Describe 'Nova command model - release and publish behavior' {
                 [pscustomobject]@{NewVersion = '1.0.1'}
             }
 
-            $result = Invoke-NovaRelease -PublishOption @{Local = $true} -Path (Get-Location).Path -Confirm:$false
+            $result = Invoke-NovaRelease -Local -Path (Get-Location).Path -Confirm:$false
 
             $result.NewVersion | Should -Be '1.0.1'
             Assert-MockCalled Get-NovaPublishWorkflowContext -Times 1 -ParameterFilter {$WorkflowSettings.WorkflowName -eq 'release' -and $WorkflowSettings.Release}
@@ -265,7 +265,7 @@ Describe 'Nova command model - release and publish behavior' {
             WorkflowName = 'release'
             Operation = 'Run Nova release workflow (build, test, and publish) to repository'
             Invoke = {
-                Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'} -ContinuousIntegration -Path (Get-Location).Path -Confirm:$false
+                Invoke-NovaRelease -Repository PSGallery -ContinuousIntegration -Path (Get-Location).Path -Confirm:$false
             }
         }
         @{
@@ -331,12 +331,52 @@ Describe 'Nova command model - release and publish behavior' {
                 [pscustomobject]@{NewVersion = '1.0.1'}
             }
 
-            $result = Invoke-NovaRelease -PublishOption @{Local = $true} -Confirm:$false
+            $result = Invoke-NovaRelease -Local -Confirm:$false
 
             $result.NewVersion | Should -Be '1.0.1'
             Assert-MockCalled Push-Location -Times 1 -ParameterFilter {$LiteralPath -eq $ExpectedPath}
             Assert-MockCalled Pop-Location -Times 1
             Assert-MockCalled Invoke-NovaReleaseWorkflow -Times 1
+        }
+    }
+
+    It 'Invoke-NovaRelease keeps legacy PublishOption support for existing scripts' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+            }
+            Mock Get-NovaPublishWorkflowContext {
+                [pscustomobject]@{
+                    WorkflowName = 'release'
+                    LocalRequested = $false
+                    PublishInvocation = [pscustomobject]@{IsLocal = $false}
+                    Target = 'PSGallery'
+                    Operation = 'Run Nova release workflow (build, test, and publish) to repository'
+                }
+            }
+            Mock Write-NovaPublishWorkflowContext {}
+            Mock Invoke-NovaReleaseWorkflow {}
+
+            Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'; ApiKey = 'legacy-key'} -Confirm:$false | Out-Null
+
+            Assert-MockCalled Get-NovaPublishWorkflowContext -Times 1 -ParameterFilter {
+                $PublishOption.Repository -eq 'PSGallery' -and
+                        $PublishOption.ApiKey -eq 'legacy-key'
+            }
+        }
+    }
+
+    It 'Invoke-NovaRelease exposes direct publish parameters for PowerShell automation' {
+        InModuleScope $script:moduleName {
+            $command = Get-Command -Name 'Invoke-NovaRelease' -CommandType Function -ErrorAction Stop
+
+            $command.Parameters.ContainsKey('Local') | Should -BeTrue
+            $command.Parameters.ContainsKey('Repository') | Should -BeTrue
+            $command.Parameters.ContainsKey('ModuleDirectoryPath') | Should -BeTrue
+            $command.Parameters.ContainsKey('ApiKey') | Should -BeTrue
+            $command.Parameters.ContainsKey('PublishOption') | Should -BeTrue
+            $command.Parameters.ContainsKey('Confirm') | Should -BeTrue
+            $command.Parameters.ContainsKey('WhatIf') | Should -BeTrue
         }
     }
 
@@ -346,7 +386,7 @@ Describe 'Nova command model - release and publish behavior' {
             WorkflowName = 'release'
             Operation = 'Run Nova release workflow (build and publish) to repository'
             Invoke = {
-                Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'} -SkipTests -Path (Get-Location).Path -Confirm:$false
+                Invoke-NovaRelease -Repository PSGallery -SkipTests -Path (Get-Location).Path -Confirm:$false
             }
         }
         @{
@@ -542,6 +582,29 @@ Describe 'Nova command model - release and publish behavior' {
 
             $script:steps | Should -Be @('build:True', 'test', 'bump:True', 'build:True', 'publish', 'ci')
             Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
+        }
+    }
+
+    It 'Invoke-NovaReleaseWorkflow skips CI built-module restoration during WhatIf previews' {
+        InModuleScope $script:moduleName {
+            Mock Invoke-NovaBuild {}
+            Mock Test-NovaBuild {}
+            Mock Update-NovaModuleVersion {
+                [pscustomobject]@{NewVersion = '1.0.1'}
+            }
+            Mock Import-NovaBuiltModuleForCi {throw 'should not restore built module in WhatIf'}
+            $workflowContext = [pscustomobject]@{
+                ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                WorkflowParams = @{WhatIf = $true}
+                ContinuousIntegrationRequested = $true
+                PublishInvocation = [pscustomobject]@{
+                    Action = {}
+                }
+                PublishParams = @{}
+            }
+
+            {Invoke-NovaReleaseWorkflow -WorkflowContext $workflowContext} | Should -Not -Throw
+            Assert-MockCalled Import-NovaBuiltModuleForCi -Times 0
         }
     }
 

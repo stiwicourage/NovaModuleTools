@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Align `Invoke-NovaRelease` PowerShell parameters with `Publish-NovaModule` and `% nova release`.
+    - PowerShell release scripts can now pass `-Local`, `-Repository`, `-ModuleDirectoryPath`, and `-ApiKey` directly.
+    - Deprecated `-PublishOption` usage should be changed in existing CI/CD automation as soon as possible.
+
 Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer major-zero
   development line.
     - When the current stable version is `0.y.z` and commit history implies a breaking change, Nova now plans the next
@@ -20,6 +24,11 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
     - `-Preview` behavior is unchanged.
 
 ### Deprecated
+
+- `Invoke-NovaRelease` parameters that differ from `Publish-NovaModule` and `% nova release` such as `-Local`,
+  `-Repository`,
+  `-ModuleDirectoryPath`, and `-ApiKey` are now the primary PowerShell release parameters, while `-PublishOption` is
+  deprecated.
 
 ### Removed
 
@@ -161,7 +170,7 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
   before
   `Publish-PSResource` runs.
 
-## [1.9.0] - 2026-04-10
+## [1.9.1] - 2026-04-10
 ### Added
 - Nova command model and CLI entrypoint:
     - New root command: `nova`
@@ -178,7 +187,6 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 - Source alignment updates to match installed `NovaModuleTools` v`1.8.0` behavior for compatibility.
 
 ### Deprecated
-
 - `MT` commands and MT-branded command documentation in favor of the Nova command model.
 
 ### Fixed

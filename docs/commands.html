@@ -427,8 +427,9 @@ PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -Cont
                             <li><strong>Best for:</strong> an orchestrated release command when you want one workflow
                                 instead of separate steps
                             </li>
-                            <li><strong>Key parameters:</strong> <code>-PublishOption</code>, <code>-Path</code>,
-                                <code>-SkipTests</code>, <code>-ContinuousIntegration</code></li>
+                            <li><strong>Key parameters:</strong> <code>-Local</code>, <code>-Repository</code>,
+                                <code>-ApiKey</code>, <code>-Path</code>, <code>-SkipTests</code>,
+                                <code>-ContinuousIntegration</code></li>
                             <li><strong>Important difference:</strong> local release does not reload the published
                                 module into the session after publishing
                             </li>
@@ -440,10 +441,10 @@ PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -Cont
                                         data-command-surface-label>PowerShell</span></p>
                             </div>
                             <div class="surface-example__surface" data-command-surface="powershell">
-                                <pre><code>PS&gt; Invoke-NovaRelease -PublishOption @{ Local = $true }
-PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API }
-PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -SkipTests
-PS&gt; Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -ContinuousIntegration</code></pre>
+                                <pre><code>PS&gt; Invoke-NovaRelease -Local
+PS&gt; Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API
+PS&gt; Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
+PS&gt; Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -ContinuousIntegration</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
                                 <pre><code>% nova release --repository PSGallery --api-key $env:PSGALLERY_API

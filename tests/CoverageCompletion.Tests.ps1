@@ -409,7 +409,7 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             Mock Publish-NovaBuiltModuleToRepository {}
             Mock Get-Command {[pscustomobject]@{ScriptBlock = $publishAction}} -ParameterFilter {$Name -eq 'Publish-NovaBuiltModuleToRepository' -and $CommandType -eq 'Function'}
 
-            $result = Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'; ApiKey = 'repo-key'} -Path (Get-Location).Path
+            $result = Invoke-NovaRelease -Repository PSGallery -ApiKey 'repo-key' -Path (Get-Location).Path
 
             $result.NewVersion | Should -Be '2.0.0'
             Assert-MockCalled Publish-NovaBuiltModuleToRepository -Times 1 -ParameterFilter {$Repository -eq 'PSGallery' -and $ApiKey -eq 'repo-key'}

@@ -95,6 +95,7 @@ function Get-TestNovaCliContinuousIntegrationRouteCaseList {
     return @(
         @{Command = 'build'; ParserCommand = 'ConvertFrom-NovaBuildCliArgument'; ActionCommand = 'Invoke-NovaBuild'}
         @{Command = 'bump'; ParserCommand = 'ConvertFrom-NovaBumpCliArgument'; ActionCommand = 'Update-NovaModuleVersion'}
+        @{Command = 'release'; ParserCommand = 'ConvertFrom-NovaCliArgument'; ActionCommand = 'Invoke-NovaRelease'}
     )
 }
 

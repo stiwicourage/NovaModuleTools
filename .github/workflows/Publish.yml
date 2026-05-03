@@ -28,7 +28,7 @@ jobs:
         run: ./scripts/build/ci/Install-CiPowerShellModules.ps1
 
       - name: Build Module
-        run: Invoke-NovaBuild -ContinuousIntegration -Verbose
+        run: Invoke-NovaBuild -ContinuousIntegration
 
       - name: Run Pester Tests
         run: Test-NovaBuild
@@ -56,11 +56,15 @@ jobs:
           Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $report
           Write-Output $report
 
+      - name: Ensure PSGallery repository registration
+        if: github.ref_name == 'main'
+        uses: ./.github/actions/ensure-psresource-repository
+
       - name: Run semantic release with NovaRelease
         id: semantic_release
         if: github.ref_name == 'main'
         run: |
-          Update-NovaModuleVersion -ContinuousIntegration -Verbose
+          Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests -ContinuousIntegration
           $version = Get-NovaProjectInfo -Version
           $result = Move-UnreleasedChangelog -Version $version
 
@@ -70,6 +74,8 @@ jobs:
           "tag_message<<$delimiter" >> $env:GITHUB_OUTPUT
           $result.TagMessageText >> $env:GITHUB_OUTPUT
           "$delimiter" >> $env:GITHUB_OUTPUT
+        env:
+          PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
 
       - name: Create verified release commit
         id: commit_release
@@ -94,17 +100,6 @@ jobs:
           target-sha: ${{ steps.commit_release.outputs.commit-sha }}
           message: ${{ steps.semantic_release.outputs.tag_message }}
 
-      - name: Ensure PSGallery repository registration
-        if: github.ref_name == 'main' && steps.commit_release.outputs.has-changes == 'true'
-        uses: ./.github/actions/ensure-psresource-repository
-
-      - name: Publish module to PSGallery
-        if: github.ref_name == 'main' && steps.commit_release.outputs.has-changes == 'true'
-        run: |
-          Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests -ContinuousIntegration
-        env:
-          PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
-
       - name: Prepare next prerelease version on main -> develop
         if: github.ref_name == 'main' && steps.commit_release.outputs.has-changes == 'true'
         run: |
@@ -114,7 +109,7 @@ jobs:
           git checkout develop
           git reset --hard origin/main
 
-          Update-NovaModuleVersion -Preview -ContinuousIntegration -Verbose
+          Update-NovaModuleVersion -Preview -ContinuousIntegration
 
       - name: Create verified develop prerelease commit
         id: commit_develop_from_main
@@ -154,7 +149,7 @@ jobs:
       - name: Bump next prerelease version on develop
         if: github.ref_name == 'develop'
         run: |
-          Update-NovaModuleVersion -Preview -ContinuousIntegration -Verbose
+          Update-NovaModuleVersion -Preview -ContinuousIntegration
 
       - name: Create verified develop commit
         id: commit_develop

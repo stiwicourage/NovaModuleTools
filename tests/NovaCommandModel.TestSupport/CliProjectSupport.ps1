@@ -229,9 +229,9 @@ function Get-TestNovaCliContinuousIntegrationForwardingCaseList {
     param()
 
     return @(
-        @{CommandName = 'build'; ActionCommand = 'Invoke-NovaBuild'; UsesPublishOption = $false; Arguments = @('--continuous-integration')}
-        @{CommandName = 'bump'; ActionCommand = 'Update-NovaModuleVersion'; UsesPublishOption = $false; Arguments = @('--continuous-integration')}
-        @{CommandName = 'publish'; ActionCommand = 'Publish-NovaModule'; UsesPublishOption = $false; Arguments = @('--repository', 'PSGallery', '--api-key', 'key123', '--continuous-integration')}
-        @{CommandName = 'release'; ActionCommand = 'Invoke-NovaRelease'; UsesPublishOption = $true; Arguments = @('--repository', 'PSGallery', '--api-key', 'key123', '--continuous-integration')}
+        @{CommandName = 'build'; ActionCommand = 'Invoke-NovaBuild'; Arguments = @('--continuous-integration')}
+        @{CommandName = 'bump'; ActionCommand = 'Update-NovaModuleVersion'; Arguments = @('--continuous-integration')}
+        @{CommandName = 'publish'; ActionCommand = 'Publish-NovaModule'; Arguments = @('--repository', 'PSGallery', '--api-key', 'key123', '--continuous-integration')}
+        @{CommandName = 'release'; ActionCommand = 'Invoke-NovaRelease'; Arguments = @('--repository', 'PSGallery', '--api-key', 'key123', '--continuous-integration')}
     )
 }

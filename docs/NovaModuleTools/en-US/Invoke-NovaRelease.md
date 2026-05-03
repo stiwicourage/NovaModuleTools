@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-  ms.date: 04/26/2026
+  ms.date: 05/03/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-NovaRelease
 ---
@@ -17,10 +17,22 @@ Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
 
 ## SYNTAX
 
-### __AllParameterSets
+### Local
 
 ```text
-PS> Invoke-NovaRelease [[-PublishOption] <hashtable>] [-SkipTests] [-ContinuousIntegration] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Invoke-NovaRelease [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+### Repository
+
+```text
+PS> Invoke-NovaRelease -Repository <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+### PublishOption
+
+```text
+PS> Invoke-NovaRelease -PublishOption <hashtable> [-SkipTests] [-ContinuousIntegration] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -32,6 +44,10 @@ PS> Invoke-NovaRelease [[-PublishOption] <hashtable>] [-SkipTests] [-ContinuousI
 3. Bump version (`Update-NovaModuleVersion`)
 4. Build again to include the updated version
 5. Publish through the resolved local-directory or repository publish action
+
+Use `-Repository` and `-ApiKey` for repository publishing, or `-Local` / `-ModuleDirectoryPath` for local release
+publishing. This keeps the release command aligned with the direct PowerShell parameter style used by
+`Publish-NovaModule`.
 
 Use `-SkipTests` when tests already ran earlier in your pipeline and you only want to skip the pre-release
 `Test-NovaBuild` step. Both build steps still run.
@@ -54,7 +70,7 @@ entire release workflow and resolved publish target without building, testing, v
 ### EXAMPLE 1
 
 ```text
-PS> Invoke-NovaRelease -PublishOption @{ Local = $true }
+PS> Invoke-NovaRelease -Local
 ```
 
 Runs a local release flow and publishes to the local module path.
@@ -63,7 +79,7 @@ The command returns the version result and does not reload the published module 
 ### EXAMPLE 2
 
 ```text
-PS> Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API }
+PS> Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API
 ```
 
 Runs release flow and publishes to the specified repository.
@@ -71,7 +87,7 @@ Runs release flow and publishes to the specified repository.
 ### EXAMPLE 3
 
 ```text
-PS> Invoke-NovaRelease -Path ./src/resources/example -PublishOption @{Local = $true}
+PS> Invoke-NovaRelease -Path ./src/resources/example -Local
 ```
 
 Runs the release workflow from the project rooted at `./src/resources/example`.
@@ -79,7 +95,7 @@ Runs the release workflow from the project rooted at `./src/resources/example`.
 ### EXAMPLE 4
 
 ```text
-PS> Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API} -WhatIf
+PS> Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -WhatIf
 ```
 
 Previews the release workflow and repository target without making changes.
@@ -87,7 +103,7 @@ Previews the release workflow and repository target without making changes.
 ### EXAMPLE 5
 
 ```text
-PS> Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -SkipTests
+PS> Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
 ```
 
 Runs the release workflow without re-running the pre-release `Test-NovaBuild` step.
@@ -95,7 +111,7 @@ Runs the release workflow without re-running the pre-release `Test-NovaBuild` st
 ### EXAMPLE 6
 
 ```text
-PS> Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -ContinuousIntegration
+PS> Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -ContinuousIntegration
 ```
 
 Runs the release workflow and re-activates the built `dist/<ProjectName>/<ProjectName>.psd1` at the CI-sensitive
@@ -103,9 +119,108 @@ workflow boundaries so later commands in the same session keep using the built m
 
 ## PARAMETERS
 
+### -Local
+
+Use the local release target. When `-ModuleDirectoryPath` is omitted, Nova resolves the normal local module install
+path for the current platform.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: Local
+    Position: Named
+    IsRequired: true
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
+### -Repository
+
+Publish the release output to a PowerShell repository such as `PSGallery`.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: Repository
+    Position: Named
+    IsRequired: true
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
+### -ModuleDirectoryPath
+
+Local directory where the built module should be copied when the release publishes to a filesystem target.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: Local
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+  - Name: Repository
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
+### -ApiKey
+
+Explicit repository API key. When `-Repository PSGallery` is used and `-ApiKey` is omitted, Nova still falls back to
+`$env:PSGALLERY_API`.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: Local
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+  - Name: Repository
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
 ### -PublishOption
 
-Hashtable controlling publish behavior.
+DEPRECATED: This function will be removed in a future version.
+Legacy hashtable form for publish behavior.
 
 Common keys:
 
@@ -114,7 +229,7 @@ Common keys:
 - `ApiKey`
 - `ModuleDirectoryPath`
 
-Use `Local = $true` for local publishing, or provide `Repository` and `ApiKey` for repository publishing.
+Prefer the direct `-Local`, `-Repository`, `-ModuleDirectoryPath`, and `-ApiKey` parameters for new automation.
 
 ```yaml
 Type: System.Collections.Hashtable
@@ -122,7 +237,7 @@ DefaultValue: '@{}'
 SupportsWildcards: false
 Aliases: [ ]
 ParameterSets:
-  - Name: (All)
+  - Name: PublishOption
     Position: Named
     IsRequired: false
     ValueFromPipeline: false

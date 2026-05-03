@@ -25,17 +25,12 @@ function Invoke-NovaCliParsedCommand {
     param(
         [Parameter(Mandatory)][pscustomobject]$InvocationContext,
         [Parameter(Mandatory)][string]$ParserCommand,
-        [Parameter(Mandatory)][string]$ActionCommand,
-        [switch]$UsePublishOption
+        [Parameter(Mandatory)][string]$ActionCommand
     )
 
     $arguments = $InvocationContext.Arguments
     $mutatingCommonParameters = $InvocationContext.MutatingCommonParameters
     $options = & $ParserCommand -Arguments $arguments
-    if ($UsePublishOption) {
-        return & $ActionCommand -PublishOption $options @mutatingCommonParameters
-    }
-
     return & $ActionCommand @options @mutatingCommonParameters
 }
 
@@ -206,7 +201,7 @@ function Invoke-NovaCliCommandRoute {
             return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaCliArgument' -ActionCommand 'Publish-NovaModule'
         }
         'release' {
-            return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaCliArgument' -ActionCommand 'Invoke-NovaRelease' -UsePublishOption
+            return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaCliArgument' -ActionCommand 'Invoke-NovaRelease'
         }
         'notification' {
             return Invoke-NovaCliNotificationRouteCommand -InvocationContext $InvocationContext

@@ -608,15 +608,8 @@ Describe '$projectName tests' {
             InModuleScope $script:moduleName -Parameters @{TestCase = $testCase} {
                 param($TestCase)
 
-                if ($TestCase.UsesPublishOption) {
-                    Mock $TestCase.ActionCommand {
-                        [pscustomobject]@{ContinuousIntegration = [bool]$PublishOption.ContinuousIntegration}
-                    }
-                }
-                else {
-                    Mock $TestCase.ActionCommand {
-                        [pscustomobject]@{ContinuousIntegration = $ContinuousIntegration.IsPresent}
-                    }
+                Mock $TestCase.ActionCommand {
+                    [pscustomobject]@{ContinuousIntegration = $ContinuousIntegration.IsPresent}
                 }
 
                 $result = Invoke-NovaCli -Command $TestCase.CommandName -Arguments $TestCase.Arguments
@@ -843,10 +836,10 @@ Describe '$projectName tests' {
         }
     }
 
-    It 'Invoke-NovaCli release forwards skip-tests in PublishOption' {
+    It 'Invoke-NovaCli release forwards skip-tests' {
         InModuleScope $script:moduleName {
             Mock Invoke-NovaRelease {
-                [pscustomobject]@{SkipTests = [bool]$PublishOption.SkipTests}
+                [pscustomobject]@{SkipTests = $SkipTests.IsPresent}
             }
 
             $result = Invoke-NovaCli release --repository PSGallery --api-key key123 --skip-tests

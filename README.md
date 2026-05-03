@@ -196,7 +196,7 @@ continuous-integration activation switches instead of handling re-imports manual
 PS> Invoke-NovaBuild -ContinuousIntegration
 PS> Update-NovaModuleVersion -ContinuousIntegration
 PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -ContinuousIntegration
-PS> Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API} -ContinuousIntegration
+PS> Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -ContinuousIntegration
 
 % nova build --continuous-integration
 % nova bump --continuous-integration
@@ -383,13 +383,17 @@ in the pipeline:
 
 ```powershell
 PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
-PS> Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -SkipTests
+PS> Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
 % nova publish --repository PSGallery --api-key $env:PSGALLERY_API --skip-tests
 % nova release --repository PSGallery --api-key $env:PSGALLERY_API -s
 ```
 
 These forms skip `Test-NovaBuild` only. `Publish-NovaModule` still builds before publishing, and `Invoke-NovaRelease`
 still runs both build steps around the version bump.
+
+`Invoke-NovaRelease` now uses the same direct delivery parameters as `Publish-NovaModule` and `% nova release`, so
+PowerShell automation can pass `-Local`, `-Repository`, `-ModuleDirectoryPath`, and `-ApiKey` without wrapping them in a
+`-PublishOption` hashtable.
 
 When your pipeline continues in the same PowerShell session after build, bump, publish, or release, add
 `-ContinuousIntegration` / `--continuous-integration` / `-i` to the supported commands so Nova re-activates the built

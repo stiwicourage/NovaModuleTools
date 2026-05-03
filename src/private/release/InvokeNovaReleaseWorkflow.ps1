@@ -17,6 +17,16 @@ function Get-NovaReleaseNestedWorkflowParameterMap {
     return $nestedWorkflowParams
 }
 
+function Test-NovaReleaseWorkflowShouldRestoreBuiltModule {
+    [CmdletBinding()]
+    param(
+        [hashtable]$WorkflowParams = @{},
+        [switch]$ContinuousIntegrationRequested
+    )
+
+    return $ContinuousIntegrationRequested -and -not ($WorkflowParams.ContainsKey('WhatIf') -and $WorkflowParams.WhatIf)
+}
+
 function Invoke-NovaReleaseWorkflow {
     [CmdletBinding()]
     param(
@@ -27,6 +37,7 @@ function Invoke-NovaReleaseWorkflow {
     $skipTestsRequested = ($WorkflowContext.PSObject.Properties.Name -contains 'SkipTestsRequested') -and $WorkflowContext.SkipTestsRequested
     $workflowParams = $WorkflowContext.WorkflowParams
     $ciWorkflowParams = Get-NovaReleaseNestedWorkflowParameterMap -WorkflowParams $workflowParams -ContinuousIntegrationRequested:$continuousIntegrationRequested
+    $shouldRestoreBuiltModule = Test-NovaReleaseWorkflowShouldRestoreBuiltModule -WorkflowParams $workflowParams -ContinuousIntegrationRequested:$continuousIntegrationRequested
     $publishParams = $WorkflowContext.PublishParams
 
     Invoke-NovaBuild @ciWorkflowParams
@@ -39,7 +50,7 @@ function Invoke-NovaReleaseWorkflow {
 
     & $WorkflowContext.PublishInvocation.Action @publishParams
 
-    if ($continuousIntegrationRequested) {
+    if ($shouldRestoreBuiltModule) {
         $null = Import-NovaBuiltModuleForCi -ProjectInfo $WorkflowContext.ProjectInfo
     }
 

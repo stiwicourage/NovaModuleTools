@@ -437,7 +437,9 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 return 'init-default'
             }
             Mock Update-NovaModuleVersion {'bump-value'}
-            Mock Invoke-NovaRelease {$PublishOption}
+            Mock Invoke-NovaRelease {
+                [pscustomobject]@{Repository = $Repository}
+            }
 
             Invoke-NovaCli info | Should -Be 'info-value'
             Invoke-NovaCli build | Should -Be 'build-value'
@@ -686,7 +688,6 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             ActionCommand = 'Test-NovaBuild'
             ParsedOptions = @{Build = $true}
             ExpectedProperty = 'Build'
-            UsesPublishOption = $false
         }
         @{
             Command = 'package'
@@ -695,7 +696,6 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             ActionCommand = 'New-NovaModulePackage'
             ParsedOptions = @{SkipTests = $true}
             ExpectedProperty = 'SkipTests'
-            UsesPublishOption = $false
         }
         @{
             Command = 'publish'
@@ -704,7 +704,6 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             ActionCommand = 'Publish-NovaModule'
             ParsedOptions = @{SkipTests = $true}
             ExpectedProperty = 'SkipTests'
-            UsesPublishOption = $false
         }
         @{
             Command = 'release'
@@ -713,7 +712,6 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             ActionCommand = 'Invoke-NovaRelease'
             ParsedOptions = @{SkipTests = $true}
             ExpectedProperty = 'SkipTests'
-            UsesPublishOption = $true
         }
     ) {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
@@ -737,14 +735,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             $expectedProperty = $TestCase.ExpectedProperty
 
             Mock $parserCommand {$parsedOptions}
-            if ($TestCase.UsesPublishOption) {
-                Mock $actionCommand {
-                    param([hashtable]$PublishOption, [switch]$WhatIf)
-
-                    [pscustomobject]@{Feature = [bool]$PublishOption.SkipTests; WhatIf = $WhatIf.IsPresent}
-                }
-            }
-            elseif ($expectedProperty -eq 'Build') {
+            if ($expectedProperty -eq 'Build') {
                 Mock $actionCommand {
                     param([switch]$Build, [switch]$WhatIf)
 

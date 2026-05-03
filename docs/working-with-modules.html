@@ -201,7 +201,7 @@ pwsh -NoLogo -Command 'Import-Module (Get-NovaProjectInfo).OutputModuleDir -Forc
                     build/import loop when you just want fast iteration in <code>dist/</code>.</p>
                 <div class="notice notice--warning">
                     <strong>Do not confuse local publish with local release.</strong>
-                    <p><code>Invoke-NovaRelease -PublishOption @{ Local = $true }</code> publishes locally too, but it
+                    <p><code>Invoke-NovaRelease -Local</code> publishes locally too, but it
                         does <strong>not</strong> import the published module into the current session afterward. That
                         special import behavior belongs to <code>Publish-NovaModule -Local</code>.</p>
                 </div>
