@@ -34,6 +34,8 @@ Before making larger changes, read the contributor docs in:
 GitHub now prefills pull requests with `.github/pull_request_template.md`.
 Use it to explain intent clearly, record what you validated, and call out any required documentation or changelog work.
 
+Pull requests against `main` and `develop` also run a CodeScene coverage-gate check when CI has produced the Cobertura coverage artifact, so PRs can be blocked when changed code falls below the configured coverage threshold.
+
 **Before opening a pull request, please run the local quality flow from the repository root:**
 
 ```powershell title="run.ps1"
@@ -55,6 +57,7 @@ If you are working on the CodeScene integration, the CI coverage helper writes t
 CodeScene upload step consumes:
 
 - generate coverage with `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
+- pull requests then download that uploaded artifact and run the CodeScene coverage-gate check through `.github/actions/check-coverage`
 - then upload/trigger with `./scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`
 - the upload helper auto-discovers a single `artifacts/*.cobertura.xml` file unless you pass `-CoveragePath`
 - if upload succeeds but `-TriggerAnalysis` fails with a project-owner OAuth error, re-authorize the repository in

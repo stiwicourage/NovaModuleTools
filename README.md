@@ -423,9 +423,11 @@ workflow configuration, and emits CI-friendly reports such as:
 - `artifacts/pester-coverage.cobertura.xml`
 - `artifacts/coverage-low.txt`
 
-The `Tests.yml` workflow reuses that Cobertura artifact for both Codecov and CodeScene.
-The CodeScene step uploads coverage through `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1` before it triggers a
-follow-up analysis run.
+The `Tests.yml` workflow reuses that Cobertura artifact for Codecov, for the pull-request CodeScene coverage-gate check,
+and for the develop/manual CodeScene upload-and-analysis flow.
+The CodeScene pull-request gate downloads the uploaded artifact and runs `cs-coverage check`, while the develop/manual
+CodeScene step uploads coverage through `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1` before it triggers a follow-up
+analysis run.
 If coverage upload succeeds but the trigger fails with an OAuth/project-owner error, fix the repository authorization in
 CodeScene for the project owner. That trigger-side repository authorization is separate from `CS_ACCESS_TOKEN`.
 
@@ -572,6 +574,8 @@ When CodeScene coverage upload is needed, run
 `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`.
 That script auto-discovers a single `*.cobertura.xml` file under `artifacts/` unless you pass `-CoveragePath`
 explicitly.
+The repository `Tests.yml` workflow now also downloads that same Cobertura artifact during pull requests and runs the
+CodeScene coverage-gate check before merge.
 If `-TriggerAnalysis` fails after a successful upload, review the CodeScene response body: repository OAuth problems for
 the project owner must be fixed in CodeScene itself and are not solved by rotating `CS_ACCESS_TOKEN` alone.
 
@@ -589,8 +593,7 @@ published module from the local install directory into the current PowerShell se
 step depends on the built-but-unpublished output instead.
 
 The CI helper flow also produces JUnit and Cobertura artifacts for external systems, including the coverage file that
-the
-CodeScene workflow upload step consumes.
+the CodeScene workflow gate and upload steps consume.
 
 ### Release automation
 
