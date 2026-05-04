@@ -35,7 +35,6 @@ jobs:
 
       - name: Validate repository changelog with Test-KeepAChangelogFile
         run: |
-          Import-Module ./dist/KeepAChangelog/KeepAChangelog.psd1 -Force
           $result = Test-KeepAChangelogFile -Path ./CHANGELOG.md
           if (-not $result.IsValid) {
             throw ($result.Errors -join [Environment]::NewLine)
