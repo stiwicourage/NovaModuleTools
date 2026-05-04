@@ -33,6 +33,14 @@ jobs:
       - name: Run NovaModuleTools CI test and coverage workflow
         run: ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts
 
+      - name: Validate repository changelog with Test-KeepAChangelogFile
+        run: |
+          Import-Module ./dist/KeepAChangelog/KeepAChangelog.psd1 -Force
+          $result = Test-KeepAChangelogFile -Path ./CHANGELOG.md
+          if (-not $result.IsValid) {
+            throw ($result.Errors -join [Environment]::NewLine)
+          }
+          
       - name: Upload CI artifacts
         if: always()
         uses: actions/upload-artifact@v4
