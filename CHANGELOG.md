@@ -46,6 +46,10 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 - Fix the repository `run.ps1` quality loop after the CI installer refactor introduced new ScriptAnalyzer warnings.
     - The internal CI installer helper now follows ScriptAnalyzer naming and `ShouldProcess` expectations.
     - `run.ps1` no longer stops in the analyzer step because of those helper warnings.
+- Fix interactive `nova init` / `nova init -e` scaffold validation so invalid answers retry immediately at the prompt.
+    - Invalid module names now show the validation message inline instead of failing after the full questionnaire.
+    - Standard and example scaffold flows now share the same retry-first validation behavior through the common prompt
+      path.
 
 ### Security
 

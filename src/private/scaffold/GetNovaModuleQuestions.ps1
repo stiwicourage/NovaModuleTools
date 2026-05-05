@@ -1,15 +1,24 @@
-function Get-NovaModuleQuestionSet {
-    [CmdletBinding()]
-    param(
-        [switch]$Example
-    )
+function Get-NovaModuleProjectNameValidation {
+    return @{
+        Test = {
+            param($Value)
 
-    $questions = [ordered]@{
+            return $Value -match '^[A-Za-z][A-Za-z0-9_.]*$'
+        }
+        Message = 'Module name is invalid. Use a single word that starts with a letter and contains only letters, numbers, underscores, or periods.'
+        ErrorId = 'Nova.Validation.ScaffoldProjectNameInvalid'
+        Category = [System.Management.Automation.ErrorCategory]::InvalidData
+    }
+}
+
+function Get-NovaModuleBaseQuestionSet {
+    return [ordered]@{
         ProjectName = @{
             Caption = 'Module Name'
             Message = 'Enter Module name of your choice, should be single word with no special characters'
             Prompt = 'Name'
             Default = 'MANDATORY'
+            Validation = Get-NovaModuleProjectNameValidation
         }
         Description = @{
             Caption = 'Module Description'
@@ -46,18 +55,31 @@ function Get-NovaModuleQuestionSet {
             }
         }
     }
+}
+
+function Get-NovaModulePesterQuestion {
+    return @{
+        Caption = 'Pester Testing'
+        Message = 'Do you want to enable basic Pester Testing'
+        Prompt = 'EnablePester'
+        Default = 'No'
+        Choice = [ordered]@{
+            Yes = 'Enable pester to perform testing'
+            No = 'Skip pester testing'
+        }
+    }
+}
+
+function Get-NovaModuleQuestionSet {
+    [CmdletBinding()]
+    param(
+        [switch]$Example
+    )
+
+    $questions = Get-NovaModuleBaseQuestionSet
 
     if (-not $Example) {
-        $questions.EnablePester = @{
-            Caption = 'Pester Testing'
-            Message = 'Do you want to enable basic Pester Testing'
-            Prompt = 'EnablePester'
-            Default = 'No'
-            Choice = [ordered]@{
-                Yes = 'Enable pester to perform testing'
-                No = 'Skip pester testing'
-            }
-        }
+        $questions.EnablePester = Get-NovaModulePesterQuestion
     }
 
     return $questions

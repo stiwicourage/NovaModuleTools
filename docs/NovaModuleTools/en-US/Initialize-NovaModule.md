@@ -30,6 +30,9 @@ PS> Initialize-NovaModule [-Path <string>] [-Example] [-WhatIf] [-Confirm] [<Com
 The command collects project details interactively, including the module name, description, version, author, minimum
 PowerShell version, Git initialization, and, for the standard scaffold, optional basic Pester support.
 
+If you enter an invalid answer during the interactive flow, `Initialize-NovaModule` reports the validation problem
+immediately and retries that prompt before it continues to the next question.
+
 Use this command when you want to start a new module in the NovaModuleTools structure without hand-creating the project
 layout.
 
@@ -38,7 +41,8 @@ supported.
 
 Use `-Example` when you want the scaffold to start from the packaged example project instead of the minimal default
 layout. The example flow keeps the example source, resource, and test files, skips the Pester enable/disable question,
-and applies the interactive metadata values to the copied `project.json`.
+and applies the interactive metadata values to the copied `project.json`. The standard and example flows share the same
+inline validation and retry behavior for interactive answers.
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
 scaffold target after the interactive answers have been collected, without creating folders, writing `project.json`, or
@@ -53,6 +57,7 @@ PS> Initialize-NovaModule -Path ~/Work
 ```
 
 Starts the interactive scaffold flow and creates the new module under `~/Work`.
+Invalid interactive answers are retried immediately before the command continues.
 
 ### EXAMPLE 2
 
@@ -70,6 +75,7 @@ PS> Initialize-NovaModule -Example -Path ~/Work
 
 Creates a new project under `~/Work` from the packaged example template and applies the answers from the interactive
 prompt flow to the copied `project.json`.
+Invalid interactive answers are retried immediately here as well.
 
 ### EXAMPLE 4
 

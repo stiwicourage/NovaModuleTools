@@ -124,6 +124,8 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             Responses = @('NovaModuleTools')
             Expected = 'NovaModuleTools'
             ExpectedPromptCalls = 1
+            Validation = $null
+            ExpectedValidationMessage = $null
         }
         @{
             Name = 'mandatory retry'
@@ -134,6 +136,8 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             Responses = @($null, 'NovaModuleTools')
             Expected = 'NovaModuleTools'
             ExpectedPromptCalls = 2
+            Validation = $null
+            ExpectedValidationMessage = $null
         }
         @{
             Name = 'default fallback'
@@ -144,6 +148,41 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             Responses = @('')
             Expected = '0.0.1'
             ExpectedPromptCalls = 1
+            Validation = $null
+            ExpectedValidationMessage = $null
+        }
+        @{
+            Name = 'validation retry'
+            Caption = 'Module Name'
+            Message = 'Enter module name'
+            Prompt = 'Name'
+            Default = 'MANDATORY'
+            Responses = @('bad name', 'NovaModuleTools')
+            Expected = 'NovaModuleTools'
+            ExpectedPromptCalls = 2
+            Validation = @{
+                Test = {
+                    param($Value)
+
+                    return $Value -match '^[A-Za-z][A-Za-z0-9_.]*$'
+                }
+                Message = 'Module name is invalid. Use a single word that starts with a letter and contains only letters, numbers, underscores, or periods.'
+            }
+            ExpectedValidationMessage = 'Module name is invalid. Use a single word that starts with a letter and contains only letters, numbers, underscores, or periods.'
+        }
+        @{
+            Name = 'validation metadata without validator'
+            Caption = 'Module Name'
+            Message = 'Enter module name'
+            Prompt = 'Name'
+            Default = 'MANDATORY'
+            Responses = @('NovaModuleTools')
+            Expected = 'NovaModuleTools'
+            ExpectedPromptCalls = 1
+            Validation = @{
+                Message = 'Unused validation message'
+            }
+            ExpectedValidationMessage = $null
         }
     ) {
         $hostUi = New-TestPromptHostUi {
@@ -156,6 +195,7 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             param($HostUi, $PromptCase)
 
             Mock Get-AwesomeHostUi {$HostUi}
+            Mock Write-Message {}
 
             Read-AwesomeHost -Ask ([pscustomobject]@{
                 Caption = $PromptCase.Caption
@@ -163,7 +203,17 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
                 Prompt = $PromptCase.Prompt
                 Default = $PromptCase.Default
                 Choice = $null
+                Validation = $PromptCase.Validation
             })
+
+            if ($null -ne $PromptCase.ExpectedValidationMessage) {
+                Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+                    $Text -eq $PromptCase.ExpectedValidationMessage -and $color -eq 'Yello'
+                }
+            }
+            else {
+                Assert-MockCalled Write-Message -Times 0
+            }
         }
 
         $result | Should -Be $Expected
@@ -179,6 +229,45 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
         else {
             $hostUi.State.FieldDescriptions[0].DefaultValue | Should -Be $Default
         }
+    }
+
+    It 'Read-AwesomeHost retries invalid hashtable-based scaffold answers inline' {
+        $hostUi = New-TestPromptHostUi {
+            param($CallCount)
+
+            return [pscustomobject]@{Values = @('bad name', 'NovaModuleTools')[$CallCount - 1]}
+        }
+
+        $result = InModuleScope $script:moduleName -Parameters @{HostUi = $hostUi} {
+            param($HostUi)
+
+            Mock Get-AwesomeHostUi {$HostUi}
+            Mock Write-Message {}
+
+            $answer = Read-AwesomeHost -Ask @{
+                Caption = 'Module Name'
+                Message = 'Enter module name'
+                Prompt = 'Name'
+                Default = 'MANDATORY'
+                Validation = @{
+                    Test = {
+                        param($Value)
+
+                        return $Value -match '^[A-Za-z][A-Za-z0-9_.]*$'
+                    }
+                    Message = 'Module name is invalid. Use a single word that starts with a letter and contains only letters, numbers, underscores, or periods.'
+                }
+            }
+
+            Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+                $Text -eq 'Module name is invalid. Use a single word that starts with a letter and contains only letters, numbers, underscores, or periods.' -and $color -eq 'Yello'
+            }
+
+            return $answer
+        }
+
+        $result | Should -Be 'NovaModuleTools'
+        $hostUi.State.PromptCalls | Should -Be 2
     }
 
     It 'Read-AwesomeHost returns the selected label for choice prompts' {

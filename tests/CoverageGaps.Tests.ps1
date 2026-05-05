@@ -47,12 +47,15 @@ Describe 'Coverage gaps for scaffold internals' {
                 'EnablePester'
             )
             $questions.ProjectName.Default | Should -Be 'MANDATORY'
+            $questions.ProjectName.Validation.Message | Should -Be 'Module name is invalid. Use a single word that starts with a letter and contains only letters, numbers, underscores, or periods.'
+            (& $questions.ProjectName.Validation.Test 'NovaSample') | Should -BeTrue
+            (& $questions.ProjectName.Validation.Test 'bad name') | Should -BeFalse
             $questions.EnableGit.Choice.Yes | Should -Be 'Enable Git'
             $questions.EnablePester.Choice.No | Should -Be 'Skip pester testing'
         }
     }
 
-    It 'Get-NovaModuleQuestionSet omits the Pester prompt for the example flow' {
+    It 'Get-NovaModuleQuestionSet omits the Pester prompt for the example flow and keeps ProjectName validation' {
         InModuleScope $script:moduleName {
             $questions = Get-NovaModuleQuestionSet -Example
 
@@ -65,6 +68,7 @@ Describe 'Coverage gaps for scaffold internals' {
                 'EnableGit'
             )
             $questions.Contains('EnablePester') | Should -BeFalse
+            $questions.ProjectName.Validation.ErrorId | Should -Be 'Nova.Validation.ScaffoldProjectNameInvalid'
         }
     }
 
@@ -174,37 +178,10 @@ Describe 'Coverage gaps for scaffold internals' {
         }
     }
 
-    It 'Read-NovaModuleAnswerSet rejects invalid project names' {
+    It 'Read-NovaModuleAnswerSet retains a defensive invalid project name guard when prompt validation is bypassed' {
         InModuleScope $script:moduleName {
-            $questions = Get-NovaModuleQuestionSet
-            Mock Read-AwesomeHost {
-                switch ($Ask.Caption) {
-                    'Module Name' {
-                        'bad name'
-                    }
-                    'Module Description' {
-                        'Sample module'
-                    }
-                    'Semantic Version' {
-                        '1.2.3'
-                    }
-                    'Module Author' {
-                        'Tester'
-                    }
-                    'Supported PowerShell Version' {
-                        '7.4'
-                    }
-                    'Git Version Control' {
-                        'No'
-                    }
-                    'Pester Testing' {
-                        'No'
-                    }
-                    default {
-                        throw "Unexpected prompt: $( $Ask.Caption )"
-                    }
-                }
-            }
+            $questions = [ordered]@{ProjectName = (Get-NovaModuleQuestionSet).ProjectName}
+            Mock Read-AwesomeHost {'bad name'}
 
             $thrown = $null
             try {
@@ -219,6 +196,7 @@ Describe 'Coverage gaps for scaffold internals' {
             $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.ScaffoldProjectNameInvalid'
             $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
             $thrown.TargetObject | Should -Be 'bad name'
+            Assert-MockCalled Read-AwesomeHost -Times 1
         }
     }
 
@@ -596,13 +574,13 @@ Describe 'Coverage gaps for scaffold internals' {
         }
     }
 
-    It 'Read-NovaModuleAnswerSet rejects invalid module names with a terminating error' {
+    It 'Assert-NovaModuleQuestionAnswerValid uses prompt validation metadata for terminating fallback errors' {
         InModuleScope $script:moduleName {
-            Mock Read-AwesomeHost {'invalid name!'}
+            $question = (Get-NovaModuleQuestionSet).ProjectName
 
             $thrown = $null
             try {
-                Read-NovaModuleAnswerSet -Questions @{ProjectName = @{Prompt = 'Name?'}}
+                Assert-NovaModuleQuestionAnswerValid -Question $question -Value 'invalid name!'
             }
             catch {
                 $thrown = $_
