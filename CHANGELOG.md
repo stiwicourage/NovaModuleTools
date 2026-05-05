@@ -39,6 +39,13 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
     - Regular markdown elsewhere under `docs/` no longer breaks the help-generation step.
     - When PlatyPS export does not create the expected help folder, Nova now raises a stable documentation error instead
       of a raw rename-path failure.
+- Fix CI test dependency installation so `Pester 5.7.1` is installed explicitly instead of being pulled in implicitly
+  through the published `NovaModuleTools` manifest.
+    - Published prerelease manifests no longer force `Pester` as an install-time required module.
+    - `Test-NovaBuild` now fails with a clear dependency error when `Pester` is not installed.
+- Fix the repository `run.ps1` quality loop after the CI installer refactor introduced new ScriptAnalyzer warnings.
+    - The internal CI installer helper now follows ScriptAnalyzer naming and `ShouldProcess` expectations.
+    - `run.ps1` no longer stops in the analyzer step because of those helper warnings.
 
 ### Security
 

@@ -425,3 +425,94 @@ Describe 'Coverage gaps for quality helpers' {
         }
     }
 }
+
+Describe 'CI PowerShell module installer' {
+    BeforeAll {
+        $script:getTestCiInstalledModuleRecord = {
+            param(
+                [Parameter(Mandatory)]$Name,
+                [Parameter(Mandatory)][hashtable]$InstalledVersionMap
+            )
+
+            $moduleName = [string]$Name
+
+            if (-not $InstalledVersionMap.ContainsKey($moduleName)) {
+                return $null
+            }
+
+            return [pscustomobject]@{
+                Name = $moduleName
+                Version = $InstalledVersionMap[$moduleName]
+                Repository = 'PSGallery'
+            }
+        }
+        $script:setTestCiInstallerMocks = {
+            param(
+                [Parameter(Mandatory)][hashtable]$InstalledVersionMap,
+                [System.Collections.Generic.List[string]]$InstallOrder,
+                [switch]$FailOnInstall
+            )
+
+            $script:ciInstalledVersionMap = $InstalledVersionMap
+            $script:ciInstallOrder = $InstallOrder
+            Mock Set-CiRepositoryTrust {}
+            Mock Get-InstalledCiModule {
+                & $script:getTestCiInstalledModuleRecord -Name $Name -InstalledVersionMap $script:ciInstalledVersionMap
+            }
+
+            if ($FailOnInstall) {
+                Mock Invoke-CiInstallModuleCommand {throw 'Pester should not be reinstalled when the required version is already installed.'}
+                return
+            }
+
+            Mock Invoke-CiInstallModuleCommand {
+                $script:ciInstallOrder.Add($InstallParams.Name) | Out-Null
+                $script:ciInstalledVersionMap[$InstallParams.Name] = if ( $InstallParams.ContainsKey('RequiredVersion')) {
+                    [version]$InstallParams.RequiredVersion
+                } else {
+                    [version]'9.9.9'
+                }
+            }
+        }
+    }
+
+    It 'installs Pester explicitly before prerelease gallery modules' {
+        $scriptPath = Join-Path $script:repoRoot 'scripts/build/ci/Install-CiPowerShellModules.ps1'
+        $installOrder = [System.Collections.Generic.List[string]]::new()
+
+        . $scriptPath -ModuleName @('Pester', 'NovaModuleTools', 'KeepAChangelog')
+        & $script:setTestCiInstallerMocks -InstalledVersionMap @{} -InstallOrder $installOrder
+
+        Invoke-CiPowerShellModuleInstall -ModuleName @('Pester', 'NovaModuleTools', 'KeepAChangelog')
+
+        $installOrder | Should -Be @('Pester', 'NovaModuleTools', 'KeepAChangelog')
+        Assert-MockCalled Invoke-CiInstallModuleCommand -Times 1 -ParameterFilter {
+            $InstallParams.Name -eq 'Pester' -and
+                    $InstallParams.Repository -eq 'PSGallery' -and
+                    $InstallParams.RequiredVersion -eq '5.7.1' -and
+                    -not $InstallParams.ContainsKey('AllowPrerelease')
+        }
+        Assert-MockCalled Invoke-CiInstallModuleCommand -Times 1 -ParameterFilter {
+            $InstallParams.Name -eq 'NovaModuleTools' -and
+                    $InstallParams.Repository -eq 'PSGallery' -and
+                    $InstallParams.AllowPrerelease
+        }
+        Assert-MockCalled Invoke-CiInstallModuleCommand -Times 1 -ParameterFilter {
+            $InstallParams.Name -eq 'KeepAChangelog' -and
+                    $InstallParams.Repository -eq 'PSGallery' -and
+                    $InstallParams.AllowPrerelease
+        }
+    }
+
+    It 'skips reinstalling Pester when the required version is already installed' {
+        $scriptPath = Join-Path $script:repoRoot 'scripts/build/ci/Install-CiPowerShellModules.ps1'
+
+        . $scriptPath -ModuleName @('Pester')
+        & $script:setTestCiInstallerMocks -InstalledVersionMap @{Pester = [version]'5.7.1'} -FailOnInstall
+
+        Invoke-CiPowerShellModuleInstall -ModuleName @('Pester')
+
+        Assert-MockCalled Invoke-CiInstallModuleCommand -Times 0
+    }
+}
+

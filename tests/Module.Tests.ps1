@@ -54,4 +54,19 @@ Describe 'General Module Control' {
         $result | Should -Not -BeNullOrEmpty
         $result.PSObject.Properties.Name | Should -Contain 'NewVersion'
     }
+
+    It 'Publishes only the intended install-time required modules in the built manifest' {
+        $manifestPath = Join-Path $data.OutputModuleDir "$( $data.ProjectName ).psd1"
+        $manifest = Import-PowerShellDataFile -Path $manifestPath
+        $requiredModuleNames = @($manifest.RequiredModules | ForEach-Object {
+            if ($_ -is [string]) {
+                return $_
+            }
+
+            return $_.ModuleName
+        })
+
+        $requiredModuleNames | Should -Contain 'Microsoft.PowerShell.PlatyPS'
+        $requiredModuleNames | Should -Not -Contain 'Pester'
+    }
 }

@@ -262,6 +262,8 @@ Notes:
 - `Test-NovaBuild` validates the built module output, not just loose source files
 - it writes NUnit XML to `artifacts/TestResults.xml`
 - it respects `BuildRecursiveFolders` when discovering tests
+- `Pester` is a test-time dependency, not a transitive install dependency of the published `NovaModuleTools` module
+- install `Pester 5.7.1` explicitly in contributor or CI environments before running `Test-NovaBuild`
 
 ### Create a package artifact
 
@@ -619,6 +621,8 @@ Responsibilities currently covered by the release pipeline include:
 
 The workflow now uses `KeepAChangelog` for changelog release moves, creates annotated git tags named directly from the
 release version, and bootstraps the local PSResourceGet repository store before calling `Publish-NovaModule`.
+The shared CI installer also installs `Pester 5.7.1` explicitly before it installs prerelease gallery modules so test
+workflows do not rely on transitive manifest dependency resolution.
 
 ### Where NovaModuleTools cmdlets fit
 

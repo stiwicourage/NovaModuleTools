@@ -443,7 +443,16 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
                 PublicDir = '/tmp/public'
                 ResourcesDir = '/tmp/resources'
                 CopyResourcesToModuleRoot = $ManifestCase.CopyResourcesToModuleRoot
-                Manifest = [ordered]@{Author = 'Tester'; CompanyName = 'Nova'}
+                Manifest = [ordered]@{
+                    Author = 'Tester'
+                    CompanyName = 'Nova'
+                    RequiredModules = @(
+                        @{
+                            ModuleName = 'Microsoft.PowerShell.PlatyPS'
+                            ModuleVersion = '1.0.1'
+                        }
+                    )
+                }
                 Version = '1.2.3-preview'
                 Description = 'Example'
                 ProjectName = 'NovaModuleTools'
@@ -468,7 +477,10 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
                         $TypesToProcess -eq @($ManifestCase.ExpectedTypePath) -and
                         $Prerelease -eq 'preview' -and
                         $Author -eq 'Tester' -and
-                        $CompanyName -eq 'Nova'
+                        $CompanyName -eq 'Nova' -and
+                        @($RequiredModules).Count -eq 1 -and
+                        $RequiredModules[0].ModuleName -eq 'Microsoft.PowerShell.PlatyPS' -and
+                        $RequiredModules[0].ModuleVersion -eq '1.0.1'
             }
         }
     }
