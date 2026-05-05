@@ -170,6 +170,20 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             }
             ExpectedValidationMessage = 'Module name is invalid. Use a single word that starts with a letter and contains only letters, numbers, underscores, or periods.'
         }
+        @{
+            Name = 'validation metadata without validator'
+            Caption = 'Module Name'
+            Message = 'Enter module name'
+            Prompt = 'Name'
+            Default = 'MANDATORY'
+            Responses = @('NovaModuleTools')
+            Expected = 'NovaModuleTools'
+            ExpectedPromptCalls = 1
+            Validation = @{
+                Message = 'Unused validation message'
+            }
+            ExpectedValidationMessage = $null
+        }
     ) {
         $hostUi = New-TestPromptHostUi {
             param($CallCount)
