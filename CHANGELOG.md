@@ -40,6 +40,10 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 
 ### Fixed
 
+- Add a PowerShell installed-tool version view through `Get-NovaProjectInfo -Installed`.
+    - PowerShell now exposes the installed `NovaModuleTools` module name and version directly instead of requiring the
+      launcher-only `% nova --version` path.
+    - `Get-Help Get-NovaProjectInfo` now documents both the project-version and installed-tool-version views.
 - Stop build-driven workflows when a `src/public` file contains zero or multiple top-level functions.
     - This prevents helper functions from being exported accidentally just because they live in a public file.
     - `Invoke-NovaBuild`, `Test-NovaBuild -Build`, packaging, publishing, and release flows now surface the warning

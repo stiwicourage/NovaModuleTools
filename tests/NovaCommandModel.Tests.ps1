@@ -113,6 +113,21 @@ Describe 'Nova command model - project, help, and build behavior' {
         }
     }
 
+    It 'Get-NovaProjectInfo -Installed returns the installed NovaModuleTools name and version without reading project.json' {
+        InModuleScope $script:moduleName -Parameters @{ExpectedModuleName = $script:moduleName} {
+            param($ExpectedModuleName)
+
+            Mock Get-NovaCliInstalledVersion {'9.9.9-preview'}
+            Mock Get-NovaProjectInfoContext {throw 'should not resolve project context'}
+            Mock Get-NovaProjectInfoResult {throw 'should not shape project output'}
+
+            Get-NovaProjectInfo -Installed | Should -Be "$ExpectedModuleName 9.9.9-preview"
+            Assert-MockCalled Get-NovaCliInstalledVersion -Times 1 -Scope It
+            Assert-MockCalled Get-NovaProjectInfoContext -Times 0 -Scope It
+            Assert-MockCalled Get-NovaProjectInfoResult -Times 0 -Scope It
+        }
+    }
+
     It 'Get-NovaProjectInfo delegates context resolution and result shaping to private helpers' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfoContext {

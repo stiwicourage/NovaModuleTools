@@ -118,9 +118,11 @@ the
 installed module manifest. When `Invoke-NovaBuild` detects a newer `NovaModuleTools` version after a build, the update
 warning also includes that same release notes link.
 
-To compare the current project version with what is installed locally for that same module, use:
+To inspect the current project version, the installed version of the current project module, or the installed
+`NovaModuleTools` tool version, use:
 
 ```powershell
+PS> Get-NovaProjectInfo -Installed
 % nova version
 % nova version --installed
 % nova version -i
@@ -132,6 +134,7 @@ To compare the current project version with what is installed locally for that s
 - `% nova version --installed` / `% nova version -i` shows the locally installed version of the current project/module
   from
   the local module path
+- `Get-NovaProjectInfo -Installed` shows the installed `NovaModuleTools` module name and version from PowerShell
 - `% nova --version` / `% nova -v` shows the installed `NovaModuleTools` version
 
 ### CLI help
