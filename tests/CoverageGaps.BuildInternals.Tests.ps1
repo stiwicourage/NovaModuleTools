@@ -95,6 +95,12 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
         }
     }
 
+    It 'Get-NovaPackageWorkflowModulePath returns the current module path' {
+        InModuleScope $script:moduleName {
+            Get-NovaPackageWorkflowModulePath | Should -Be $ExecutionContext.SessionState.Module.Path
+        }
+    }
+
     It 'Assert-NovaPublicFunctionFileLayout stops the build when src/public files do not contain exactly one top-level function' {
         InModuleScope $script:moduleName {
             $projectInfo = [pscustomobject]@{
