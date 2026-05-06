@@ -4,6 +4,7 @@
     --panel: rgba(255, 255, 255, 0.08);
     --panel-strong: rgba(255, 255, 255, 0.12);
     --text: #eef3ff;
+    --text-strong: #ffffff;
     --muted: #b8c3df;
     --accent: #6ee7b7;
     --accent-strong: #22c55e;
@@ -42,6 +43,11 @@ body {
 
 a {
     color: inherit;
+}
+
+strong,
+b {
+    color: var(--text-strong);
 }
 
 .site-header {
@@ -749,7 +755,7 @@ td {
 .notice strong {
     display: block;
     margin-bottom: 0.35rem;
-    color: var(--text);
+    color: var(--text-strong);
 }
 
 .notice p {

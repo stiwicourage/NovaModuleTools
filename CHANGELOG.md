@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make prerelease self-update confirmation default to `No`.
     - `Update-NovaModuleTool`, `Update-NovaModuleTools`, and `% nova update` now require an explicit `Y` before a
       prerelease self-update continues, so pressing Enter cancels the update instead of accepting it.
+- Render bold text in white across the hosted HTML documentation.
+    - Emphasized `<strong>` and `<b>` text now stands out more clearly when scanning docs pages.
 
 ### Deprecated
 
