@@ -40,6 +40,11 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 
 ### Fixed
 
+- Fix the release workflow so repository publish steps run against the freshly built `dist/` module in each CI
+  PowerShell process.
+    - `Publish.yml` now imports the built module before `Invoke-NovaRelease` and `Publish-NovaModule`, which avoids
+      missing private helper failures when the runner also has an older installed `NovaModuleTools` version available
+      for autoload.
 - Fix the command-line test workflow wording in `docs/core-workflows.html` so the CLI preview flag is shown as
   `--what-if`.
     - The GitHub Pages guide now keeps the PowerShell `-WhatIf` wording only in the PowerShell view and shows

@@ -64,6 +64,7 @@ jobs:
         id: semantic_release
         if: github.ref_name == 'main'
         run: |
+          & ./scripts/build/ci/Import-BuiltCiModule.ps1 | Out-Null
           Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests -ContinuousIntegration
           $version = Get-NovaProjectInfo -Version
           $result = Move-UnreleasedChangelog -Version $version
@@ -142,6 +143,7 @@ jobs:
       - name: Publish develop prerelease to PSGallery
         if: github.ref_name == 'develop'
         run: |
+          & ./scripts/build/ci/Import-BuiltCiModule.ps1 | Out-Null
           Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests -ContinuousIntegration
         env:
           PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
