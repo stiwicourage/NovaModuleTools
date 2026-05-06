@@ -732,33 +732,45 @@ NovaModuleTools would update from 1.2.3 to prerelease 1.3.0-preview1.
 Prerelease updates may be less stable than released versions.
 Continue with the prerelease update?
 "@
+            $prompt.Choice.Keys | Should -Be @('Y', 'N')
+            $prompt.Default | Should -Be 'N'
         }
     }
 
-    It 'Confirm-NovaPrereleaseModuleUpdate delegates the generated prompt to ShouldContinue and returns the decision' {
-        InModuleScope $script:moduleName {
-            $calls = [System.Collections.Generic.List[object]]::new()
-            $cmdlet = [pscustomobject]@{
-                Calls = $calls
-                ShouldContinueResult = $false
-            }
-            $cmdlet | Add-Member -MemberType ScriptMethod -Name ShouldContinue -Value {
-                param($Message, $Caption)
+    It 'Confirm-NovaPrereleaseModuleUpdate uses a choice prompt that defaults prerelease updates to No' -ForEach @(
+        @{ChoiceIndex = 1; Expected = $false}
+        @{ChoiceIndex = 0; Expected = $true}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
 
-                $this.Calls.Add([pscustomobject]@{
-                    Message = $Message
-                    Caption = $Caption
-                }) | Out-Null
-                return $this.ShouldContinueResult
+            $hostUi = [pscustomobject]@{
+                State = [ordered]@{
+                    ChoiceCalls = 0
+                    ChoiceLabels = @()
+                    DefaultChoiceIndex = $null
+                }
+            }
+            $hostUi | Add-Member -MemberType ScriptMethod -Name PromptForChoice -Value {
+                param($Caption, $Message, $Choices, $DefaultChoiceIndex)
+
+                $this.State.ChoiceCalls += 1
+                $this.State.ChoiceLabels = @($Choices | ForEach-Object Label)
+                $this.State.DefaultChoiceIndex = $DefaultChoiceIndex
+                return $TestCase.ChoiceIndex
+            }
+            $cmdlet = [pscustomobject]@{
+                Host = [pscustomobject]@{
+                    UI = $hostUi
+                }
             }
 
             $result = Confirm-NovaPrereleaseModuleUpdate -Cmdlet $cmdlet -CurrentVersion '1.2.3' -TargetVersion '2.0.0-preview2'
 
-            $result | Should -BeFalse
-            $calls.Count | Should -Be 1
-            $calls[0].Caption | Should -Be 'Confirm prerelease NovaModuleTools update'
-            $calls[0].Message | Should -Match '1.2.3'
-            $calls[0].Message | Should -Match '2.0.0-preview2'
+            $result | Should -Be $TestCase.Expected
+            $hostUi.State.ChoiceCalls | Should -Be 1
+            $hostUi.State.ChoiceLabels | Should -Be @('&Y', '&N')
+            $hostUi.State.DefaultChoiceIndex | Should -Be 1
         }
     }
 

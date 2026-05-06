@@ -62,7 +62,8 @@ Runs the project's Pester test workflow using settings from `project.json`.
 ### `PS> Update-NovaModuleTool`
 
 Updates the installed `NovaModuleTools` module by using the stored prerelease preference that also controls whether
-prerelease self-updates are eligible. The compatibility alias `Update-NovaModuleTools` is also available.
+prerelease self-updates are eligible. Prerelease confirmations default to `No`, so pressing Enter cancels the
+update. The compatibility alias `Update-NovaModuleTools` is also available.
 
 ### `PS> Initialize-NovaModule`
 
