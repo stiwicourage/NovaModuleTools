@@ -40,6 +40,10 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 
 ### Fixed
 
+- Fix the command-line test workflow wording in `docs/core-workflows.html` so the CLI preview flag is shown as
+  `--what-if`.
+    - The GitHub Pages guide now keeps the PowerShell `-WhatIf` wording only in the PowerShell view and shows
+      `--what-if` in the command-line view.
 - Add a PowerShell installed-tool version view through `Get-NovaProjectInfo -Installed`.
     - PowerShell now exposes the installed `NovaModuleTools` module name and version directly instead of requiring the
       launcher-only `% nova --version` path.

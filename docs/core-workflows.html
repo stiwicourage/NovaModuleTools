@@ -199,7 +199,11 @@ PS&gt; Test-NovaBuild -OutputVerbosity Detailed -OutputRenderMode Ansi</code></p
                         <code>-OutputRenderMode</code> are PowerShell cmdlet parameters, so switch to the PowerShell
                         view when you need those controls.</p>
                 </div>
-                <p>Use <code>-WhatIf</code> if you want to preview the test run and output path without creating the
+                <p data-command-visibility="powershell">Use <code>-WhatIf</code> if you want to preview the test run and
+                    output path without creating the
+                    results directory or invoking Pester.</p>
+                <p data-command-visibility="command-line" hidden>Use <code>--what-if</code> if you want to preview the
+                    test run and output path without creating the
                     results directory or invoking Pester.</p>
             </section>
 
