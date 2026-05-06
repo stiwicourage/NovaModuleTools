@@ -12,7 +12,7 @@ function Set-NovaCliExecutablePermission {
         return
     }
 
-    & chmod '+x' $Path
+    & chmod '+x' $Path 2> $null
     if ($LASTEXITCODE -ne 0) {
         Stop-NovaOperation -Message "Failed to make nova launcher executable: $Path" -ErrorId 'Nova.Dependency.CliLauncherPermissionUpdateFailed' -Category InvalidOperation -TargetObject $Path
     }

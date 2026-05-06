@@ -189,19 +189,23 @@ PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
                         <ul class="plain-list">
                             <li><strong>Best for:</strong> scripts, troubleshooting, and understanding resolved paths
                             </li>
-                            <li><strong>Key parameters:</strong> <code>-Path</code>, <code>-Version</code></li>
+                            <li><strong>Key parameters:</strong> <code>-Path</code>, <code>-Version</code>, <code>-Installed</code>
+                            </li>
                             <li><strong>Output:</strong> a project object, or just the version string when you use
-                                <code>-Version</code></li>
+                                <code>-Version</code>, or the installed <code>NovaModuleTools</code> name and version
+                                string when you use
+                                <code>-Installed</code></li>
                         </ul>
                         <div class="surface-example" data-command-example>
                             <div class="surface-example__meta">
-                                <p class="surface-example__title">Inspect project metadata</p>
+                                <p class="surface-example__title">Inspect project metadata or version views</p>
                                 <p class="surface-example__status">Showing: <span
                                         data-command-surface-label>PowerShell</span></p>
                             </div>
                             <div class="surface-example__surface" data-command-surface="powershell">
                                 <pre><code>PS&gt; Get-NovaProjectInfo
-PS&gt; Get-NovaProjectInfo -Version</code></pre>
+PS&gt; Get-NovaProjectInfo -Version
+PS&gt; Get-NovaProjectInfo -Installed</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
                                 <pre><code>% nova info
@@ -534,7 +538,8 @@ PS&gt; Update-NovaModuleVersion -ContinuousIntegration</code></pre>
                                         data-command-surface-label>PowerShell</span></p>
                             </div>
                             <div class="surface-example__surface" data-command-surface="powershell">
-                                <pre><code>PS&gt; Get-NovaProjectInfo -Version</code></pre>
+                                <pre><code>PS&gt; Get-NovaProjectInfo -Version
+PS&gt; Get-NovaProjectInfo -Installed</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
                                 <pre><code>% nova version
@@ -545,9 +550,12 @@ PS&gt; Update-NovaModuleVersion -ContinuousIntegration</code></pre>
                             </div>
                         </div>
                         <div class="surface-note" data-command-visibility="powershell">
-                            <p><strong>PowerShell note:</strong> the cmdlet surface covers the project version directly.
-                                Installed-module and installed-tool version views stay on the launcher flow described in
-                                the linked guide.</p>
+                            <p><strong>PowerShell note:</strong> <code>Get-NovaProjectInfo -Version</code> covers the
+                                project version and
+                                <code>Get-NovaProjectInfo -Installed</code> covers the installed
+                                <code>NovaModuleTools</code> tool version.
+                                The installed current-project module view stays on the launcher flow described in the
+                                linked guide.</p>
                         </div>
                         <p><a class="text-link" href="./versioning-and-updates.html#version-views">See version view
                             differences</a></p>
