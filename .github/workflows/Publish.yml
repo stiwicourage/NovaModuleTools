@@ -69,7 +69,7 @@ jobs:
         id: semantic_release
         if: github.ref_name == 'main'
         run: |
-          Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests -ContinuousIntegration
+          Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
           $version = Get-NovaProjectInfo -Version
           $result = Move-UnreleasedChangelog -Version $version
 
