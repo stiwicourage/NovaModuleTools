@@ -26,6 +26,10 @@ function Get-NovaVersionUpdateLabelResolution {
     $effectiveLabel = $Label
     $advisoryMessage = $null
     $currentVersion = Get-NovaCurrentVersionForUpdatePlan -ProjectInfo $ProjectInfo
+    if (Test-NovaVersionUpdateUsesPreviewPatchFallback -CurrentVersion $currentVersion -PreviewRelease:$PreviewRelease) {
+        $effectiveLabel = 'Patch'
+    }
+
     if (Test-NovaVersionUpdateUsesInitialDevelopmentAdvisory -CurrentVersion $currentVersion -PreviewRelease:$PreviewRelease) {
         $advisoryMessage = Get-NovaInitialDevelopmentVersioningMessage
     }
@@ -38,6 +42,20 @@ function Get-NovaVersionUpdateLabelResolution {
         EffectiveLabel = $effectiveLabel
         AdvisoryMessage = $advisoryMessage
     }
+}
+
+function Test-NovaVersionUpdateUsesPreviewPatchFallback {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][semver]$CurrentVersion,
+        [switch]$PreviewRelease
+    )
+
+    if (-not $PreviewRelease) {
+        return $false
+    }
+
+    return [string]::IsNullOrWhiteSpace($CurrentVersion.PreReleaseLabel)
 }
 
 function Test-NovaVersionUpdateUsesInitialDevelopmentAdvisory {

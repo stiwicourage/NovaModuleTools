@@ -138,6 +138,36 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
+    It 'Get-NovaVersionUpdateWorkflowContext keeps the detected label but enters the next patch preview track from a stable version' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    Version = '1.5.3'
+                    ProjectJSON = '/tmp/project.json'
+                }
+            }
+            Mock Get-GitCommitMessageForVersionBump {@('feat: add change')}
+            Mock Get-NovaVersionLabelForBump {'Minor'}
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    NewVersion = [semver]'1.5.4-preview'
+                }
+            }
+
+            $result = Get-NovaVersionUpdateWorkflowContext -ProjectRoot '/tmp/project' -PreviewRelease
+
+            $result.Label | Should -Be 'Minor'
+            $result.EffectiveLabel | Should -Be 'Patch'
+            $result.NewVersion | Should -Be '1.5.4-preview'
+            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
+                $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
+                        $Label -eq 'Patch' -and
+                        $PreviewRelease
+            }
+        }
+    }
+
     It 'Get-NovaVersionUpdateWorkflowContext carries ContinuousIntegrationRequested when requested' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {
@@ -423,11 +453,11 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
     }
 
     It 'Update-NovaModuleVersion -WhatIf returns the expected next version without persisting it when <Name>' -ForEach @(
-        @{Name = 'the default bump flow is used'; CurrentVersion = '1.0.0'; CommitMessages = @('feat: add change'); Label = 'Minor'; NewVersion = '1.1.0'; Preview = $false}
-        @{Name = 'preview mode starts from a stable version'; CurrentVersion = '1.5.3'; CommitMessages = @('feat: add change'); Label = 'Minor'; NewVersion = '1.6.0-preview'; Preview = $true}
-        @{Name = 'preview mode zero-pads compact preview labels for gallery ordering'; CurrentVersion = '1.5.3-preview'; CommitMessages = @('fix: patch bug'); Label = 'Patch'; NewVersion = '1.5.3-preview01'; Preview = $true}
-        @{Name = 'preview mode starts any bare prerelease stem at 01'; CurrentVersion = '1.5.3-SNAPSHOT'; CommitMessages = @('feat!: breaking api'); Label = 'Major'; NewVersion = '1.5.3-SNAPSHOT01'; Preview = $true}
-        @{Name = 'preview mode continues an existing prerelease version'; CurrentVersion = '1.5.3-rc1'; CommitMessages = @('feat!: breaking api'); Label = 'Major'; NewVersion = '1.5.3-rc2'; Preview = $true}
+        @{Name = 'the default bump flow is used'; CurrentVersion = '1.0.0'; CommitMessages = @('feat: add change'); Label = 'Minor'; EffectiveLabel = 'Minor'; NewVersion = '1.1.0'; Preview = $false}
+        @{Name = 'preview mode enters the next patch preview track from a stable version'; CurrentVersion = '1.5.3'; CommitMessages = @('feat: add change'); Label = 'Minor'; EffectiveLabel = 'Patch'; NewVersion = '1.5.4-preview'; Preview = $true}
+        @{Name = 'preview mode zero-pads compact preview labels for gallery ordering'; CurrentVersion = '1.5.3-preview'; CommitMessages = @('fix: patch bug'); Label = 'Patch'; EffectiveLabel = 'Patch'; NewVersion = '1.5.3-preview01'; Preview = $true}
+        @{Name = 'preview mode starts any bare prerelease stem at 01'; CurrentVersion = '1.5.3-SNAPSHOT'; CommitMessages = @('feat!: breaking api'); Label = 'Major'; EffectiveLabel = 'Major'; NewVersion = '1.5.3-SNAPSHOT01'; Preview = $true}
+        @{Name = 'preview mode continues an existing prerelease version'; CurrentVersion = '1.5.3-rc1'; CommitMessages = @('feat!: breaking api'); Label = 'Major'; EffectiveLabel = 'Major'; NewVersion = '1.5.3-rc2'; Preview = $true}
     ) {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
             param($TestCase)
@@ -459,9 +489,10 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $result.PreviousVersion | Should -Be $TestCase.CurrentVersion
             $result.NewVersion | Should -Be $TestCase.NewVersion
             $result.Label | Should -Be $TestCase.Label
-            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {$Label -eq $TestCase.Label}
+            $result.EffectiveLabel | Should -Be $TestCase.EffectiveLabel
+            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {$Label -eq $TestCase.EffectiveLabel}
             Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
-                $Label -eq $TestCase.Label -and
+                $Label -eq $TestCase.EffectiveLabel -and
                         ([bool]$PreviewRelease) -eq ([bool]$TestCase.Preview)
             }
 

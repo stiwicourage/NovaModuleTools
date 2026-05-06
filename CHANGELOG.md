@@ -21,7 +21,13 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
       minor version instead of auto-jumping to `1.0.0`.
   - Stable `0.y.z` bump results now print one warning about manually setting `1.0.0` once the software is stable,
     while breaking-change bumps still report the detected `Major` label.
-    - `-Preview` behavior is unchanged.
+- Make `Update-NovaModuleVersion -Preview` / `% nova bump --preview` enter the preview track deterministically from
+  stable versions.
+    - Stable versions now always become the next patch preview, for example `0.2.0 -> 0.2.1-preview`, instead of
+      reusing semantic history inference for the semantic core.
+    - Existing prerelease versions still keep their current semantic core and continue the prerelease sequence.
+    - Running the bump without `-Preview` still finalizes or advances prerelease versions by Nova's normal semantic
+      rules.
 
 ### Deprecated
 
