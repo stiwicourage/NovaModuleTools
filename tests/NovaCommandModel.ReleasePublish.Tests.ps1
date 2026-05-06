@@ -80,6 +80,40 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
+    It 'Invoke-NovaReleaseWorkflow forwards OverrideWarning only to build and test steps' {
+        InModuleScope $script:moduleName {
+            Mock Invoke-NovaBuild {}
+            Mock Test-NovaBuild {}
+            Mock Update-NovaModuleVersion {
+                [pscustomobject]@{
+                    OverrideWarningSeen = $PSBoundParameters.ContainsKey('OverrideWarning')
+                    NewVersion = '1.0.1'
+                }
+            }
+            $script:publishOverrideSeen = $null
+            $workflowContext = [pscustomobject]@{
+                WorkflowParams = @{}
+                OverrideWarningRequested = $true
+                PublishInvocation = [pscustomobject]@{
+                    Action = {
+                        param([switch]$OverrideWarning)
+
+                        $script:publishOverrideSeen = $PSBoundParameters.ContainsKey('OverrideWarning')
+                    }
+                }
+                PublishParams = @{}
+            }
+
+            $result = Invoke-NovaReleaseWorkflow -WorkflowContext $workflowContext
+
+            $result.NewVersion | Should -Be '1.0.1'
+            Assert-MockCalled Invoke-NovaBuild -Times 2 -ParameterFilter {$OverrideWarning}
+            Assert-MockCalled Test-NovaBuild -Times 1 -ParameterFilter {$OverrideWarning}
+            Assert-MockCalled Update-NovaModuleVersion -Times 1 -ParameterFilter {-not $PSBoundParameters.ContainsKey('OverrideWarning')}
+            $script:publishOverrideSeen | Should -BeFalse
+        }
+    }
+
     It 'Invoke-NovaRelease does not bump version when tests fail' {
         InModuleScope $script:moduleName {
             Mock Get-NovaProjectInfo {
@@ -205,6 +239,15 @@ Describe 'Nova command model - release and publish behavior' {
 
                 $Result.'ContinuousIntegrationRequested' | Should -BeTrue
                 $Result.ProjectInfo.ProjectName | Should -Be 'NovaModuleTools'
+            }
+        }
+        @{
+            PublishOption = @{Repository = 'PSGallery'; OverrideWarning = $true}
+            WorkflowSettings = @{WorkflowName = 'publish'}
+            Assert = {
+                param($Result)
+
+                $Result.OverrideWarningRequested | Should -BeTrue
             }
         }
     ) {
@@ -731,9 +774,10 @@ Describe 'Nova command model - release and publish behavior' {
             )
 
             Mock Get-NovaPackageMetadataList {$packageMetadataList}
+            Mock Get-NovaPackageWorkflowModulePath {'/tmp/NovaModuleTools.psm1'}
             Mock Assert-NovaPackageMetadata {}
 
-            $result = Get-NovaPackageWorkflowContext -ProjectInfo $projectInfo -WorkflowParams @{WhatIf = $true} -ModulePath '/tmp/NovaModuleTools.psm1'
+            $result = Get-NovaPackageWorkflowContext -ProjectInfo $projectInfo -WorkflowParams @{WhatIf = $true}
 
             $result.ProjectInfo.ProjectName | Should -Be 'NovaModuleTools'
             $result.WorkflowParams.WhatIf | Should -BeTrue
@@ -757,6 +801,7 @@ Describe 'Nova command model - release and publish behavior' {
             )
 
             Mock Get-NovaPackageMetadataList {$packageMetadataList}
+            Mock Get-NovaPackageWorkflowModulePath {'/tmp/NovaModuleTools.psm1'}
             Mock Assert-NovaPackageMetadata {}
 
             $result = Get-NovaPackageWorkflowContext -ProjectInfo $projectInfo -SkipTestsRequested
@@ -776,6 +821,7 @@ Describe 'Nova command model - release and publish behavior' {
             )
 
             Mock Get-NovaPackageMetadataList {$packageMetadataList}
+            Mock Get-NovaPackageWorkflowModulePath {'/tmp/NovaModuleTools.psm1'}
             Mock Assert-NovaPackageMetadata {}
 
             $result = Get-NovaPackageWorkflowContext -ProjectInfo $projectInfo

@@ -68,6 +68,11 @@ PS> Invoke-NovaBuild
 
 This creates the built module under `dist/NovaModuleTools/`.
 
+Files under `src/public/` are expected to contain exactly one top-level function each. Nova now stops build-driven
+workflows when a public file contains zero or multiple top-level functions, because that layout can accidentally export
+helpers as part of the public API surface. Use `-OverrideWarning` / `--override-warning` / `-o` only when you
+intentionally want to bypass that guard for a specific build, test-build, package, publish, or release run.
+
 When you want the test workflow to rebuild first, use:
 
 ```powershell

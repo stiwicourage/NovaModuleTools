@@ -7,5 +7,6 @@ function New-NovaTestDynamicParameterDictionary {
     $attributeCollection.Add([System.Management.Automation.ParameterAttribute]::new())
     $dictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
     $dictionary.Add('Build',[System.Management.Automation.RuntimeDefinedParameter]::new('Build', [switch],$attributeCollection))
+    $dictionary.Add('OverrideWarning',[System.Management.Automation.RuntimeDefinedParameter]::new('OverrideWarning', [switch],$attributeCollection))
     return $dictionary
 }

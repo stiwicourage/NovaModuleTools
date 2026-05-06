@@ -20,13 +20,13 @@ Builds, tests, and publishes the current project either locally or to a PowerShe
 ### Local
 
 ```text
-PS> Publish-NovaModule [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Publish-NovaModule [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [-OverrideWarning] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### Repository
 
 ```text
-PS> Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [-OverrideWarning] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -46,6 +46,9 @@ Use repository mode when you want to publish the built module to a registered Po
 Use `-ContinuousIntegration` when the same CI/self-hosting session should switch back to the built `dist/` module after
 publish completes. This keeps later commands aligned with the built module state instead of whatever publish imported or
 left loaded.
+
+Use `-OverrideWarning` only when you intentionally want the nested build to continue even though a file under
+`src/public` contains zero or multiple top-level functions.
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
 resolved publish target and workflow without building, testing, or publishing.
@@ -235,6 +238,30 @@ Re-import the built module from `dist/` after publish completes.
 
 Use this when your CI/self-hosting workflow continues in the same session after publish and must keep using the built
 module state for later commands.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: Local
+    Position: Named
+  - Name: Repository
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
+### -OverrideWarning
+
+Continue the nested build even if the `src/public` layout guard reports that a public file does not contain exactly one
+top-level function.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter

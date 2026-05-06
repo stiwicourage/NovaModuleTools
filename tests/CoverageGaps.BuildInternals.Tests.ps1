@@ -67,6 +67,98 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
         }
     }
 
+    It 'Get-NovaBuildWorkflowContext carries OverrideWarningRequested when requested' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaBuildProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            }
+
+            $result = Get-NovaBuildWorkflowContext -OverrideWarningRequested
+
+            $result.OverrideWarningRequested | Should -BeTrue
+        }
+    }
+
+    It 'Get-NovaBuildCommandParameterMap appends OverrideWarning only when requested' {
+        InModuleScope $script:moduleName {
+            $defaultMap = Get-NovaBuildCommandParameterMap -WorkflowParams @{WhatIf = $true}
+            $overrideMap = Get-NovaBuildCommandParameterMap -WorkflowParams @{WhatIf = $true} -OverrideWarningRequested
+
+            $defaultMap.Keys | Should -Be @('WhatIf')
+            $defaultMap.WhatIf | Should -BeTrue
+            $overrideMap.Keys | Should -Contain 'OverrideWarning'
+            $overrideMap.WhatIf | Should -BeTrue
+            $overrideMap.OverrideWarning | Should -BeTrue
+        }
+    }
+
+    It 'Get-NovaPackageWorkflowModulePath returns the current module path' {
+        InModuleScope $script:moduleName {
+            Get-NovaPackageWorkflowModulePath | Should -Be $ExecutionContext.SessionState.Module.Path
+        }
+    }
+
+    It 'Assert-NovaPublicFunctionFileLayout stops the build when src/public files do not contain exactly one top-level function' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ProjectRoot = '/tmp/project'
+                PublicDir = '/tmp/project/src/public'
+            }
+            Mock Get-ChildItem {
+                @(
+                    [pscustomobject]@{FullName = '/tmp/project/src/public/Get-Thing.ps1'}
+                    [pscustomobject]@{FullName = '/tmp/project/src/public/Get-Other.ps1'}
+                )
+            }
+            Mock Get-FunctionNameFromFile {
+                if ($filePath -like '*Get-Thing.ps1') {
+                    return @('Get-Thing', 'Get-ThingHelper')
+                }
+
+                return @()
+            }
+            Mock Write-Warning {}
+
+            $thrown = $null
+            try {
+                Assert-NovaPublicFunctionFileLayout -ProjectInfo $projectInfo
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.PublicFunctionFileLayoutInvalid'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+            $thrown.TargetObject | Should -Be '/tmp/project/src/public'
+            $thrown.Exception.Message | Should -Match 'src/public/Get-Thing\.ps1: Get-Thing, Get-ThingHelper'
+            $thrown.Exception.Message | Should -Match 'src/public/Get-Other\.ps1: <none>'
+            $thrown.Exception.Message | Should -Match '-OverrideWarning / --override-warning / -o'
+            Assert-MockCalled Write-Warning -Times 1
+        }
+    }
+
+    It 'Assert-NovaPublicFunctionFileLayout warns but continues when OverrideWarningRequested is set' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ProjectRoot = '/tmp/project'
+                PublicDir = '/tmp/project/src/public'
+            }
+            Mock Get-ChildItem {@([pscustomobject]@{FullName = '/tmp/project/src/public/Get-Thing.ps1'})}
+            Mock Get-FunctionNameFromFile {@('Get-Thing', 'Get-ThingHelper')}
+            Mock Write-Warning {}
+            Mock Stop-NovaOperation {throw 'should not stop'}
+
+            {Assert-NovaPublicFunctionFileLayout -ProjectInfo $projectInfo -OverrideWarningRequested} | Should -Not -Throw
+
+            Assert-MockCalled Write-Warning -Times 1
+            Assert-MockCalled Stop-NovaOperation -Times 0
+        }
+    }
+
     It 'Resolve-NovaCiProjectInfo uses the current location when ProjectRoot is omitted' {
         $expectedPath = (Get-Location).Path
 

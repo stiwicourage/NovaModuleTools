@@ -40,6 +40,12 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 
 ### Fixed
 
+- Stop build-driven workflows when a `src/public` file contains zero or multiple top-level functions.
+    - This prevents helper functions from being exported accidentally just because they live in a public file.
+    - `Invoke-NovaBuild`, `Test-NovaBuild -Build`, packaging, publishing, and release flows now surface the warning
+      consistently.
+    - PowerShell supports `-OverrideWarning`, and the `nova` CLI supports `--override-warning` / `-o` when maintainers
+      intentionally want to continue past the warning.
 - Fix `Invoke-NovaBuild` help discovery so it only scans `docs/<ProjectName>/` for PlatyPS
   markdown.
     - Regular markdown elsewhere under `docs/` no longer breaks the help-generation step.

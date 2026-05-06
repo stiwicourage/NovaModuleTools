@@ -20,19 +20,19 @@ Runs the Nova release pipeline (build, test, version bump, rebuild, publish).
 ### Local
 
 ```text
-PS> Invoke-NovaRelease [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Invoke-NovaRelease [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [-OverrideWarning] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### Repository
 
 ```text
-PS> Invoke-NovaRelease -Repository <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Invoke-NovaRelease -Repository <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [-OverrideWarning] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### PublishOption
 
 ```text
-PS> Invoke-NovaRelease -PublishOption <hashtable> [-SkipTests] [-ContinuousIntegration] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Invoke-NovaRelease -PublishOption <hashtable> [-SkipTests] [-ContinuousIntegration] [-OverrideWarning] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -57,6 +57,9 @@ The command changes location to `-Path` for execution and always restores the pr
 Use `-ContinuousIntegration` when the same CI/self-hosting session should re-activate the built `dist/` module at the
 release workflow boundaries where session state matters. Nova forwards that CI intent into the nested build and version
 bump steps and restores the built module again after publish.
+
+Use `-OverrideWarning` only when you intentionally want the nested release builds to continue even though a file under
+`src/public` contains zero or multiple top-level functions.
 
 When local release mode is selected, the resolved local publish target is previewed consistently with
 `Publish-NovaModule -Local`. Unlike `Publish-NovaModule -Local`, `Invoke-NovaRelease` does not import the published
@@ -306,6 +309,32 @@ SupportsWildcards: false
 Aliases: [ ]
 ParameterSets:
   - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
+### -OverrideWarning
+
+Continue the nested release builds even if the `src/public` layout guard reports that a public file does not contain
+exactly one top-level function.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: Local
+    Position: Named
+  - Name: Repository
+    Position: Named
+  - Name: PublishOption
     Position: Named
     IsRequired: false
     ValueFromPipeline: false

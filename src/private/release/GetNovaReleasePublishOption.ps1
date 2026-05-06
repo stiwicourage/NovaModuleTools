@@ -33,7 +33,7 @@ function Get-NovaReleasePublishOption {
 
     $releasePublishOption.SkipTests = $ReleaseParameters.SkipTestsRequested
     $releasePublishOption.ContinuousIntegration = $ReleaseParameters.ContinuousIntegrationRequested
+    $releasePublishOption.OverrideWarning = $ReleaseParameters.OverrideWarningRequested
     return $releasePublishOption
 }
-
 
