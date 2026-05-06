@@ -12,12 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Make prerelease self-update confirmation default to `No`.
-    - `Update-NovaModuleTool`, `Update-NovaModuleTools`, and `% nova update` now require an explicit `Y` before a
-      prerelease self-update continues, so pressing Enter cancels the update instead of accepting it.
-- Render bold text in white across the hosted HTML documentation.
-    - Emphasized `<strong>` and `<b>` text now stands out more clearly when scanning docs pages.
-
 ### Deprecated
 
 ### Removed
@@ -25,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## [2.3.0] - 2026-05-06
+
+### Changed
+
+- Make prerelease self-update confirmation default to `No`.
+    - `Update-NovaModuleTool`, `Update-NovaModuleTools`, and `% nova update` now require an explicit `Y` before a
+      prerelease self-update continues, so pressing Enter cancels the update instead of accepting it.
+- Render bold text in white across the hosted HTML documentation.
+    - Emphasized `<strong>` and `<b>` text now stands out more clearly when scanning docs pages.
 
 ## [2.2.0] - 2026-05-06
 
@@ -348,7 +352,8 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 
-[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/2.2.0...HEAD
+[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.0...HEAD
+[2.3.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.2.0...2.3.0
 [2.2.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_2.1.0...2.2.0
 [2.1.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_2.0.0...Version_2.1.0
 [2.0.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.9.1...Version_2.0.0
@@ -364,3 +369,4 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
+
