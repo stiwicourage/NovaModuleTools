@@ -1,5 +1,6 @@
 param(
     [string]$CoveragePath,
+    [switch]$UploadCoverage,
     [switch]$TriggerAnalysis
 )
 
@@ -20,6 +21,55 @@ function Test-CodeSceneRateLimitResponse {
     param([string]$Body)
 
     return $Body -match 'rate limit for daily analysis jobs'
+}
+
+function Test-CodeSceneInvalidProjectOwnerTokenResponse {
+    param([string]$Body)
+
+    return $Body -match 'OAuth token of project owner invalid'
+}
+
+function Get-CodeSceneAnalysisTriggerFailureMessage {
+    param(
+        [int]$StatusCode,
+        [string]$Body
+    )
+
+    if (Test-CodeSceneInvalidProjectOwnerTokenResponse -Body $Body) {
+        return "CodeScene rejected the analysis trigger because the project owner's repository OAuth token is invalid. Re-authorize the repository connection for the CodeScene project owner, then rerun the workflow. This is separate from CS_ACCESS_TOKEN, so coverage upload can still succeed while run-analysis fails."
+    }
+
+    return "CodeScene API call failed with HTTP $StatusCode. Review the response above for details."
+}
+
+function Test-CodeSceneCoverageUploadRequested {
+    param(
+        [string]$CoveragePath,
+        [switch]$UploadCoverage
+    )
+
+    return $UploadCoverage.IsPresent -or -not [string]::IsNullOrWhiteSpace($CoveragePath)
+}
+
+function Resolve-CodeSceneCoveragePath {
+    param([string]$CoveragePath)
+
+    if (-not [string]::IsNullOrWhiteSpace($CoveragePath)) {
+        return (Resolve-Path -LiteralPath $CoveragePath -ErrorAction Stop).Path
+    }
+
+    $artifactsDir = Join-Path (Get-Location) 'artifacts'
+    $coverageCandidates = @(Get-ChildItem -LiteralPath $artifactsDir -Filter '*.cobertura.xml' -File -Recurse -ErrorAction SilentlyContinue | Sort-Object FullName)
+    if (-not $coverageCandidates) {
+        throw "No Cobertura coverage file was found under '$artifactsDir'. Provide -CoveragePath explicitly or run the CI coverage workflow first."
+    }
+
+    if ($coverageCandidates.Count -gt 1) {
+        $candidateList = ($coverageCandidates | ForEach-Object FullName) -join ', '
+        throw "Multiple Cobertura coverage files were found under '$artifactsDir'. Provide -CoveragePath explicitly. Candidates: $candidateList"
+    }
+
+    return $coverageCandidates[0].FullName
 }
 
 function Invoke-CodeSceneAnalysisTrigger {
@@ -51,7 +101,7 @@ function Invoke-CodeSceneAnalysisTrigger {
             return
         }
 
-        throw "CodeScene API call failed with HTTP $statusCode. Review the response above for details."
+        throw (Get-CodeSceneAnalysisTriggerFailureMessage -StatusCode $statusCode -Body $body)
     }
 
     if ($body -match '"error"') {
@@ -59,7 +109,7 @@ function Invoke-CodeSceneAnalysisTrigger {
     }
 }
 
-$shouldUploadCoverage = -not [string]::IsNullOrWhiteSpace($CoveragePath)
+$shouldUploadCoverage = Test-CodeSceneCoverageUploadRequested -CoveragePath $CoveragePath -UploadCoverage:$UploadCoverage
 $shouldRunAnalysis = $TriggerAnalysis.IsPresent
 
 if (-not ($shouldUploadCoverage -or $shouldRunAnalysis)) {
@@ -72,7 +122,7 @@ $projectId = Get-RequiredCodeSceneValue -Name 'CS_PROJECT_ID'
 $accessToken = Get-RequiredCodeSceneValue -Name 'CS_ACCESS_TOKEN'
 
 if ($shouldUploadCoverage) {
-    $resolvedCoveragePath = (Resolve-Path -LiteralPath $CoveragePath -ErrorAction Stop).Path
+    $resolvedCoveragePath = Resolve-CodeSceneCoveragePath -CoveragePath $CoveragePath
 
     if (-not (Get-Command -Name 'cs-coverage' -ErrorAction SilentlyContinue)) {
         throw "The 'cs-coverage' CLI was not found on PATH. Install the CodeScene coverage upload tool before running this script."

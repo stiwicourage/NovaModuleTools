@@ -7,5 +7,7 @@ function ConvertFrom-NovaTestCliArgument {
     return ConvertFrom-NovaCliSwitchArgument -Arguments $Arguments -TokenMap @{
         '--build' = 'Build'
         '-b' = 'Build'
+        '--override-warning' = 'OverrideWarning'
+        '-o' = 'OverrideWarning'
     }
 }

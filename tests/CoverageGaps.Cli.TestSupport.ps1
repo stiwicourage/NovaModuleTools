@@ -70,6 +70,8 @@ function Get-TestNovaCliRoutedParserCaseList {
             ValidCases = @(
                 @{Arguments = @('--continuous-integration'); Property = 'ContinuousIntegration'}
                 @{Arguments = @('-i'); Property = 'ContinuousIntegration'}
+                @{Arguments = @('--override-warning'); Property = 'OverrideWarning'}
+                @{Arguments = @('-o'); Property = 'OverrideWarning'}
             )
         }
         @{
@@ -86,6 +88,8 @@ function Get-TestNovaCliRoutedParserCaseList {
             ValidCases = @(
                 @{Arguments = @('--build'); Property = 'Build'}
                 @{Arguments = @('-b'); Property = 'Build'}
+                @{Arguments = @('--override-warning'); Property = 'OverrideWarning'}
+                @{Arguments = @('-o'); Property = 'OverrideWarning'}
             )
         }
     )
@@ -95,6 +99,7 @@ function Get-TestNovaCliContinuousIntegrationRouteCaseList {
     return @(
         @{Command = 'build'; ParserCommand = 'ConvertFrom-NovaBuildCliArgument'; ActionCommand = 'Invoke-NovaBuild'}
         @{Command = 'bump'; ParserCommand = 'ConvertFrom-NovaBumpCliArgument'; ActionCommand = 'Update-NovaModuleVersion'}
+        @{Command = 'release'; ParserCommand = 'ConvertFrom-NovaCliArgument'; ActionCommand = 'Invoke-NovaRelease'}
     )
 }
 

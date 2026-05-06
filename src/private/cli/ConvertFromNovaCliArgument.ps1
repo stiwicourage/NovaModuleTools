@@ -23,7 +23,7 @@ function ConvertFrom-NovaCliArgument {
 
     $Arguments = ConvertTo-NovaCliArgumentArray -BoundParameters $PSBoundParameters -Arguments $Arguments
     if ($null -eq $AllowedOptionNameList) {
-        $AllowedOptionNameList = @('Local', 'Repository', 'ModuleDirectoryPath', 'ApiKey', 'SkipTests', 'ContinuousIntegration')
+        $AllowedOptionNameList = @('Local', 'Repository', 'ModuleDirectoryPath', 'ApiKey', 'SkipTests', 'ContinuousIntegration', 'OverrideWarning')
     }
 
     $options = @{}
@@ -54,6 +54,9 @@ function ConvertFrom-NovaCliArgument {
             '^(--continuous-integration|-i)$' {
                 Add-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'ContinuousIntegration'; Value = $true}) -Token $token
             }
+            '^(--override-warning|-o)$' {
+                Add-NovaCliDeliveryOption -Options $options -AllowedOptionNameList $AllowedOptionNameList -Option ([pscustomobject]@{Name = 'OverrideWarning'; Value = $true}) -Token $token
+            }
             default {
                 Stop-NovaOperation -Message "Unknown argument: $token" -ErrorId 'Nova.Validation.UnknownCliArgument' -Category InvalidArgument -TargetObject $token
             }
@@ -71,5 +74,5 @@ function ConvertFrom-NovaPackageCliArgument {
         [string[]]$Arguments
     )
 
-    return ConvertFrom-NovaCliArgument -Arguments $Arguments -AllowedOptionNameList @('SkipTests')
+    return ConvertFrom-NovaCliArgument -Arguments $Arguments -AllowedOptionNameList @('SkipTests', 'OverrideWarning')
 }

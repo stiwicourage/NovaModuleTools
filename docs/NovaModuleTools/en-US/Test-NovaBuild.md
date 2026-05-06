@@ -20,7 +20,7 @@ Runs Pester tests for the current NovaModuleTools project.
 ### __AllParameterSets
 
 ```text
-PS> Test-NovaBuild [-Build] [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>]
+PS> Test-NovaBuild [-Build] [-OverrideWarning] [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>]
  [[-OutputVerbosity] <string>] [[-OutputRenderMode] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -30,6 +30,9 @@ PS> Test-NovaBuild [-Build] [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <stri
 suite against the current project.
 
 Use `-Build` when you want Nova to rebuild the project output before the Pester run starts.
+
+When `-Build` is used, `-OverrideWarning` lets that nested build continue even if the `src/public` layout guard reports
+zero or multiple top-level functions in a public file.
 
 With the default
 `BuildRecursiveFolders=true`, test files in nested folders under `tests` are discovered and run. Set
@@ -102,6 +105,28 @@ Previews the build-before-test workflow without rebuilding the project or runnin
 ### -Build
 
 Builds the project before the test workflow starts.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
+### -OverrideWarning
+
+When `-Build` is also used, continue the nested build even if the `src/public` layout guard reports that a public file
+does not contain exactly one top-level function.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter

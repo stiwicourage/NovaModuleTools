@@ -4,7 +4,8 @@ function Invoke-NovaBuildValidation {
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
 
-    $workflowParams = $WorkflowContext.WorkflowParams
+    $overrideWarningRequested = ($WorkflowContext.PSObject.Properties.Name -contains 'OverrideWarningRequested') -and $WorkflowContext.OverrideWarningRequested
+    $workflowParams = Get-NovaBuildCommandParameterMap -WorkflowParams $WorkflowContext.WorkflowParams -OverrideWarningRequested:$overrideWarningRequested
     $skipTestsRequested = ($WorkflowContext.PSObject.Properties.Name -contains 'SkipTestsRequested') -and $WorkflowContext.SkipTestsRequested
     Invoke-NovaBuild @workflowParams
     if (-not $skipTestsRequested) {

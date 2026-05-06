@@ -55,8 +55,7 @@ Repository development expects:
 - `PSScriptAnalyzer`
 - `Microsoft.PowerShell.PlatyPS`
 
-Node.js is only required if you are working on the current semantic-release-based publish pipeline.
-Use Node.js 22.14.0 or newer for that release automation because the current `semantic-release` toolchain requires it.
+Node.js is not required for the repository's current build, test, or publish automation.
 
 ### Build the module locally
 
@@ -68,6 +67,11 @@ PS> Invoke-NovaBuild
 ```
 
 This creates the built module under `dist/NovaModuleTools/`.
+
+Files under `src/public/` are expected to contain exactly one top-level function each. Nova now stops build-driven
+workflows when a public file contains zero or multiple top-level functions, because that layout can accidentally export
+helpers as part of the public API surface. Use `-OverrideWarning` / `--override-warning` / `-o` only when you
+intentionally want to bypass that guard for a specific build, test-build, package, publish, or release run.
 
 When you want the test workflow to rebuild first, use:
 
@@ -114,9 +118,11 @@ the
 installed module manifest. When `Invoke-NovaBuild` detects a newer `NovaModuleTools` version after a build, the update
 warning also includes that same release notes link.
 
-To compare the current project version with what is installed locally for that same module, use:
+To inspect the current project version, the installed version of the current project module, or the installed
+`NovaModuleTools` tool version, use:
 
 ```powershell
+PS> Get-NovaProjectInfo -Installed
 % nova version
 % nova version --installed
 % nova version -i
@@ -128,6 +134,7 @@ To compare the current project version with what is installed locally for that s
 - `% nova version --installed` / `% nova version -i` shows the locally installed version of the current project/module
   from
   the local module path
+- `Get-NovaProjectInfo -Installed` shows the installed `NovaModuleTools` module name and version from PowerShell
 - `% nova --version` / `% nova -v` shows the installed `NovaModuleTools` version
 
 ### CLI help
@@ -197,7 +204,7 @@ continuous-integration activation switches instead of handling re-imports manual
 PS> Invoke-NovaBuild -ContinuousIntegration
 PS> Update-NovaModuleVersion -ContinuousIntegration
 PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -ContinuousIntegration
-PS> Invoke-NovaRelease -PublishOption @{Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API} -ContinuousIntegration
+PS> Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -ContinuousIntegration
 
 % nova build --continuous-integration
 % nova bump --continuous-integration
@@ -212,9 +219,15 @@ These switches keep the behavior explicit and opt-in:
 - `Update-NovaModuleVersion -ContinuousIntegration` also falls back to a patch bump when the current `HEAD` already
   matches the latest tag, so release automation can seed the next prerelease line without requiring an extra commit
   first
+- `Update-NovaModuleVersion` and `% nova bump` treat stable `0.y.z` versions as the SemVer initial-development phase,
+  so breaking-change bumps stay on the `0.y.z` line by planning the next minor version instead of jumping to `1.0.0`
 - `Publish-NovaModule -ContinuousIntegration` restores the built module after publish completes
 - `Invoke-NovaRelease -ContinuousIntegration` forwards that CI intent through the nested build/bump boundaries and then
   restores the built module again after publish
+
+When the current stable version is still `0.y.z`, Nova also prints one warning that major version zero is still the
+initial-development line and that `1.0.0` must be set manually once the software is stable. Preview bumps keep their
+current behavior and are not remapped by this rule.
 
 Useful local helper:
 
@@ -257,6 +270,8 @@ Notes:
 - `Test-NovaBuild` validates the built module output, not just loose source files
 - it writes NUnit XML to `artifacts/TestResults.xml`
 - it respects `BuildRecursiveFolders` when discovering tests
+- `Pester` is a test-time dependency, not a transitive install dependency of the published `NovaModuleTools` module
+- install `Pester 5.7.1` explicitly in contributor or CI environments before running `Test-NovaBuild`
 
 ### Create a package artifact
 
@@ -378,13 +393,17 @@ in the pipeline:
 
 ```powershell
 PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
-PS> Invoke-NovaRelease -PublishOption @{ Repository = 'PSGallery'; ApiKey = $env:PSGALLERY_API } -SkipTests
+PS> Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
 % nova publish --repository PSGallery --api-key $env:PSGALLERY_API --skip-tests
 % nova release --repository PSGallery --api-key $env:PSGALLERY_API -s
 ```
 
 These forms skip `Test-NovaBuild` only. `Publish-NovaModule` still builds before publishing, and `Invoke-NovaRelease`
 still runs both build steps around the version bump.
+
+`Invoke-NovaRelease` now uses the same direct delivery parameters as `Publish-NovaModule` and `% nova release`, so
+PowerShell automation can pass `-Local`, `-Repository`, `-ModuleDirectoryPath`, and `-ApiKey` without wrapping them in a
+`-PublishOption` hashtable.
 
 When your pipeline continues in the same PowerShell session after build, bump, publish, or release, add
 `-ContinuousIntegration` / `--continuous-integration` / `-i` to the supported commands so Nova re-activates the built
@@ -406,12 +425,21 @@ For CI-parity coverage and report generation, use:
 PS> ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1
 ```
 
-That flow builds the module, runs ScriptAnalyzer, runs the normal test workflow, and emits CI-friendly reports such as:
+That flow builds the module, runs ScriptAnalyzer, executes one coverage-enabled Pester run using the same Nova test
+workflow configuration, and emits CI-friendly reports such as:
 
 - `artifacts/novamoduletools-nunit.xml`
 - `artifacts/pester-junit.xml`
 - `artifacts/pester-coverage.cobertura.xml`
 - `artifacts/coverage-low.txt`
+
+The `Tests.yml` workflow reuses that Cobertura artifact for Codecov, for the pull-request CodeScene coverage-gate check,
+and for the develop/manual CodeScene upload-and-analysis flow.
+The CodeScene pull-request gate downloads the uploaded artifact and runs `cs-coverage check`, while the develop/manual
+CodeScene step uploads coverage through `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1` before it triggers a follow-up
+analysis run.
+If coverage upload succeeds but the trigger fails with an OAuth/project-owner error, fix the repository authorization in
+CodeScene for the project owner. That trigger-side repository authorization is separate from `CS_ACCESS_TOKEN`.
 
 ### Recommended local quality loop
 
@@ -431,15 +459,18 @@ Test-NovaBuild
 
 ### Working on help and docs
 
-Command help markdown lives under `docs/NovaModuleTools/en-US/` and is consumed by `Invoke-NovaBuild`.
+Command help markdown lives under `docs/<ProjectName>/<Locale>/` and is consumed by `Invoke-NovaBuild`.
+
+In this repository, that means `docs/NovaModuleTools/en-US/`.
 
 Important distinction:
 
-- `docs/NovaModuleTools/en-US/*.md` → PlatyPS command-help source
+- `docs/<ProjectName>/**/*.md` → PlatyPS command-help source
 - `docs/*.html` → GitHub Pages end-user guides
 - `README.md` and `CONTRIBUTING.md` → contributor documentation
 
-Do not place general developer markdown under `docs/`, because the build scans `docs/**/*.md` when generating help.
+If you want build-generated PowerShell help, place it under `docs/<ProjectName>/`.
+Markdown elsewhere under `docs/` is ignored by help generation, so you can keep non-help docs there when needed.
 
 ## Repository structure and ownership
 
@@ -451,11 +482,10 @@ This section explains how the NovaModuleTools repository is organized and what e
 .
 ├── .github/                    # GitHub Actions workflows
 ├── docs/                       # GitHub Pages HTML + PlatyPS help markdown
-├── scripts/                    # build, CI, and release automation
+├── scripts/                    # build and CI automation
 ├── src/                        # production PowerShell code and packaged resources
 ├── tests/                      # Pester suites and reusable test helpers
 ├── project.json                # NovaModuleTools project definition
-├── package.json                # semantic-release tooling for current publish automation
 └── CHANGELOG.md                # release notes and unreleased change tracking
 ```
 
@@ -522,23 +552,16 @@ These are the top-level GitHub entry points for contributors and maintainers.
 This folder has two different responsibilities that must stay separated by file type:
 
 - `docs/*.html` → GitHub Pages end-user guides
-- `docs/NovaModuleTools/en-US/*.md` → PlatyPS command-help source
+- `docs/<ProjectName>/**/*.md` → PlatyPS command-help source for the current project
 
-The build treats markdown under `docs/` as help input, so general-purpose developer documentation should not be added
-there.
+The build only treats markdown under `docs/<ProjectName>/` as help input.
+Markdown elsewhere under `docs/` can be used for other documentation without affecting help generation.
 
 ### Scripts and automation
 
 #### `scripts/build/`
 
 Build, analyzer, and CI helper scripts.
-
-#### `scripts/release/`
-
-Release preparation and publish helpers used by the current release workflow.
-
-These scripts are currently part of a wider GitHub Actions + semantic-release pipeline, not a standalone replacement for
-it.
 
 ## CI/CD and release automation
 
@@ -557,6 +580,15 @@ At a minimum, contributor changes are expected to keep these workflows healthy:
 
 Repository scripts under `scripts/build/ci/` provide local parity for CI-oriented reporting.
 
+When CodeScene coverage upload is needed, run
+`scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`.
+That script auto-discovers a single `*.cobertura.xml` file under `artifacts/` unless you pass `-CoveragePath`
+explicitly.
+The repository `Tests.yml` workflow now also downloads that same Cobertura artifact during pull requests and runs the
+CodeScene coverage-gate check before merge.
+If `-TriggerAnalysis` fails after a successful upload, review the CodeScene response body: repository OAuth problems for
+the project owner must be fixed in CodeScene itself and are not solved by rotating `CS_ACCESS_TOKEN` alone.
+
 ### Build and test automation
 
 The normal repository workflow is:
@@ -570,51 +602,46 @@ When you test local publish behavior during development, remember that `Publish-
 published module from the local install directory into the current PowerShell session. Re-import `dist/` if your next
 step depends on the built-but-unpublished output instead.
 
-The CI helper flow also produces JUnit and Cobertura artifacts for external systems.
+The CI helper flow also produces JUnit and Cobertura artifacts for external systems, including the coverage file that
+the CodeScene workflow gate and upload steps consume.
 
 ### Release automation
 
-The current publish pipeline is still semantic-release based.
-
-`.github/workflows/Publish.yml` now provisions Node.js 22.14.0 before `npx semantic-release` runs, so the release step
-stays aligned with the upstream runtime requirement after build and test succeed.
+The current publish pipeline is PowerShell-based and no longer depends on Node.js or semantic-release tooling.
 
 Key pieces:
 
 - `.github/workflows/Publish.yml`
-- `.releaserc.json`
-- `package.json`
-- `scripts/release/Prepare-SemanticRelease.ps1`
-- `scripts/release/Publish-ToPSGallery.ps1`
-- `scripts/release/SemanticReleaseSupport.ps1`
+- `.github/actions/create-verified-commit/action.yml`
+- `.github/actions/update-git-ref/action.yml`
+- `.github/actions/create-annotated-tag/action.yml`
+- `.github/actions/ensure-psresource-repository/action.yml`
+- `scripts/build/ci/Install-CiPowerShellModules.ps1`
 
 Responsibilities currently covered by the release pipeline include:
 
-- choosing the next release version from commit history
 - updating `project.json`
 - finalizing `CHANGELOG.md`
-- rebuilding after version changes
 - creating release tags
-- creating GitHub releases
+- committing release changes back to `main`
 - publishing to PowerShell Gallery
+- preparing the next prerelease version on `develop`
 
-The semantic-release publish script also bootstraps the local PSResourceGet repository store before calling
-`Publish-PSResource`, which keeps fresh GitHub Actions runners from failing when the PSGallery repository registration
-file
-does not exist yet.
+The workflow now uses `KeepAChangelog` for changelog release moves, creates annotated git tags named directly from the
+release version, and bootstraps the local PSResourceGet repository store before calling `Publish-NovaModule`.
+The shared CI installer also installs `Pester 5.7.1` explicitly before it installs prerelease gallery modules so test
+workflows do not rely on transitive manifest dependency resolution.
 
 ### Where NovaModuleTools cmdlets fit
 
-NovaModuleTools already provides strong release building blocks:
+NovaModuleTools already provides the core release building blocks:
 
 - `Update-NovaModuleVersion`
 - `Publish-NovaModule`
 - `Invoke-NovaRelease`
 
-But these do not yet replace every semantic-release responsibility in the current repository workflow.
-
-If you work on release automation, treat `package.json` and `.releaserc.json` as active parts of the present release
-system.
+The repository workflow combines these with the `KeepAChangelog` module and local reusable GitHub actions instead of a
+separate semantic-release toolchain.
 
 ### Contributor expectations for workflow changes
 
@@ -629,7 +656,7 @@ When you change CI, build, or release behavior:
 
 - Keep contributor workflow, architecture, and automation documentation in `README.md`
 - Keep `CONTRIBUTING.md` focused on contribution expectations and review checklist items
-- Keep `docs/NovaModuleTools/en-US/*.md` focused on command-help source material
+- Keep `docs/<ProjectName>/**/*.md` focused on command-help source material for the current project
 - Keep `docs/*.html` focused on end-user guides
 - Do not duplicate the same workflow or setup prose across multiple contributor documents
 

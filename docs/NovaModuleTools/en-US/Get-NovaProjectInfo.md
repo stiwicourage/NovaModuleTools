@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/25/2026
+ms.date: 05/06/2026
 PlatyPS schema version: 2024-05-01
 title: Get-NovaProjectInfo
 ---
@@ -13,14 +13,26 @@ title: Get-NovaProjectInfo
 
 ## SYNOPSIS
 
-Reads `project.json` and returns resolved NovaModuleTools project metadata.
+Reads `project.json` and returns resolved NovaModuleTools project metadata or a version-focused view.
 
 ## SYNTAX
 
-### __AllParameterSets
+### ProjectInfo
+
+```text
+PS> Get-NovaProjectInfo [[-Path] <string>] [<CommonParameters>]
+```
+
+### ProjectVersion
 
 ```text
 PS> Get-NovaProjectInfo [[-Path] <string>] [-Version] [<CommonParameters>]
+```
+
+### InstalledVersion
+
+```text
+PS> Get-NovaProjectInfo [-Installed] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -36,6 +48,9 @@ object with:
 Use this command from scripts, tests, or troubleshooting when you want one object that describes the current project.
 
 When you use `-Version`, the command returns only the project version string instead of the full project object.
+
+When you use `-Installed`, the command returns the installed `NovaModuleTools` module name and version string instead of
+project metadata.
 
 ## EXAMPLES
 
@@ -63,6 +78,14 @@ PS> Get-NovaProjectInfo -Version
 
 Returns only the version string from `project.json`.
 
+### EXAMPLE 4
+
+```text
+PS> Get-NovaProjectInfo -Installed
+```
+
+Returns the installed `NovaModuleTools` module name and version string.
+
 ## PARAMETERS
 
 ### -Path
@@ -75,12 +98,18 @@ DefaultValue: (Get-Location).Path
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: (All)
-  Position: 0
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
+  - Name: ProjectInfo
+    Position: 0
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+  - Name: ProjectVersion
+    Position: 0
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
 DontShow: false
 AcceptedValues: []
 HelpMessage: ''
@@ -96,12 +125,33 @@ DefaultValue: False
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
+  - Name: ProjectVersion
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Installed
+
+Return the installed `NovaModuleTools` module name and version string instead of project metadata.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+  - Name: InstalledVersion
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
 DontShow: false
 AcceptedValues: []
 HelpMessage: ''
@@ -125,6 +175,10 @@ You can't pipe objects to this cmdlet.
 
 Returned when you use `-Version`.
 
+### System.String
+
+Returned when you use `-Installed`.
+
 ### PSCustomObject
 
 Returned by default. The object includes project metadata, defaulted build settings, and resolved paths.
@@ -132,6 +186,8 @@ Returned by default. The object includes project metadata, defaulted build setti
 ## NOTES
 
 This command throws a clear error when `project.json` is missing or empty.
+
+`-Installed` does not require a project path or a `project.json` file.
 
 ## RELATED LINKS
 

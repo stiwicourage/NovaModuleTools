@@ -11,6 +11,15 @@ function Get-NovaTestWorkflowOperation {
     return 'Run Pester tests and write test results'
 }
 
+function Assert-NovaPesterAvailable {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Get-Module -Name Pester -ListAvailable)) {
+        Stop-NovaOperation -Message 'The module Pester must be installed for Test-NovaBuild to run. Install Pester 5.7.1 and try again.' -ErrorId 'Nova.Dependency.PesterDependencyMissing' -Category ResourceUnavailable -TargetObject 'Pester'
+    }
+}
+
 function Get-NovaTestWorkflowContext {
     [CmdletBinding()]
     param(
@@ -19,6 +28,7 @@ function Get-NovaTestWorkflowContext {
     )
 
     Test-ProjectSchema Pester | Out-Null
+    Assert-NovaPesterAvailable
     $projectInfo = Get-NovaProjectInfo
     $pesterConfig = New-PesterConfiguration -Hashtable $projectInfo.Pester
 
@@ -35,6 +45,7 @@ function Get-NovaTestWorkflowContext {
 
     return [pscustomobject]@{
         BuildRequested = $buildRequested
+        OverrideWarningRequested = $BoundParameters.ContainsKey('OverrideWarning') -and [bool]$BoundParameters.OverrideWarning
         ProjectInfo = $projectInfo
         PesterConfig = $pesterConfig
         TestResultPath = $testResultPath

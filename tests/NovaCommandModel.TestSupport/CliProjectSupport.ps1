@@ -142,6 +142,57 @@ function Get-TestNovaCliWhatIfResultMap {
     }
 }
 
+function Assert-TestInstalledNovaCliBumpBehavior {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$DistModuleDir,
+        [Parameter(Mandatory)][string]$TestDriveRoot,
+        [Parameter(Mandatory)]$TestCase
+    )
+
+    $targetDirectory = Join-Path $TestDriveRoot $TestCase.TargetDirectory
+    $installedPath = Join-Path $targetDirectory 'nova'
+    $projectRoot = Join-Path $TestDriveRoot $TestCase.ProjectName
+    $projectJsonPath = Join-Path $projectRoot 'project.json'
+    $originalModulePath = $env:PSModulePath
+    $modulePathSeparator = [string][System.IO.Path]::PathSeparator
+    $distParent = Split-Path -Parent $DistModuleDir
+
+    $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
+
+    Initialize-TestNovaCliProjectLayout -ProjectRoot $projectRoot
+    Write-TestNovaCliProjectJson -ProjectRoot $projectRoot -ProjectName $TestCase.ProjectName -ProjectGuid $TestCase.ProjectGuid
+    Write-TestNovaCliPublicFunction -ProjectRoot $projectRoot -FunctionName $TestCase.FunctionName
+
+    $projectData = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json
+    $projectData.Version = $TestCase.CurrentVersion
+    $projectData | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $projectJsonPath -Encoding utf8
+
+    try {
+        Initialize-TestNovaCliGitRepository -ProjectRoot $projectRoot -CommitMessage $TestCase.CommitMessage
+
+        Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
+
+        $bumpResult = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments $TestCase.Arguments
+        $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
+
+        $bumpResult.ExitCode | Should -Be 0
+        foreach ($pattern in $TestCase.ExpectedPatterns) {
+            $bumpResult.Text | Should -Match $pattern
+        }
+
+        foreach ($pattern in $TestCase.UnexpectedPatterns) {
+            $bumpResult.Text | Should -Not -Match $pattern
+        }
+
+        ([regex]::Matches($bumpResult.Text, 'Major version zero \(0\.y\.z\) is for initial development')).Count | Should -Be $TestCase.ExpectedWarningCount
+        $versionAfterBump | Should -Be $TestCase.ExpectedVersionAfterBump
+    }
+    finally {
+        $env:PSModulePath = $originalModulePath
+    }
+}
+
 function Assert-TestNovaCliWhatIfResultMap {
     [CmdletBinding()]
     param(
@@ -165,7 +216,7 @@ function Assert-TestNovaCliWhatIfResultMap {
 
     $ResultMap.Bump.Text | Should -Match 'Version plan: 0\.0\.1 -> 0\.1\.0 \| Label: Minor \| Commits: 1'
     $ResultMap.BumpCi.Text | Should -Match 'Version plan: 0\.0\.1 -> 0\.1\.0 \| Label: Minor \| Commits: 1'
-    $ResultMap.PreviewBump.Text | Should -Match 'Version plan: 0\.0\.1 -> 0\.1\.0-preview \| Label: Minor \| Commits: 1'
+    $ResultMap.PreviewBump.Text | Should -Match 'Version plan: 0\.0\.1 -> 0\.0\.2-preview \| Label: Minor \| Commits: 1'
     $ResultMap.Bump.Text | Should -Not -Match 'Version bumped to :'
     $ResultMap.PreviewBump.Text | Should -Not -Match 'Version bumped to :'
     ((Get-Content -LiteralPath $ProjectJsonPath -Raw | ConvertFrom-Json).Version) | Should -Be '0.0.1'
@@ -178,9 +229,9 @@ function Get-TestNovaCliContinuousIntegrationForwardingCaseList {
     param()
 
     return @(
-        @{CommandName = 'build'; ActionCommand = 'Invoke-NovaBuild'; UsesPublishOption = $false; Arguments = @('--continuous-integration')}
-        @{CommandName = 'bump'; ActionCommand = 'Update-NovaModuleVersion'; UsesPublishOption = $false; Arguments = @('--continuous-integration')}
-        @{CommandName = 'publish'; ActionCommand = 'Publish-NovaModule'; UsesPublishOption = $false; Arguments = @('--repository', 'PSGallery', '--api-key', 'key123', '--continuous-integration')}
-        @{CommandName = 'release'; ActionCommand = 'Invoke-NovaRelease'; UsesPublishOption = $true; Arguments = @('--repository', 'PSGallery', '--api-key', 'key123', '--continuous-integration')}
+        @{CommandName = 'build'; ActionCommand = 'Invoke-NovaBuild'; Arguments = @('--continuous-integration')}
+        @{CommandName = 'bump'; ActionCommand = 'Update-NovaModuleVersion'; Arguments = @('--continuous-integration')}
+        @{CommandName = 'publish'; ActionCommand = 'Publish-NovaModule'; Arguments = @('--repository', 'PSGallery', '--api-key', 'key123', '--continuous-integration')}
+        @{CommandName = 'release'; ActionCommand = 'Invoke-NovaRelease'; Arguments = @('--repository', 'PSGallery', '--api-key', 'key123', '--continuous-integration')}
     )
 }

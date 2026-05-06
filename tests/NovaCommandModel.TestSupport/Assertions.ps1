@@ -137,6 +137,84 @@ function Invoke-UpdateNovaModuleVersionDefaultPathAssertion {
     }
 }
 
+function Assert-TestNovaVersionUpdateWorkflowContextMajorZeroAdvisory {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ModuleName,
+        [Parameter(Mandatory)]$TestCase
+    )
+
+    InModuleScope $ModuleName -Parameters @{TestCase = $TestCase} {
+        param($TestCase)
+
+        Mock Get-NovaProjectInfo {
+            [pscustomobject]@{
+                ProjectName = 'NovaModuleTools'
+                Version = $TestCase.CurrentVersion
+                ProjectJSON = '/tmp/project.json'
+            }
+        }
+        Mock Get-GitCommitMessageForVersionBump {$TestCase.CommitMessages}
+        Mock Get-NovaVersionLabelForBump {$TestCase.Label}
+        Mock Get-NovaVersionUpdatePlan {
+            [pscustomobject]@{
+                NewVersion = [semver]$TestCase.PlannedVersion
+            }
+        }
+
+        $result = Get-NovaVersionUpdateWorkflowContext -ProjectRoot '/tmp/project'
+
+        $result.Label | Should -Be $TestCase.Label
+        $result.EffectiveLabel | Should -Be $TestCase.ExpectedEffectiveLabel
+        $result.NewVersion | Should -Be $TestCase.PlannedVersion
+        $result.AdvisoryMessage | Should -Match 'Major version zero \(0\.y\.z\) is for initial development'
+        $result.AdvisoryMessage | Should -Match 'Set 1\.0\.0 manually once the software is stable'
+        Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
+            $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
+                    $Label -eq $TestCase.ExpectedPlanLabel -and
+                    -not $PreviewRelease
+        }
+    }
+}
+
+function Assert-TestUpdateNovaModuleVersionMajorZeroWarning {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ModuleName,
+        [Parameter(Mandatory)]$TestCase
+    )
+
+    InModuleScope $ModuleName -Parameters @{TestCase = $TestCase} {
+        param($TestCase)
+
+        Mock Get-NovaVersionUpdateWorkflowContext {
+            [pscustomobject]@{
+                Target = 'project.json'
+                Action = "Update module version using $( $TestCase.Label ) release label"
+            }
+        }
+        Mock Invoke-NovaVersionUpdateWorkflow {
+            [pscustomobject]@{
+                PreviousVersion = $TestCase.PreviousVersion
+                NewVersion = $TestCase.NewVersion
+                Label = $TestCase.Label
+                EffectiveLabel = $TestCase.EffectiveLabel
+                AdvisoryMessage = 'Major version zero (0.y.z) is for initial development.'
+                CommitCount = 34
+                Applied = $false
+            }
+        }
+        Mock Write-Host {throw 'WhatIf should not emit host output'}
+        $warningMessages = $null
+
+        $result = Update-NovaModuleVersion -Path (Get-Location).Path -WhatIf -WarningVariable warningMessages
+
+        $result.NewVersion | Should -Be $TestCase.NewVersion
+                ($warningMessages -join ' ') | Should -Match 'Major version zero \(0\.y\.z\) is for initial development'
+        Assert-MockCalled Write-Host -Times 0
+    }
+}
+
 function Invoke-TestPublishWorkflowCiRestoreAssertion {
     [CmdletBinding()]
     param(

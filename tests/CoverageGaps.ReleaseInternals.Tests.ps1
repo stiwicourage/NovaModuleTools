@@ -129,9 +129,9 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
-    It 'Get-NovaVersionUpdatePlan appends a preview label to the normal bump target when preview mode starts from stable' -ForEach @(
-        @{CurrentVersion = '1.5.3'; Label = 'Major'; ExpectedVersion = '2.0.0-preview'}
-        @{CurrentVersion = '1.5.3'; Label = 'Minor'; ExpectedVersion = '1.6.0-preview'}
+    It 'Get-NovaVersionUpdatePlan enters the next patch preview track from stable versions regardless of the inferred label' -ForEach @(
+        @{CurrentVersion = '1.5.3'; Label = 'Major'; ExpectedVersion = '1.5.4-preview'}
+        @{CurrentVersion = '1.5.3'; Label = 'Minor'; ExpectedVersion = '1.5.4-preview'}
         @{CurrentVersion = '1.5.3'; Label = 'Patch'; ExpectedVersion = '1.5.4-preview'}
     ) {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
@@ -145,6 +145,85 @@ Describe 'Coverage gaps for release and git internals' {
             }
 
             (Get-NovaVersionUpdatePlan -Label $TestCase.Label -PreviewRelease).NewVersion.ToString() | Should -Be $TestCase.ExpectedVersion
+        }
+    }
+
+    It 'Get-NovaVersionUpdateWorkflowContext handles stable and preview major-zero bumps as expected when <Name>' -ForEach @(
+        @{
+            Name = 'a stable breaking-change bump stays on the initial-development line'
+            CurrentVersion = '0.1.0'
+            Label = 'Major'
+            PreviewRelease = $false
+            PlannedVersion = '0.2.0'
+            ExpectedEffectiveLabel = 'Minor'
+            ExpectedAdvisoryPattern = 'Set 1\.0\.0 manually once the software is stable'
+            ExpectedPlanLabel = 'Minor'
+        }
+        @{
+            Name = 'a stable feature bump still warns that 1.0.0 must be set manually'
+            CurrentVersion = '0.0.1'
+            Label = 'Minor'
+            PreviewRelease = $false
+            PlannedVersion = '0.1.0'
+            ExpectedEffectiveLabel = 'Minor'
+            ExpectedAdvisoryPattern = 'Set 1\.0\.0 manually once the software is stable'
+            ExpectedPlanLabel = 'Minor'
+        }
+        @{
+            Name = 'preview mode enters the next patch preview from stable major-zero versions'
+            CurrentVersion = '0.1.0'
+            Label = 'Major'
+            PreviewRelease = $true
+            PlannedVersion = '0.1.1-preview'
+            ExpectedEffectiveLabel = 'Patch'
+            ExpectedAdvisoryPattern = $null
+            ExpectedPlanLabel = 'Patch'
+        }
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectJSON = '/tmp/project.json'
+                    Version = $TestCase.CurrentVersion
+                }
+            }
+            Mock Get-GitCommitMessageForVersionBump {@('feat!: breaking api')}
+            Mock Get-NovaVersionLabelForBump {$TestCase.Label}
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    NewVersion = [semver]$TestCase.PlannedVersion
+                }
+            }
+
+            $result = Get-NovaVersionUpdateWorkflowContext -ProjectRoot '/tmp/project' -PreviewRelease:$TestCase.PreviewRelease
+
+            $result.Label | Should -Be $TestCase.Label
+            $result.EffectiveLabel | Should -Be $TestCase.ExpectedEffectiveLabel
+            $result.NewVersion | Should -Be $TestCase.PlannedVersion
+            if ($null -eq $TestCase.ExpectedAdvisoryPattern) {
+                $result.AdvisoryMessage | Should -BeNullOrEmpty
+            }
+            else {
+                $result.AdvisoryMessage | Should -Match $TestCase.ExpectedAdvisoryPattern
+            }
+
+            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
+                $Label -eq $TestCase.ExpectedPlanLabel -and
+                        ([bool]$PreviewRelease) -eq ([bool]$TestCase.PreviewRelease)
+            }
+        }
+    }
+
+    It 'Get-NovaVersionUpdateEffectiveLabel falls back to Label when EffectiveLabel is missing or blank' -ForEach @(
+        @{Name = 'missing'; WorkflowContext = [pscustomobject]@{Label = 'Patch'}; Expected = 'Patch'}
+        @{Name = 'blank'; WorkflowContext = [pscustomobject]@{Label = 'Minor'; EffectiveLabel = '   '}; Expected = 'Minor'}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
+            param($TestCase)
+
+            Get-NovaVersionUpdateEffectiveLabel -WorkflowContext $TestCase.WorkflowContext | Should -Be $TestCase.Expected
         }
     }
 
@@ -205,9 +284,9 @@ Describe 'Coverage gaps for release and git internals' {
             $updatedProject = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json
 
             $result.PreviousVersion | Should -Be '1.2.3'
-            $result.NewVersion | Should -Be '1.3.0-preview'
+            $result.NewVersion | Should -Be '1.2.4-preview'
             $result.Applied | Should -BeTrue
-            $updatedProject.Version | Should -Be '1.3.0-preview'
+            $updatedProject.Version | Should -Be '1.2.4-preview'
             $updatedProject.Package.Auth.HeaderName | Should -Be 'Authorization'
             $updatedProject.Package.Repositories.Count | Should -Be 1
             ($updatedProject.Package.Repositories[0] -is [string]) | Should -BeFalse
@@ -222,7 +301,7 @@ Describe 'Coverage gaps for release and git internals' {
             Mock Get-NovaVersionUpdatePlan {
                 [pscustomobject]@{
                     ProjectFile = '/tmp/project.json'
-                    NewVersion = [semver]'1.3.0-preview'
+                    NewVersion = [semver]'1.2.4-preview'
                 }
             }
             Mock Read-ProjectJsonData {
@@ -243,12 +322,12 @@ Describe 'Coverage gaps for release and git internals' {
 
             $result.ProjectFile | Should -Be '/tmp/project.json'
             $result.PreviousVersion | Should -Be '1.2.3'
-            $result.NewVersion | Should -Be '1.3.0-preview'
+            $result.NewVersion | Should -Be '1.2.4-preview'
             $result.Applied | Should -BeTrue
             Assert-MockCalled Read-ProjectJsonData -Times 1 -ParameterFilter {$ProjectJsonPath -eq '/tmp/project.json'}
             Assert-MockCalled Write-ProjectJsonData -Times 1 -ParameterFilter {
                 $ProjectJsonPath -eq '/tmp/project.json' -and
-                        $Data.Version -eq '1.3.0-preview' -and
+                        $Data.Version -eq '1.2.4-preview' -and
                         $Data.Package.Repositories[0].Name -eq 'staging'
             }
         }
@@ -259,7 +338,7 @@ Describe 'Coverage gaps for release and git internals' {
             Mock Get-NovaVersionUpdatePlan {
                 [pscustomobject]@{
                     ProjectFile = '/tmp/project.json'
-                    NewVersion = [semver]'1.3.0-preview'
+                    NewVersion = [semver]'1.2.4-preview'
                 }
             }
             Mock Read-ProjectJsonData {
@@ -273,7 +352,7 @@ Describe 'Coverage gaps for release and git internals' {
 
             $result.ProjectFile | Should -Be '/tmp/project.json'
             $result.PreviousVersion | Should -Be '1.2.3'
-            $result.NewVersion | Should -Be '1.3.0-preview'
+            $result.NewVersion | Should -Be '1.2.4-preview'
             $result.Applied | Should -BeFalse
             Assert-MockCalled Read-ProjectJsonData -Times 1 -ParameterFilter {$ProjectJsonPath -eq '/tmp/project.json'}
             Assert-MockCalled Write-ProjectJsonData -Times 0

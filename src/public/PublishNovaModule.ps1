@@ -18,6 +18,7 @@ function Publish-NovaModule {
     begin {
         $skipTests = $PSBoundParameters.ContainsKey('SkipTests') -and $PSBoundParameters.SkipTests
         $continuousIntegration = $PSBoundParameters.ContainsKey('ContinuousIntegration') -and $PSBoundParameters.ContinuousIntegration
+        $overrideWarning = $PSBoundParameters.ContainsKey('OverrideWarning') -and $PSBoundParameters.OverrideWarning
 
         $workflowContext = Get-NovaPublishWorkflowContext -ProjectInfo (Get-NovaProjectInfo) -PublishOption @{
             Local = [bool]$Local
@@ -26,6 +27,7 @@ function Publish-NovaModule {
             ApiKey = $ApiKey
             SkipTests = [bool]$skipTests
             'ContinuousIntegration' = [bool]$continuousIntegration
+            OverrideWarning = [bool]$overrideWarning
         } -WorkflowParams (Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:$WhatIfPreference) -WorkflowSettings @{
             WorkflowName = 'publish'
             IncludeLocalPublishActivation = $true

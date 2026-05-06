@@ -67,6 +67,98 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
         }
     }
 
+    It 'Get-NovaBuildWorkflowContext carries OverrideWarningRequested when requested' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaBuildProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                }
+            }
+
+            $result = Get-NovaBuildWorkflowContext -OverrideWarningRequested
+
+            $result.OverrideWarningRequested | Should -BeTrue
+        }
+    }
+
+    It 'Get-NovaBuildCommandParameterMap appends OverrideWarning only when requested' {
+        InModuleScope $script:moduleName {
+            $defaultMap = Get-NovaBuildCommandParameterMap -WorkflowParams @{WhatIf = $true}
+            $overrideMap = Get-NovaBuildCommandParameterMap -WorkflowParams @{WhatIf = $true} -OverrideWarningRequested
+
+            $defaultMap.Keys | Should -Be @('WhatIf')
+            $defaultMap.WhatIf | Should -BeTrue
+            $overrideMap.Keys | Should -Contain 'OverrideWarning'
+            $overrideMap.WhatIf | Should -BeTrue
+            $overrideMap.OverrideWarning | Should -BeTrue
+        }
+    }
+
+    It 'Get-NovaPackageWorkflowModulePath returns the current module path' {
+        InModuleScope $script:moduleName {
+            Get-NovaPackageWorkflowModulePath | Should -Be $ExecutionContext.SessionState.Module.Path
+        }
+    }
+
+    It 'Assert-NovaPublicFunctionFileLayout stops the build when src/public files do not contain exactly one top-level function' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ProjectRoot = '/tmp/project'
+                PublicDir = '/tmp/project/src/public'
+            }
+            Mock Get-ChildItem {
+                @(
+                    [pscustomobject]@{FullName = '/tmp/project/src/public/Get-Thing.ps1'}
+                    [pscustomobject]@{FullName = '/tmp/project/src/public/Get-Other.ps1'}
+                )
+            }
+            Mock Get-FunctionNameFromFile {
+                if ($filePath -like '*Get-Thing.ps1') {
+                    return @('Get-Thing', 'Get-ThingHelper')
+                }
+
+                return @()
+            }
+            Mock Write-Warning {}
+
+            $thrown = $null
+            try {
+                Assert-NovaPublicFunctionFileLayout -ProjectInfo $projectInfo
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Validation.PublicFunctionFileLayoutInvalid'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+            $thrown.TargetObject | Should -Be '/tmp/project/src/public'
+            $thrown.Exception.Message | Should -Match 'src/public/Get-Thing\.ps1: Get-Thing, Get-ThingHelper'
+            $thrown.Exception.Message | Should -Match 'src/public/Get-Other\.ps1: <none>'
+            $thrown.Exception.Message | Should -Match '-OverrideWarning / --override-warning / -o'
+            Assert-MockCalled Write-Warning -Times 1
+        }
+    }
+
+    It 'Assert-NovaPublicFunctionFileLayout warns but continues when OverrideWarningRequested is set' {
+        InModuleScope $script:moduleName {
+            $projectInfo = [pscustomobject]@{
+                ProjectRoot = '/tmp/project'
+                PublicDir = '/tmp/project/src/public'
+            }
+            Mock Get-ChildItem {@([pscustomobject]@{FullName = '/tmp/project/src/public/Get-Thing.ps1'})}
+            Mock Get-FunctionNameFromFile {@('Get-Thing', 'Get-ThingHelper')}
+            Mock Write-Warning {}
+            Mock Stop-NovaOperation {throw 'should not stop'}
+
+            {Assert-NovaPublicFunctionFileLayout -ProjectInfo $projectInfo -OverrideWarningRequested} | Should -Not -Throw
+
+            Assert-MockCalled Write-Warning -Times 1
+            Assert-MockCalled Stop-NovaOperation -Times 0
+        }
+    }
+
     It 'Resolve-NovaCiProjectInfo uses the current location when ProjectRoot is omitted' {
         $expectedPath = (Get-Location).Path
 
@@ -167,22 +259,23 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
         }
     }
 
-    It 'Build-Help skips when no markdown files exist' {
+    It 'Build-Help only searches for help markdown under the project help docs folder' {
         InModuleScope $script:moduleName {
-            Mock Get-NovaBuildProjectInfo {[pscustomobject]@{DocsDir = '/tmp/docs'}}
+            Mock Get-NovaBuildProjectInfo {[pscustomobject]@{DocsDir = '/tmp/docs'; ProjectName = 'NovaModuleTools'}}
             Mock Get-ChildItem {@()}
             Mock Get-Module {}
 
             Build-Help
 
+            Assert-MockCalled Get-ChildItem -Times 1 -ParameterFilter {$LiteralPath -eq '/tmp/docs/NovaModuleTools'}
             Assert-MockCalled Get-Module -Times 0
         }
     }
 
     It 'Build-Help throws when PlatyPS is unavailable and docs exist' {
         InModuleScope $script:moduleName {
-            Mock Get-NovaBuildProjectInfo {[pscustomobject]@{DocsDir = '/tmp/docs'}}
-            Mock Get-ChildItem {@([pscustomobject]@{FullName = '/tmp/docs/Invoke-NovaBuild.md'})}
+            Mock Get-NovaBuildProjectInfo {[pscustomobject]@{DocsDir = '/tmp/docs'; ProjectName = 'NovaModuleTools'}}
+            Mock Get-ChildItem {@([pscustomobject]@{FullName = '/tmp/docs/NovaModuleTools/Invoke-NovaBuild.md'})}
             Mock Get-Module {$null}
 
             $thrown = $null
@@ -202,7 +295,8 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
 
     It 'Build-Help imports markdown help and renames the generated locale folder' {
         InModuleScope $script:moduleName {
-            $docPath = Join-Path $TestDrive 'Invoke-NovaBuild.md'
+            $docPath = Join-Path $TestDrive 'NovaModuleTools/en-US/Invoke-NovaBuild.md'
+            New-Item -ItemType Directory -Path (Split-Path -Parent $docPath) -Force | Out-Null
             Set-Content -LiteralPath $docPath -Value "---`nLocale: da-DK`n---"
 
             Mock Get-NovaBuildProjectInfo {
@@ -216,6 +310,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             Mock Get-Module {[pscustomobject]@{Name = 'Microsoft.PowerShell.PlatyPS'}}
             Mock Measure-PlatyPSMarkdown {[pscustomobject]@{FileType = 'CommandHelp'; FilePath = '/tmp/docs/Invoke-NovaBuild.md'}}
             Mock Get-NovaHelpLocale {'da-DK'}
+            Mock Test-Path {$true} -ParameterFilter {$LiteralPath -eq '/tmp/dist/NovaModuleTools'}
             Mock Rename-Item {}
 
             $script:buildHelpExportOutputFolder = $null
@@ -256,7 +351,115 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             }
 
             $script:buildHelpExportOutputFolder | Should -Be '/tmp/dist'
+            Assert-MockCalled Get-ChildItem -Times 1 -ParameterFilter {$LiteralPath -eq '/tmp/docs/NovaModuleTools'}
             Assert-MockCalled Rename-Item -Times 1 -ParameterFilter {$Path -eq '/tmp/dist/NovaModuleTools' -and $NewName -eq '/tmp/dist/da-DK'}
+        }
+    }
+
+    It 'Build-Help skips when scoped markdown files are not PlatyPS command help' {
+        InModuleScope $script:moduleName {
+            $docPath = Join-Path $TestDrive 'NovaModuleTools/notes.md'
+            New-Item -ItemType Directory -Path (Split-Path -Parent $docPath) -Force | Out-Null
+            Set-Content -LiteralPath $docPath -Value '# Notes'
+
+            Mock Get-NovaBuildProjectInfo {
+                [pscustomobject]@{
+                    DocsDir = '/tmp/docs'
+                    ProjectName = 'NovaModuleTools'
+                }
+            }
+            Mock Get-ChildItem {@(Get-Item -LiteralPath $docPath)}
+            Mock Get-Module {[pscustomobject]@{Name = 'Microsoft.PowerShell.PlatyPS'}}
+            Mock Measure-PlatyPSMarkdown {[pscustomobject]@{FileType = 'Other'; FilePath = $docPath}}
+            Mock Get-NovaHelpLocale {throw 'should not resolve locale without command help'}
+            Mock Test-Path {throw 'should not inspect output without command help'}
+            Mock Rename-Item {throw 'should not rename without command help'}
+
+            function Import-MarkdownCommandHelp {
+                throw 'should not import without command help'
+            }
+            function Export-MamlCommandHelp {
+                throw 'should not export without command help'
+            }
+
+            try {
+                {Build-Help} | Should -Not -Throw
+                Assert-MockCalled Get-NovaHelpLocale -Times 0
+                Assert-MockCalled Rename-Item -Times 0
+            }
+            finally {
+                Remove-Item function:Import-MarkdownCommandHelp -ErrorAction SilentlyContinue
+                Remove-Item function:Export-MamlCommandHelp -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    It 'Build-Help throws a stable error when PlatyPS export does not create the expected help folder' {
+        InModuleScope $script:moduleName {
+            $docPath = Join-Path $TestDrive 'NovaModuleTools/en-US/Invoke-NovaBuild.md'
+            New-Item -ItemType Directory -Path (Split-Path -Parent $docPath) -Force | Out-Null
+            Set-Content -LiteralPath $docPath -Value "---`nLocale: en-US`n---"
+
+            Mock Get-NovaBuildProjectInfo {
+                [pscustomobject]@{
+                    DocsDir = '/tmp/docs'
+                    OutputModuleDir = '/tmp/dist'
+                    ProjectName = 'NovaModuleTools'
+                }
+            }
+            Mock Get-ChildItem {@(Get-Item -LiteralPath $docPath)}
+            Mock Get-Module {[pscustomobject]@{Name = 'Microsoft.PowerShell.PlatyPS'}}
+            Mock Measure-PlatyPSMarkdown {[pscustomobject]@{FileType = 'CommandHelp'; FilePath = $docPath}}
+            Mock Get-NovaHelpLocale {'en-US'}
+            Mock Test-Path {$false} -ParameterFilter {$LiteralPath -eq '/tmp/dist/NovaModuleTools'}
+            Mock Rename-Item {throw 'should not rename missing output folder'}
+
+            function Import-MarkdownCommandHelp {
+                [CmdletBinding()]
+                param(
+                    [Parameter(ValueFromPipeline)]
+                    [object]$InputObject,
+
+                    [object]$Path
+                )
+
+                process {
+                    [pscustomobject]@{Name = 'Invoke-NovaBuild'}
+                }
+            }
+
+            function Export-MamlCommandHelp {
+                [CmdletBinding()]
+                param(
+                    [Parameter(ValueFromPipeline)]
+                    [object]$InputObject,
+
+                    [string]$OutputFolder
+                )
+
+                process {
+                }
+            }
+
+            try {
+                $thrown = $null
+                try {
+                    Build-Help
+                }
+                catch {
+                    $thrown = $_
+                }
+
+                $thrown.Exception.Message | Should -BeLike 'Expected generated help directory was not created:*'
+                $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Environment.GeneratedHelpDirectoryNotFound'
+                $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
+                $thrown.TargetObject | Should -Be '/tmp/dist/NovaModuleTools'
+                Assert-MockCalled Rename-Item -Times 0
+            }
+            finally {
+                Remove-Item function:Import-MarkdownCommandHelp -ErrorAction SilentlyContinue
+                Remove-Item function:Export-MamlCommandHelp -ErrorAction SilentlyContinue
+            }
         }
     }
 
@@ -332,7 +535,16 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
                 PublicDir = '/tmp/public'
                 ResourcesDir = '/tmp/resources'
                 CopyResourcesToModuleRoot = $ManifestCase.CopyResourcesToModuleRoot
-                Manifest = [ordered]@{Author = 'Tester'; CompanyName = 'Nova'}
+                Manifest = [ordered]@{
+                    Author = 'Tester'
+                    CompanyName = 'Nova'
+                    RequiredModules = @(
+                        @{
+                            ModuleName = 'Microsoft.PowerShell.PlatyPS'
+                            ModuleVersion = '1.0.1'
+                        }
+                    )
+                }
                 Version = '1.2.3-preview'
                 Description = 'Example'
                 ProjectName = 'NovaModuleTools'
@@ -357,7 +569,10 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
                         $TypesToProcess -eq @($ManifestCase.ExpectedTypePath) -and
                         $Prerelease -eq 'preview' -and
                         $Author -eq 'Tester' -and
-                        $CompanyName -eq 'Nova'
+                        $CompanyName -eq 'Nova' -and
+                        @($RequiredModules).Count -eq 1 -and
+                        $RequiredModules[0].ModuleName -eq 'Microsoft.PowerShell.PlatyPS' -and
+                        $RequiredModules[0].ModuleVersion -eq '1.0.1'
             }
         }
     }

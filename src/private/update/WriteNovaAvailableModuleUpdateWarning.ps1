@@ -36,7 +36,7 @@ function Write-NovaAvailableModuleUpdateWarning {
         ''
         'Update:'
         $updateCommand
-        'nova update'
+        '% nova update'
     )
 
     if ($Prerelease) {

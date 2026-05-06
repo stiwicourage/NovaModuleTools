@@ -24,7 +24,8 @@ manifest generation, external help generation, resource copying, and Pester-base
 
 ### `PS> Get-NovaProjectInfo`
 
-Reads `project.json` and returns resolved project metadata and paths.
+Reads `project.json` and returns resolved project metadata and paths, or returns the project/install version views when
+requested.
 
 ### `PS> Get-NovaUpdateNotificationPreference`
 

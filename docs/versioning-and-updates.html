@@ -120,7 +120,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td><code>% nova --version</code></td>
+                            <td><code>Get-NovaProjectInfo -Installed</code> or <code>% nova --version</code></td>
                             <td>The installed NovaModuleTools version.</td>
                             <td>Use this when you are troubleshooting Nova itself or checking whether the tool needs an
                                 update.
@@ -136,7 +136,8 @@
                         </p>
                     </div>
                     <div class="surface-example__surface" data-command-surface="powershell">
-                        <pre><code>PS&gt; Get-NovaProjectInfo -Version</code></pre>
+                        <pre><code>PS&gt; Get-NovaProjectInfo -Version
+PS&gt; Get-NovaProjectInfo -Installed</code></pre>
                     </div>
                     <div class="surface-example__surface" data-command-surface="command-line" hidden>
                         <pre><code>% nova version
@@ -147,10 +148,10 @@
                     </div>
                 </div>
                 <div class="surface-note" data-command-visibility="powershell">
-                    <p><strong>PowerShell note:</strong> project version lookup has a direct cmdlet form. The installed
-                        module/tool version views remain launcher-oriented on this page, as shown in the comparison
-                        table
-                        above.</p>
+                    <p><strong>PowerShell note:</strong> project version lookup and installed-tool version lookup both
+                        have direct
+                        cmdlet forms. The installed current-project module view remains launcher-oriented on this page,
+                        as shown in the comparison table above.</p>
                 </div>
             </section>
 
@@ -165,6 +166,17 @@
                     <li><strong>Minor</strong> for <code>feat:</code> commits</li>
                     <li><strong>Patch</strong> for <code>fix:</code> commits and all other cases</li>
                 </ul>
+                <p>While your project is still on a stable <code>0.y.z</code> version, Nova treats SemVer major zero as
+                    the initial-development phase. Stable bumps stay on the <code>0.y.z</code> line, and a
+                    breaking-change
+                    bump still reports the detected <strong>Major</strong> label while advancing to the next minor
+                    version
+                    instead of jumping to <code>1.0.0</code>. Nova prints one warning that you should set
+                    <code>1.0.0</code> manually once the API is stable. Preview mode stays unchanged.
+                </p>
+                <pre><code>0.0.1 + Patch -> 0.0.2
+0.1.0 + Minor -> 0.2.0
+0.1.0 + Major -> 0.2.0</code></pre>
                 <p>When Git tags exist, Nova uses commits since the latest tag. When the folder is not a Git repository,
                     Nova falls back to a patch bump. When the repository exists but has no commits yet, Nova stops with
                     a clear error.</p>

@@ -1,0 +1,68 @@
+name: Create annotated tag
+description: Create an annotated git tag for a commit SHA.
+
+inputs:
+  tag-name:
+    description: Tag name to create.
+    required: true
+  target-sha:
+    description: Commit SHA that the tag should reference.
+    required: true
+  message:
+    description: Annotated tag message.
+    required: true
+
+outputs:
+  tag-object-sha:
+    description: SHA of the created tag object.
+    value: ${{ steps.create.outputs.tag-object-sha }}
+
+runs:
+  using: composite
+  steps:
+    - id: create
+      uses: actions/github-script@v7
+      env:
+        TAG_NAME: ${{ inputs.tag-name }}
+        TARGET_SHA: ${{ inputs.target-sha }}
+        TAG_MESSAGE: ${{ inputs.message }}
+      with:
+        script: |
+          const owner = context.repo.owner
+          const repo = context.repo.repo
+          const tagName = process.env.TAG_NAME
+          const targetSha = process.env.TARGET_SHA
+          const message = process.env.TAG_MESSAGE
+
+          try {
+            await github.rest.git.getRef({
+              owner,
+              repo,
+              ref: `tags/${tagName}`
+            })
+
+            core.setFailed(`Tag '${tagName}' already exists.`)
+            return
+          } catch (error) {
+            if (error.status !== 404) {
+              throw error
+            }
+          }
+
+          const tagObject = await github.rest.git.createTag({
+            owner,
+            repo,
+            tag: tagName,
+            message,
+            object: targetSha,
+            type: 'commit'
+          })
+
+          await github.rest.git.createRef({
+            owner,
+            repo,
+            ref: `refs/tags/${tagName}`,
+            sha: tagObject.data.sha
+          })
+
+          core.setOutput('tag-object-sha', tagObject.data.sha)

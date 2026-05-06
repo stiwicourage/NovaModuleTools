@@ -42,10 +42,11 @@ BeforeAll {
     }
 
     $helpMetadata = & {
-        $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:projectInfo.DocsDir -Filter '*.md' -Recurse
+        $script:helpDocsDir = [System.IO.Path]::Join($script:projectInfo.DocsDir, $script:moduleName)
+        $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:helpDocsDir -Filter '*.md' -File -Recurse
         [pscustomobject]@{
             HelpLocale = Get-TestHelpLocaleFromMarkdownFiles -Files $helpMarkdownFiles
-            HelpActivationTestCases = Get-CommandHelpActivationTestCases -DocsDir $script:projectInfo.DocsDir
+            HelpActivationTestCases = Get-CommandHelpActivationTestCases -HelpDocsDir $script:helpDocsDir
         }
     }
 
@@ -109,6 +110,21 @@ Describe 'Nova command model - project, help, and build behavior' {
             Mock Get-Content {'{"ProjectName":"X","Version":"9.9.9"}'}
 
             Get-NovaProjectInfo -Version | Should -Be '9.9.9'
+        }
+    }
+
+    It 'Get-NovaProjectInfo -Installed returns the installed NovaModuleTools name and version without reading project.json' {
+        InModuleScope $script:moduleName -Parameters @{ExpectedModuleName = $script:moduleName} {
+            param($ExpectedModuleName)
+
+            Mock Get-NovaCliInstalledVersion {'9.9.9-preview'}
+            Mock Get-NovaProjectInfoContext {throw 'should not resolve project context'}
+            Mock Get-NovaProjectInfoResult {throw 'should not shape project output'}
+
+            Get-NovaProjectInfo -Installed | Should -Be "$ExpectedModuleName 9.9.9-preview"
+            Assert-MockCalled Get-NovaCliInstalledVersion -Times 1 -Scope It
+            Assert-MockCalled Get-NovaProjectInfoContext -Times 0 -Scope It
+            Assert-MockCalled Get-NovaProjectInfoResult -Times 0 -Scope It
         }
     }
 
@@ -465,7 +481,7 @@ Describe 'Nova command model - project, help, and build behavior' {
     }
 
     It 'PowerShell help markdown stays free of launcher syntax and GNU-style options' {
-        $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:projectInfo.DocsDir -Filter '*.md' -Recurse
+        $helpMarkdownFiles = Get-ChildItem -LiteralPath $script:helpDocsDir -Filter '*.md' -File -Recurse
 
         foreach ($file in $helpMarkdownFiles) {
             $content = Get-Content -LiteralPath $file.FullName -Raw
@@ -570,6 +586,7 @@ Describe 'Nova command model - project, help, and build behavior' {
                 ProjectInfo = $projectInfo
             }
 
+            Mock Assert-NovaPublicFunctionFileLayout {$script:steps += 'public-layout'}
             Mock Reset-ProjectDist {$script:steps += 'reset'}
             Mock Build-Module {$script:steps += 'module'}
             Mock Assert-BuiltModuleHasNoDuplicateFunctionName {$script:steps += 'duplicates'}
@@ -580,7 +597,8 @@ Describe 'Nova command model - project, help, and build behavior' {
 
             Invoke-NovaBuildWorkflow -WorkflowContext $workflowContext
 
-            $script:steps -join ',' | Should -Be 'reset,module,duplicates,manifest,help,resources,notification'
+            $script:steps -join ',' | Should -Be 'public-layout,reset,module,duplicates,manifest,help,resources,notification'
+            Assert-MockCalled Assert-NovaPublicFunctionFileLayout -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools' -and -not $OverrideWarningRequested}
             Assert-MockCalled Reset-ProjectDist -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools' -and -not $Confirm}
             Assert-MockCalled Build-Module -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
             Assert-MockCalled Assert-BuiltModuleHasNoDuplicateFunctionName -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
@@ -604,6 +622,7 @@ Describe 'Nova command model - project, help, and build behavior' {
                 ContinuousIntegrationRequested = $true
             }
 
+            Mock Assert-NovaPublicFunctionFileLayout {$script:steps += 'public-layout'}
             Mock Reset-ProjectDist {$script:steps += 'reset'}
             Mock Build-Module {$script:steps += 'module'}
             Mock Assert-BuiltModuleHasNoDuplicateFunctionName {$script:steps += 'duplicates'}
@@ -615,7 +634,7 @@ Describe 'Nova command model - project, help, and build behavior' {
 
             Invoke-NovaBuildWorkflow -WorkflowContext $workflowContext
 
-            $script:steps -join ',' | Should -Be 'reset,module,duplicates,manifest,help,resources,notification,ci'
+            $script:steps -join ',' | Should -Be 'public-layout,reset,module,duplicates,manifest,help,resources,notification,ci'
             Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
         }
     }
@@ -654,6 +673,22 @@ Describe 'Nova command model - project, help, and build behavior' {
             Invoke-NovaBuild -ContinuousIntegration -Confirm:$false
 
             Assert-MockCalled Get-NovaBuildWorkflowContext -Times 1 -ParameterFilter {$ContinuousIntegrationRequested}
+        }
+    }
+
+    It 'Invoke-NovaBuild forwards OverrideWarning into the build workflow context' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaBuildWorkflowContext {
+                [pscustomobject]@{
+                    Target = '/tmp/dist/NovaModuleTools'
+                    Operation = 'Build Nova module output'
+                }
+            }
+            Mock Invoke-NovaBuildWorkflow {}
+
+            Invoke-NovaBuild -OverrideWarning -Confirm:$false
+
+            Assert-MockCalled Get-NovaBuildWorkflowContext -Times 1 -ParameterFilter {$OverrideWarningRequested}
         }
     }
 

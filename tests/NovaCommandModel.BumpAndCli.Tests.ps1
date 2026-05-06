@@ -35,6 +35,8 @@ $global:novaCommandModelBumpAndCliTestSupportFunctionNameList = @(
     'Invoke-ConfirmNovaCliCommandActionEnterAssertion'
     'Invoke-ConfirmNovaCliCommandActionRetryAssertion'
     'Invoke-ConfirmNovaCliCommandActionCancellationAssertion'
+    'Assert-TestNovaVersionUpdateWorkflowContextMajorZeroAdvisory'
+    'Assert-TestUpdateNovaModuleVersionMajorZeroWarning'
 )
 . $script:testSupportPath
 
@@ -101,6 +103,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $result.PreviousVersion | Should -Be '1.0.0'
             $result.NewVersion | Should -Be '1.1.0'
             $result.Label | Should -Be 'Minor'
+            $result.EffectiveLabel | Should -Be 'Minor'
             $result.CommitCount | Should -Be 2
             $result.Target | Should -Be 'project.json'
             $result.Action | Should -Be 'Update module version using Minor release label'
@@ -109,6 +112,58 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
                 $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
                         $Label -eq 'Minor' -and
                         -not $PreviewRelease
+            }
+        }
+    }
+
+    It 'Get-NovaVersionUpdateWorkflowContext keeps the detected Major label but plans the next minor version for stable 0.y.z breaking-change bumps' {
+        Assert-TestNovaVersionUpdateWorkflowContextMajorZeroAdvisory -ModuleName $script:moduleName -TestCase @{
+            CurrentVersion = '0.1.0'
+            CommitMessages = @('feat!: breaking api')
+            Label = 'Major'
+            PlannedVersion = '0.2.0'
+            ExpectedEffectiveLabel = 'Minor'
+            ExpectedPlanLabel = 'Minor'
+        }
+    }
+
+    It 'Get-NovaVersionUpdateWorkflowContext warns feature bumps that stable 0.y.z is still the initial-development line' {
+        Assert-TestNovaVersionUpdateWorkflowContextMajorZeroAdvisory -ModuleName $script:moduleName -TestCase @{
+            CurrentVersion = '0.0.1'
+            CommitMessages = @('feat: add command')
+            Label = 'Minor'
+            PlannedVersion = '0.1.0'
+            ExpectedEffectiveLabel = 'Minor'
+            ExpectedPlanLabel = 'Minor'
+        }
+    }
+
+    It 'Get-NovaVersionUpdateWorkflowContext keeps the detected label but enters the next patch preview track from a stable version' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    Version = '1.5.3'
+                    ProjectJSON = '/tmp/project.json'
+                }
+            }
+            Mock Get-GitCommitMessageForVersionBump {@('feat: add change')}
+            Mock Get-NovaVersionLabelForBump {'Minor'}
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    NewVersion = [semver]'1.5.4-preview'
+                }
+            }
+
+            $result = Get-NovaVersionUpdateWorkflowContext -ProjectRoot '/tmp/project' -PreviewRelease
+
+            $result.Label | Should -Be 'Minor'
+            $result.EffectiveLabel | Should -Be 'Patch'
+            $result.NewVersion | Should -Be '1.5.4-preview'
+            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
+                $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
+                        $Label -eq 'Patch' -and
+                        $PreviewRelease
             }
         }
     }
@@ -206,6 +261,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $workflowContext = [pscustomobject]@{
                 ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
                 Label = 'Minor'
+                EffectiveLabel = 'Minor'
                 PreviewRelease = $true
                 PreviousVersion = '1.0.0'
                 NewVersion = '1.1.0-preview'
@@ -235,6 +291,41 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
+    It 'Invoke-NovaVersionUpdateWorkflow persists the effective minor label for stable 0.y.z major bumps' {
+        InModuleScope $script:moduleName {
+            $workflowContext = [pscustomobject]@{
+                ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+                Label = 'Major'
+                EffectiveLabel = 'Minor'
+                AdvisoryMessage = 'Major version zero (0.y.z) is for initial development, so Nova keeps stable bumps on the 0.y.z line and plans breaking-change bumps as the next minor version instead of 1.0.0. Set 1.0.0 manually once the software is stable; after that, automatic major-version bumps work normally.'
+                PreviewRelease = $false
+                PreviousVersion = '0.1.0'
+                NewVersion = '0.2.0'
+                CommitCount = 34
+            }
+            Mock Set-NovaModuleVersion {
+                [pscustomobject]@{
+                    PreviousVersion = '0.1.0'
+                    NewVersion = '0.2.0'
+                    Applied = $true
+                }
+            }
+
+            $result = Invoke-NovaVersionUpdateWorkflow -WorkflowContext $workflowContext -ShouldRun
+
+            $result.Label | Should -Be 'Major'
+            $result.EffectiveLabel | Should -Be 'Minor'
+            $result.AdvisoryMessage | Should -Match 'Major version zero \(0\.y\.z\) is for initial development'
+            $result.AdvisoryMessage | Should -Match 'Set 1\.0\.0 manually once the software is stable'
+            Assert-MockCalled Set-NovaModuleVersion -Times 1 -ParameterFilter {
+                $ProjectInfo.ProjectName -eq 'NovaModuleTools' -and
+                        $Label -eq 'Minor' -and
+                        -not $PreviewRelease -and
+                        -not $Confirm
+            }
+        }
+    }
+
     It 'Update-NovaModuleVersion delegates orchestration to private bump workflow helpers' {
         InModuleScope $script:moduleName {
             Mock Get-NovaVersionUpdateWorkflowContext {
@@ -258,6 +349,24 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
                         -not $WhatIfEnabled
             }
             Assert-MockCalled Write-Host -Times 1 -ParameterFilter {$Object -eq 'Version bumped to : 1.1.0'}
+        }
+    }
+
+    It 'Update-NovaModuleVersion writes the initial-development warning for stable 0.y.z breaking-change bumps' {
+        Assert-TestUpdateNovaModuleVersionMajorZeroWarning -ModuleName $script:moduleName -TestCase @{
+            PreviousVersion = '0.1.0'
+            NewVersion = '0.2.0'
+            Label = 'Major'
+            EffectiveLabel = 'Minor'
+        }
+    }
+
+    It 'Update-NovaModuleVersion writes the initial-development warning for stable 0.y.z feature bumps' {
+        Assert-TestUpdateNovaModuleVersionMajorZeroWarning -ModuleName $script:moduleName -TestCase @{
+            PreviousVersion = '0.0.1'
+            NewVersion = '0.1.0'
+            Label = 'Minor'
+            EffectiveLabel = 'Minor'
         }
     }
 
@@ -344,11 +453,11 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
     }
 
     It 'Update-NovaModuleVersion -WhatIf returns the expected next version without persisting it when <Name>' -ForEach @(
-        @{Name = 'the default bump flow is used'; CurrentVersion = '1.0.0'; CommitMessages = @('feat: add change'); Label = 'Minor'; NewVersion = '1.1.0'; Preview = $false}
-        @{Name = 'preview mode starts from a stable version'; CurrentVersion = '1.5.3'; CommitMessages = @('feat: add change'); Label = 'Minor'; NewVersion = '1.6.0-preview'; Preview = $true}
-        @{Name = 'preview mode zero-pads compact preview labels for gallery ordering'; CurrentVersion = '1.5.3-preview'; CommitMessages = @('fix: patch bug'); Label = 'Patch'; NewVersion = '1.5.3-preview01'; Preview = $true}
-        @{Name = 'preview mode starts any bare prerelease stem at 01'; CurrentVersion = '1.5.3-SNAPSHOT'; CommitMessages = @('feat!: breaking api'); Label = 'Major'; NewVersion = '1.5.3-SNAPSHOT01'; Preview = $true}
-        @{Name = 'preview mode continues an existing prerelease version'; CurrentVersion = '1.5.3-rc1'; CommitMessages = @('feat!: breaking api'); Label = 'Major'; NewVersion = '1.5.3-rc2'; Preview = $true}
+        @{Name = 'the default bump flow is used'; CurrentVersion = '1.0.0'; CommitMessages = @('feat: add change'); Label = 'Minor'; EffectiveLabel = 'Minor'; NewVersion = '1.1.0'; Preview = $false}
+        @{Name = 'preview mode enters the next patch preview track from a stable version'; CurrentVersion = '1.5.3'; CommitMessages = @('feat: add change'); Label = 'Minor'; EffectiveLabel = 'Patch'; NewVersion = '1.5.4-preview'; Preview = $true}
+        @{Name = 'preview mode zero-pads compact preview labels for gallery ordering'; CurrentVersion = '1.5.3-preview'; CommitMessages = @('fix: patch bug'); Label = 'Patch'; EffectiveLabel = 'Patch'; NewVersion = '1.5.3-preview01'; Preview = $true}
+        @{Name = 'preview mode starts any bare prerelease stem at 01'; CurrentVersion = '1.5.3-SNAPSHOT'; CommitMessages = @('feat!: breaking api'); Label = 'Major'; EffectiveLabel = 'Major'; NewVersion = '1.5.3-SNAPSHOT01'; Preview = $true}
+        @{Name = 'preview mode continues an existing prerelease version'; CurrentVersion = '1.5.3-rc1'; CommitMessages = @('feat!: breaking api'); Label = 'Major'; EffectiveLabel = 'Major'; NewVersion = '1.5.3-rc2'; Preview = $true}
     ) {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
             param($TestCase)
@@ -380,9 +489,10 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $result.PreviousVersion | Should -Be $TestCase.CurrentVersion
             $result.NewVersion | Should -Be $TestCase.NewVersion
             $result.Label | Should -Be $TestCase.Label
-            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {$Label -eq $TestCase.Label}
+            $result.EffectiveLabel | Should -Be $TestCase.EffectiveLabel
+            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {$Label -eq $TestCase.EffectiveLabel}
             Assert-MockCalled Get-NovaVersionUpdatePlan -Times 1 -ParameterFilter {
-                $Label -eq $TestCase.Label -and
+                $Label -eq $TestCase.EffectiveLabel -and
                         ([bool]$PreviewRelease) -eq ([bool]$TestCase.Preview)
             }
 
@@ -607,6 +717,36 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $result.WhatIf | Should -BeFalse
             $result.Confirm | Should -BeFalse
             Assert-MockCalled Confirm-NovaCliCommandAction -Times 1 -ParameterFilter {$Command -eq 'bump'}
+        }
+    }
+
+    It 'Invoke-NovaCli bump replays the initial-development advisory once as a warning and keeps the summary clean' {
+        InModuleScope $script:moduleName {
+            $advisoryMessage = 'Major version zero (0.y.z) is for initial development.'
+            Mock Update-NovaModuleVersion {
+                Write-Warning $advisoryMessage
+                [pscustomobject]@{PreviousVersion = '0.1.0'; NewVersion = '0.2.0'; Label = 'Major'; EffectiveLabel = 'Minor'; AdvisoryMessage = $advisoryMessage; CommitCount = 1; Applied = $false}
+            }
+            $warningMessages = $null
+
+            $result = Invoke-NovaCli bump -WhatIf -WarningVariable warningMessages
+
+            $result | Should -Be 'Version plan: 0.1.0 -> 0.2.0 | Label: Major | Commits: 1'
+            ($warningMessages -join ' ') | Should -Match ([regex]::Escape($advisoryMessage))
+            @($warningMessages | ForEach-Object {[string]$_} | Select-Object -Unique | Where-Object {$_ -match ([regex]::Escape($advisoryMessage))}).Count | Should -Be 1
+        }
+    }
+
+    It 'Get-NovaCliReplayWarningMessage converts non-warning records to text and skips blank values' {
+        InModuleScope $script:moduleName {
+            $result = Get-NovaCliReplayWarningMessage -WarningMessages @(
+                'plain warning'
+                ''
+                '   '
+                42
+            )
+
+            $result | Should -Be @('plain warning', '42')
         }
     }
 

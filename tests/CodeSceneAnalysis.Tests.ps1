@@ -50,6 +50,36 @@ function Invoke-WebRequest {
         (Get-Content -LiteralPath $requestLogPath -Raw) | Should -BeLike 'Post|https://codescene.example.test/v2/projects/123/run-analysis|Bearer token*'
     }
 
+    It 'fails clearly when CodeScene rejects the analysis trigger because the project owner OAuth token is invalid' {
+        $runnerContent = @"
+function Invoke-WebRequest {
+    param(
+        [string]`$Uri,
+        [string]`$Method,
+        [hashtable]`$Headers,
+        [switch]`$SkipHttpErrorCheck
+    )
+
+    return [pscustomobject]@{
+        StatusCode = 400
+        Content = '{"error":"OAuth token of project owner invalid"}'
+    }
+}
+
+[Environment]::SetEnvironmentVariable('CS_URL', 'https://codescene.example.test')
+[Environment]::SetEnvironmentVariable('CS_PROJECT_ID', '123')
+[Environment]::SetEnvironmentVariable('CS_ACCESS_TOKEN', 'token')
+
+& '$codeSceneAnalysisScriptPath' -TriggerAnalysis
+"@
+
+        $result = Invoke-CodeSceneAnalysisTestScript -RunnerContent $runnerContent
+
+        $result.ExitCode | Should -Not -Be 0
+        ($result.Output -join [Environment]::NewLine) | Should -Match 'project owner'
+        ($result.Output -join [Environment]::NewLine) | Should -Match 'separate from CS_ACCESS_TOKEN'
+    }
+
     It 'still uploads coverage when CoveragePath is provided' {
         $coveragePath = Join-Path $TestDrive 'pester-coverage.cobertura.xml'
         $uploadLogPath = Join-Path $TestDrive 'cs-coverage-upload.txt'
@@ -74,5 +104,57 @@ function cs-coverage {
 
         $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
         (Get-Content -LiteralPath $uploadLogPath -Raw) | Should -BeLike "upload --format cobertura --metric line-coverage $coveragePath*"
+    }
+
+    It 'uploads coverage from the artifacts folder when UploadCoverage is requested without CoveragePath' {
+        $artifactsDir = Join-Path $TestDrive 'artifacts'
+        $coveragePath = Join-Path $artifactsDir 'ci-generated.cobertura.xml'
+        $uploadLogPath = Join-Path $TestDrive 'cs-coverage-upload-discovered.txt'
+        New-Item -ItemType Directory -Path $artifactsDir -Force | Out-Null
+        Set-Content -LiteralPath $coveragePath -Value '<coverage />' -Encoding utf8
+
+        $runnerContent = @"
+function cs-coverage {
+    param([Parameter(ValueFromRemainingArguments = `$true)][string[]]`$ArgumentList)
+
+    Set-Content -LiteralPath '$uploadLogPath' -Value (`$ArgumentList -join ' ') -Encoding utf8
+    `$global:LASTEXITCODE = 0
+}
+
+[Environment]::SetEnvironmentVariable('CS_URL', 'https://codescene.example.test')
+[Environment]::SetEnvironmentVariable('CS_PROJECT_ID', '123')
+[Environment]::SetEnvironmentVariable('CS_ACCESS_TOKEN', 'token')
+Set-Location '$TestDrive'
+
+& '$codeSceneAnalysisScriptPath' -UploadCoverage
+"@
+
+        $result = Invoke-CodeSceneAnalysisTestScript -RunnerContent $runnerContent
+
+        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
+        (Get-Content -LiteralPath $uploadLogPath -Raw) | Should -BeLike "upload --format cobertura --metric line-coverage $coveragePath*"
+    }
+
+    It 'fails clearly when UploadCoverage is requested but no Cobertura artifact exists' {
+        $emptyWorkingDir = Join-Path $TestDrive 'no-coverage-artifacts'
+        New-Item -ItemType Directory -Path $emptyWorkingDir -Force | Out-Null
+
+        $runnerContent = @"
+function cs-coverage {
+    throw 'cs-coverage should not be called when no coverage artifact exists.'
+}
+
+[Environment]::SetEnvironmentVariable('CS_URL', 'https://codescene.example.test')
+[Environment]::SetEnvironmentVariable('CS_PROJECT_ID', '123')
+[Environment]::SetEnvironmentVariable('CS_ACCESS_TOKEN', 'token')
+Set-Location '$emptyWorkingDir'
+
+& '$codeSceneAnalysisScriptPath' -UploadCoverage
+"@
+
+        $result = Invoke-CodeSceneAnalysisTestScript -RunnerContent $runnerContent
+
+        $result.ExitCode | Should -Not -Be 0
+        ($result.Output -join [Environment]::NewLine) | Should -Match 'No Cobertura coverage file was found under'
     }
 }

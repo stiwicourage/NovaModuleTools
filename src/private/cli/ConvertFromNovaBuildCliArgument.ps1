@@ -7,5 +7,7 @@ function ConvertFrom-NovaBuildCliArgument {
     return ConvertFrom-NovaCliSwitchArgument -Arguments $Arguments -TokenMap @{
         '--continuous-integration' = 'ContinuousIntegration'
         '-i' = 'ContinuousIntegration'
+        '--override-warning' = 'OverrideWarning'
+        '-o' = 'OverrideWarning'
     }
 }

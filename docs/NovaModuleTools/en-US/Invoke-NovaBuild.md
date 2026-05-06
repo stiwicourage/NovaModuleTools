@@ -20,7 +20,7 @@ Builds the current NovaModuleTools project into a ready-to-import PowerShell mod
 ### __AllParameterSets
 
 ```text
-PS> Invoke-NovaBuild [-ContinuousIntegration] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Invoke-NovaBuild [-ContinuousIntegration] [-OverrideWarning] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -33,13 +33,17 @@ build target without clearing `dist/` or generating new build output.
 Use `-ContinuousIntegration` when the same PowerShell session needs to keep using the freshly built `dist/` module after
 the build completes. In CI/self-hosting flows, that re-activates the built module before the command returns.
 
+Use `-OverrideWarning` only when you intentionally want to continue a build even though a file under `src/public`
+contains zero or multiple top-level functions. The normal build guard stops there because those layouts can leak helper
+functions into the public API surface.
+
 The command:
 
 1. clears the existing `dist/` output
 2. generates the module `.psm1`
 3. validates duplicate top-level function names when enabled
 4. writes the module manifest
-5. builds external help from the Markdown files in `docs/`
+5. builds external help from the Markdown files under `docs/<ProjectName>/`
 6. copies project resources into the built module output
 
 To update the installed `NovaModuleTools` module itself, use `Update-NovaModuleTool` (alias:
@@ -126,6 +130,30 @@ AcceptedValues: [ ]
 HelpMessage: ''
 ```
 
+### -OverrideWarning
+
+Continue the build when the `src/public` layout guard reports that a public file does not contain exactly one top-level
+function.
+
+Use this only when you intentionally accept the warning and still want the current build to proceed.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
@@ -147,13 +175,16 @@ This cmdlet does not emit an output object.
 
 ## NOTES
 
-Run this command from the project root so `project.json`, `src/`, `docs/`, and `tests/` resolve correctly.
+Run this command from the project root so `project.json`, `src/`, `docs/<ProjectName>/`, and `tests/` resolve correctly.
 
 `Invoke-NovaBuild` uses `SupportsShouldProcess`, so `Get-Help Invoke-NovaBuild -Full` shows the native `-WhatIf` and
 `-Confirm` behavior.
 
 When `-ContinuousIntegration` is used together with a real build, the command re-imports the freshly built module after
 the build succeeds. `-WhatIf` previews remain side-effect free and do not change the loaded module state.
+
+Files under `src/public` are expected to contain exactly one top-level function each. Use `-OverrideWarning` only when
+you intentionally want to bypass that guard for the current build.
 
 ## RELATED LINKS
 

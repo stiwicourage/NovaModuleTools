@@ -6,7 +6,7 @@ function Invoke-NovaTestWorkflow {
     )
 
     if (Test-NovaTestWorkflowBuildRequested -WorkflowContext $WorkflowContext) {
-        $workflowParams = $WorkflowContext.WorkflowParams
+        $workflowParams = Get-NovaBuildCommandParameterMap -WorkflowParams $WorkflowContext.WorkflowParams -OverrideWarningRequested:(($WorkflowContext.PSObject.Properties.Name -contains 'OverrideWarningRequested') -and $WorkflowContext.OverrideWarningRequested)
         Invoke-NovaBuild @workflowParams
     }
 

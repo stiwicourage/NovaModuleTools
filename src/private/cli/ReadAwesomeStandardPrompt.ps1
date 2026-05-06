@@ -1,16 +1,21 @@
 function Read-AwesomeStandardPrompt {
     param(
-        [Parameter(Mandatory)][pscustomobject]$Ask,
+        [Parameter(Mandatory)][object]$Ask,
         [Parameter(Mandatory)][object]$HostUi
     )
 
-    $fieldDescription = [System.Management.Automation.Host.FieldDescription]::new($Ask.Prompt)
-    if ($Ask.Default -ne 'MANDATORY') {
-        $fieldDescription.DefaultValue = $Ask.Default
-    }
+    $fieldDescription = Get-AwesomePromptFieldDescription -Ask $Ask
 
     do {
-        $response = $HostUi.Prompt($Ask.Caption, $Ask.Message, @($fieldDescription))
+        $response = $HostUi.Prompt(
+                (Get-AwesomePromptValue -Ask $Ask -Name 'Caption'),
+                (Get-AwesomePromptValue -Ask $Ask -Name 'Message'),
+                @($fieldDescription)
+        )
+
+        if (Test-AwesomePromptRequiresRetry -Ask $Ask -Response $response) {
+            Write-AwesomePromptRetryMessage -Ask $Ask -Response $response
+        }
     } while (Test-AwesomePromptRequiresRetry -Ask $Ask -Response $response)
 
     return Get-AwesomePromptResult -Ask $Ask -Response $response

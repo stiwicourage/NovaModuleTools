@@ -57,8 +57,12 @@ function Get-NovaVersionPartForUpdatePlan {
         [switch]$PreviewRelease
     )
 
-    if ($PreviewRelease -and -not [string]::IsNullOrWhiteSpace($CurrentVersion.PreReleaseLabel)) {
-        return Get-NovaVersionPartObject -CurrentVersion $CurrentVersion
+    if ($PreviewRelease) {
+        if (-not [string]::IsNullOrWhiteSpace($CurrentVersion.PreReleaseLabel)) {
+            return Get-NovaVersionPartObject -CurrentVersion $CurrentVersion
+        }
+
+        return Get-NovaVersionPartForLabel -CurrentVersion $CurrentVersion -Label Patch
     }
 
     return Get-NovaVersionPartForLabel -CurrentVersion $CurrentVersion -Label $Label

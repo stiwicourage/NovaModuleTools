@@ -1,0 +1,34 @@
+name: Check Coverage
+description: Run CodeScene coverage gates against uploaded coverage artifacts.
+
+inputs:
+  access-token:
+    description: CodeScene REST API access token.
+    required: true
+  project-url:
+    description: Full CodeScene project API URL, for example https://codescene.io/v2/projects/12345.
+    required: true
+  coverage-files:
+    description: Glob pattern matching coverage reports to check.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Download cs-coverage binary
+      shell: bash
+      run: |
+        set -euo pipefail
+        curl -fsSL -o "$(pwd)/cs-coverage.zip" https://downloads.codescene.io/enterprise/cli/cs-coverage-linux-amd64-latest.zip
+        unzip -oq "$(pwd)/cs-coverage.zip"
+        chmod +x "$(pwd)/cs-coverage"
+
+    - name: Run CodeScene coverage gate check
+      shell: bash
+      env:
+        CS_PROJECT_URL: ${{ inputs.project-url }}
+        CS_ACCESS_TOKEN: ${{ inputs.access-token }}
+      run: |
+        set -euo pipefail
+        find "$(pwd)" -name '*.cobertura.xml' -print
+        "$(pwd)/cs-coverage" check --verbose --coverage-files "${{ inputs.coverage-files }}"

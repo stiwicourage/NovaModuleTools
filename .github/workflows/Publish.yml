@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - develop
 
   workflow_dispatch:
 
@@ -25,21 +24,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          # semantic-release@25 requires Node.js 22.14.0 or newer.
-          node-version: 22.14.0
-          cache: npm
-
-      - name: Install npm dependencies
-        run: npm ci
-
       - name: Install required modules from PSGallery
         run: ./scripts/build/ci/Install-CiPowerShellModules.ps1
 
       - name: Build Module
-        run: Invoke-NovaBuild -ContinuousIntegration -Verbose
+        run: Invoke-NovaBuild -ContinuousIntegration
 
       - name: Run Pester Tests
         run: Test-NovaBuild
@@ -67,15 +56,52 @@ jobs:
           Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $report
           Write-Output $report
 
-      - name: Run semantic-release
+      - name: Ensure PSGallery repository registration
         if: github.ref_name == 'main'
+        uses: ./.github/actions/ensure-psresource-repository
+
+      - name: Run semantic release with NovaRelease
+        id: semantic_release
+        if: github.ref_name == 'main'
+        run: |
+          Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests -ContinuousIntegration
+          $version = Get-NovaProjectInfo -Version
+          $result = Move-UnreleasedChangelog -Version $version
+
+          "release_version=$version" >> $env:GITHUB_OUTPUT
+
+          $delimiter = [guid]::NewGuid().Guid
+          "tag_message<<$delimiter" >> $env:GITHUB_OUTPUT
+          $result.TagMessageText >> $env:GITHUB_OUTPUT
+          "$delimiter" >> $env:GITHUB_OUTPUT
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
-        run: npx semantic-release
+
+      - name: Create verified release commit
+        id: commit_release
+        if: github.ref_name == 'main'
+        uses: ./.github/actions/create-verified-commit
+        with:
+          base-ref: main
+          commit-message: 'chore(release): ${{ steps.semantic_release.outputs.release_version }} [skip ci]'
+
+      - name: Push verified release commit
+        if: github.ref_name == 'main' && steps.commit_release.outputs.has-changes == 'true'
+        uses: ./.github/actions/update-git-ref
+        with:
+          ref: refs/heads/main
+          sha: ${{ steps.commit_release.outputs.commit-sha }}
+
+      - name: Create annotated release tag
+        if: github.ref_name == 'main' && steps.commit_release.outputs.has-changes == 'true'
+        uses: ./.github/actions/create-annotated-tag
+        with:
+          tag-name: ${{ steps.semantic_release.outputs.release_version }}
+          target-sha: ${{ steps.commit_release.outputs.commit-sha }}
+          message: ${{ steps.semantic_release.outputs.tag_message }}
 
       - name: Prepare next prerelease version on main -> develop
-        if: github.ref_name == 'main'
+        if: github.ref_name == 'main' && steps.commit_release.outputs.has-changes == 'true'
         run: |
           git fetch origin main
           git fetch origin develop
@@ -83,7 +109,23 @@ jobs:
           git checkout develop
           git reset --hard origin/main
 
-          Update-NovaModuleVersion -Preview -ContinuousIntegration -Verbose
+          Update-NovaModuleVersion -Preview -ContinuousIntegration
+
+      - name: Create verified develop prerelease commit
+        id: commit_develop_from_main
+        if: github.ref_name == 'main' && steps.commit_release.outputs.has-changes == 'true'
+        uses: ./.github/actions/create-verified-commit
+        with:
+          base-ref: main
+          commit-message: 'chore: prepare develop for next prerelease [skip ci]'
+
+      - name: Push verified develop prerelease commit
+        if: github.ref_name == 'main' && steps.commit_develop_from_main.outputs.has-changes == 'true'
+        uses: ./.github/actions/update-git-ref
+        with:
+          ref: refs/heads/develop
+          sha: ${{ steps.commit_develop_from_main.outputs.commit-sha }}
+          force: 'true'
 
       - name: Prepare next prerelease version on develop
         if: github.ref_name == 'develop'
@@ -93,127 +135,33 @@ jobs:
           git fetch origin develop
           git checkout develop
 
-          $psResourcePath = Join-Path $HOME '.local/share/PSResourceGet'
-          New-Item -ItemType Directory -Path $psResourcePath -Force | Out-Null
+      - name: Ensure PSGallery repository registration
+        if: github.ref_name == 'develop'
+        uses: ./.github/actions/ensure-psresource-repository
 
-          if (-not (Get-PSResourceRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
-            Register-PSResourceRepository -PSGallery
-          }
-
+      - name: Publish develop prerelease to PSGallery
+        if: github.ref_name == 'develop'
+        run: |
           Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests -ContinuousIntegration
-          Update-NovaModuleVersion -Preview -ContinuousIntegration -Verbose
         env:
           PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
 
-      - name: Commit and push (verified)
-        uses: actions/github-script@v7
+      - name: Bump next prerelease version on develop
+        if: github.ref_name == 'develop'
+        run: |
+          Update-NovaModuleVersion -Preview -ContinuousIntegration
+
+      - name: Create verified develop commit
+        id: commit_develop
+        if: github.ref_name == 'develop'
+        uses: ./.github/actions/create-verified-commit
         with:
-          script: |
-            const fs = require('fs')
-            const { execSync } = require('child_process')
+          base-ref: develop
+          commit-message: 'chore: prepare next prerelease version [skip ci]'
 
-            const owner = context.repo.owner
-            const repo = context.repo.repo
-            const sourceBranch = context.ref.replace('refs/heads/', '')
-            const targetBranch = 'develop'
-
-            const files = execSync('git diff --name-only', { encoding: 'utf-8' })
-              .split('\n')
-              .filter(Boolean)
-
-            if (files.length === 0) {
-              console.log('No changes to commit')
-              return
-            }
-
-            let parentSha
-            let baseTreeSha
-
-            if (sourceBranch === 'main') {
-              // main release: make develop continue directly from released main
-              const mainRef = await github.rest.git.getRef({
-                owner,
-                repo,
-                ref: 'heads/main'
-              })
-
-              const mainCommit = await github.rest.git.getCommit({
-                owner,
-                repo,
-                commit_sha: mainRef.data.object.sha
-              })
-
-              parentSha = mainRef.data.object.sha
-              baseTreeSha = mainCommit.data.tree.sha
-            }
-            else if (sourceBranch === 'develop') {
-              // develop prerelease: bump version on top of current develop
-              const developRef = await github.rest.git.getRef({
-                owner,
-                repo,
-                ref: 'heads/develop'
-              })
-
-              const developCommit = await github.rest.git.getCommit({
-                owner,
-                repo,
-                commit_sha: developRef.data.object.sha
-              })
-
-              parentSha = developRef.data.object.sha
-              baseTreeSha = developCommit.data.tree.sha
-            }
-            else {
-              core.setFailed(`Unsupported source branch: ${sourceBranch}`)
-              return
-            }
-
-            const blobs = []
-
-            for (const file of files) {
-              const content = fs.readFileSync(file, 'utf8')
-
-              const blob = await github.rest.git.createBlob({
-                owner,
-                repo,
-                content,
-                encoding: 'utf-8'
-              })
-
-              blobs.push({
-                path: file,
-                mode: '100644',
-                type: 'blob',
-                sha: blob.data.sha
-              })
-            }
-
-            const tree = await github.rest.git.createTree({
-              owner,
-              repo,
-              base_tree: baseTreeSha,
-              tree: blobs
-            })
-
-            const message =
-              sourceBranch === 'main'
-                ? 'chore: prepare develop for next prerelease [skip ci]'
-                : 'chore: prepare next prerelease version [skip ci]'
-
-            const newCommit = await github.rest.git.createCommit({
-              owner,
-              repo,
-              message,
-              tree: tree.data.sha,
-              parents: [parentSha]
-            })
-
-            await github.rest.git.updateRef({
-              owner,
-              repo,
-              ref: `heads/${targetBranch}`,
-              sha: newCommit.data.sha,
-              force: sourceBranch === 'main'
-            })
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push verified develop commit
+        if: github.ref_name == 'develop' && steps.commit_develop.outputs.has-changes == 'true'
+        uses: ./.github/actions/update-git-ref
+        with:
+          ref: refs/heads/develop
+          sha: ${{ steps.commit_develop.outputs.commit-sha }}

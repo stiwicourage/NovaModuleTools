@@ -187,6 +187,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
             $reportWriter = [pscustomobject]@{ScriptBlock = {}}
 
             Mock Test-ProjectSchema {}
+            Mock Get-Module {[pscustomobject]@{Name = 'Pester'}} -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
             Mock Get-NovaProjectInfo {
                 [pscustomobject]@{
                     Pester = @{}
@@ -213,6 +214,30 @@ Describe 'Coverage for remaining command and filesystem branches' {
             $Config.Output.RenderMode | Should -Be 'Auto'
             $result.TestResultArtifactWriter | Should -Be $artifactWriter
             $result.TestResultReportWriter | Should -Be $reportWriter
+        }
+    }
+
+    It 'Get-NovaTestWorkflowContext fails clearly when Pester is unavailable' {
+        InModuleScope $script:moduleName {
+            Mock Test-ProjectSchema {}
+            Mock Get-Module {$null} -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
+            Mock Get-NovaProjectInfo {throw 'should not resolve project info without Pester'}
+            Mock New-PesterConfiguration {throw 'should not create config without Pester'}
+
+            $thrown = $null
+            try {
+                Get-NovaTestWorkflowContext -TestOption @{} -BoundParameters @{}
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown.Exception.Message | Should -Be 'The module Pester must be installed for Test-NovaBuild to run. Install Pester 5.7.1 and try again.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.PesterDependencyMissing'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ResourceUnavailable)
+            $thrown.TargetObject | Should -Be 'Pester'
+            Assert-MockCalled Get-NovaProjectInfo -Times 0
+            Assert-MockCalled New-PesterConfiguration -Times 0
         }
     }
 

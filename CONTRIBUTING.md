@@ -34,6 +34,8 @@ Before making larger changes, read the contributor docs in:
 GitHub now prefills pull requests with `.github/pull_request_template.md`.
 Use it to explain intent clearly, record what you validated, and call out any required documentation or changelog work.
 
+Pull requests against `main` and `develop` also run a CodeScene coverage-gate check when CI has produced the Cobertura coverage artifact, so PRs can be blocked when changed code falls below the configured coverage threshold.
+
 **Before opening a pull request, please run the local quality flow from the repository root:**
 
 ```powershell title="run.ps1"
@@ -51,6 +53,16 @@ Import-Module $distModuleDir -Force
 Test-NovaBuild
 ```
 
+If you are working on the CodeScene integration, the CI coverage helper writes the Cobertura artifact that the
+CodeScene upload step consumes:
+
+- generate coverage with `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
+- pull requests then download that uploaded artifact and run the CodeScene coverage-gate check through `.github/actions/check-coverage`
+- then upload/trigger with `./scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`
+- the upload helper auto-discovers a single `artifacts/*.cobertura.xml` file unless you pass `-CoveragePath`
+- if upload succeeds but `-TriggerAnalysis` fails with a project-owner OAuth error, re-authorize the repository in
+  CodeScene for the project owner; that failure is separate from `CS_ACCESS_TOKEN`
+
 Please also make sure your contribution includes the right kind of follow-up work:
 
 - add or update tests when behavior changes
@@ -63,7 +75,8 @@ Documentation ownership is intentionally split:
 
 - GitHub repository docs are for contributors and maintainers
 - GitHub Pages content under `docs/*.html` is for end users
-- command-help markdown under `docs/NovaModuleTools/en-US/` is build input, not general prose documentation
+- command-help markdown under `docs/<ProjectName>/` (for this repo `docs/NovaModuleTools/en-US/`) is build input
+- markdown elsewhere under `docs/` is allowed for non-help documentation because the build ignores it
 
 When updating documentation, write it for humans first. A reader should quickly understand:
 
@@ -76,6 +89,6 @@ For changelog entries, follow the existing project format:
 
 - Keep a Changelog structure
 - Semantic Versioning intent
-- reader-friendly wording under sections such as `Added`, `Changed`, `Fixed`, `Removed`, and `Documentation`
+- reader-friendly wording under sections such as `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed` and `Security`
 
 In short: build it, analyze it, test it, document it, and leave it in better shape than you found it.

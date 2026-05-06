@@ -9,7 +9,7 @@ on:
       - main
       - develop
   schedule:
-    - cron: '0 6,14,22 * * *'
+    - cron: '0 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -33,6 +33,13 @@ jobs:
       - name: Run NovaModuleTools CI test and coverage workflow
         run: ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts
 
+      - name: Validate repository changelog with Test-KeepAChangelogFile
+        run: |
+          $result = Test-KeepAChangelogFile -Path ./CHANGELOG.md
+          if (-not $result.IsValid) {
+            throw ($result.Errors -join [Environment]::NewLine)
+          }
+          
       - name: Upload CI artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -92,6 +99,30 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  codescene-coverage-gates:
+    runs-on: ubuntu-latest
+    needs:
+      - test-and-coverage
+    if: ${{ needs.test-and-coverage.result == 'success' && github.event_name == 'pull_request' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download CI artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: nova-ci-artifacts
+          path: coverage/
+
+      - name: Check coverage gates in CodeScene
+        uses: ./.github/actions/check-coverage
+        with:
+          access-token: ${{ secrets.CS_ACCESS_TOKEN }}
+          project-url: ${{ format('{0}/v2/projects/{1}', vars.CS_URL, vars.CS_PROJECT_ID) }}
+          coverage-files: '**/pester-coverage.cobertura.xml'
+
   codescene-analysis:
     runs-on: ubuntu-latest
     needs:
@@ -122,4 +153,4 @@ jobs:
           CS_URL: ${{ vars.CS_URL }}
           CS_PROJECT_ID: ${{ vars.CS_PROJECT_ID }}
           CS_ACCESS_TOKEN: ${{ secrets.CS_ACCESS_TOKEN }}
-        run: ./scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -TriggerAnalysis
+        run: ./scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis

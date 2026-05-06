@@ -1,7 +1,7 @@
 {
   "ProjectName": "NovaModuleTools",
   "Description": "NovaModuleTools is an enterprise-focused evolution of ModuleTools, designed for large-scale PowerShell projects with a strong emphasis on structure, maintainability, and automated CI/CD pipelines.",
-  "Version": "2.1.0",
+  "Version": "2.1.1-preview06",
   "Preamble": [
     "Set-StrictMode -Version Latest",
     "$ErrorActionPreference = 'Stop'"
@@ -12,10 +12,6 @@
     "PowerShellHostVersion": "7.4",
     "GUID": "6b9202c8-0353-473b-b73c-afab632125a6",
     "RequiredModules": [
-      {
-        "ModuleName": "Pester",
-        "ModuleVersion": "5.7.1"
-      },
       {
         "ModuleName": "Microsoft.PowerShell.PlatyPS",
         "ModuleVersion": "1.0.1"
