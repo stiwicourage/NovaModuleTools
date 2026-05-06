@@ -20,7 +20,7 @@ Builds, tests, and packages the current project as one or more configured packag
 ### __AllParameterSets
 
 ```text
-PS> New-NovaModulePackage [-SkipTests] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> New-NovaModulePackage [-SkipTests] [-OverrideWarning] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -30,6 +30,9 @@ PS> New-NovaModulePackage [-SkipTests] [-WhatIf] [-Confirm] [<CommonParameters>]
 
 Use `-SkipTests` when tests already ran earlier in your pipeline and you only want to skip `Test-NovaBuild` for this
 packaging run. `Invoke-NovaBuild` still runs so the package is created from fresh built output.
+
+Use `-OverrideWarning` only when you intentionally want the nested build to continue even though a file under
+`src/public` contains zero or multiple top-level functions.
 
 The package is written to `artifacts/packages/` by default. You can override generic package metadata through the
 optional `Package` section in `project.json`.
@@ -172,6 +175,28 @@ AcceptedValues: [ ]
 HelpMessage: ''
 ```
 
+### -OverrideWarning
+
+Continue the nested build even if the `src/public` layout guard reports that a public file does not contain exactly one
+top-level function.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
 ### -WhatIf
 
 Shows what would happen if the cmdlet runs. The cmdlet is not run.
@@ -258,6 +283,9 @@ separate
 `Package.Enabled` switch.
 
 When `-SkipTests` is used, only `Test-NovaBuild` is skipped. Build still runs.
+
+Files under `src/public` are expected to contain exactly one top-level function each. `-OverrideWarning` bypasses that
+guard only for the current packaging run.
 
 ## RELATED LINKS
 

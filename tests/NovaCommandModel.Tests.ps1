@@ -571,6 +571,7 @@ Describe 'Nova command model - project, help, and build behavior' {
                 ProjectInfo = $projectInfo
             }
 
+            Mock Assert-NovaPublicFunctionFileLayout {$script:steps += 'public-layout'}
             Mock Reset-ProjectDist {$script:steps += 'reset'}
             Mock Build-Module {$script:steps += 'module'}
             Mock Assert-BuiltModuleHasNoDuplicateFunctionName {$script:steps += 'duplicates'}
@@ -581,7 +582,8 @@ Describe 'Nova command model - project, help, and build behavior' {
 
             Invoke-NovaBuildWorkflow -WorkflowContext $workflowContext
 
-            $script:steps -join ',' | Should -Be 'reset,module,duplicates,manifest,help,resources,notification'
+            $script:steps -join ',' | Should -Be 'public-layout,reset,module,duplicates,manifest,help,resources,notification'
+            Assert-MockCalled Assert-NovaPublicFunctionFileLayout -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools' -and -not $OverrideWarningRequested}
             Assert-MockCalled Reset-ProjectDist -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools' -and -not $Confirm}
             Assert-MockCalled Build-Module -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
             Assert-MockCalled Assert-BuiltModuleHasNoDuplicateFunctionName -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
@@ -605,6 +607,7 @@ Describe 'Nova command model - project, help, and build behavior' {
                 ContinuousIntegrationRequested = $true
             }
 
+            Mock Assert-NovaPublicFunctionFileLayout {$script:steps += 'public-layout'}
             Mock Reset-ProjectDist {$script:steps += 'reset'}
             Mock Build-Module {$script:steps += 'module'}
             Mock Assert-BuiltModuleHasNoDuplicateFunctionName {$script:steps += 'duplicates'}
@@ -616,7 +619,7 @@ Describe 'Nova command model - project, help, and build behavior' {
 
             Invoke-NovaBuildWorkflow -WorkflowContext $workflowContext
 
-            $script:steps -join ',' | Should -Be 'reset,module,duplicates,manifest,help,resources,notification,ci'
+            $script:steps -join ',' | Should -Be 'public-layout,reset,module,duplicates,manifest,help,resources,notification,ci'
             Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
         }
     }
@@ -655,6 +658,22 @@ Describe 'Nova command model - project, help, and build behavior' {
             Invoke-NovaBuild -ContinuousIntegration -Confirm:$false
 
             Assert-MockCalled Get-NovaBuildWorkflowContext -Times 1 -ParameterFilter {$ContinuousIntegrationRequested}
+        }
+    }
+
+    It 'Invoke-NovaBuild forwards OverrideWarning into the build workflow context' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaBuildWorkflowContext {
+                [pscustomobject]@{
+                    Target = '/tmp/dist/NovaModuleTools'
+                    Operation = 'Build Nova module output'
+                }
+            }
+            Mock Invoke-NovaBuildWorkflow {}
+
+            Invoke-NovaBuild -OverrideWarning -Confirm:$false
+
+            Assert-MockCalled Get-NovaBuildWorkflowContext -Times 1 -ParameterFilter {$OverrideWarningRequested}
         }
     }
 

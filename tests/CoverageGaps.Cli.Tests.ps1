@@ -979,39 +979,6 @@ catch {
         }
     }
 
-    It 'ConvertFrom-NovaCliArgument parses local, path, api key, skip-tests, and continuous integration options' {
-        InModuleScope $script:moduleName {
-            $options = ConvertFrom-NovaCliArgument -Arguments @('--local', '--path', '/tmp/modules', '--api-key', 'secret', '--skip-tests', '--continuous-integration')
-
-            $options.Local | Should -BeTrue
-            $options.ModuleDirectoryPath | Should -Be '/tmp/modules'
-            $options.ApiKey | Should -Be 'secret'
-            $options.SkipTests | Should -BeTrue
-            $options.ContinuousIntegration | Should -BeTrue
-        }
-    }
-
-    It 'ConvertFrom-NovaPackageCliArgument accepts skip-tests and rejects publish-only options' {
-        InModuleScope $script:moduleName {
-            (ConvertFrom-NovaPackageCliArgument -Arguments @('-s')).SkipTests | Should -BeTrue
-
-            $thrown = $null
-            try {
-                ConvertFrom-NovaPackageCliArgument -Arguments @('--local')
-            }
-            catch {
-                $thrown = $_
-            }
-
-            Assert-TestStructuredCliError -ThrownError $thrown -ExpectedError ([pscustomobject]@{
-                Message = 'Unknown argument: --local'
-                ErrorId = 'Nova.Validation.UnknownCliArgument'
-                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                TargetObject = '--local'
-            })
-        }
-    }
-
     It 'ConvertFrom-NovaCliArgument reports missing values for repository, path, and api key' {
         InModuleScope $script:moduleName -Parameters @{
             TestCases = @(

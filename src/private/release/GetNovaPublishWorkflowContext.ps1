@@ -12,6 +12,7 @@ function Get-NovaPublishWorkflowContext {
     $apiKey = Get-NovaPublishOptionValue -PublishOption $PublishOption -Name ApiKey
     $skipTestsRequested = [bool](Get-NovaPublishOptionValue -PublishOption $PublishOption -Name SkipTests)
     $continuousIntegrationRequested = [bool](Get-NovaPublishOptionValue -PublishOption $PublishOption -Name ContinuousIntegration)
+    $overrideWarningRequested = [bool](Get-NovaPublishOptionValue -PublishOption $PublishOption -Name OverrideWarning)
     $includeLocalPublishActivation = $WorkflowSettings.ContainsKey('IncludeLocalPublishActivation') -and $WorkflowSettings.IncludeLocalPublishActivation
     $release = $WorkflowSettings.ContainsKey('Release') -and $WorkflowSettings.Release
     $publishInvocation = Resolve-NovaPublishInvocation -ProjectInfo $ProjectInfo -Repository $repository -ModuleDirectoryPath $moduleDirectoryPath -ApiKey $apiKey
@@ -28,6 +29,7 @@ function Get-NovaPublishWorkflowContext {
         WorkflowParams = $WorkflowParams
         SkipTestsRequested = $skipTestsRequested
         ContinuousIntegrationRequested = $continuousIntegrationRequested
+        OverrideWarningRequested = $overrideWarningRequested
         PublishInvocation = $publishInvocation
         PublishParams = Get-NovaResolvedPublishParameterMap -PublishInvocation $publishInvocation -WorkflowParams $WorkflowParams
         LocalPublishActivation = $localPublishActivation

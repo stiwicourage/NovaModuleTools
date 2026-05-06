@@ -70,6 +70,8 @@ function Get-TestNovaCliRoutedParserCaseList {
             ValidCases = @(
                 @{Arguments = @('--continuous-integration'); Property = 'ContinuousIntegration'}
                 @{Arguments = @('-i'); Property = 'ContinuousIntegration'}
+                @{Arguments = @('--override-warning'); Property = 'OverrideWarning'}
+                @{Arguments = @('-o'); Property = 'OverrideWarning'}
             )
         }
         @{
@@ -86,6 +88,8 @@ function Get-TestNovaCliRoutedParserCaseList {
             ValidCases = @(
                 @{Arguments = @('--build'); Property = 'Build'}
                 @{Arguments = @('-b'); Property = 'Build'}
+                @{Arguments = @('--override-warning'); Property = 'OverrideWarning'}
+                @{Arguments = @('-o'); Property = 'OverrideWarning'}
             )
         }
     )

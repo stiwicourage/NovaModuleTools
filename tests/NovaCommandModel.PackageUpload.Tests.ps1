@@ -62,6 +62,22 @@ BeforeAll {
 }
 
 Describe 'Nova command model - package upload behavior' {
+    It 'New-NovaModulePackage forwards OverrideWarning into the package workflow context' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaPackageWorkflowContext {
+                [pscustomobject]@{
+                    Target = '/tmp/artifacts/packages'
+                    Operation = 'Create Nova package artifacts'
+                }
+            }
+            Mock Invoke-NovaPackageWorkflow {}
+
+            New-NovaModulePackage -OverrideWarning -Confirm:$false | Out-Null
+
+            Assert-MockCalled Get-NovaPackageWorkflowContext -Times 1 -ParameterFilter {$OverrideWarningRequested}
+        }
+    }
+
     It 'Get-NovaPackageUploadWorkflowContext resolves project info, normalized upload options, and upload artifacts' {
         $layout = Initialize-TestNovaPackageUploadLayout -ProjectRoot (Join-Path $TestDrive 'workflow-context-upload')
         $packagePath = New-TestNovaPackageArtifactFile -Directory $layout.PackageOutputDir -Name 'PackageProject.2.3.4.zip'

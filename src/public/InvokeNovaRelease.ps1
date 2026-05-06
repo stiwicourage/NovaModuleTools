@@ -21,29 +21,10 @@ function Invoke-NovaRelease {
     }
 
     begin {
-        $path = if ( $PSBoundParameters.ContainsKey('Path')) {
-            $PSBoundParameters.Path
-        }
-        else {
-            (Get-Location).Path
-        }
+        $path = Get-NovaReleaseRequestedPath -BoundParameters $PSBoundParameters
 
         # TODO: Remove legacy PublishOption compatibility after 2026-07-01.
-        $releasePublishOption = Get-NovaReleasePublishOption -ReleaseParameters ([pscustomobject]@{
-            ParameterSetName = $PSCmdlet.ParameterSetName
-            PublishOption = if ( $PSBoundParameters.ContainsKey('PublishOption')) {
-                $PSBoundParameters.PublishOption
-            }
-            else {
-                @{}
-            }
-            LocalRequested = [bool]$Local
-            Repository = $Repository
-            ModuleDirectoryPath = $ModuleDirectoryPath
-            ApiKey = $ApiKey
-            SkipTestsRequested = $PSBoundParameters.ContainsKey('SkipTests') -and $PSBoundParameters.SkipTests
-            ContinuousIntegrationRequested = $PSBoundParameters.ContainsKey('ContinuousIntegration') -and $PSBoundParameters.ContinuousIntegration
-        })
+        $releasePublishOption = Get-NovaReleasePublishOption -ReleaseParameters (Get-NovaReleaseRequest -BoundParameters $PSBoundParameters -ParameterSetName $PSCmdlet.ParameterSetName)
 
         Push-Location -LiteralPath $path
         try {

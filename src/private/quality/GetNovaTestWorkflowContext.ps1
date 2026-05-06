@@ -45,6 +45,7 @@ function Get-NovaTestWorkflowContext {
 
     return [pscustomobject]@{
         BuildRequested = $buildRequested
+        OverrideWarningRequested = $BoundParameters.ContainsKey('OverrideWarning') -and [bool]$BoundParameters.OverrideWarning
         ProjectInfo = $projectInfo
         PesterConfig = $pesterConfig
         TestResultPath = $testResultPath

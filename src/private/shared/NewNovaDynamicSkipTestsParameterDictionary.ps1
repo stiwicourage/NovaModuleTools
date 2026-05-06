@@ -72,6 +72,7 @@ function Get-NovaDynamicDeliveryParameterDictionary {
     $parameterDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
     Add-NovaDynamicSwitchParameter -ParameterDictionary $parameterDictionary -Name 'SkipTests'
     Add-NovaDynamicSwitchParameter -ParameterDictionary $parameterDictionary -Name 'ContinuousIntegration'
+    Add-NovaDynamicSwitchParameter -ParameterDictionary $parameterDictionary -Name 'OverrideWarning'
     return $parameterDictionary
 }
 
@@ -85,4 +86,3 @@ function Get-NovaDynamicReleaseParameterDictionary {
     Add-NovaDynamicHashtableParameter -ParameterDictionary $parameterDictionary -Name 'PublishOption' -ParameterSetNameList @('PublishOption') -Mandatory
     return $parameterDictionary
 }
-

@@ -6,7 +6,9 @@ function Invoke-NovaBuildWorkflow {
 
     $projectInfo = $WorkflowContext.ProjectInfo
     $continuousIntegrationRequested = ($WorkflowContext.PSObject.Properties.Name -contains 'ContinuousIntegrationRequested') -and $WorkflowContext.ContinuousIntegrationRequested
+    $overrideWarningRequested = ($WorkflowContext.PSObject.Properties.Name -contains 'OverrideWarningRequested') -and $WorkflowContext.OverrideWarningRequested
 
+    Assert-NovaPublicFunctionFileLayout -ProjectInfo $projectInfo -OverrideWarningRequested:$overrideWarningRequested
     Reset-ProjectDist -ProjectInfo $projectInfo -Confirm:$false
     Build-Module -ProjectInfo $projectInfo
     Invoke-NovaBuildDuplicateValidation -ProjectInfo $projectInfo

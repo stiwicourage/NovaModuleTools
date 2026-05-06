@@ -4,7 +4,7 @@ function Get-NovaPackageWorkflowContext {
         [pscustomobject]$ProjectInfo,
         [hashtable]$WorkflowParams = @{},
         [switch]$SkipTestsRequested,
-        [string]$ModulePath = $ExecutionContext.SessionState.Module.Path
+        [switch]$OverrideWarningRequested
     )
 
     $projectInfo = Get-NovaPackageWorkflowProjectInfo -ProjectInfo $ProjectInfo
@@ -17,8 +17,9 @@ function Get-NovaPackageWorkflowContext {
         ProjectInfo = $projectInfo
         WorkflowParams = $WorkflowParams
         SkipTestsRequested = $SkipTestsRequested.IsPresent
+        OverrideWarningRequested = $OverrideWarningRequested.IsPresent
         PackageMetadataList = $packageMetadataList
-        ModulePath = $ModulePath
+        ModulePath = Get-NovaPackageWorkflowModulePath
         Target = Get-NovaPackageWorkflowTarget -PackageMetadataList $packageMetadataList
         Operation = Get-NovaPackageWorkflowOperation -PackageMetadataList $packageMetadataList -SkipTestsRequested:$SkipTestsRequested
     }
@@ -35,6 +36,13 @@ function Get-NovaPackageWorkflowProjectInfo {
     }
 
     return Get-NovaProjectInfo
+}
+
+function Get-NovaPackageWorkflowModulePath {
+    [CmdletBinding()]
+    param()
+
+    return $ExecutionContext.SessionState.Module.Path
 }
 
 function Get-NovaPackageWorkflowTarget {
