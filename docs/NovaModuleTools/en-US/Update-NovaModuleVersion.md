@@ -30,8 +30,9 @@ project repository, chooses a semantic version bump label, calculates the next s
 version back to `project.json`.
 
 Use `-Preview` when you want an explicit prerelease-continuation bump instead of the default prerelease finalization
-behavior. In preview mode, stable versions first calculate the normal semantic bump target and then append
-`-preview`. Existing prerelease versions keep the same semantic core and preserve the current prerelease stem while
+behavior. In preview mode, stable versions always enter the next patch preview track by incrementing the patch version
+and appending `-preview`. Existing prerelease versions keep the same semantic core and preserve the current prerelease
+stem while
 appending or incrementing trailing digits. Any bare prerelease label now starts at `01` for predictable ordering,
 for example `preview -> preview01`, `preview09 -> preview10`, `rc -> rc01`, `rc1 -> rc2`, and
 `SNAPSHOT -> SNAPSHOT01`.
@@ -45,7 +46,8 @@ The release label is inferred from the commit set:
 When the current stable version is still on `0.y.z` and the inferred label is `Major`, Nova keeps the release on the
 initial-development line and plans the next minor version instead of jumping straight to `1.0.0`. The result still
 reports the detected `Major` label so you can see that the commit set contained a breaking change, and Nova prints
-guidance about manually setting `1.0.0` once the software is stable. `-Preview` behavior stays unchanged.
+guidance about manually setting `1.0.0` once the software is stable. With `-Preview`, stable versions still enter the
+next patch preview track instead of applying semantic history inference to the semantic core.
 
 When Git tags exist, only commits since the latest tag are considered. If the folder is not a Git repository, the
 command falls back to a patch bump.
@@ -120,13 +122,13 @@ PS> Update-NovaModuleVersion -Preview -WhatIf
 What if: Performing the operation "Update module version using Minor release label" on target "project.json".
 
 PreviousVersion: 1.5.3
-NewVersion: 1.6.0-preview
+NewVersion: 1.5.4-preview
 Label: Minor
 CommitCount: 12
 ```
 
-Shows how `-Preview` keeps the normal bump label selection but emits a preview target when the current version is
-stable.
+Shows how `-Preview` keeps the detected semantic label for reporting but deterministically enters the next patch preview
+track when the current version is stable.
 
 ### EXAMPLE 6
 
@@ -211,7 +213,7 @@ HelpMessage: ''
 
 Opt into preview bump mode.
 
-When the current version is stable, Nova calculates the normal semantic target and appends `-preview`. When the current
+When the current version is stable, Nova increments the patch version and appends `-preview`. When the current
 version already has any prerelease label, Nova keeps the same semantic core version and increments the current
 prerelease suffix instead of finalizing or advancing to another release line. Any prerelease stem without a trailing
 number starts at `01`, while labels that already include a number simply increment that number.

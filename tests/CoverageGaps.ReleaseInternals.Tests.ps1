@@ -129,9 +129,9 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
-    It 'Get-NovaVersionUpdatePlan appends a preview label to the normal bump target when preview mode starts from stable' -ForEach @(
-        @{CurrentVersion = '1.5.3'; Label = 'Major'; ExpectedVersion = '2.0.0-preview'}
-        @{CurrentVersion = '1.5.3'; Label = 'Minor'; ExpectedVersion = '1.6.0-preview'}
+    It 'Get-NovaVersionUpdatePlan enters the next patch preview track from stable versions regardless of the inferred label' -ForEach @(
+        @{CurrentVersion = '1.5.3'; Label = 'Major'; ExpectedVersion = '1.5.4-preview'}
+        @{CurrentVersion = '1.5.3'; Label = 'Minor'; ExpectedVersion = '1.5.4-preview'}
         @{CurrentVersion = '1.5.3'; Label = 'Patch'; ExpectedVersion = '1.5.4-preview'}
     ) {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
@@ -170,14 +170,14 @@ Describe 'Coverage gaps for release and git internals' {
             ExpectedPlanLabel = 'Minor'
         }
         @{
-            Name = 'preview mode remains unchanged'
+            Name = 'preview mode enters the next patch preview from stable major-zero versions'
             CurrentVersion = '0.1.0'
             Label = 'Major'
             PreviewRelease = $true
-            PlannedVersion = '1.0.0-preview'
-            ExpectedEffectiveLabel = 'Major'
+            PlannedVersion = '0.1.1-preview'
+            ExpectedEffectiveLabel = 'Patch'
             ExpectedAdvisoryPattern = $null
-            ExpectedPlanLabel = 'Major'
+            ExpectedPlanLabel = 'Patch'
         }
     ) {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
@@ -284,9 +284,9 @@ Describe 'Coverage gaps for release and git internals' {
             $updatedProject = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json
 
             $result.PreviousVersion | Should -Be '1.2.3'
-            $result.NewVersion | Should -Be '1.3.0-preview'
+            $result.NewVersion | Should -Be '1.2.4-preview'
             $result.Applied | Should -BeTrue
-            $updatedProject.Version | Should -Be '1.3.0-preview'
+            $updatedProject.Version | Should -Be '1.2.4-preview'
             $updatedProject.Package.Auth.HeaderName | Should -Be 'Authorization'
             $updatedProject.Package.Repositories.Count | Should -Be 1
             ($updatedProject.Package.Repositories[0] -is [string]) | Should -BeFalse
@@ -301,7 +301,7 @@ Describe 'Coverage gaps for release and git internals' {
             Mock Get-NovaVersionUpdatePlan {
                 [pscustomobject]@{
                     ProjectFile = '/tmp/project.json'
-                    NewVersion = [semver]'1.3.0-preview'
+                    NewVersion = [semver]'1.2.4-preview'
                 }
             }
             Mock Read-ProjectJsonData {
@@ -322,12 +322,12 @@ Describe 'Coverage gaps for release and git internals' {
 
             $result.ProjectFile | Should -Be '/tmp/project.json'
             $result.PreviousVersion | Should -Be '1.2.3'
-            $result.NewVersion | Should -Be '1.3.0-preview'
+            $result.NewVersion | Should -Be '1.2.4-preview'
             $result.Applied | Should -BeTrue
             Assert-MockCalled Read-ProjectJsonData -Times 1 -ParameterFilter {$ProjectJsonPath -eq '/tmp/project.json'}
             Assert-MockCalled Write-ProjectJsonData -Times 1 -ParameterFilter {
                 $ProjectJsonPath -eq '/tmp/project.json' -and
-                        $Data.Version -eq '1.3.0-preview' -and
+                        $Data.Version -eq '1.2.4-preview' -and
                         $Data.Package.Repositories[0].Name -eq 'staging'
             }
         }
@@ -338,7 +338,7 @@ Describe 'Coverage gaps for release and git internals' {
             Mock Get-NovaVersionUpdatePlan {
                 [pscustomobject]@{
                     ProjectFile = '/tmp/project.json'
-                    NewVersion = [semver]'1.3.0-preview'
+                    NewVersion = [semver]'1.2.4-preview'
                 }
             }
             Mock Read-ProjectJsonData {
@@ -352,7 +352,7 @@ Describe 'Coverage gaps for release and git internals' {
 
             $result.ProjectFile | Should -Be '/tmp/project.json'
             $result.PreviousVersion | Should -Be '1.2.3'
-            $result.NewVersion | Should -Be '1.3.0-preview'
+            $result.NewVersion | Should -Be '1.2.4-preview'
             $result.Applied | Should -BeFalse
             Assert-MockCalled Read-ProjectJsonData -Times 1 -ParameterFilter {$ProjectJsonPath -eq '/tmp/project.json'}
             Assert-MockCalled Write-ProjectJsonData -Times 0
