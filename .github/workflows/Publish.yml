@@ -17,6 +17,11 @@ defaults:
 
 jobs:
   Publish:
+    if: >-
+      ${{
+        github.event_name != 'push' ||
+        !startsWith(github.event.head_commit.message || '', 'chore(release): ')
+      }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,7 +41,7 @@ jobs:
       - name: Generate Report
         continue-on-error: true
         run: |
-          $reportLines = @('## Output Files 📁', '')
+          $reportLines = @('## Output Files', '')
           $files = Get-ChildItem -Path ./dist -Recurse -ErrorAction SilentlyContinue | Sort-Object FullName
 
           if ($files) {
@@ -60,11 +65,10 @@ jobs:
         if: github.ref_name == 'main'
         uses: ./.github/actions/ensure-psresource-repository
 
-      - name: Run semantic release with NovaRelease
+      - name: Run release with NovaRelease
         id: semantic_release
         if: github.ref_name == 'main'
         run: |
-          & ./scripts/build/ci/Import-BuiltCiModule.ps1 | Out-Null
           Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests -ContinuousIntegration
           $version = Get-NovaProjectInfo -Version
           $result = Move-UnreleasedChangelog -Version $version
@@ -84,7 +88,7 @@ jobs:
         uses: ./.github/actions/create-verified-commit
         with:
           base-ref: main
-          commit-message: 'chore(release): ${{ steps.semantic_release.outputs.release_version }} [skip ci]'
+          commit-message: 'chore(release): ${{ steps.semantic_release.outputs.release_version }}'
 
       - name: Push verified release commit
         if: github.ref_name == 'main' && steps.commit_release.outputs.has-changes == 'true'
@@ -118,7 +122,7 @@ jobs:
         uses: ./.github/actions/create-verified-commit
         with:
           base-ref: main
-          commit-message: 'chore: prepare develop for next prerelease [skip ci]'
+          commit-message: 'chore: prepare develop for next prerelease'
 
       - name: Push verified develop prerelease commit
         if: github.ref_name == 'main' && steps.commit_develop_from_main.outputs.has-changes == 'true'
@@ -143,7 +147,6 @@ jobs:
       - name: Publish develop prerelease to PSGallery
         if: github.ref_name == 'develop'
         run: |
-          & ./scripts/build/ci/Import-BuiltCiModule.ps1 | Out-Null
           Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests -ContinuousIntegration
         env:
           PSGALLERY_API: ${{ secrets.PSGALLERY_API }}
@@ -159,7 +162,7 @@ jobs:
         uses: ./.github/actions/create-verified-commit
         with:
           base-ref: develop
-          commit-message: 'chore: prepare next prerelease version [skip ci]'
+          commit-message: 'chore: prepare next prerelease version'
 
       - name: Push verified develop commit
         if: github.ref_name == 'develop' && steps.commit_develop.outputs.has-changes == 'true'
