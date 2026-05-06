@@ -81,7 +81,8 @@ eligible.
 Use `Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications` to allow prerelease self-updates again.
 
 When prerelease notifications are enabled again, `Update-NovaModuleTool` / `Update-NovaModuleTools` may again select a
-prerelease target. Prerelease self-updates still require explicit confirmation before the update proceeds.
+prerelease target. Prerelease self-updates still require explicit confirmation before the update proceeds, and that
+confirmation defaults to `No` so pressing Enter cancels the update.
 
 ## RELATED LINKS
 

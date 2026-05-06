@@ -13,5 +13,10 @@ NovaModuleTools would update from $CurrentVersion to prerelease $TargetVersion.
 Prerelease updates may be less stable than released versions.
 Continue with the prerelease update?
 "@
+        Choice = [ordered]@{
+            Y = 'Yes'
+            N = 'No'
+        }
+        Default = 'N'
     }
 }

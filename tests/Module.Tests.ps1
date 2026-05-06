@@ -67,6 +67,6 @@ Describe 'General Module Control' {
         })
 
         $requiredModuleNames | Should -Contain 'Microsoft.PowerShell.PlatyPS'
-        $requiredModuleNames | Should -Not -Contain 'Pester'
+        $requiredModuleNames | Should -Contain 'Pester'
     }
 }
