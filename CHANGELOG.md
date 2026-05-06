@@ -7,7 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [2.2.0] - 2026-05-06
 
 ### Changed
 
@@ -35,8 +48,6 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
   `-Repository`,
   `-ModuleDirectoryPath`, and `-ApiKey` are now the primary PowerShell release parameters, while `-PublishOption` is
   deprecated.
-
-### Removed
 
 ### Fixed
 
@@ -75,8 +86,6 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
     - Invalid module names now show the validation message inline instead of failing after the full questionnaire.
     - Standard and example scaffold flows now share the same retry-first validation behavior through the common prompt
       path.
-
-### Security
 
 ## [2.1.0] - 2026-04-29
 ### Added
@@ -333,7 +342,8 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 
-[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_2.1.0...HEAD
+[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/2.2.0...HEAD
+[2.2.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_2.1.0...2.2.0
 [2.1.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_2.0.0...Version_2.1.0
 [2.0.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.9.1...Version_2.0.0
 [1.9.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.8.0...Version_1.9.0
@@ -348,3 +358,4 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
+
