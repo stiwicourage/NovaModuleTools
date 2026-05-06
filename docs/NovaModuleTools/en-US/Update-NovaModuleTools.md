@@ -37,7 +37,8 @@ When prerelease notifications are disabled, `Update-NovaModuleTool` only conside
 `-AllowPrerelease` to the update flow.
 
 When prerelease notifications are enabled, `Update-NovaModuleTool` may target a prerelease. If the selected target is a
-prerelease, the command always asks for explicit confirmation before it proceeds.
+prerelease, the command always asks for explicit confirmation before it proceeds, and that prerelease confirmation
+defaults to `No` so pressing Enter cancels the update.
 
 Stable updates do not require prerelease confirmation.
 

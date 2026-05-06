@@ -110,7 +110,8 @@ Update notification preferences use one shared settings location:
 `Update-NovaModuleTool` (and its `Update-NovaModuleTools` alias), CLI:`% nova update` use that stored prerelease
 preference to decide whether prerelease self-updates are eligible. When prerelease self-updates are disabled,
 self-update stays on stable releases. When they are enabled, self-update may target a prerelease, but it asks for
-explicit confirmation before proceeding.
+explicit confirmation before proceeding and defaults that prerelease prompt to `No`, so pressing Enter cancels the
+update.
 
 
 Successful `Update-NovaModuleTool`, CLI:`% nova update`, and `Install-NovaCli` runs print the release notes link from

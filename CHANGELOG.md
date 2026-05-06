@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Make prerelease self-update confirmation default to `No`.
+    - `Update-NovaModuleTool`, `Update-NovaModuleTools`, and `% nova update` now require an explicit `Y` before a
+      prerelease self-update continues, so pressing Enter cancels the update instead of accepting it.
+
 ### Deprecated
 
 ### Removed
@@ -358,4 +362,3 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-
