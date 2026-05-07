@@ -30,7 +30,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Render bold text in white across the hosted HTML documentation.
     - Emphasized `<strong>` and `<b>` text now stands out more clearly when scanning docs pages.
 
-## [2.2.0] - 2026-05-06
+### Fixed
+
+- Restore Nova-managed project test runs in CI/CD after `2.2.0` dropped the implicit `Pester` dependency.
+    - CI/CD environments no longer need custom logic to install `Pester` themselves before running project tests.
+    - Published `NovaModuleTools` manifests once again pull in `Pester 5.7.1` implicitly so existing CI/CD test flows
+      keep working without extra installation logic.
+    - `Test-NovaBuild` fails with a clear dependency error when `Pester` is not installed.
+
+## [2.2.0] - 2026-05-06 [YANKED]
+
+This release was yanked because it removed the implicit `Pester` dependency, before Nova's CI/CD test flow installed
+`Pester` explicitly. Projects using `NovaModuleTools 2.2.0` could fail to run tests in CI/CD unless maintainers added
+their own `Pester` installation step. The regression was fixed in `2.3.0`.
 
 ### Changed
 
@@ -85,10 +97,6 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
     - Regular markdown elsewhere under `docs/` no longer breaks the help-generation step.
     - When PlatyPS export does not create the expected help folder, Nova now raises a stable documentation error instead
       of a raw rename-path failure.
-- Fix CI test dependency installation so `Pester 5.7.1` is installed explicitly instead of being pulled in implicitly
-  through the published `NovaModuleTools` manifest.
-    - Published prerelease manifests no longer force `Pester` as an install-time required module.
-    - `Test-NovaBuild` now fails with a clear dependency error when `Pester` is not installed.
 - Fix the repository `run.ps1` quality loop after the CI installer refactor introduced new ScriptAnalyzer warnings.
     - The internal CI installer helper now follows ScriptAnalyzer naming and `ShouldProcess` expectations.
     - `run.ps1` no longer stops in the analyzer step because of those helper warnings.
@@ -369,4 +377,3 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-
