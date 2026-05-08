@@ -338,6 +338,46 @@ Describe '$projectName tests' {
         }
     }
 
+    It 'Install-NovaCli infers a major bump from parent Git repository history for nested project roots' {
+        $targetDirectory = Join-Path $TestDrive 'parent-git-bump-bin'
+        $installedPath = Join-Path $targetDirectory 'nova'
+        $repositoryRoot = Join-Path $TestDrive 'CliParentGitRepo'
+        $projectRoot = Join-Path $repositoryRoot 'AzureDevOpsAgentInstaller'
+        $projectJsonPath = Join-Path $projectRoot 'project.json'
+        $originalModulePath = $env:PSModulePath
+        $modulePathSeparator = [string][System.IO.Path]::PathSeparator
+        $distParent = Split-Path -Parent $script:distModuleDir
+
+        $env:PSModulePath = "$distParent$modulePathSeparator$originalModulePath"
+
+        New-Item -ItemType Directory -Path $repositoryRoot -Force | Out-Null
+        Initialize-TestNovaCliProjectLayout -ProjectRoot $projectRoot
+        Write-TestNovaCliProjectJson -ProjectRoot $projectRoot -ProjectName 'AzureDevOpsAgentInstaller' -ProjectGuid '77777777-7777-7777-7777-777777777777'
+        Write-TestNovaCliPublicFunction -ProjectRoot $projectRoot -FunctionName 'Invoke-TestNestedParentGitBump'
+
+        $projectData = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json
+        $projectData.Version = '1.5.4-preview'
+        $projectData | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $projectJsonPath -Encoding utf8
+
+        try {
+            Initialize-TestNovaCliGitRepository -ProjectRoot $repositoryRoot -CommitMessage 'feat!: add nested parent repo bump coverage'
+
+            Install-NovaCli -DestinationDirectory $targetDirectory -Force | Out-Null
+
+            $result = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('bump', '--what-if')
+            $versionAfterBump = (Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json).Version
+
+            $result.ExitCode | Should -Be 0
+            $result.Text | Should -Match 'What if:'
+            $result.Text | Should -Match 'Version plan: 1\.5\.4-preview -> 2\.0\.0 \| Label: Major \| Commits: 1'
+            $result.Text | Should -Not -Match 'Version plan: 1\.5\.4-preview -> 1\.5\.4 \| Label: Patch \| Commits: 0'
+            $versionAfterBump | Should -Be '1.5.4-preview'
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+    }
+
     It 'Install-NovaCli rejects unsupported nova init invocations with clear migration guidance' -ForEach @(
         @{
             Name = 'WhatIf'
