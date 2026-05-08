@@ -68,6 +68,7 @@ function Get-NovaCliLegacyOptionReplacement {
         '-installed' = "'--installed' or '-i'"
         '-local' = "'--local' or '-l'"
         '-moduledirectorypath' = "'--path' or '-p'"
+        '-overridewarning' = "'--override-warning' or '-o'"
         '-packagepath' = "'--path' or '-p'"
         '-packagetype' = "'--type' or '-t'"
         '-path' = "'--path' or '-p'"

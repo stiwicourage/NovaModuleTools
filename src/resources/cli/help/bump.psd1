@@ -7,6 +7,7 @@
         'When the current stable version is 0.y.z, Nova keeps breaking-change bumps on the initial-development line and plans the next minor version instead of jumping to 1.0.0.',
         'Set 1.0.0 manually once the software is stable. After that, nova bump can increment major versions normally.',
         'Use --preview when you want an explicit prerelease iteration instead of the next stable semantic version.',
+        'When Git-based bump inference is unavailable, nova bump stops unless you opt in to the Patch fallback with --override-warning.',
         'For more information, documentation, and examples, visit:',
         'https://www.novamoduletools.com/versioning-and-updates.html#bump'
     )
@@ -40,6 +41,12 @@
             Long = '--continuous-integration'
             Placeholder = ''
             Description = 'Re-import the built dist module before the version bump workflow starts so later CI steps keep using the correct built module state.'
+        },
+        @{
+            Short = '-o'
+            Long = '--override-warning'
+            Placeholder = ''
+            Description = 'Allow an intentional Patch fallback when Git-based bump inference is unavailable, for example in example or template flows outside a Git repository.'
         }
     )
     Examples = @(
@@ -58,6 +65,10 @@
         @{
             Command = 'nova bump --continuous-integration --what-if'
             Description = 'Preview the next version by using the CI-safe routed bump entrypoint without changing project.json.'
+        },
+        @{
+            Command = 'nova bump --override-warning --what-if'
+            Description = 'Preview the explicit Patch fallback when Git-based bump inference is unavailable outside a Git repository.'
         }
     )
 }

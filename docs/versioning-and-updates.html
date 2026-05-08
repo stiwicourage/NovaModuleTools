@@ -177,9 +177,12 @@ PS&gt; Get-NovaProjectInfo -Installed</code></pre>
                 <pre><code>0.0.1 + Patch -> 0.0.2
 0.1.0 + Minor -> 0.2.0
 0.1.0 + Major -> 0.2.0</code></pre>
-                <p>When Git tags exist, Nova uses commits since the latest tag. When the folder is not a Git repository,
-                    Nova falls back to a patch bump. When the repository exists but has no commits yet, Nova stops with
-                    a clear error.</p>
+                <p>When Git tags exist, Nova uses commits since the latest tag. When Git-based inference is unavailable
+                    because the project path is not inside a Git repository, Nova stops instead of silently presenting a
+                    normal-looking patch result. Use <code>-OverrideWarning</code> or the CLI form <code>% nova bump
+                        --override-warning</code> / <code>% nova bump -o</code> only when you intentionally want that
+                    Patch fallback for an example/template flow outside Git. When the repository exists but has no
+                    commits yet, Nova still stops with a clear error.</p>
                 <p>Nova treats prerelease versions as previews of a specific semantic version target. That means a bump
                     does not blindly carry prerelease labels such as <code>preview7</code> into the next major, minor,
                     or
@@ -215,11 +218,13 @@ PS&gt; Get-NovaProjectInfo -Installed</code></pre>
                     <div class="surface-example__surface" data-command-surface="powershell">
                         <pre><code>PS&gt; Update-NovaModuleVersion -WhatIf
 PS&gt; Update-NovaModuleVersion -Preview -WhatIf
+PS&gt; Update-NovaModuleVersion -Path ./src/resources/example -OverrideWarning -WhatIf
 PS&gt; Update-NovaModuleVersion -ContinuousIntegration</code></pre>
                     </div>
                     <div class="surface-example__surface" data-command-surface="command-line" hidden>
                         <pre><code>% nova bump --what-if
 % nova bump --preview --what-if
+% nova bump --override-warning --what-if
 % nova bump --continuous-integration
 % nova bump --confirm</code></pre>
                     </div>

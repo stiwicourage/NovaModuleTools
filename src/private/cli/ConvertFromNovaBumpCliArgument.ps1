@@ -9,5 +9,7 @@ function ConvertFrom-NovaBumpCliArgument {
         '-p' = 'Preview'
         '--continuous-integration' = 'ContinuousIntegration'
         '-i' = 'ContinuousIntegration'
+        '--override-warning' = 'OverrideWarning'
+        '-o' = 'OverrideWarning'
     }
 }

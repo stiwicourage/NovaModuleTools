@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed `nova bump` and `Update-NovaModuleVersion` so nested project folders now reuse parent Git repository history for bump inference instead of silently falling back to `Patch`.
+- Fixed `nova bump` and `Update-NovaModuleVersion` so non-git bump flows now stop with a clear override-warning requirement instead of silently presenting `Patch | Commits: 0` as if it were an inferred result.
 
 ### Security
 
