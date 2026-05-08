@@ -18,10 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+### Security
+
+## [2.3.1] - 2026-05-08
+
+### Fixed
+
 - Fixed `nova bump` and `Update-NovaModuleVersion` so nested project folders now reuse parent Git repository history for bump inference instead of silently falling back to `Patch`.
 - Fixed `nova bump` and `Update-NovaModuleVersion` so non-git bump flows now stop with a clear override-warning requirement instead of silently presenting `Patch | Commits: 0` as if it were an inferred result.
-
-### Security
 
 ## [2.3.0] - 2026-05-06
 
@@ -363,7 +367,8 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 
-[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.0...HEAD
+[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.1...HEAD
+[2.3.1]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.0...2.3.1
 [2.3.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.2.0...2.3.0
 [2.2.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_2.1.0...2.2.0
 [2.1.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_2.0.0...Version_2.1.0
@@ -380,3 +385,4 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
+
