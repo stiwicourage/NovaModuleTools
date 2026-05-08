@@ -1,4 +1,7 @@
-# NovaModuleTools | [![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/78904) ![WorkFlow Status][WorkFlowStatus]
+# NovaModuleTools
+[![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/78904) 
+![WorkFlow Status][WorkFlowStatus]
+[![Keep a Changelog][changelog-badge]][changelog]
 
 NovaModuleTools is an enterprise-focused evolution of ModuleTools for structured PowerShell module development,
 repository automation, and maintainable Nova workflows.
@@ -220,6 +223,9 @@ These switches keep the behavior explicit and opt-in:
 - `Update-NovaModuleVersion -ContinuousIntegration` also falls back to a patch bump when the current `HEAD` already
   matches the latest tag, so release automation can seed the next prerelease line without requiring an extra commit
   first
+- `Update-NovaModuleVersion` and `% nova bump` now stop when Git-based bump inference is unavailable, unless you
+  explicitly opt in to the Patch fallback with `-OverrideWarning` / `--override-warning` / `-o` for a non-git
+  example/template flow
 - `Update-NovaModuleVersion` and `% nova bump` treat stable `0.y.z` versions as the SemVer initial-development phase,
   so breaking-change bumps stay on the `0.y.z` line by planning the next minor version instead of jumping to `1.0.0`
 - `Publish-NovaModule -ContinuousIntegration` restores the built module after publish completes
@@ -671,3 +677,5 @@ This project is licensed under the MIT License. See LICENSE for details.
 
 [PSGalleryLink]: https://www.powershellgallery.com/packages/NovaModuleTools/
 [WorkFlowStatus]: https://img.shields.io/github/actions/workflow/status/stiwicourage/NovaModuleTools/Tests.yml
+[changelog]: https://keepachangelog.com/
+[changelog-badge]: https://img.shields.io/badge/changelog-Keep%20a%20Changelog-%23E05735

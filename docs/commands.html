@@ -476,10 +476,13 @@ PS&gt; Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -Cont
                         <ul class="plain-list">
                             <li><strong>Best for:</strong> Git-driven semantic version updates</li>
                             <li><strong>Key parameters:</strong> <code>-Path</code>, <code>-Preview</code>,
-                                <code>-ContinuousIntegration</code>, or the CLI form <code>--preview</code> /
-                                <code>-p</code> and <code>--continuous-integration</code> / <code>-i</code></li>
-                            <li><strong>Notable behavior:</strong> falls back to a patch bump when the folder is not a
-                                Git repository, but throws when the repository exists and has no commits yet
+                                <code>-ContinuousIntegration</code>, <code>-OverrideWarning</code>, or the CLI form
+                                <code>--preview</code> / <code>-p</code>, <code>--continuous-integration</code> /
+                                <code>-i</code>, and <code>--override-warning</code> / <code>-o</code></li>
+                            <li><strong>Notable behavior:</strong> stops when Git-based inference is unavailable, unless
+                                you explicitly opt in to the Patch fallback with <code>-OverrideWarning</code> /
+                                <code>--override-warning</code> / <code>-o</code>; it still throws when the repository
+                                exists and has no commits yet
                             </li>
                             <li><strong>Major-zero rule:</strong> stable <code>0.y.z</code> projects keep
                                 breaking-change
@@ -504,10 +507,12 @@ PS&gt; Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -Cont
                             </div>
                             <div class="surface-example__surface" data-command-surface="powershell">
                                 <pre><code>PS&gt; Update-NovaModuleVersion -Preview -WhatIf
+PS&gt; Update-NovaModuleVersion -Path ./src/resources/example -OverrideWarning -WhatIf
 PS&gt; Update-NovaModuleVersion -ContinuousIntegration</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="command-line" hidden>
                                 <pre><code>% nova bump --preview --what-if
+% nova bump --override-warning --what-if
 % nova bump --continuous-integration
 % nova bump --preview --confirm</code></pre>
                             </div>

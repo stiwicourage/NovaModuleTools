@@ -62,6 +62,7 @@ BeforeAll {
 Describe 'Nova command model - standalone CLI override-warning behavior' {
     It 'Invoke-NovaCli forwards override-warning for routed build-aware commands' -ForEach @(
         @{CommandName = 'build'; ActionCommand = 'Invoke-NovaBuild'; Arguments = @('--override-warning')}
+        @{CommandName = 'bump'; ActionCommand = 'Update-NovaModuleVersion'; Arguments = @('--override-warning')}
         @{CommandName = 'test'; ActionCommand = 'Test-NovaBuild'; Arguments = @('--build', '--override-warning')}
         @{CommandName = 'package'; ActionCommand = 'New-NovaModulePackage'; Arguments = @('--override-warning')}
         @{CommandName = 'publish'; ActionCommand = 'Publish-NovaModule'; Arguments = @('--repository', 'PSGallery', '--api-key', 'key123', '--override-warning')}

@@ -4,7 +4,7 @@ function Get-GitCommitMessageForVersionBump {
         [Parameter(Mandatory)][string]$ProjectRoot
     )
 
-    if (-not (Test-Path -LiteralPath (Join-Path $ProjectRoot '.git'))) {
+    if (-not (Test-GitRepositoryIsAvailable -ProjectRoot $ProjectRoot)) {
         return @()
     }
 
