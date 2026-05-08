@@ -35,10 +35,6 @@ function Test-GitRepositoryIsAvailable {
         [Parameter(Mandatory)][string]$ProjectRoot
     )
 
-    if (-not (Test-Path -LiteralPath (Join-Path $ProjectRoot '.git'))) {
-        return $false
-    }
-
     $result = Invoke-NovaGitCommand -ProjectRoot $ProjectRoot -Arguments @('rev-parse', '--git-dir')
     return $result.ExitCode -eq 0
 }

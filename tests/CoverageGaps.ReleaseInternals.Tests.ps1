@@ -620,6 +620,28 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
+    It 'Get-GitCommitMessageForVersionBump resolves parent git repositories for nested project paths' {
+        if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+            Set-ItResult -Skipped -Because 'git is not available in this environment'
+            return
+        }
+
+        InModuleScope $script:moduleName {
+            $repositoryRoot = Join-Path $TestDrive 'parent-git-repo'
+            $projectRoot = Join-Path $repositoryRoot 'NestedProject'
+            Initialize-TestGitRepository -Path $repositoryRoot
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+            New-TestGitCommit -RepositoryPath $repositoryRoot -Message 'feat!: nested project change' -File @{
+                Name = 'NestedProject/feature.txt'
+                Content = 'feature'
+            }
+
+            $messages = @(Get-GitCommitMessageForVersionBump -ProjectRoot $projectRoot)
+
+            $messages | Should -Be @('feat!: nested project change')
+        }
+    }
+
     It 'Get-NovaVersionLabelForBump falls back to Patch when the project is not a git repository' {
         InModuleScope $script:moduleName {
             $projectRoot = Join-Path $TestDrive 'no-git-project-for-label'
