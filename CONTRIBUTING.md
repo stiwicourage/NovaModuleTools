@@ -1,8 +1,8 @@
 ## Contributing
 
 [![KeepAChangelog](https://img.shields.io/badge/changelog-KeepAChangelog-%23E05735)](https://keepachangelog.ps)
-[![CodeScene Average Code Health](https://codescene.io/projects/78904/status-badges/average-code-health)](https://codescene.io/projects/78904)
 [![codecov](https://codecov.io/github/stiwicourage/NovaModuleTools/graph/badge.svg?token=BLZP94DZKX)](https://codecov.io/github/stiwicourage/NovaModuleTools)
+[![CodeScene Average Code Health](https://codescene.io/projects/78904/status-badges/average-code-health)](https://codescene.io/projects/78904)
 
 **This repository is intentionally opinionated about maintainability, however, we welcome contributions that align with
 our goals. We want to keep the codebase clean, maintainable, and easy to understand for both users and contributors.**
