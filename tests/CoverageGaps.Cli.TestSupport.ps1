@@ -81,6 +81,8 @@ function Get-TestNovaCliRoutedParserCaseList {
                 @{Arguments = @('-p'); Property = 'Preview'}
                 @{Arguments = @('--continuous-integration'); Property = 'ContinuousIntegration'}
                 @{Arguments = @('-i'); Property = 'ContinuousIntegration'}
+                @{Arguments = @('--override-warning'); Property = 'OverrideWarning'}
+                @{Arguments = @('-o'); Property = 'OverrideWarning'}
             )
         }
         @{

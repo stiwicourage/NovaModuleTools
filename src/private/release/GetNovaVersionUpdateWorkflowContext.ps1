@@ -3,16 +3,52 @@ function Get-NovaVersionUpdateWorkflowContext {
     param(
         [Parameter(Mandatory)][string]$ProjectRoot,
         [switch]$PreviewRelease,
-        [switch]$ContinuousIntegrationRequested
+        [switch]$ContinuousIntegrationRequested,
+        [switch]$OverrideWarningRequested
     )
 
     $projectInfo = Get-NovaProjectInfo -Path $ProjectRoot
     $commitMessages = @(Get-GitCommitMessageForVersionBump -ProjectRoot $ProjectRoot)
+    Assert-NovaVersionBumpInferenceAvailability -ProjectRoot $ProjectRoot -CommitMessages $commitMessages -OverrideWarningRequested:$OverrideWarningRequested
     $label = Get-NovaVersionLabelForBump -ProjectRoot $ProjectRoot -CommitMessages $commitMessages -ContinuousIntegrationRequested:$ContinuousIntegrationRequested
     $labelResolution = Get-NovaVersionUpdateLabelResolution -ProjectInfo $projectInfo -Label $label -PreviewRelease:$PreviewRelease
     $versionUpdatePlan = Get-NovaVersionUpdatePlan -ProjectInfo $projectInfo -Label $labelResolution.EffectiveLabel -PreviewRelease:$PreviewRelease
 
     return Get-NovaVersionUpdateWorkflowContextObject -ProjectRoot $ProjectRoot -ProjectInfo $projectInfo -CommitMessages $commitMessages -Label $label -EffectiveLabel $labelResolution.EffectiveLabel -AdvisoryMessage $labelResolution.AdvisoryMessage -VersionUpdatePlan $versionUpdatePlan -PreviewRelease:$PreviewRelease -ContinuousIntegrationRequested:$ContinuousIntegrationRequested
+}
+
+function Assert-NovaVersionBumpInferenceAvailability {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot,
+        [AllowEmptyCollection()][string[]]$CommitMessages = @(),
+        [switch]$OverrideWarningRequested
+    )
+
+    if ($CommitMessages.Count -gt 0) {
+        return
+    }
+
+    if (Test-GitRepositoryIsAvailable -ProjectRoot $ProjectRoot) {
+        return
+    }
+
+    $message = Get-NovaVersionBumpInferenceUnavailableMessage
+    Write-Warning $message
+
+    if ($OverrideWarningRequested) {
+        Write-Verbose 'Continuing version bump because OverrideWarning was specified and Git-based bump inference is unavailable.'
+        return
+    }
+
+    Stop-NovaOperation -Message $message -ErrorId 'Nova.Workflow.VersionBumpInferenceUnavailable' -Category InvalidOperation -TargetObject $ProjectRoot
+}
+
+function Get-NovaVersionBumpInferenceUnavailableMessage {
+    [CmdletBinding()]
+    param()
+
+    return 'Cannot infer the version bump label from Git history because no Git repository was found for this project path. Use -OverrideWarning / --override-warning / -o to continue intentionally with a Patch fallback, for example in example or template flows.'
 }
 
 function Get-NovaVersionUpdateLabelResolution {

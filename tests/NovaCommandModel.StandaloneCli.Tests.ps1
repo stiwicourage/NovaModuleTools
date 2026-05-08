@@ -605,6 +605,20 @@ Describe '$projectName tests' {
         }
     }
 
+    It 'Invoke-NovaCli help for bump documents the override-warning options' -ForEach @(
+        @{CommandName = 'bump'}
+    ) {
+        InModuleScope $script:moduleName -Parameters @{CommandName = $_.CommandName} {
+            param($CommandName)
+
+            $shortHelp = Invoke-NovaCli -Command $CommandName -Arguments @('--help')
+            $longHelp = Invoke-NovaCli -Command '--help' -Arguments @($CommandName)
+
+            $shortHelp | Should -Match '-o, --override-warning'
+            $longHelp | Should -Match '--override-warning'
+        }
+    }
+
     It 'Invoke-NovaCli CLI help never delegates to PowerShell Get-Help' {
         InModuleScope $script:moduleName {
             Mock Get-Help {throw 'CLI help should not call Get-Help'}

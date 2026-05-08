@@ -20,7 +20,7 @@ Updates the project version in `project.json` based on git commit history.
 ### __AllParameterSets
 
 ```text
-PS> Update-NovaModuleVersion [[-Path] <string>] [-Preview] [-ContinuousIntegration] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Update-NovaModuleVersion [[-Path] <string>] [-Preview] [-ContinuousIntegration] [-OverrideWarning] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -49,8 +49,10 @@ reports the detected `Major` label so you can see that the commit set contained 
 guidance about manually setting `1.0.0` once the software is stable. With `-Preview`, stable versions still enter the
 next patch preview track instead of applying semantic history inference to the semantic core.
 
-When Git tags exist, only commits since the latest tag are considered. If the folder is not a Git repository, the
-command falls back to a patch bump.
+When Git tags exist, only commits since the latest tag are considered. If Git-based inference is unavailable because the
+project path is not inside a Git repository, the command stops with a clear warning/error instead of silently presenting
+an inferred-looking patch result. Use `-OverrideWarning` only when you intentionally want that Patch fallback, for
+example in example/template flows outside Git.
 
 If the repository exists but has no commits yet, the command stops with: `Cannot bump version because the repository
 has no commits yet. Create an initial commit first.`
@@ -186,6 +188,19 @@ CommitCount: 34
 Shows how stable `0.y.z` bumps still warn that `1.0.0` must be set manually when the API becomes stable, while
 breaking-change commits on that line continue to plan the next minor version instead of jumping straight to `1.0.0`.
 
+### EXAMPLE 10
+
+```text
+PS> Update-NovaModuleVersion -Path ./src/resources/example -OverrideWarning -WhatIf
+
+WARNING: Cannot infer the version bump label from Git history because no Git repository was found for this project path. Use -OverrideWarning to continue intentionally with a Patch fallback.
+
+What if: Performing the operation "Update module version using Patch release label" on target "project.json".
+```
+
+Shows how to opt in explicitly to the Patch fallback when a project lives outside a Git repository and Nova therefore
+cannot infer the semantic label from commit history.
+
 ## PARAMETERS
 
 ### -Path
@@ -259,6 +274,30 @@ AcceptedValues: [ ]
 HelpMessage: ''
 ```
 
+### -OverrideWarning
+
+Allow the version bump to continue with the explicit Patch fallback when Git-based inference is unavailable.
+
+Use this only when you intentionally want to bump a project outside a Git repository, for example in example/template
+flows where no commit history exists.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: [ ]
+ParameterSets:
+  - Name: (All)
+    Position: Named
+    IsRequired: false
+    ValueFromPipeline: false
+    ValueFromPipelineByPropertyName: false
+    ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: [ ]
+HelpMessage: ''
+```
+
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
@@ -290,6 +329,9 @@ reflect the new version.
 
 When `-ContinuousIntegration` is used with a real update, the command re-activates the built `dist/` module first. When
 combined with `-WhatIf`, Nova still previews the bump without changing the loaded module state.
+
+When Git-based inference is unavailable, `Update-NovaModuleVersion` now requires `-OverrideWarning` before it continues
+with the intentional Patch fallback.
 
 ## RELATED LINKS
 

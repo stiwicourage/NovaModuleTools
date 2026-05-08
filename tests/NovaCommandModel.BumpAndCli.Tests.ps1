@@ -352,6 +352,24 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
+    It 'Update-NovaModuleVersion forwards OverrideWarning into the version-update workflow context' {
+        InModuleScope $script:moduleName {
+            Mock Get-NovaVersionUpdateWorkflowContext {
+                [pscustomobject]@{
+                    Target = 'project.json'
+                    Action = 'Update module version using Minor release label'
+                }
+            }
+            Mock Invoke-NovaVersionUpdateWorkflow {
+                [pscustomobject]@{NewVersion = '1.1.0'; Applied = $false}
+            }
+
+            $null = Update-NovaModuleVersion -Path (Get-Location).Path -OverrideWarning -WhatIf
+
+            Assert-MockCalled Get-NovaVersionUpdateWorkflowContext -Times 1 -ParameterFilter {$OverrideWarningRequested}
+        }
+    }
+
     It 'Update-NovaModuleVersion writes the initial-development warning for stable 0.y.z breaking-change bumps' {
         Assert-TestUpdateNovaModuleVersionMajorZeroWarning -ModuleName $script:moduleName -TestCase @{
             PreviousVersion = '0.1.0'
@@ -572,7 +590,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
         }
     }
 
-    It 'Update-NovaModuleVersion -WhatIf falls back to a Patch preview when the project is not a git repository' {
+    It 'Update-NovaModuleVersion -WhatIf requires OverrideWarning when the project is not a git repository' {
         InModuleScope $script:moduleName {
             $projectRoot = Join-Path $TestDrive 'no-git-bump-project'
             New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
@@ -592,12 +610,52 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             }
             Mock Set-NovaModuleVersion {}
 
-            $result = Update-NovaModuleVersion -Path $projectRoot -WhatIf
+            $warningMessages = @()
+            $thrown = $null
+            try {
+                Update-NovaModuleVersion -Path $projectRoot -WhatIf -WarningVariable warningMessages
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Cannot infer the version bump label from Git history because no Git repository was found for this project path. Use -OverrideWarning / --override-warning / -o to continue intentionally with a Patch fallback, for example in example or template flows.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.VersionBumpInferenceUnavailable'
+            ($warningMessages -join [Environment]::NewLine) | Should -Match '-OverrideWarning / --override-warning / -o'
+            Assert-MockCalled Get-NovaVersionUpdatePlan -Times 0
+            Assert-MockCalled Set-NovaModuleVersion -Times 0
+        }
+    }
+
+    It 'Update-NovaModuleVersion -WhatIf continues with a Patch fallback when OverrideWarning is specified outside a git repository' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'no-git-bump-project-with-override'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+
+            Mock Get-NovaProjectInfo {
+                [pscustomobject]@{
+                    Version = '1.0.0'
+                    ProjectJSON = (Join-Path $projectRoot 'project.json')
+                }
+            }
+            Mock Get-NovaVersionUpdatePlan {
+                [pscustomobject]@{
+                    ProjectFile = (Join-Path $projectRoot 'project.json')
+                    CurrentVersion = [semver]'1.0.0'
+                    NewVersion = [semver]'1.0.1'
+                }
+            }
+            Mock Set-NovaModuleVersion {}
+
+            $warningMessages = @()
+            $result = Update-NovaModuleVersion -Path $projectRoot -OverrideWarning -WhatIf -WarningVariable warningMessages
 
             $result.PreviousVersion | Should -Be '1.0.0'
             $result.NewVersion | Should -Be '1.0.1'
             $result.Label | Should -Be 'Patch'
             $result.CommitCount | Should -Be 0
+            ($warningMessages -join [Environment]::NewLine) | Should -Match 'Cannot infer the version bump label from Git history'
             Assert-MockCalled Set-NovaModuleVersion -Times 0
         }
     }

@@ -3,7 +3,8 @@ function Update-NovaModuleVersion {
     param(
         [string]$Path = (Get-Location).Path,
         [switch]$Preview,
-        [switch]$ContinuousIntegration
+        [switch]$ContinuousIntegration,
+        [switch]$OverrideWarning
     )
 
     $projectRoot = (Resolve-Path -LiteralPath $Path).Path
@@ -12,7 +13,7 @@ function Update-NovaModuleVersion {
         return $ciActivation.Result
     }
 
-    $workflowContext = Get-NovaVersionUpdateWorkflowContext -ProjectRoot $projectRoot -PreviewRelease:$Preview -ContinuousIntegrationRequested:$ContinuousIntegration
+    $workflowContext = Get-NovaVersionUpdateWorkflowContext -ProjectRoot $projectRoot -PreviewRelease:$Preview -ContinuousIntegrationRequested:$ContinuousIntegration -OverrideWarningRequested:$OverrideWarning
     $shouldRun = $PSCmdlet.ShouldProcess($workflowContext.Target, $workflowContext.Action)
     $result = Invoke-NovaVersionUpdateWorkflow -WorkflowContext $workflowContext -ShouldRun:$shouldRun -WhatIfEnabled:$WhatIfPreference
     if ($null -eq $result) {
@@ -23,4 +24,3 @@ function Update-NovaModuleVersion {
 
     return $result
 }
-

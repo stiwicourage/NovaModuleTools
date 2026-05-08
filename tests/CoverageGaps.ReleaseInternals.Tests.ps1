@@ -651,6 +651,42 @@ Describe 'Coverage gaps for release and git internals' {
         }
     }
 
+    It 'Assert-NovaVersionBumpInferenceAvailability throws a clear error when Git-based bump inference is unavailable' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'no-git-project-for-override-guard'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+
+            $warningMessages = @()
+            $thrown = $null
+            try {
+                Assert-NovaVersionBumpInferenceAvailability -ProjectRoot $projectRoot -CommitMessages @() -WarningVariable warningMessages
+            }
+            catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception.Message | Should -Be 'Cannot infer the version bump label from Git history because no Git repository was found for this project path. Use -OverrideWarning / --override-warning / -o to continue intentionally with a Patch fallback, for example in example or template flows.'
+            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.VersionBumpInferenceUnavailable'
+            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
+            $thrown.TargetObject | Should -Be $projectRoot
+            ($warningMessages -join [Environment]::NewLine) | Should -Match '-OverrideWarning / --override-warning / -o'
+        }
+    }
+
+    It 'Assert-NovaVersionBumpInferenceAvailability warns but continues when OverrideWarningRequested is set' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'no-git-project-for-override-continue'
+            New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
+
+            $records = @(& {Assert-NovaVersionBumpInferenceAvailability -ProjectRoot $projectRoot -CommitMessages @() -OverrideWarningRequested} 3>&1)
+
+            { $null = $records } | Should -Not -Throw
+            @($records | Where-Object {$_ -is [System.Management.Automation.WarningRecord]}).Count | Should -Be 1
+            (@($records | Where-Object {$_ -is [System.Management.Automation.WarningRecord]} | ForEach-Object Message) -join [Environment]::NewLine) | Should -Match 'Cannot infer the version bump label from Git history'
+        }
+    }
+
     It 'Get-GitCommitMessageForVersionBump uses the shared git adapter to resolve tagged commit history' {
         InModuleScope $script:moduleName {
             $projectRoot = Join-Path $TestDrive 'mocked-git-history'
