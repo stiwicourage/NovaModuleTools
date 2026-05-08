@@ -1,4 +1,4 @@
-# NovaModuleTools | [![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/78904) ![WorkFlow Status][WorkFlowStatus]
+# NovaModuleTools | [![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/78904) ![WorkFlow Status][WorkFlowStatus] [![Keep a Changelog][changelog-badge]][changelog]
 
 NovaModuleTools is an enterprise-focused evolution of ModuleTools for structured PowerShell module development,
 repository automation, and maintainable Nova workflows.
@@ -671,3 +671,5 @@ This project is licensed under the MIT License. See LICENSE for details.
 
 [PSGalleryLink]: https://www.powershellgallery.com/packages/NovaModuleTools/
 [WorkFlowStatus]: https://img.shields.io/github/actions/workflow/status/stiwicourage/NovaModuleTools/Tests.yml
+[changelog]: https://keepachangelog.com/
+[changelog-badge]: https://img.shields.io/badge/changelog-Keep%20a%20Changelog-%23E05735
