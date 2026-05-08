@@ -1,4 +1,7 @@
-# NovaModuleTools | [![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/78904) ![WorkFlow Status][WorkFlowStatus] [![Keep a Changelog][changelog-badge]][changelog]
+# NovaModuleTools
+[![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/78904) 
+![WorkFlow Status][WorkFlowStatus]
+[![Keep a Changelog][changelog-badge]][changelog]
 
 NovaModuleTools is an enterprise-focused evolution of ModuleTools for structured PowerShell module development,
 repository automation, and maintainable Nova workflows.
