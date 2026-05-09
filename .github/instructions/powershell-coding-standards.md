@@ -1,0 +1,79 @@
+# NovaModuleTools PowerShell coding standards
+
+## Scope
+
+Use this file when changing `src/public/`, `src/private/`, or PowerShell build/release helpers.
+
+## Public command rules
+
+- Keep public command files small and delegating.
+- Keep exactly one top-level public function per file in `src/public/`.
+- Public mutating commands should support PowerShell `ShouldProcess` semantics.
+- Preserve existing naming and command model conventions such as `Invoke-Nova*`, `Get-Nova*`, `Update-Nova*`, and the
+  `nova` CLI routing model.
+
+## Internal structure rules
+
+- Put internal helpers in the correct domain folder under `src/private/`.
+- Reuse existing adapters and shared helpers before adding new infrastructure calls.
+- Keep direct environment access, Git execution, upload requests, and self-update execution in their approved helper
+  locations. `tests/ArchitectureGuardrails.Tests.ps1` is authoritative.
+- Prefer explicit workflow-context objects (`[pscustomobject]` / ordered hashtables) for multi-step flows.
+
+## Error and behavior rules
+
+- Prefer clear, structured Nova errors over silent fallback behavior.
+- Preserve existing warning semantics; do not rename warning opt-ins to a generic `-Force` pattern.
+- Keep CLI spellings and PowerShell spellings distinct in messages and docs.
+
+## Formatting rules
+
+### Indentation
+
+- Use spaces, not hard tabs.
+- Use 4 spaces per indentation level.
+- Indent block contents one level inside `function`, `if`, `switch`, `foreach`, `for`, `while`, `try`, `catch`,
+  `finally`, `class`, and method bodies.
+- When an expression wraps onto the next line, indent the continuation line one extra level instead of trying to align
+  it
+  visually to a previous token column.
+
+### Spacing
+
+- Use one space between language keywords and `(` in control statements such as `if (...)`, `foreach (...)`,
+  `switch (...)`,
+  `while (...)`, and `for (...)`.
+- Use one space before an opening `{`.
+- Use one space around binary, comparison, and logical operators.
+- Use one space after commas in parameter and argument lists.
+- Prefer `-not` over `!` for logical negation.
+- Prefer full cmdlet names in standard PowerShell casing; do not introduce aliases.
+- Prefer `[int]$Count` style type literals without an extra space before the variable name.
+
+### Wrapping and braces
+
+- Use same-line opening braces for functions, control statements, `try` / `catch` / `finally`, `switch` labels, classes,
+  and methods.
+- Keep `elseif`, `else`, `catch`, and `finally` on the same line as the preceding closing brace.
+- Keep closing braces on their own line.
+- Prefer multi-line `param(...)`, hashtables, and long argument sets over overly long single lines.
+- When wrapping an expression, keep the operator on the preceding line when it reads naturally.
+
+### Blank lines
+
+- Use a single blank line between logical sections of a function when it improves readability.
+- Do not stack multiple blank lines.
+- Avoid decorative blank lines inside short blocks.
+- Keep one blank line between top-level declarations when a file contains more than one declaration.
+
+## Maintainability rules
+
+- Favor short functions and extracted helpers over large nested logic.
+- Avoid copy/paste across source or test files.
+- Add comments only when the code would otherwise be hard to follow.
+
+## Verification
+
+- Update or add Pester coverage for behavior changes.
+- Recheck `tests/ArchitectureGuardrails.Tests.ps1` when changing layering or helper placement.
+- Run `./run.ps1` before considering a code change complete.
