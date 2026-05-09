@@ -10,6 +10,11 @@ BeforeAll {
     $testSupportPath = (Resolve-Path -LiteralPath (Join-Path $here 'RemainingHelperCoverage.TestSupport.ps1')).Path
     $script:moduleName = (Get-Content -LiteralPath (Join-Path $repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
     $script:distModuleDir = Join-Path $repoRoot "dist/$script:moduleName"
+    $script:metadataProjectLayout = [pscustomobject]@{
+        ProjectRoot = '/tmp/project'
+        OutputModuleDir = '/tmp/project/dist/PackageProject'
+        PackageOutputDir = '/tmp/project/artifacts/packages'
+    }
 
     if (-not (Test-Path -LiteralPath $script:distModuleDir)) {
         throw "Expected built $script:moduleName module at: $script:distModuleDir. Run Invoke-NovaBuild in the repo root first."
@@ -79,6 +84,7 @@ Describe 'Package latest policy behavior' {
             ConvertTo-NovaPackageLatestPolicy -Value 'Stable' | Should -Be 'stable'
             ConvertTo-NovaPackageLatestPolicy -Value 'always' | Should -Be 'always'
             ConvertTo-NovaPackageLatestPolicy -Value $null | Should -Be 'never'
+            ConvertTo-NovaPackageLatestPolicy -Value '   ' | Should -Be 'never'
 
             $thrown = $null
             try {
@@ -94,29 +100,9 @@ Describe 'Package latest policy behavior' {
     }
 
     It 'Get-NovaPackageMetadataList also returns latest-named metadata when Package.Latest is always' {
-        InModuleScope $script:moduleName {
-            $projectInfo = [pscustomobject]@{
-                ProjectName = 'PackageProject'
-                Version = '2.3.4'
-                ProjectRoot = '/tmp/project'
-                Description = 'Top-level description'
-                Manifest = [ordered]@{
-                    Author = 'Author One'
-                    Tags = @('Nova', 'Packaging')
-                }
-                Package = [ordered]@{
-                    Id = 'PackageProject'
-                    Types = @('NuGet', 'Zip')
-                    Latest = 'always'
-                    OutputDirectory = [ordered]@{
-                        Path = '/tmp/project/artifacts/packages'
-                        Clean = $true
-                    }
-                    PackageFileName = 'PackageProject.2.3.4.nupkg'
-                    Authors = 'Author One'
-                    Description = 'Top-level description'
-                }
-            }
+        $projectInfo = Get-TestNovaPackageProjectInfo -Layout $script:metadataProjectLayout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip') -Latest 'always'
+        InModuleScope $script:moduleName -Parameters @{ProjectInfo = $projectInfo} {
+            param($ProjectInfo)
 
             $result = @(Get-NovaPackageMetadataList -ProjectInfo $projectInfo)
 
@@ -138,29 +124,9 @@ Describe 'Package latest policy behavior' {
     }
 
     It 'Get-NovaPackageMetadataList only returns versioned metadata when Package.Latest is stable and the version is preview' {
-        InModuleScope $script:moduleName {
-            $projectInfo = [pscustomobject]@{
-                ProjectName = 'PackageProject'
-                Version = '2.3.4-preview1'
-                ProjectRoot = '/tmp/project'
-                Description = 'Top-level description'
-                Manifest = [ordered]@{
-                    Author = 'Author One'
-                    Tags = @('Nova', 'Packaging')
-                }
-                Package = [ordered]@{
-                    Id = 'PackageProject'
-                    Types = @('NuGet', 'Zip')
-                    Latest = 'stable'
-                    OutputDirectory = [ordered]@{
-                        Path = '/tmp/project/artifacts/packages'
-                        Clean = $true
-                    }
-                    PackageFileName = 'PackageProject.2.3.4-preview1.nupkg'
-                    Authors = 'Author One'
-                    Description = 'Top-level description'
-                }
-            }
+        $projectInfo = Get-TestNovaPackageProjectInfo -Layout $script:metadataProjectLayout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip') -Version '2.3.4-preview1' -Latest 'stable'
+        InModuleScope $script:moduleName -Parameters @{ProjectInfo = $projectInfo} {
+            param($ProjectInfo)
 
             $result = @(Get-NovaPackageMetadataList -ProjectInfo $projectInfo)
 
@@ -174,29 +140,9 @@ Describe 'Package latest policy behavior' {
     }
 
     It 'Get-NovaPackageMetadataList still supports legacy boolean Package.Latest values' {
-        InModuleScope $script:moduleName {
-            $projectInfo = [pscustomobject]@{
-                ProjectName = 'PackageProject'
-                Version = '2.3.4-preview1'
-                ProjectRoot = '/tmp/project'
-                Description = 'Top-level description'
-                Manifest = [ordered]@{
-                    Author = 'Author One'
-                    Tags = @('Nova', 'Packaging')
-                }
-                Package = [ordered]@{
-                    Id = 'PackageProject'
-                    Types = @('NuGet', 'Zip')
-                    Latest = $true
-                    OutputDirectory = [ordered]@{
-                        Path = '/tmp/project/artifacts/packages'
-                        Clean = $true
-                    }
-                    PackageFileName = 'PackageProject.2.3.4-preview1.nupkg'
-                    Authors = 'Author One'
-                    Description = 'Top-level description'
-                }
-            }
+        $projectInfo = Get-TestNovaPackageProjectInfo -Layout $script:metadataProjectLayout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip') -Version '2.3.4-preview1' -Latest $true
+        InModuleScope $script:moduleName -Parameters @{ProjectInfo = $projectInfo} {
+            param($ProjectInfo)
 
             $result = @(Get-NovaPackageMetadataList -ProjectInfo $projectInfo)
 
