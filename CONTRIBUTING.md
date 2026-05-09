@@ -86,6 +86,8 @@ Please also make sure your contribution includes the right kind of follow-up wor
 - update help files in `docs/` when a command changes
 - update `README.md` when repository workflow, architecture, or contributor expectations change
 - update `CHANGELOG.md` when the change is relevant to users, maintainers, or future contributors
+- update `RELEASE_NOTE.md` when the change affects public cmdlet usage, CLI usage, configuration semantics, or migration
+  expectations
 - keep `src/resources/example/` useful if your change affects the real-world project layout or workflow
 
 Documentation ownership is intentionally split:
@@ -107,6 +109,11 @@ When updating documentation, write it for humans first. A reader should quickly 
 - why it changed
 - how to use it
 - whether existing behavior is affected
+
+For release history and release-note entries, keep the split explicit:
+
+- `CHANGELOG.md` records the full release history
+- `RELEASE_NOTE.md` records only public cmdlet, CLI, configuration, and migration-impacting changes
 
 For changelog entries, follow the existing project format:
 

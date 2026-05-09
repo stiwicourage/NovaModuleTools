@@ -26,6 +26,10 @@ Use this skill when working on semantic versioning, release automation, package 
 
 - Keep unreleased entries readable and outcome-focused.
 - Keep `CHANGELOG.md` exhaustive and keep `RELEASE_NOTE.md` limited to interface-facing change summaries.
+- If `RELEASE_NOTE.md` has no public API or workflow changes under `## [Unreleased]`, keep the exact placeholder under
+  `### Added`: `No public API or workflow changes in this release. Internal maintenance only.`
+- If `RELEASE_NOTE.md` has real release-note entries, remove that placeholder.
+- Keep `RELEASE_NOTE.md` free of compare-link footer URLs.
 - Use `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, and `Security` intentionally.
 - Update an existing unreleased `Added` entry when a feature is still evolving before release.
 - Verify whether stable and preview behavior differ.
@@ -35,6 +39,7 @@ Use this skill when working on semantic versioning, release automation, package 
 
 - Logging internal iteration history in the changelog instead of final unreleased behavior
 - Copying internal-only changelog detail into `RELEASE_NOTE.md` when public interfaces are unchanged
+- Leaving the no-public-changes placeholder in place after real release-note entries were added
 - Forgetting that `main` and `develop` have different publish/version roles
 - Changing package or release defaults without corresponding tests
 

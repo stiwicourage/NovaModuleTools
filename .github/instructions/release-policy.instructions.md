@@ -15,6 +15,10 @@ automation.
 - Treat `CHANGELOG.md` as the exhaustive release history.
 - Treat `RELEASE_NOTE.md` as the interface-focused summary for public cmdlet, CLI, configuration, and migration changes.
 - Keep `## [Unreleased]` valid and readable.
+- If `RELEASE_NOTE.md` has no public API or workflow changes under `## [Unreleased]`, keep the exact placeholder under
+  `### Added`: `No public API or workflow changes in this release. Internal maintenance only.`
+- If `RELEASE_NOTE.md` has real release-note entries, do not keep that placeholder.
+- Do not add compare-link footer URLs to `RELEASE_NOTE.md`.
 - For unreleased feature iterations, update the existing `Added` entry instead of adding an internal-history `Changed`
   entry.
 

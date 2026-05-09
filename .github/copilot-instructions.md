@@ -45,7 +45,7 @@ treated as final.
 - Keep changes small, reviewable, and easy to validate.
 - Do not invent behavior that is not visible in source, tests, docs, workflows, or issues.
 - Preserve the distinction between PowerShell cmdlet UX and `nova` CLI UX.
-- Review `README.md`, `CONTRIBUTING.md`, and `CHANGELOG.md` after every meaningful change.
+- Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` after every meaningful change.
 - Update tests when behavior changes.
 - Prefer existing helpers and support files over ad hoc duplication.
 - Treat Code Health as authoritative for maintainability in this repository.

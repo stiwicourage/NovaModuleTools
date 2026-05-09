@@ -72,6 +72,7 @@ jobs:
           Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
           $version = Get-NovaProjectInfo -Version
           $result = Move-UnreleasedChangelog -Version $version
+          Move-UnreleasedChangelog -Path ./RELEASE_NOTE.md -Version $version | Out-Null
 
           "release_version=$version" >> $env:GITHUB_OUTPUT
 
