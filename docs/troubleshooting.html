@@ -285,10 +285,10 @@ PS&gt; Invoke-NovaCli version</code></pre>
                 <h2>Package output contains both versioned and <code>latest</code> artifacts</h2>
                 <p><strong>Likely cause:</strong> <code>Package.Latest</code> is enabled.</p>
                 <p><strong>Fix:</strong> if you only want versioned files, remove the setting or set it to
-                    <code>false</code>.</p>
+                    <code>"never"</code>.</p>
                 <pre><code>{
   "Package": {
-    "Latest": false
+    "Latest": "never"
   }
 }</code></pre>
                 <p><strong>Success looks like:</strong> the next package run creates only the normal versioned

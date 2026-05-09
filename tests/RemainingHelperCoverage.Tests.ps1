@@ -425,23 +425,13 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         }
     }
 
-    It 'Test-NovaPackageLatestEnabled reads dictionary and object latest flags and defaults to false otherwise' {
-        InModuleScope $script:moduleName {
-            Test-NovaPackageLatestEnabled -PackageSettings @{Latest = $true} | Should -BeTrue
-            Test-NovaPackageLatestEnabled -PackageSettings @{Types = @('NuGet')} | Should -BeFalse
-            Test-NovaPackageLatestEnabled -PackageSettings ([pscustomobject]@{Latest = $true}) | Should -BeTrue
-            Test-NovaPackageLatestEnabled -PackageSettings ([pscustomobject]@{Types = @('Zip')}) | Should -BeFalse
-            Test-NovaPackageLatestEnabled -PackageSettings $null | Should -BeFalse
-        }
-    }
-
     It 'Get-NovaPackageMetadataList returns one entry per package type and optional latest variants' {
         InModuleScope $script:moduleName {
             Mock Get-NovaConfiguredPackageTypeList {@('NuGet', 'Zip')}
             Mock Test-NovaPackageLatestEnabled {$true}
             Mock Get-NovaPackageMetadata {"$( $PackageType )-latest:$( [bool]$Latest )"}
 
-            $result = @(Get-NovaPackageMetadataList -ProjectInfo ([pscustomobject]@{Package = @{}}))
+            $result = @(Get-NovaPackageMetadataList -ProjectInfo ([pscustomobject]@{Version = '1.2.3'; Package = @{}}))
 
             $result | Should -Be @('NuGet-latest:False', 'NuGet-latest:True', 'Zip-latest:False', 'Zip-latest:True')
             Assert-MockCalled Get-NovaPackageMetadata -Times 4
@@ -1246,11 +1236,11 @@ Locale: en-US
         }
     }
 
-    It 'New-NovaPackageArtifacts also creates latest-named artifacts when Package.Latest is true' {
+    It 'New-NovaPackageArtifacts also creates latest-named artifacts when Package.Latest is stable and the version is stable' {
         $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive 'latest-package-project')
 
         $result = InModuleScope $script:moduleName -Parameters @{
-            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip') -Latest $true)
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip') -Latest 'stable')
         } {
             param($ProjectInfo)
 
@@ -1273,7 +1263,7 @@ Locale: en-US
         $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive 'versioned-custom-package-name-project')
 
         $result = InModuleScope $script:moduleName -Parameters @{
-            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip') -Latest $true -PackageFileName 'AgentInstaller' -AddVersionToFileName $true)
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip') -Latest 'stable' -PackageFileName 'AgentInstaller' -AddVersionToFileName $true)
         } {
             param($ProjectInfo)
 

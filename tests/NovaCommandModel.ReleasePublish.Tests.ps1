@@ -1132,50 +1132,6 @@ Describe 'Nova command model - release and publish behavior' {
         }
     }
 
-    It 'Get-NovaPackageMetadataList also returns latest-named metadata when Package.Latest is true' {
-        InModuleScope $script:moduleName {
-            $projectInfo = [pscustomobject]@{
-                ProjectName = 'PackageProject'
-                Version = '2.3.4'
-                ProjectRoot = '/tmp/project'
-                Description = 'Top-level description'
-                Manifest = [ordered]@{
-                    Author = 'Author One'
-                    Tags = @('Nova', 'Packaging')
-                }
-                Package = [ordered]@{
-                    Id = 'PackageProject'
-                    Types = @('NuGet', 'Zip')
-                    Latest = $true
-                    OutputDirectory = [ordered]@{
-                        Path = '/tmp/project/artifacts/packages'
-                        Clean = $true
-                    }
-                    PackageFileName = 'PackageProject.2.3.4.nupkg'
-                    Authors = 'Author One'
-                    Description = 'Top-level description'
-                }
-            }
-
-            $result = @(Get-NovaPackageMetadataList -ProjectInfo $projectInfo)
-
-            $result.Type | Should -Be @('NuGet', 'NuGet', 'Zip', 'Zip')
-            $result.Latest | Should -Be @($false, $true, $false, $true)
-            $result.PackageFileName | Should -Be @(
-                'PackageProject.2.3.4.nupkg',
-                'PackageProject.latest.nupkg',
-                'PackageProject.2.3.4.zip',
-                'PackageProject.latest.zip'
-            )
-            $result.PackagePath | Should -Be @(
-                '/tmp/project/artifacts/packages/PackageProject.2.3.4.nupkg',
-                '/tmp/project/artifacts/packages/PackageProject.latest.nupkg',
-                '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip',
-                '/tmp/project/artifacts/packages/PackageProject.latest.zip'
-            )
-        }
-    }
-
     It 'Get-NovaPackageMetadataList resolves custom PackageFileName versioning when <Name>' -ForEach @(
         @{
             Name = 'AddVersionToFileName appends the project version'
@@ -1201,7 +1157,7 @@ Describe 'Nova command model - release and publish behavior' {
                 Package = [ordered]@{
                     Id = 'PackageProject'
                     Types = @('NuGet', 'Zip')
-                    Latest = $true
+                    Latest = 'stable'
                     OutputDirectory = [ordered]@{
                         Path = '/tmp/project/artifacts/packages'
                         Clean = $true

@@ -148,7 +148,7 @@
   "Package": {
     "Id": "NovaExampleModule",
     "Types": ["NuGet", "Zip"],
-    "Latest": true,
+    "Latest": "stable",
     "OutputDirectory": {
       "Path": "artifacts/packages",
       "Clean": true
@@ -396,10 +396,9 @@
                         </tr>
                         <tr>
                             <td><code>Latest</code></td>
-                            <td><code>false</code></td>
-                            <td>Whether to create companion <code>latest</code> artifacts for each selected type.</td>
-                            <td>When <code>true</code>, Nova keeps the normal versioned artifact and adds a second file
-                                such as <code>MyModule.latest.nupkg</code>.
+                            <td><code>"never"</code></td>
+                            <td>Controls whether Nova creates companion <code>latest</code> artifacts for each selected type.</td>
+                            <td>Use <code>"stable"</code> to update <code>latest</code> only for stable versions, <code>"always"</code> for both stable and preview versions, or <code>"never"</code> to disable the floating alias.
                             </td>
                         </tr>
                         <tr>
@@ -650,15 +649,15 @@
                 <pre><code>{
   "Package": {
     "Types": ["NuGet", "Zip"],
-    "Latest": true,
+    "Latest": "stable",
     "OutputDirectory": {
       "Path": "artifacts/packages",
       "Clean": true
     }
   }
 }</code></pre>
-                <p>This creates four files when both package types are selected: versioned and <code>latest</code>
-                    variants for each format.</p>
+                <p>This creates four files for stable versions when both package types are selected: versioned and
+                    <code>latest</code> variants for each format.</p>
 
                 <h3>Use named raw repositories with shared defaults</h3>
                 <pre><code>{

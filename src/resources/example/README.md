@@ -75,8 +75,9 @@ After `New-NovaModulePackage`, the package artifact is written to:
 src/resources/example/artifacts/packages/
 ```
 
-The example project sets `Package.Types` to `['NuGet', 'Zip']` and `Package.Latest` to `true`, so packing generates the
-normal versioned `.nupkg` / `.zip` files plus companion `*.latest.*` files in the package output directory.
+The example project sets `Package.Types` to `['NuGet', 'Zip']` and `Package.Latest` to `"stable"`, so stable packing
+generates the normal versioned `.nupkg` / `.zip` files plus companion `*.latest.*` files in the package output
+directory.
 
 The example `project.json` also shows how to configure raw package upload settings such as:
 

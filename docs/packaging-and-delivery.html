@@ -198,14 +198,14 @@ PS&gt; New-NovaModulePackage -SkipTests</code></pre>
                 <pre><code>{
   "Package": {
     "Types": ["NuGet", "Zip"],
-    "Latest": true,
+    "Latest": "stable",
     "OutputDirectory": {
       "Path": "artifacts/packages",
       "Clean": true
     }
   }
 }</code></pre>
-                <p>This creates both formats and also adds <code>latest</code> aliases, such as:</p>
+                <p>This creates both formats and, for stable versions, also adds <code>latest</code> aliases, such as:</p>
                 <pre><code>MyModule.2.0.0.nupkg
 MyModule.latest.nupkg
 MyModule.2.0.0.zip

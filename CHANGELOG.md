@@ -12,7 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `Package.Latest` now supports policy values: `"never"`, `"stable"`, and `"always"`.
+  - `"stable"` keeps the floating `latest` alias pinned to stable package versions.
+  - Legacy boolean values still work for now and map to `"always"` / `"never"` for backward compatibility.
+
 ### Deprecated
+
+- Boolean `Package.Latest` values are deprecated and will be removed in the next major version.
 
 ### Removed
 
@@ -74,9 +80,8 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 ### Deprecated
 
 - `Invoke-NovaRelease` parameters that differ from `Publish-NovaModule` and `% nova release` such as `-Local`,
-  `-Repository`,
-  `-ModuleDirectoryPath`, and `-ApiKey` are now the primary PowerShell release parameters, while `-PublishOption` is
-  deprecated.
+  `-Repository`, `-ModuleDirectoryPath`, and `-ApiKey` are now the primary PowerShell release parameters, while 
+  `-PublishOption` is deprecated and will be removed in the next major version.
 
 ### Fixed
 
@@ -385,4 +390,3 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-
