@@ -17,6 +17,10 @@ Read these files before making non-trivial changes:
 4. The relevant file in `.github/instructions/`
 5. The relevant file in `.github/skills/`
 
+For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` and
+`.github/prompts/design-change.prompt.md`. That flow should analyze the request, ask clarifying questions when needed,
+and draft a GitHub issue before implementation begins.
+
 ## Repository map
 
 - `src/public/` - public PowerShell command surface; one top-level function per file

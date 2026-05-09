@@ -10,17 +10,19 @@ Implement the issue in the NovaModuleTools repository using the repository-local
 
 ## Required process
 
-1. Read `README.md`, `CONTRIBUTING.md`, and `.github/pull_request_template.md`.
-2. Inspect the relevant public command, matching private helper domain, tests, and docs.
-3. If the issue is release-, workflow-, or coverage-related, also inspect the matching `.github/workflows/*.yml` and
+1. If scope, acceptance criteria, or ownership are still unclear, start with `.github/prompts/design-change.prompt.md`
+   and `architect.agent.md` before implementing.
+2. Read `README.md`, `CONTRIBUTING.md`, and `.github/pull_request_template.md`.
+3. Inspect the relevant public command, matching private helper domain, tests, and docs.
+4. If the issue is release-, workflow-, or coverage-related, also inspect the matching `.github/workflows/*.yml` and
    `scripts/build/ci/*.ps1` files.
-4. Implement the smallest maintainable fix.
-5. Add or update tests.
-6. Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, help docs, and `docs/*.html` as applicable.
-7. If a commit message is requested, derive it from `$GIT_BRANCH_NAME` and the implemented change using the repository's
+5. Implement the smallest maintainable fix.
+6. Add or update tests.
+7. Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, help docs, and `docs/*.html` as applicable.
+8. If a commit message is requested, derive it from `$GIT_BRANCH_NAME` and the implemented change using the repository's
    Conventional Commit rules.
-8. Run the relevant validation, then summarize what changed, why, and how it was verified.
-9. If that summary is returned as Markdown or copy-ready UI output, format it according to
+9. Run the relevant validation, then summarize what changed, why, and how it was verified.
+10. If that summary is returned as Markdown or copy-ready UI output, format it according to
    `markdown-authoring.skill.md`.
 
 ## Repository-specific reminders

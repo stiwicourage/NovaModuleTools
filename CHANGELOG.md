@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Includes repository instructions, focused agent role definitions, repo-specific skills, and reusable task prompts.
     - Aligns the agent guidance with Nova's existing PowerShell, Pester, CodeScene, GitHub Actions, and release
       conventions.
+  - Adds a design-first architect flow so `architect.agent.md` together with `design-change.prompt.md` defaults to
+    analysis, clarifying questions, and GitHub issue drafting before implementation starts.
     - Includes branch-aware Conventional Commit guidance that derives ticket references from `$GIT_BRANCH_NAME` and
       keeps
       commit suggestions concise and English-only.

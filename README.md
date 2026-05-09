@@ -59,7 +59,11 @@ Repository-local Copilot/AI guidance now lives under:
 - `.github/instructions/` - repository rules, PowerShell standards, testing policy, and release policy
 - `.github/agents/` - focused agent roles for architecture, implementation, testing, release, and review work
 - `.github/skills/` - repo-specific skill guides for PowerShell, Pester, GitHub Actions, CodeScene, and release flow
-- `.github/prompts/` - reusable task prompts such as issue implementation, CI fixes, coverage work, and release prep
+- `.github/prompts/` - reusable task prompts such as design framing, issue implementation, CI fixes, coverage work, and
+  release prep
+
+For new or still-fuzzy work, start with `architect.agent.md` together with `design-change.prompt.md`. Use
+`implement-issue.prompt.md` once the scope, acceptance criteria, and follow-on implementation path are already clear.
 
 ### Prerequisites
 

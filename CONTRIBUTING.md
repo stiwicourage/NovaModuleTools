@@ -42,6 +42,10 @@ Repository-local agentic guidance now lives in `.github/`:
 - `.github/skills/` for task-specific repo guidance
 - `.github/prompts/` for reusable NovaModuleTools task prompts
 
+When you are shaping a new change, start with `architect.agent.md` and `design-change.prompt.md` so the first outcome is
+analysis, clarifying questions, and a GitHub issue draft instead of immediate file edits. Use
+`implement-issue.prompt.md` after the change is already scoped.
+
 Pull requests against `main` and `develop` also run a CodeScene coverage-gate check when CI has produced the Cobertura coverage artifact, so PRs can be blocked when changed code falls below the configured coverage threshold.
 
 **Before opening a pull request, please run the local quality flow from the repository root:**
