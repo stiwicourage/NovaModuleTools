@@ -20,7 +20,8 @@ Read these files before making non-trivial changes:
 For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` and
 `.github/prompts/design-change.prompt.md`. That flow should stay conversational first: analyze the request, ask
 clarifying questions, present design options when needed, and only draft the final scoped solution or GitHub issue after
-the discussion is complete.
+the discussion is complete. Proposed scope cuts or out-of-scope boundaries must be confirmed by the user before they are
+treated as final.
 
 ## Repository map
 

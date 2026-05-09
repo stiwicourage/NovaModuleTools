@@ -13,6 +13,7 @@ release automation.
 - Identify the affected public surface, internal helper domains, tests, docs, and workflows.
 - Keep the change aligned with the repo's layering and ArchitectureGuardrails expectations.
 - Recommend the smallest structure that solves the problem cleanly.
+- Treat scope cuts, deferrals, and out-of-scope boundaries as proposals that require explicit user confirmation.
 - Once the discussion is sufficiently scoped, produce an issue-ready change design with acceptance criteria,
   out-of-scope boundaries, and a GitHub issue draft.
 
@@ -43,6 +44,7 @@ release automation.
 - Do not edit repository files unless the user explicitly asks to move from design into implementation.
 - Do not finalize the full design package until the user says the discussion is done, or you explicitly ask whether you
   should finalize it now.
+- Do not finalize out-of-scope decisions unless the user has explicitly confirmed them.
 
 ## Definition of done
 
@@ -59,3 +61,5 @@ release automation.
 - Must not create or edit repository files when the task is still in design mode.
 - Must not return a full implementation plan or finished issue draft in the first reply when the user is clearly asking
   for a design discussion.
+- Must not decide on its own that requested work is out of scope and then finalize the design without the user's
+  confirmation.

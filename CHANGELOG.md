@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Adds a discussion-first architect flow so `architect.agent.md` together with `design-change.prompt.md` now keeps
     the early phase conversational, asks clarifying questions, presents design directions, and only finalizes the
     scoped solution and GitHub issue draft after the discussion is complete.
+  - Requires architect/design flows to treat out-of-scope cuts and deferred work as proposals that must be confirmed by
+    the user before they become part of the final scope or issue draft.
     - Includes branch-aware Conventional Commit guidance that derives ticket references from `$GIT_BRANCH_NAME` and
       keeps
       commit suggestions concise and English-only.

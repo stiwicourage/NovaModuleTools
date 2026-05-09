@@ -65,6 +65,8 @@ Repository-local Copilot/AI guidance now lives under:
 For new or still-fuzzy work, start with `architect.agent.md` together with `design-change.prompt.md`. That pair should
 lead with discussion, questions, and design options rather than a finished solution in the first reply. Use
 `implement-issue.prompt.md` once the scope, acceptance criteria, and follow-on implementation path are already clear.
+If architect proposes that part of the request is out of scope, treat that as a proposal to confirm rather than a final
+decision.
 
 ### Prerequisites
 
