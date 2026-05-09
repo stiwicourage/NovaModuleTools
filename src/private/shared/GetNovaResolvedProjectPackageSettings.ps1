@@ -17,16 +17,56 @@ function Get-NovaResolvedProjectPackageSettings {
     Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'FileNamePattern' -Value "$( $packageSettings['Id'] )*" -TreatWhitespaceAsMissing
     Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'Authors' -Value $ManifestSettings['Author']
     Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'Description' -Value $ProjectData['Description'] -TreatWhitespaceAsMissing
-    Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'Latest' -Value $false
+    Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'Latest' -Value 'never'
     Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'Repositories' -Value @()
     Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'Headers' -Value ([ordered]@{})
     Set-NovaPackageSettingDefault -PackageSettings $packageSettings -Name 'Auth' -Value ([ordered]@{})
 
-    $packageSettings['Latest'] = [bool]$packageSettings['Latest']
+    $packageSettings['Latest'] = ConvertTo-NovaPackageLatestPolicy -Value $packageSettings['Latest']
     $packageSettings['AddVersionToFileName'] = [bool]$packageSettings['AddVersionToFileName']
     $packageSettings['Repositories'] = @($packageSettings['Repositories'])
     $packageSettings['Headers'] = [ordered]@{} + $packageSettings['Headers']
     $packageSettings['Auth'] = [ordered]@{} + $packageSettings['Auth']
 
     return $packageSettings
+}
+
+function ConvertTo-NovaPackageLatestPolicy {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]$Value
+    )
+
+    if ($null -eq $Value) {
+        return 'never'
+    }
+
+    # TODO: Remove legacy boolean Package.Latest handling in the next major version.
+    if ($Value -is [bool]) {
+        if ($Value) {
+            return 'always'
+        }
+
+        return 'never'
+    }
+
+    $policy = "$Value".Trim()
+    if ([string]::IsNullOrWhiteSpace($policy)) {
+        return 'never'
+    }
+
+    switch -Regex ($policy) {
+        '^(?i)never$' {
+            return 'never'
+        }
+        '^(?i)stable$' {
+            return 'stable'
+        }
+        '^(?i)always$' {
+            return 'always'
+        }
+        default {
+            Stop-NovaOperation -Message "Invalid project.json Package.Latest value: $Value. Use one of: 'never', 'stable', 'always'." -ErrorId 'Nova.Validation.InvalidPackageLatestPolicy' -Category InvalidData -TargetObject $Value
+        }
+    }
 }

@@ -314,7 +314,7 @@ Use this `project.json` shape when you want to control the package types and out
     "PackageFileName": "AgentInstaller",
     "AddVersionToFileName": true,
     "Types": ["NuGet", "Zip"],
-    "Latest": true,
+    "Latest": "stable",
     "OutputDirectory": {
       "Path": "artifacts/packages",
       "Clean": true
@@ -326,14 +326,16 @@ Use this `project.json` shape when you want to control the package types and out
 - `Types` is optional. When it is missing, empty, or null, Nova defaults to `NuGet` and creates a `.nupkg`.
 - Supported `Types` values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
 - Use `Types = ["Zip"]` when you only want a `.zip`, or `Types = ["NuGet", "Zip"]` when you want both files.
-- `Latest` is optional and defaults to `false`. When set to `true`, Nova also creates a companion `*.latest.*`
-  artifact for each selected package type, such as `NovaModuleTools.latest.nupkg` next to the normal versioned file.
+- `Latest` is optional and defaults to `"never"`.
+- Set `Latest` to `"stable"` when only stable versions should also create companion `*.latest.*` artifacts.
+- Set `Latest` to `"always"` when both stable and preview versions should also create companion `*.latest.*` artifacts.
+- Set `Latest` to `"never"` when you only want versioned package files.
 - `PackageFileName` lets you override the base artifact name.
 - `AddVersionToFileName` defaults to `false`. When set to `true`, Nova appends `.<Version>` from `project.json` to the
   configured `PackageFileName`, so `AgentInstaller` becomes `AgentInstaller.2.3.4` before the package
   extension is applied.
-- When both `AddVersionToFileName` and `Latest` are enabled, the companion artifact substitutes that appended version
-  suffix with `.latest`, such as `AgentInstaller.latest.nupkg`.
+- When `AddVersionToFileName` is enabled and `Latest` is `"stable"` or `"always"`, the companion artifact substitutes
+  the appended version suffix with `.latest`, such as `AgentInstaller.latest.nupkg`.
 - `Path` selects where the package artifact(s) are written.
 - `Clean` defaults to `true` and removes that output directory before a new package is created.
 - Set `Clean` to `false` when you want to keep existing files in the package output directory.

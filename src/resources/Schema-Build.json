@@ -76,7 +76,15 @@
             }
           },
           "Latest": {
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string",
+                "enum": ["never", "stable", "always"]
+              }
+            ]
           },
           "OutputDirectory": {
             "anyOf": [

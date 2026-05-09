@@ -85,8 +85,9 @@ function Get-TestNovaPackageProjectInfo {
         [Parameter(Mandatory)][pscustomobject]$Layout,
         [Parameter(Mandatory)][bool]$CleanOutputDirectory,
         [string[]]$PackageTypes = @('NuGet'),
-        [bool]$Latest = $false,
-        [string]$PackageFileName = 'PackageProject.2.3.4.nupkg',
+        $Latest = 'never',
+        [string]$Version = '2.3.4',
+        [string]$PackageFileName = '',
         [bool]$AddVersionToFileName = $false,
         [switch]$OmitOptionalManifestMetadata
     )
@@ -105,9 +106,13 @@ function Get-TestNovaPackageProjectInfo {
         $null = $manifest.Remove('LicenseUri')
     }
 
+    if ([string]::IsNullOrWhiteSpace($PackageFileName)) {
+        $PackageFileName = "PackageProject.$Version.nupkg"
+    }
+
     return [pscustomobject]@{
         ProjectName = 'PackageProject'
-        Version = '2.3.4'
+        Version = $Version
         ProjectRoot = $Layout.ProjectRoot
         OutputModuleDir = $Layout.OutputModuleDir
         Description = 'Package project description'

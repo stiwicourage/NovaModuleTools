@@ -243,7 +243,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $projectInfo.Package.FileNamePattern | Should -Be 'DefaultPackageProject*'
             $projectInfo.Package.PackageFileName | Should -Be 'DefaultPackageProject.0.0.1.nupkg'
             $projectInfo.Package.AddVersionToFileName | Should -BeFalse
-            $projectInfo.Package.Latest | Should -BeFalse
+            $projectInfo.Package.Latest | Should -Be 'never'
             $projectInfo.Package.Authors | Should -Be 'Test Author'
             $projectInfo.Package.Description | Should -Be 'Default package option test'
             $projectInfo.Package.Repositories | Should -Be @()
@@ -267,7 +267,7 @@ Describe 'Nova command model - project, help, and build behavior' {
                 }
                 Package = [ordered]@{
                     Types = @('Zip')
-                    Latest = $true
+                    Latest = 'stable'
                     AddVersionToFileName = $true
                     RepositoryUrl = 'https://packages.example/raw/'
                     UploadPath = 'releases/latest'
@@ -295,7 +295,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $projectInfo = Get-NovaProjectInfo -Path $projectRoot
 
             $projectInfo.Package.Types | Should -Be @('Zip')
-            $projectInfo.Package.Latest | Should -BeTrue
+            $projectInfo.Package.Latest | Should -Be 'stable'
             $projectInfo.Package.AddVersionToFileName | Should -BeTrue
             $projectInfo.Package.RepositoryUrl | Should -Be 'https://packages.example/raw/'
             $projectInfo.Package.UploadPath | Should -Be 'releases/latest'
