@@ -12,7 +12,7 @@ Implement the issue in the NovaModuleTools repository using the repository-local
 
 1. If scope, acceptance criteria, or ownership are still unclear, start with `.github/prompts/design-change.prompt.md`
    and `architect.agent.md` before implementing.
-2. Read `README.md`, `CONTRIBUTING.md`, and `.github/pull_request_template.md`.
+2. Read `README.md`, `CONTRIBUTING.md`, `.github/copilot-instructions.md`, and `.github/pull_request_template.md`.
 3. Inspect the relevant public command, matching private helper domain, tests, and docs.
 4. If the issue is release-, workflow-, or coverage-related, also inspect the matching `.github/workflows/*.yml` and
    `scripts/build/ci/*.ps1` files.
@@ -22,15 +22,16 @@ Implement the issue in the NovaModuleTools repository using the repository-local
 8. If a commit message is requested, derive it from `$GIT_BRANCH_NAME` and the implemented change using the repository's
    Conventional Commit rules.
 9. Run the relevant validation, then summarize what changed, why, and how it was verified.
-10. If that summary is returned as Markdown or copy-ready UI output, format it according to
-   `markdown-authoring.skill.md`.
+10. If that summary is returned as Markdown or copy-ready UI output, format it according to the `markdown-authoring`
+    skill (`.github/skills/markdown-authoring/SKILL.md`).
 
 ## Repository-specific reminders
 
 - Keep PowerShell cmdlet UX and `nova` CLI UX distinct.
 - Do not silently bypass warnings or release safeguards.
 - Prefer reuse of existing helpers and test-support files over duplication.
-- Follow `markdown-authoring.skill.md` when the issue summary or final handoff is intended to be pasted as Markdown.
+- Follow the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`) when the issue summary or final
+  handoff is intended to be pasted as Markdown.
 - Commit message suggestions must:
     - be in English
     - use Conventional Commit format

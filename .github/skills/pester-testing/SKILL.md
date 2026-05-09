@@ -1,3 +1,8 @@
+---
+name: pester-testing
+description: Guidance for adding or refactoring NovaModuleTools Pester coverage, regression tests, and test support structure.
+---
+
 # Skill: Pester testing
 
 ## When to use

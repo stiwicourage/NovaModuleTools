@@ -28,7 +28,7 @@ Before making larger changes, read the contributor docs in:
 - [README.md#development-workflow](./README.md#development-workflow)
 - [README.md#repository-structure-and-ownership](./README.md#repository-structure-and-ownership)
 - [README.md#cicd-and-release-automation](./README.md#cicd-and-release-automation)
-- [.github/instructions/repository-instructions.md](./.github/instructions/repository-instructions.md)
+- [.github/copilot-instructions.md](./.github/copilot-instructions.md)
 - the relevant files under `.github/agents/`, `.github/skills/`, and `.github/prompts/` when you are using Copilot or
   another AI agent to help with repository work
 
@@ -37,10 +37,14 @@ Use it to explain intent clearly, record what you validated, and call out any re
 
 Repository-local agentic guidance now lives in `.github/`:
 
-- `.github/instructions/` for repository-wide rules and policies
+- `.github/copilot-instructions.md` for repository-wide Copilot instructions
+- `.github/instructions/` for path-specific `*.instructions.md` rules and policies
 - `.github/agents/` for focused agent responsibilities
-- `.github/skills/` for task-specific repo guidance
-- `.github/prompts/` for reusable NovaModuleTools task prompts
+- `.github/skills/` for task-specific Copilot skills stored as `<skill-name>/SKILL.md`
+- `.github/prompts/` for reusable NovaModuleTools prompt templates that you reference explicitly in chat
+
+The files in `.github/agents/` are repository-level Copilot custom agent profiles, so they should load in `/agent`
+when your Copilot session starts from the NovaModuleTools repository root.
 
 When you are shaping a new change, start with `architect.agent.md` and `design-change.prompt.md` so the first phase is a
 design conversation: analysis, clarifying questions, and solution options before any final scoped proposal or GitHub

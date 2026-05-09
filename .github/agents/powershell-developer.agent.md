@@ -1,3 +1,8 @@
+---
+name: powershell-developer
+description: Implements NovaModuleTools PowerShell and helper changes with matching tests and documentation
+---
+
 # NovaModuleTools PowerShell developer agent
 
 ## Purpose
@@ -19,9 +24,11 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 
 ## Skills to use
 
-- `powershell-module-development.skill.md`
-- `pester-testing.skill.md`
-- `codescene-quality.skill.md`
+- `/powershell-module-development`
+- `/pester-testing`
+- `/codescene-quality`
+- `/guiding-refactoring-with-code-health`
+- `/safeguarding-ai-generated-code`
 
 ## Constraints
 

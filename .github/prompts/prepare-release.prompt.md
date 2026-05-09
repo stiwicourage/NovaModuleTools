@@ -11,8 +11,8 @@ Prepare release-related changes in NovaModuleTools without publishing or tagging
 4. Update changelog and contributor docs as needed.
 5. Validate the relevant release or versioning path.
 6. Summarize the result using the exact structure from `.github/pull_request_template.md`.
-7. Make the summary concise, reviewer-focused, directly reusable, and compliant with `markdown-authoring.skill.md` when
-   the output is returned as Markdown.
+7. Make the summary concise, reviewer-focused, directly reusable, and compliant with the `markdown-authoring` skill
+   (`.github/skills/markdown-authoring/SKILL.md`) when the output is returned as Markdown.
 
 ## Repository-specific reminders
 
@@ -21,4 +21,5 @@ Prepare release-related changes in NovaModuleTools without publishing or tagging
 - Do not push release commits.
 - Keep unreleased changelog entries aligned with the final intended behavior, not internal iteration history.
 - Treat `.github/pull_request_template.md` as the source of truth for release-preparation summaries.
-- If the summary must be pasted as one Markdown block in the UI, it should follow `markdown-authoring.skill.md`.
+- If the summary must be pasted as one Markdown block in the UI, it should follow the `markdown-authoring` skill
+  (`.github/skills/markdown-authoring/SKILL.md`).

@@ -1,3 +1,8 @@
+---
+name: architect
+description: Designs and scopes NovaModuleTools changes through a discussion-first flow before implementation starts
+---
+
 # NovaModuleTools architect agent
 
 ## Purpose
@@ -21,19 +26,21 @@ release automation.
 
 - `README.md`
 - `CONTRIBUTING.md`
+- `.github/copilot-instructions.md`
 - `.github/prompts/design-change.prompt.md`
-- `.github/instructions/*.md`
+- `.github/instructions/*.instructions.md`
 - `tests/ArchitectureGuardrails.Tests.ps1`
 - Relevant `src/public/` and `src/private/<domain>/` files
 - Relevant `.github/workflows/*.yml`
 
 ## Skills to use
 
-- `powershell-module-development.skill.md`
-- `github-actions.skill.md`
-- `release-and-changelog.skill.md`
-- `codescene-quality.skill.md`
-- `markdown-authoring.skill.md`
+- `/powershell-module-development`
+- `/github-actions`
+- `/release-and-changelog`
+- `/codescene-quality`
+- `/guiding-refactoring-with-code-health`
+- `/markdown-authoring`
 
 ## Constraints
 

@@ -28,13 +28,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Adds repository-local PowerShell style guidance for indentation, spacing, braces/wrapping, and blank-line usage.
     - Adds a dedicated docs-site agent and documentation-separation guidance so website docs keep a clear CLI-vs-cmdlet
       split.
+    - Makes the repository agent files valid Copilot custom-agent profiles by adding the required YAML frontmatter so
+      they load correctly in `/agent`.
     - Makes the release-manager flow own PR-template-based release summaries and removes the old standalone
       PR-description
       prompt.
     - Adds reusable markdown-authoring guidance so copy-ready Markdown output can use safe outer `~~~` fences without
       breaking inner triple-backtick code blocks.
-    - Makes the relevant agent and prompt outputs explicitly point to `markdown-authoring.skill.md` when they produce
+    - Aligns the repository guidance with actual Copilot CLI formats by using `.github/copilot-instructions.md`,
+      `.github/instructions/*.instructions.md`, and `.github/skills/<skill-name>/SKILL.md`, while keeping
+      `.github/prompts/*.prompt.md` as explicit prompt templates.
+    - Makes the relevant agent and prompt outputs explicitly point to the `markdown-authoring` skill when they produce
       Markdown summaries or UI-ready Markdown text.
+    - Adds focused CodeScene skills for refactoring with Code Health and for safeguarding AI-touched code before commit
+      or
+      PR readiness, instead of overloading the broader `codescene-quality` skill.
 
 ### Changed
 

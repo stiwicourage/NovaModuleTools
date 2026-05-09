@@ -1,3 +1,8 @@
+---
+name: docs-site
+description: Keeps NovaModuleTools website documentation accurate and clearly separated from cmdlet help and contributor docs
+---
+
 # NovaModuleTools docs site agent
 
 ## Purpose
@@ -23,10 +28,10 @@ cmdlet help and contributor documentation.
 
 ## Skills to use
 
-- `docs-site-html.skill.md`
-- `markdown-authoring.skill.md`
-- `powershell-module-development.skill.md`
-- `release-and-changelog.skill.md`
+- `/docs-site-html`
+- `/markdown-authoring`
+- `/powershell-module-development`
+- `/release-and-changelog`
 
 ## Constraints
 

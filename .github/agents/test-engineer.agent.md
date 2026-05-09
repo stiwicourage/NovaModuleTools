@@ -1,3 +1,8 @@
+---
+name: test-engineer
+description: Improves NovaModuleTools Pester coverage, test structure, and CI coverage-gate behavior
+---
+
 # NovaModuleTools test engineer agent
 
 ## Purpose
@@ -20,9 +25,11 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 
 ## Skills to use
 
-- `pester-testing.skill.md`
-- `codescene-quality.skill.md`
-- `github-actions.skill.md`
+- `/pester-testing`
+- `/codescene-quality`
+- `/github-actions`
+- `/guiding-refactoring-with-code-health`
+- `/safeguarding-ai-generated-code`
 
 ## Constraints
 

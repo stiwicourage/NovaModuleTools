@@ -19,7 +19,9 @@ deferred, split into follow-up work, or excluded from the first implementation p
 
 1. Clarify the real problem first. Ask focused follow-up questions when scope, public-surface impact, ownership, or
    rollout direction is unclear.
-2. Read `README.md`, `CONTRIBUTING.md`, `.github/instructions/*.md`, and the most relevant `.github/skills/*.md` files.
+2. Read `README.md`, `CONTRIBUTING.md`, `.github/copilot-instructions.md`, the relevant
+   `.github/instructions/*.instructions.md` files, and the most relevant skill definitions under
+   `.github/skills/*/SKILL.md`.
 3. Inspect the affected public command, private helper domain, tests, docs, workflows, or release files without editing
    them.
 4. Decide whether the request affects public cmdlets, `% nova` CLI behavior, `project.json`, CI/workflows, command
@@ -69,7 +71,7 @@ Once the user confirms the scope and says the discussion is done, or explicitly 
 - Preserve the distinction between public PowerShell cmdlets and `% nova` CLI behavior.
 - Keep contributor docs, command help, website docs, changelog entries, and release notes separated by audience.
 - If the final design summary or GitHub issue draft is returned as Markdown or copy-ready UI output, format it according
-  to `markdown-authoring.skill.md`.
+  to the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
 - Draft issue text in English unless the user explicitly asks for another language.
 - If the task still has unresolved choices, end the turn with the next best question or the next design decision the
   user should make.
