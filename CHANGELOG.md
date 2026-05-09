@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed the repository's Codecov integration in favor of CodeScene-only coverage reporting.
+  - `Tests.yml` no longer uploads CI coverage results to Codecov.
+  - The standalone `codecov.yml` configuration has been removed from the repository.
+
 ### Fixed
 
 ### Security

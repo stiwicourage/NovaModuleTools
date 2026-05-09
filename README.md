@@ -442,8 +442,8 @@ workflow configuration, and emits CI-friendly reports such as:
 - `artifacts/pester-coverage.cobertura.xml`
 - `artifacts/coverage-low.txt`
 
-The `Tests.yml` workflow reuses that Cobertura artifact for Codecov, for the pull-request CodeScene coverage-gate check,
-and for the develop/manual CodeScene upload-and-analysis flow.
+The `Tests.yml` workflow reuses that Cobertura artifact for the pull-request CodeScene coverage-gate check and for the
+develop/manual CodeScene upload-and-analysis flow.
 The CodeScene pull-request gate downloads the uploaded artifact and runs `cs-coverage check`, while the develop/manual
 CodeScene step uploads coverage through `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1` before it triggers a follow-up
 analysis run.

@@ -1,6 +1,5 @@
 ## Contributing
 [![KeepAChangelog](https://img.shields.io/badge/changelog-KeepAChangelog-%23E05735)](https://keepachangelog.ps) 
-[![codecov](https://codecov.io/github/stiwicourage/NovaModuleTools/graph/badge.svg?token=BLZP94DZKX)](https://codecov.io/github/stiwicourage/NovaModuleTools) 
 [![CodeScene Average Code Health](https://codescene.io/projects/78904/status-badges/average-code-health)](https://codescene.io/projects/78904)
 
 **This repository is intentionally opinionated about maintainability, however, we welcome contributions that align with
@@ -8,7 +7,7 @@ our goals. We want to keep the codebase clean, maintainable, and easy to underst
 
 If you want to contribute, please work in the same style as the project:
 
-- Prefer the Nova command model and user-facing `nova` workflow over legacy MT naming or mixed command styles.
+- Prefer the Nova command model and user-facing `nova` workflow over mixed command styles.
 - Use the GitHub bug report form for reproducible defects, the feature request form for product/workflow ideas, and
   `SECURITY.md` instead of a public issue for vulnerability reports.
 - Keep commits small, reviewable, and easy to understand.
