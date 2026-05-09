@@ -15,6 +15,7 @@ BeforeAll {
         OutputModuleDir = '/tmp/project/dist/PackageProject'
         PackageOutputDir = '/tmp/project/artifacts/packages'
     }
+    $script:metadataPackageTypes = @('NuGet', 'Zip')
 
     if (-not (Test-Path -LiteralPath $script:distModuleDir)) {
         throw "Expected built $script:moduleName module at: $script:distModuleDir. Run Invoke-NovaBuild in the repo root first."
@@ -99,61 +100,74 @@ Describe 'Package latest policy behavior' {
         }
     }
 
-    It 'Get-NovaPackageMetadataList also returns latest-named metadata when Package.Latest is always' {
-        $projectInfo = Get-TestNovaPackageProjectInfo -Layout $script:metadataProjectLayout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip') -Latest 'always'
-        InModuleScope $script:moduleName -Parameters @{ProjectInfo = $projectInfo} {
-            param($ProjectInfo)
-
-            $result = @(Get-NovaPackageMetadataList -ProjectInfo $projectInfo)
-
-            $result.Type | Should -Be @('NuGet', 'NuGet', 'Zip', 'Zip')
-            $result.Latest | Should -Be @($false, $true, $false, $true)
-            $result.PackageFileName | Should -Be @(
+    It 'Get-NovaPackageMetadataList resolves policy variants and legacy values' -ForEach @(
+        @{
+            Name = 'always-stable'
+            Latest = 'always'
+            Version = '2.3.4'
+            ExpectedType = @('NuGet', 'NuGet', 'Zip', 'Zip')
+            ExpectedLatest = @($false, $true, $false, $true)
+            ExpectedPackageFileName = @(
                 'PackageProject.2.3.4.nupkg',
                 'PackageProject.latest.nupkg',
                 'PackageProject.2.3.4.zip',
                 'PackageProject.latest.zip'
             )
-            $result.PackagePath | Should -Be @(
+            ExpectedPackagePath = @(
                 '/tmp/project/artifacts/packages/PackageProject.2.3.4.nupkg',
                 '/tmp/project/artifacts/packages/PackageProject.latest.nupkg',
                 '/tmp/project/artifacts/packages/PackageProject.2.3.4.zip',
                 '/tmp/project/artifacts/packages/PackageProject.latest.zip'
             )
         }
-    }
-
-    It 'Get-NovaPackageMetadataList only returns versioned metadata when Package.Latest is stable and the version is preview' {
-        $projectInfo = Get-TestNovaPackageProjectInfo -Layout $script:metadataProjectLayout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip') -Version '2.3.4-preview1' -Latest 'stable'
-        InModuleScope $script:moduleName -Parameters @{ProjectInfo = $projectInfo} {
-            param($ProjectInfo)
-
-            $result = @(Get-NovaPackageMetadataList -ProjectInfo $projectInfo)
-
-            $result.Type | Should -Be @('NuGet', 'Zip')
-            $result.Latest | Should -Be @($false, $false)
-            $result.PackageFileName | Should -Be @(
+        @{
+            Name = 'stable-preview'
+            Latest = 'stable'
+            Version = '2.3.4-preview1'
+            ExpectedType = @('NuGet', 'Zip')
+            ExpectedLatest = @($false, $false)
+            ExpectedPackageFileName = @(
                 'PackageProject.2.3.4-preview1.nupkg',
                 'PackageProject.2.3.4-preview1.zip'
             )
+            ExpectedPackagePath = @(
+                '/tmp/project/artifacts/packages/PackageProject.2.3.4-preview1.nupkg',
+                '/tmp/project/artifacts/packages/PackageProject.2.3.4-preview1.zip'
+            )
         }
-    }
-
-    It 'Get-NovaPackageMetadataList still supports legacy boolean Package.Latest values' {
-        $projectInfo = Get-TestNovaPackageProjectInfo -Layout $script:metadataProjectLayout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip') -Version '2.3.4-preview1' -Latest $true
-        InModuleScope $script:moduleName -Parameters @{ProjectInfo = $projectInfo} {
-            param($ProjectInfo)
-
-            $result = @(Get-NovaPackageMetadataList -ProjectInfo $projectInfo)
-
-            $result.Type | Should -Be @('NuGet', 'NuGet', 'Zip', 'Zip')
-            $result.Latest | Should -Be @($false, $true, $false, $true)
-            $result.PackageFileName | Should -Be @(
+        @{
+            Name = 'legacy-true-preview'
+            Latest = $true
+            Version = '2.3.4-preview1'
+            ExpectedType = @('NuGet', 'NuGet', 'Zip', 'Zip')
+            ExpectedLatest = @($false, $true, $false, $true)
+            ExpectedPackageFileName = @(
                 'PackageProject.2.3.4-preview1.nupkg',
                 'PackageProject.latest.nupkg',
                 'PackageProject.2.3.4-preview1.zip',
                 'PackageProject.latest.zip'
             )
+            ExpectedPackagePath = @(
+                '/tmp/project/artifacts/packages/PackageProject.2.3.4-preview1.nupkg',
+                '/tmp/project/artifacts/packages/PackageProject.latest.nupkg',
+                '/tmp/project/artifacts/packages/PackageProject.2.3.4-preview1.zip',
+                '/tmp/project/artifacts/packages/PackageProject.latest.zip'
+            )
+        }
+    ) {
+        $projectInfo = Get-TestNovaPackageProjectInfo -Layout $script:metadataProjectLayout -CleanOutputDirectory $true -PackageTypes $script:metadataPackageTypes -Version $_.Version -Latest $_.Latest
+        InModuleScope $script:moduleName -Parameters @{
+            ProjectInfo = $projectInfo
+            TestCase = $_
+        } {
+            param($ProjectInfo, $TestCase)
+
+            $result = @(Get-NovaPackageMetadataList -ProjectInfo $ProjectInfo)
+
+            $result.Type | Should -Be $TestCase.ExpectedType
+            $result.Latest | Should -Be $TestCase.ExpectedLatest
+            $result.PackageFileName | Should -Be $TestCase.ExpectedPackageFileName
+            $result.PackagePath | Should -Be $TestCase.ExpectedPackagePath
         }
     }
 
@@ -161,7 +175,7 @@ Describe 'Package latest policy behavior' {
         $layout = Initialize-TestNovaPackageProjectLayout -ProjectRoot (Join-Path $TestDrive 'stable-latest-preview-package-project')
 
         $result = InModuleScope $script:moduleName -Parameters @{
-            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true -PackageTypes @('NuGet', 'Zip') -Latest 'stable' -Version '2.3.4-preview1')
+            ProjectInfo = (Get-TestNovaPackageProjectInfo -Layout $layout -CleanOutputDirectory $true -PackageTypes $script:metadataPackageTypes -Latest 'stable' -Version '2.3.4-preview1')
         } {
             param($ProjectInfo)
 
