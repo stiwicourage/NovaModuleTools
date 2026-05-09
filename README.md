@@ -62,7 +62,8 @@ Repository-local Copilot/AI guidance now lives under:
 - `.github/prompts/` - reusable task prompts such as design framing, issue implementation, CI fixes, coverage work, and
   release prep
 
-For new or still-fuzzy work, start with `architect.agent.md` together with `design-change.prompt.md`. Use
+For new or still-fuzzy work, start with `architect.agent.md` together with `design-change.prompt.md`. That pair should
+lead with discussion, questions, and design options rather than a finished solution in the first reply. Use
 `implement-issue.prompt.md` once the scope, acceptance criteria, and follow-on implementation path are already clear.
 
 ### Prerequisites

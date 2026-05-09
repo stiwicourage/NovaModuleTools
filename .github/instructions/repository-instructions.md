@@ -18,8 +18,9 @@ Read these files before making non-trivial changes:
 5. The relevant file in `.github/skills/`
 
 For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` and
-`.github/prompts/design-change.prompt.md`. That flow should analyze the request, ask clarifying questions when needed,
-and draft a GitHub issue before implementation begins.
+`.github/prompts/design-change.prompt.md`. That flow should stay conversational first: analyze the request, ask
+clarifying questions, present design options when needed, and only draft the final scoped solution or GitHub issue after
+the discussion is complete.
 
 ## Repository map
 
