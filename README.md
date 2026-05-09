@@ -32,6 +32,9 @@ This README is the single developer-documentation entry point for the repository
 Start here when you work on NovaModuleTools itself:
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — contribution expectations and review checklist
+- [.github/instructions/repository-instructions.md](./.github/instructions/repository-instructions.md) —
+  repository-local
+  guidance for Copilot/AI agents and maintainers
 - [Development workflow](#development-workflow) — local setup, build, test, reload, and quality loop
 - [Repository structure and ownership](#repository-structure-and-ownership) — architecture and folder responsibilities
 - [CI/CD and release automation](#cicd-and-release-automation) — workflow, release, and publish responsibilities
@@ -39,14 +42,24 @@ Start here when you work on NovaModuleTools itself:
 Suggested reading order:
 
 1. Read [CONTRIBUTING.md](./CONTRIBUTING.md)
-2. Follow [Development workflow](#development-workflow) for local iteration
-3. Use [Repository structure and ownership](#repository-structure-and-ownership) when deciding where changes belong
-4. Use [CI/CD and release automation](#cicd-and-release-automation) when your change touches workflows, release
+2. Read [.github/instructions/repository-instructions.md](./.github/instructions/repository-instructions.md) when you
+   want
+   repository-local coding guidance for Copilot/AI-assisted work
+3. Follow [Development workflow](#development-workflow) for local iteration
+4. Use [Repository structure and ownership](#repository-structure-and-ownership) when deciding where changes belong
+5. Use [CI/CD and release automation](#cicd-and-release-automation) when your change touches workflows, release
    automation, or publishing
 
 ## Development workflow
 
 This section describes how to work on the NovaModuleTools repository itself.
+
+Repository-local Copilot/AI guidance now lives under:
+
+- `.github/instructions/` - repository rules, PowerShell standards, testing policy, and release policy
+- `.github/agents/` - focused agent roles for architecture, implementation, testing, release, and review work
+- `.github/skills/` - repo-specific skill guides for PowerShell, Pester, GitHub Actions, CodeScene, and release flow
+- `.github/prompts/` - reusable task prompts such as issue implementation, CI fixes, coverage work, and release prep
 
 ### Prerequisites
 
@@ -277,8 +290,9 @@ Notes:
 - `Test-NovaBuild` validates the built module output, not just loose source files
 - it writes NUnit XML to `artifacts/TestResults.xml`
 - it respects `BuildRecursiveFolders` when discovering tests
-- `Pester` is a test-time dependency, not a transitive install dependency of the published `NovaModuleTools` module
-- install `Pester 5.7.1` explicitly in contributor or CI environments before running `Test-NovaBuild`
+- contributor and CI environments should still install `Pester 5.7.1` explicitly before running `Test-NovaBuild`
+- the published `NovaModuleTools` manifest also declares `Pester 5.7.1`, so installed end-user workflows can still
+  resolve that dependency automatically
 
 ### Create a package artifact
 
@@ -477,6 +491,13 @@ Important distinction:
 - `docs/<ProjectName>/**/*.md` → PlatyPS command-help source
 - `docs/*.html` → GitHub Pages end-user guides
 - `README.md` and `CONTRIBUTING.md` → contributor documentation
+
+Within that split, keep CLI and cmdlet documentation separate:
+
+- `docs/*.html` should use `nova` CLI syntax when a CLI variant exists
+- PowerShell cmdlets may appear in `docs/*.html` only when there is no CLI equivalent for that step, such as
+  `Install-Module -Name NovaModuleTools`
+- `docs/NovaModuleTools/en-US/*.md` remains the cmdlet-help surface
 
 If you want build-generated PowerShell help, place it under `docs/<ProjectName>/`.
 Markdown elsewhere under `docs/` is ignored by help generation, so you can keep non-help docs there when needed.

@@ -10,6 +10,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a repository-local agentic coding setup under `.github/` for Copilot/AI-assisted repository work.
+    - Includes repository instructions, focused agent role definitions, repo-specific skills, and reusable task prompts.
+    - Aligns the agent guidance with Nova's existing PowerShell, Pester, CodeScene, GitHub Actions, and release
+      conventions.
+    - Includes branch-aware Conventional Commit guidance that derives ticket references from `$GIT_BRANCH_NAME` and
+      keeps
+      commit suggestions concise and English-only.
+    - Treats CodeScene Code Health as authoritative, requires safeguard checks before commit/PR readiness, and carries
+      the
+      repository's trailing-newline formatting rule into the agent flow.
+    - Adds repository-local PowerShell style guidance for indentation, spacing, braces/wrapping, and blank-line usage.
+    - Adds a dedicated docs-site agent and documentation-separation guidance so website docs keep a clear CLI-vs-cmdlet
+      split.
+    - Makes the release-manager flow own PR-template-based release summaries and removes the old standalone
+      PR-description
+      prompt.
+    - Adds reusable markdown-authoring guidance so copy-ready Markdown output can use safe outer `~~~` fences without
+      breaking inner triple-backtick code blocks.
+    - Makes the relevant agent and prompt outputs explicitly point to `markdown-authoring.skill.md` when they produce
+      Markdown summaries or UI-ready Markdown text.
+
 ### Changed
 
 - `Package.Latest` now supports policy values: `"never"`, `"stable"`, and `"always"`.
@@ -27,6 +48,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The standalone `codecov.yml` configuration has been removed from the repository.
 
 ### Fixed
+
+- Clarified contributor release/test guidance in `README.md` so repository and CI test runs still install `Pester 5.7.1`
+  explicitly, while the published `NovaModuleTools` manifest continues to declare that dependency for installed
+  workflows.
 
 ### Security
 
@@ -352,29 +377,6 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 - First release to `psgallery`
 - All basic functionality of Module is ready
 
-[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.9.0...HEAD
-
-[1.9.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.8.0...Version_1.9.0
-
-[1.8.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.7.0...Version_1.8.0
-
-[1.3.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.2.5-preview...Version_1.3.0
-
-[1.2.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.1.4-preview...Version_1.2.0
-
-[1.1.3]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.1.0...Version_1.1.3
-
-[1.1.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.0.0...Version_1.1.0
-
-[1.0.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.9...Version_1.0.0
-
-[0.0.9]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.8...Version_0.0.9
-
-[0.0.7]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.6...Version_0.0.7
-
-[0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
-
-[0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 
 [Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.1...HEAD
 [2.3.1]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.0...2.3.1

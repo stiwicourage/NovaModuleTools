@@ -28,9 +28,19 @@ Before making larger changes, read the contributor docs in:
 - [README.md#development-workflow](./README.md#development-workflow)
 - [README.md#repository-structure-and-ownership](./README.md#repository-structure-and-ownership)
 - [README.md#cicd-and-release-automation](./README.md#cicd-and-release-automation)
+- [.github/instructions/repository-instructions.md](./.github/instructions/repository-instructions.md)
+- the relevant files under `.github/agents/`, `.github/skills/`, and `.github/prompts/` when you are using Copilot or
+  another AI agent to help with repository work
 
 GitHub now prefills pull requests with `.github/pull_request_template.md`.
 Use it to explain intent clearly, record what you validated, and call out any required documentation or changelog work.
+
+Repository-local agentic guidance now lives in `.github/`:
+
+- `.github/instructions/` for repository-wide rules and policies
+- `.github/agents/` for focused agent responsibilities
+- `.github/skills/` for task-specific repo guidance
+- `.github/prompts/` for reusable NovaModuleTools task prompts
 
 Pull requests against `main` and `develop` also run a CodeScene coverage-gate check when CI has produced the Cobertura coverage artifact, so PRs can be blocked when changed code falls below the configured coverage threshold.
 
@@ -75,6 +85,12 @@ Documentation ownership is intentionally split:
 - GitHub Pages content under `docs/*.html` is for end users
 - command-help markdown under `docs/<ProjectName>/` (for this repo `docs/NovaModuleTools/en-US/`) is build input
 - markdown elsewhere under `docs/` is allowed for non-help documentation because the build ignores it
+
+Keep CLI and cmdlet documentation clearly separated:
+
+- use `nova` syntax in CLI-oriented website docs when a CLI variant exists
+- only mention PowerShell cmdlets in website docs when there is no CLI equivalent for that task
+- installation is the clearest allowed exception because NovaModuleTools installation is still PowerShell-driven
 
 When updating documentation, write it for humans first. A reader should quickly understand:
 
