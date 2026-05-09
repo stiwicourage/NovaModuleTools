@@ -1,3 +1,8 @@
+---
+name: github-actions
+description: Guidance for changing NovaModuleTools GitHub Actions workflows, CI artifact flow, or reusable workflow actions.
+---
+
 # Skill: GitHub Actions and CI/CD
 
 ## When to use

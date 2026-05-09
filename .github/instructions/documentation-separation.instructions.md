@@ -1,3 +1,7 @@
+---
+applyTo: "docs/**/*.html,docs/assets/**/*.js,docs/NovaModuleTools/en-US/**/*.md,README.md,CONTRIBUTING.md,CHANGELOG.md,RELEASE_NOTE.md"
+---
+
 # NovaModuleTools documentation separation
 
 ## Purpose

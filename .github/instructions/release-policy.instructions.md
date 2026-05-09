@@ -1,3 +1,7 @@
+---
+applyTo: "CHANGELOG.md,RELEASE_NOTE.md,project.json,.github/workflows/Publish.yml,.github/pull_request_template.md,src/public/InvokeNovaRelease.ps1,src/public/PublishNovaModule.ps1,src/public/UpdateNovaModuleVersion.ps1,tests/**/*Release*.ps1,tests/**/*Package*.ps1"
+---
+
 # NovaModuleTools release policy
 
 ## Scope
@@ -8,8 +12,13 @@ automation.
 ## Versioning rules
 
 - Follow Semantic Versioning intent.
-- Treat `CHANGELOG.md` as authoritative for release notes.
+- Treat `CHANGELOG.md` as the exhaustive release history.
+- Treat `RELEASE_NOTE.md` as the interface-focused summary for public cmdlet, CLI, configuration, and migration changes.
 - Keep `## [Unreleased]` valid and readable.
+- If `RELEASE_NOTE.md` has no public API or workflow changes under `## [Unreleased]`, keep the exact placeholder under
+  `### Added`: `No public API or workflow changes in this release. Internal maintenance only.`
+- If `RELEASE_NOTE.md` has real release-note entries, do not keep that placeholder.
+- Do not add compare-link footer URLs to `RELEASE_NOTE.md`.
 - For unreleased feature iterations, update the existing `Added` entry instead of adding an internal-history `Changed`
   entry.
 
@@ -23,7 +32,7 @@ automation.
 
 ## Documentation rules
 
-- Review `README.md`, `CONTRIBUTING.md`, and `CHANGELOG.md` for workflow or release changes.
+- Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` for workflow or release changes.
 - Update command help in `docs/NovaModuleTools/en-US/` when public command behavior changes.
 - Update `docs/*.html` only when end-user behavior or examples changed.
 - Use `.github/pull_request_template.md` as the authoritative structure when preparing a release summary for review.

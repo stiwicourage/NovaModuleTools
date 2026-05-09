@@ -1,3 +1,8 @@
+---
+name: docs-site-html
+description: Guidance for NovaModuleTools website documentation so docs/*.html stay accurate and clearly separated from cmdlet help and contributor docs.
+---
+
 # Skill: docs site HTML
 
 ## When to use

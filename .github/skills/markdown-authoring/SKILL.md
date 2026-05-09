@@ -1,3 +1,8 @@
+---
+name: markdown-authoring
+description: Guidance for producing valid, copy-safe Markdown files and UI-ready Markdown output in NovaModuleTools.
+---
+
 # Skill: markdown authoring
 
 ## When to use
@@ -9,9 +14,10 @@ UI, such as release summaries, PR-template-shaped text, contributor docs, or reu
 
 - `.github/pull_request_template.md`
 - `.github/prompts/*.md`
-- `.github/instructions/*.md`
+- `.github/copilot-instructions.md`
+- `.github/instructions/*.instructions.md`
 - `.github/agents/*.md`
-- `.github/skills/*.md`
+- `.github/skills/*/SKILL.md`
 - `README.md`
 - `CONTRIBUTING.md`
 - `CHANGELOG.md`

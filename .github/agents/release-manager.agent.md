@@ -1,3 +1,8 @@
+---
+name: release-manager
+description: Handles NovaModuleTools versioning, changelog, release-note, and publish-flow changes safely
+---
+
 # NovaModuleTools release manager agent
 
 ## Purpose
@@ -23,10 +28,10 @@ Handle versioning, changelog shaping, release-flow documentation, and publish au
 
 ## Skills to use
 
-- `release-and-changelog.skill.md`
-- `markdown-authoring.skill.md`
-- `github-actions.skill.md`
-- `pester-testing.skill.md`
+- `/release-and-changelog`
+- `/markdown-authoring`
+- `/github-actions`
+- `/pester-testing`
 
 ## Constraints
 
@@ -34,8 +39,8 @@ Handle versioning, changelog shaping, release-flow documentation, and publish au
 - Keep Keep a Changelog structure intact.
 - Distinguish contributor docs from end-user docs.
 - Treat `.github/pull_request_template.md` as the authoritative format for structured release summaries.
-- When the release summary is returned as Markdown or copy-ready UI output, it must follow
-  `markdown-authoring.skill.md`.
+- When the release summary is returned as Markdown or copy-ready UI output, it must follow the `markdown-authoring`
+  skill (`.github/skills/markdown-authoring/SKILL.md`).
 
 ## Definition of done
 

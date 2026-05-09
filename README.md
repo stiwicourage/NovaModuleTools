@@ -32,7 +32,7 @@ This README is the single developer-documentation entry point for the repository
 Start here when you work on NovaModuleTools itself:
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — contribution expectations and review checklist
-- [.github/instructions/repository-instructions.md](./.github/instructions/repository-instructions.md) —
+- [.github/copilot-instructions.md](./.github/copilot-instructions.md) —
   repository-local
   guidance for Copilot/AI agents and maintainers
 - [Development workflow](#development-workflow) — local setup, build, test, reload, and quality loop
@@ -42,7 +42,7 @@ Start here when you work on NovaModuleTools itself:
 Suggested reading order:
 
 1. Read [CONTRIBUTING.md](./CONTRIBUTING.md)
-2. Read [.github/instructions/repository-instructions.md](./.github/instructions/repository-instructions.md) when you
+2. Read [.github/copilot-instructions.md](./.github/copilot-instructions.md) when you
    want
    repository-local coding guidance for Copilot/AI-assisted work
 3. Follow [Development workflow](#development-workflow) for local iteration
@@ -56,11 +56,16 @@ This section describes how to work on the NovaModuleTools repository itself.
 
 Repository-local Copilot/AI guidance now lives under:
 
-- `.github/instructions/` - repository rules, PowerShell standards, testing policy, and release policy
+- `.github/copilot-instructions.md` - repository-wide Copilot instructions that apply across NovaModuleTools work
+- `.github/instructions/` - path-specific Copilot instructions stored as `*.instructions.md`
 - `.github/agents/` - focused agent roles for architecture, implementation, testing, release, and review work
-- `.github/skills/` - repo-specific skill guides for PowerShell, Pester, GitHub Actions, CodeScene, and release flow
+- `.github/skills/` - repo-specific Copilot skills stored as `<skill-name>/SKILL.md`
 - `.github/prompts/` - reusable task prompts such as design framing, issue implementation, CI fixes, coverage work, and
-  release prep
+  release prep; prompt files are referenced explicitly in chat, not auto-loaded like instructions or skills
+- `CHANGELOG.md` and `RELEASE_NOTE.md` - exhaustive release history plus interface-focused release summaries
+
+The files under `.github/agents/` are valid Copilot custom agent profiles and should be available from `/agent` when
+Copilot is started from the NovaModuleTools repository root.
 
 For new or still-fuzzy work, start with `architect.agent.md` together with `design-change.prompt.md`. That pair should
 lead with discussion, questions, and design options rather than a finished solution in the first reply. Use
@@ -523,7 +528,8 @@ This section explains how the NovaModuleTools repository is organized and what e
 ├── src/                        # production PowerShell code and packaged resources
 ├── tests/                      # Pester suites and reusable test helpers
 ├── project.json                # NovaModuleTools project definition
-└── CHANGELOG.md                # release notes and unreleased change tracking
+├── CHANGELOG.md                # exhaustive release history and unreleased change tracking
+└── RELEASE_NOTE.md             # interface-focused release notes for public usage changes
 ```
 
 ### Source code layout
@@ -659,6 +665,7 @@ Responsibilities currently covered by the release pipeline include:
 
 - updating `project.json`
 - finalizing `CHANGELOG.md`
+- finalizing `RELEASE_NOTE.md`
 - creating release tags
 - committing release changes back to `main`
 - publishing to PowerShell Gallery
@@ -688,6 +695,8 @@ When you change CI, build, or release behavior:
 - update command help if public command behavior changes
 - update `README.md` when contributor workflow changes
 - update `CHANGELOG.md` when the change is relevant to users or maintainers
+- update `RELEASE_NOTE.md` when the change affects public cmdlet usage, CLI usage, configuration semantics, or migration
+  expectations
 
 ## Documentation ownership rules
 

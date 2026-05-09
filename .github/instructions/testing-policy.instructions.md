@@ -1,3 +1,7 @@
+---
+applyTo: "tests/**/*.ps1,scripts/build/**/*.ps1,.github/workflows/Tests.yml,.github/actions/check-coverage/action.yml"
+---
+
 # NovaModuleTools testing policy
 
 ## Scope

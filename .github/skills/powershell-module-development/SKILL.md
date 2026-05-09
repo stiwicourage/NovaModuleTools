@@ -1,3 +1,8 @@
+---
+name: powershell-module-development
+description: Guidance for changing NovaModuleTools public commands, private helpers, CLI routing, packaging behavior, or project.json resolution. Use when implementing or refactoring NovaModuleTools PowerShell/module behavior.
+---
+
 # Skill: PowerShell module development
 
 ## When to use

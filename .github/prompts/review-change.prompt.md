@@ -9,7 +9,8 @@ Review a NovaModuleTools change set with emphasis on correctness, maintainabilit
 3. Check whether tests, docs, and changelog updates match the change.
 4. Call out the smallest set of meaningful issues first.
 5. Note any missing validation or follow-up work.
-6. If the review is returned as Markdown or copy-ready UI text, format it according to `markdown-authoring.skill.md`.
+6. If the review is returned as Markdown or copy-ready UI text, format it according to the `markdown-authoring` skill
+   (`.github/skills/markdown-authoring/SKILL.md`).
 
 ## Repository-specific reminders
 
@@ -17,4 +18,5 @@ Review a NovaModuleTools change set with emphasis on correctness, maintainabilit
 - Watch for CLI vs PowerShell wording drift.
 - Watch for CodeScene maintainability regressions in tests.
 - Treat publish/release automation edits as high-risk even when the diff is small.
-- Follow `markdown-authoring.skill.md` when the review output is intended to be pasted as Markdown.
+- Follow the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`) when the review output is
+  intended to be pasted as Markdown.

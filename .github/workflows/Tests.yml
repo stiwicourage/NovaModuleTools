@@ -33,11 +33,14 @@ jobs:
       - name: Run NovaModuleTools CI test and coverage workflow
         run: ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts
 
-      - name: Validate repository changelog with Test-KeepAChangelogFile
+      - name: Validate release history files with Test-KeepAChangelogFile
         run: |
-          $result = Test-KeepAChangelogFile -Path ./CHANGELOG.md
-          if (-not $result.IsValid) {
-            throw ($result.Errors -join [Environment]::NewLine)
+          foreach ($path in @('./CHANGELOG.md', './RELEASE_NOTE.md')) {
+            $result = Test-KeepAChangelogFile -Path $path
+            if (-not $result.IsValid) {
+              $errors = $result.Errors -join [Environment]::NewLine
+              throw "Validation failed for $path$([Environment]::NewLine)$errors"
+            }
           }
 
       - name: Upload CI artifacts

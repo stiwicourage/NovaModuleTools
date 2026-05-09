@@ -53,11 +53,13 @@ If package/upload/release behavior changed, note the exact scenario you exercise
 - [ ] `README.md` reviewed and updated if contributor workflow, architecture, CI, release, or automation changed
 - [ ] `CONTRIBUTING.md` reviewed and updated if contribution expectations or review guidance changed
 - [ ] `CHANGELOG.md` reviewed and updated if the change matters to users, maintainers, or contributors
+- [ ] `RELEASE_NOTE.md` reviewed and updated if the change affects public cmdlet usage, CLI usage, configuration
+  semantics, or migration expectations
 - [ ] `docs/NovaModuleTools/en-US/` help updated if a public command or CLI behavior changed
 - [ ] `docs/*.html` updated if end-user workflows or examples changed
 - [ ] `src/resources/example/` reviewed and updated if the real-world project layout, package model, or upload workflow
   changed
-- [ ] No documentation, changelog, or example updates were needed
+- [ ] No documentation, changelog, release-note, or example updates were needed
 
 ## Maintainability, compatibility, and risk
 

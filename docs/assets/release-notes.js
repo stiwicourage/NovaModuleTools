@@ -1,4 +1,4 @@
-const releaseNotesSourceUrl = 'https://raw.githubusercontent.com/stiwicourage/NovaModuleTools/refs/heads/develop/CHANGELOG.md';
+const releaseNotesSourceUrl = 'https://raw.githubusercontent.com/stiwicourage/NovaModuleTools/refs/heads/develop/RELEASE_NOTE.md';
 
 function getMarkedInstance() {
     return window.marked;

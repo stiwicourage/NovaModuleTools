@@ -1,8 +1,8 @@
-# NovaModuleTools repository instructions
+# NovaModuleTools Copilot instructions
 
 ## Purpose
 
-Use this file as the repository-local entry point for Copilot or other AI agents working in NovaModuleTools.
+Use this file as the repository-wide Copilot instruction entry point for NovaModuleTools.
 
 NovaModuleTools is not a generic PowerShell repo. It has a strong split between public commands, private helpers,
 Pester-heavy testing, GitHub Actions automation, CodeScene coverage gates, and Keep a Changelog / SemVer release flow.
@@ -15,7 +15,11 @@ Read these files before making non-trivial changes:
 2. `CONTRIBUTING.md`
 3. `.github/pull_request_template.md`
 4. The relevant file in `.github/instructions/`
-5. The relevant file in `.github/skills/`
+5. The relevant skill under `.github/skills/<skill-name>/SKILL.md`
+
+Prompt templates under `.github/prompts/*.prompt.md` are not auto-loaded. Reference them explicitly in chat when you
+want
+to use one of the repository's reusable task prompts.
 
 For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` and
 `.github/prompts/design-change.prompt.md`. That flow should stay conversational first: analyze the request, ask
@@ -41,7 +45,7 @@ treated as final.
 - Keep changes small, reviewable, and easy to validate.
 - Do not invent behavior that is not visible in source, tests, docs, workflows, or issues.
 - Preserve the distinction between PowerShell cmdlet UX and `nova` CLI UX.
-- Review `README.md`, `CONTRIBUTING.md`, and `CHANGELOG.md` after every meaningful change.
+- Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` after every meaningful change.
 - Update tests when behavior changes.
 - Prefer existing helpers and support files over ad hoc duplication.
 - Treat Code Health as authoritative for maintainability in this repository.
@@ -70,7 +74,7 @@ treated as final.
 ## Markdown output guidance
 
 - When the output is intended to be copied as Markdown from the UI or written to a Markdown file, follow
-  `.github/skills/markdown-authoring.skill.md`.
+  the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
 - Apply that rule especially to release summaries, review summaries, contributor-facing Markdown docs, prompt output,
   and
   PR-template-shaped text.
@@ -89,6 +93,8 @@ When CodeScene tooling is available:
 - run the pre-commit safeguard on AI-touched changes before suggesting a commit
 - run a branch/change-set analysis before suggesting a PR or declaring a larger change ready
 - if CodeScene reports a regression, refactor instead of treating the work as done
+- use the `guiding-refactoring-with-code-health` skill for small, measured Code Health-driven refactors
+- use the `safeguarding-ai-generated-code` skill when deciding whether AI-touched work is ready for commit or PR handoff
 
 For documentation-only changes, executable validation may be skipped if no code path or workflow behavior changed.
 
@@ -107,8 +113,8 @@ For documentation-only changes, executable validation may be skipped if no code 
 
 ## Related guidance
 
-- `.github/instructions/powershell-coding-standards.md`
-- `.github/instructions/testing-policy.md`
-- `.github/instructions/release-policy.md`
-- `.github/instructions/documentation-separation.md`
-- `.github/skills/markdown-authoring.skill.md`
+- `.github/instructions/powershell-coding-standards.instructions.md`
+- `.github/instructions/testing-policy.instructions.md`
+- `.github/instructions/release-policy.instructions.md`
+- `.github/instructions/documentation-separation.instructions.md`
+- `.github/skills/markdown-authoring/SKILL.md`

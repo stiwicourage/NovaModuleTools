@@ -1,8 +1,19 @@
+---
+name: codescene-quality
+description: Guidance for improving NovaModuleTools CodeScene Code Health, duplication, and changed-code coverage outcomes.
+---
+
 # Skill: CodeScene quality and coverage
 
 ## When to use
 
 Use this skill when CodeScene reports low Code Health, duplication, or changed-code coverage failures.
+
+Use the narrower sibling skills when the task is more specific:
+
+- Use `/guiding-refactoring-with-code-health` when refactoring an unhealthy file and choosing small structural steps.
+- Use `/safeguarding-ai-generated-code` when AI-touched changes need Code Health gates before commit, handoff, or PR
+  readiness.
 
 ## Relevant files and tools
 

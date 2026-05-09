@@ -1,3 +1,7 @@
+---
+applyTo: "src/**/*.ps1,tests/**/*.ps1,scripts/**/*.ps1,run.ps1,reload.ps1"
+---
+
 # NovaModuleTools PowerShell coding standards
 
 ## Scope

@@ -1,3 +1,8 @@
+---
+name: reviewer
+description: Reviews NovaModuleTools changes for correctness, maintainability, validation, and documentation completeness
+---
+
 # NovaModuleTools reviewer agent
 
 ## Purpose
@@ -22,12 +27,13 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 
 ## Skills to use
 
-- `codescene-quality.skill.md`
-- `docs-site-html.skill.md`
-- `markdown-authoring.skill.md`
-- `pester-testing.skill.md`
-- `github-actions.skill.md`
-- `release-and-changelog.skill.md`
+- `/codescene-quality`
+- `/safeguarding-ai-generated-code`
+- `/docs-site-html`
+- `/markdown-authoring`
+- `/pester-testing`
+- `/github-actions`
+- `/release-and-changelog`
 
 ## Constraints
 
