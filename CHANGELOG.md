@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Treats CodeScene Code Health as authoritative, requires safeguard checks before commit/PR readiness, and carries
       the
       repository's trailing-newline formatting rule into the agent flow.
+      - Keeps local agentic work moving silently when CodeScene tooling is unavailable on a contributor machine, while
+        pull requests and CI remain the effective CodeScene gate.
     - Adds repository-local PowerShell style guidance for indentation, spacing, braces/wrapping, and blank-line usage.
     - Adds a dedicated docs-site agent and documentation-separation guidance so website docs keep a clear CLI-vs-cmdlet
       split.

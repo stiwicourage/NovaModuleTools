@@ -30,10 +30,13 @@ Do not use this skill for broad refactoring discovery or project-level prioritiz
 1. After each AI modification to a file, run `code_health_review` on that file.
 2. If the review reports maintainability problems or regression risk, refactor the file in small steps and review it
    again.
-3. Run `pre_commit_code_health_safeguard` before commit-oriented recommendations as a broader gate across staged or
-   modified files.
-4. Run `analyze_change_set` before PR-oriented recommendations as a final branch-level gate.
-5. If either later gate reports a regression, inspect the affected files with `code_health_review` and keep iterating
+3. When local CodeScene tooling is available, run `pre_commit_code_health_safeguard` before commit-oriented
+   recommendations as a broader gate across staged or modified files.
+4. When local CodeScene tooling is available, run `analyze_change_set` before PR-oriented recommendations as a final
+   branch-level gate.
+5. If local CodeScene tooling is unavailable, continue with the normal repository validation flow and continue silently;
+   pull requests and CI remain the effective CodeScene gate.
+6. If either later gate reports a regression, inspect the affected files with `code_health_review` and keep iterating
    until the issue is removed or the user explicitly accepts the risk.
 
 ## Common mistakes
