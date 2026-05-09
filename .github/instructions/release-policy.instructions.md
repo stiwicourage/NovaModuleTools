@@ -15,6 +15,10 @@ automation.
 - Treat `CHANGELOG.md` as the exhaustive release history.
 - Treat `RELEASE_NOTE.md` as the interface-focused summary for public cmdlet, CLI, configuration, and migration changes.
 - Keep `## [Unreleased]` valid and readable.
+- Use only the official Keep a Changelog section types in both files: `Added`, `Changed`, `Deprecated`, `Removed`,
+  `Fixed`, and `Security`.
+- Do not add custom section headings such as `Documentation`; place documentation-related release notes under the
+  official type that best matches the real change.
 - If `RELEASE_NOTE.md` has no public API or workflow changes under `## [Unreleased]`, keep the exact placeholder under
   `### Added`: `No public API or workflow changes in this release. Internal maintenance only.`
 - If `RELEASE_NOTE.md` has real release-note entries, do not keep that placeholder.

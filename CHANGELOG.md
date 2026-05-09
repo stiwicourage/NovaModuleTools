@@ -49,6 +49,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Package.Latest` now supports policy values: `"never"`, `"stable"`, and `"always"`.
   - `"stable"` keeps the floating `latest` alias pinned to stable package versions.
   - Legacy boolean values still work for now and map to `"always"` / `"never"` for backward compatibility.
+- Release-history handling now uses a separate root-level `RELEASE_NOTE.md`.
+    - `CHANGELOG.md` remains the exhaustive release history.
+    - `RELEASE_NOTE.md` now captures only public cmdlet, CLI, configuration, and migration-impacting changes, including
+      backfilled summaries for the existing released versions in `CHANGELOG.md`.
+    - `Tests.yml` now validates both files, and `Publish.yml` now finalizes both files during stable release
+      preparation.
+    - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
 
 ### Deprecated
 
@@ -65,16 +72,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clarified contributor release/test guidance in `README.md` so repository and CI test runs still install `Pester 5.7.1`
   explicitly, while the published `NovaModuleTools` manifest continues to declare that dependency for installed
   workflows.
-
-### Documentation
-
-- Added a root-level `RELEASE_NOTE.md` that is separate from `CHANGELOG.md`.
-    - `CHANGELOG.md` remains the exhaustive release history.
-    - `RELEASE_NOTE.md` now captures only public cmdlet, CLI, configuration, and migration-impacting changes, including
-      backfilled summaries for the existing released versions in `CHANGELOG.md`.
-    - `Tests.yml` now validates both files, and `Publish.yml` now finalizes both files during stable release
-      preparation.
-    - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
 
 ### Security
 
