@@ -261,19 +261,29 @@ pwsh -NoLogo -Command 'Import-Module (Get-NovaProjectInfo).OutputModuleDir -Forc
                         inside a long-lived interactive PowerShell session, switch to the PowerShell view and do the
                         full remove/build/import loop.</p>
                 </div>
-                <div class="notice">
+                <div class="notice" data-command-visibility="powershell">
                     <strong>When local publish changes the story.</strong>
-                    <p><code>PS&gt; Publish-NovaModule -Local</code> and <code>% nova publish --local</code> reload the
-                        published
-                        module from the local install path after a successful publish. That is different from the normal
-                        build/import loop, which works from <code>dist/</code>.</p>
+                    <p><code>Publish-NovaModule -Local</code> reloads the published module from the local install path
+                        after a successful publish. That is different from the normal build/import loop, which works
+                        from <code>dist/</code>.</p>
                 </div>
-                <div class="notice">
+                <div class="notice" data-command-visibility="command-line" hidden>
+                    <strong>When local publish changes the story.</strong>
+                    <p><code>% nova publish --local</code> moves the module into the local install path so a fresh
+                        PowerShell session can resolve the published copy directly. That is different from the normal
+                        build/import loop, which still validates <code>dist/</code>.</p>
+                </div>
+                <div class="notice" data-command-visibility="powershell">
                     <strong>CI/self-hosting note.</strong>
                     <p>When a later command in the same session must switch back to the built <code>dist/</code> module,
-                        use <code>Invoke-NovaBuild -ContinuousIntegration</code> or <code>% nova build
-                            --continuous-integration</code>
-                        so Nova restores the built module state automatically.</p>
+                        use <code>Invoke-NovaBuild -ContinuousIntegration</code> so Nova restores the built module state
+                        automatically.</p>
+                </div>
+                <div class="notice" data-command-visibility="command-line" hidden>
+                    <strong>CI/self-hosting note.</strong>
+                    <p>When a later command in the same self-hosting session must switch back to the built
+                        <code>dist/</code> module, use <code>% nova build --continuous-integration</code> so Nova
+                        restores the built module state automatically.</p>
                 </div>
             </section>
 

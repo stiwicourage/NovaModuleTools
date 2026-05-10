@@ -123,10 +123,15 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                         you
                         plan to use the standalone command-line launcher later.</p>
                 </div>
-                <p>After import, you can use the PowerShell cmdlets directly. If you explicitly need the routed Nova
-                    command surface from PowerShell, use <code>Invoke-NovaCli</code>.</p>
-                <p><strong>Expected result:</strong> commands such as <code>Get-NovaProjectInfo</code>, <code>Invoke-NovaBuild</code>,
-                    and <code>nova</code> resolve in your PowerShell session.</p>
+                <div class="surface-note" data-command-visibility="command-line" hidden>
+                    <p><strong>Command-line note:</strong> <code>Import-Module NovaModuleTools</code> does
+                        <strong>not</strong> create a <code>nova</code> command in your shell. On macOS/Linux, run
+                        <code>Install-NovaCli</code> before you expect <code>% nova ...</code> to resolve outside
+                        PowerShell.</p>
+                </div>
+                <p>After import, you can use the PowerShell cmdlets directly.</p>
+                <p><strong>Expected result:</strong> commands such as <code>Get-NovaProjectInfo</code> and
+                    <code>Invoke-NovaBuild</code> resolve in your PowerShell session.</p>
             </section>
 
             <section class="content-section" id="entrypoints">
@@ -145,18 +150,20 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                         <tr>
                             <td>PowerShell cmdlets in <code>pwsh</code></td>
                             <td>You are already inside <code>pwsh</code>.</td>
-                            <td>Import the module once, then use cmdlets directly. Use <code>Invoke-NovaCli</code>
-                                only when you explicitly want the routed CLI surface from PowerShell.
-                            </td>
+                            <td>Import the module once, then use cmdlets directly.</td>
                         </tr>
                         <tr>
                             <td>Standalone <code>nova</code> launcher</td>
                             <td>You want to run Nova from zsh or bash on macOS/Linux.</td>
-                            <td>Install the launcher once with <code>Install-NovaCli</code>.</td>
+                            <td>Install the launcher once with <code>Install-NovaCli</code> before you expect
+                                <code>nova</code> to resolve in your shell.</td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
+                <p data-command-visibility="command-line" hidden><strong>Important:</strong>
+                    <code>Import-Module NovaModuleTools</code> loads cmdlets into PowerShell, but the standalone
+                    <code>nova</code> launcher is a separate install step on macOS/Linux.</p>
                 <h3>Install the standalone launcher on macOS/Linux</h3>
                 <pre><code>PS&gt; Install-NovaCli</code></pre>
                 <p>By default, the launcher is installed to <code>~/.local/bin/nova</code>. If that directory is not
@@ -233,8 +240,8 @@ PS&gt; Test-NovaBuild</code></pre>
             </section>
 
             <section class="content-section" id="import-and-run">
-                <h2>6. Import the built module and run a command</h2>
-                <p>Now take the built module into the environment you want to use and run the example command.</p>
+                <h2>6. Run the example command from the built or locally published module</h2>
+                <p>Now take the generated module into the environment you want to use and run the example command.</p>
                 <div class="surface-example" data-command-example>
                     <div class="surface-example__meta">
                         <p class="surface-example__title">Use the built module</p>
