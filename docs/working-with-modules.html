@@ -199,11 +199,18 @@ pwsh -NoLogo -Command 'Import-Module (Get-NovaProjectInfo).OutputModuleDir -Forc
                 </ul>
                 <p>Use local publish when you want to simulate a real installed-module experience. Use the normal
                     build/import loop when you just want fast iteration in <code>dist/</code>.</p>
-                <div class="notice notice--warning">
+                <div class="notice notice--warning" data-command-visibility="powershell">
                     <strong>Do not confuse local publish with local release.</strong>
-                    <p><code>Invoke-NovaRelease -Local</code> publishes locally too, but it
-                        does <strong>not</strong> import the published module into the current session afterward. That
-                        special import behavior belongs to <code>Publish-NovaModule -Local</code>.</p>
+                    <p><code>Publish-NovaModule -Local</code> reloads the published module into the current PowerShell
+                        session after success. <code>Invoke-NovaRelease -Local</code> publishes locally too, but it does
+                        <strong>not</strong> import the published module afterward.</p>
+                </div>
+                <div class="notice notice--warning" data-command-visibility="command-line" hidden>
+                    <strong>Do not confuse local publish with local release.</strong>
+                    <p><code>% nova publish --local</code> prepares a locally installed module that a fresh PowerShell
+                        session can resolve right away. <code>% nova release --local</code> also publishes locally, but
+                        it does <strong>not</strong> add the extra published-module import behavior described for the
+                        local publish workflow.</p>
                 </div>
             </section>
 
