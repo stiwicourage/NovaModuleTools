@@ -39,10 +39,6 @@ Installs the bundled command-line launcher into a user command directory on macO
 
 Builds the current NovaModuleTools project into a ready-to-import PowerShell module.
 
-### `PS> Invoke-NovaCli`
-
-Routes Nova commands through the explicit PowerShell cmdlet entrypoint.
-
 ### `PS> Invoke-NovaRelease`
 
 Runs the Nova release pipeline (build, test, version bump, rebuild, publish).

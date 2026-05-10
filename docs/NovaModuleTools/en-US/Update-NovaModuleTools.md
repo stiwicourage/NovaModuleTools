@@ -157,7 +157,6 @@ prerelease setting.
 
 ## RELATED LINKS
 
-- `Invoke-NovaCli`
 - `Get-NovaUpdateNotificationPreference`
 - `Set-NovaUpdateNotificationPreference`
 - `Invoke-NovaBuild`

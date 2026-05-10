@@ -88,7 +88,7 @@ Uploads only the matching `.zip` artifacts for the current project.
 ### EXAMPLE 5
 
 ```powershell
-PS> Deploy-NovaPackage -PackagePath @('artifacts/packages/NovaModuleTools.2.0.0-preview6.zip', 'artifacts/packages/NovaModuleTools.latest.zip') -Url 'https://packages.example/raw/releases/'
+PS> Deploy-NovaPackage -PackagePath @('artifacts/packages/NovaModuleTools.2.0.0.zip', 'artifacts/packages/NovaModuleTools.latest.zip') -Url 'https://packages.example/raw/releases/'
 ```
 
 Uploads the explicitly selected package files instead of discovering them from the configured package output directory.
@@ -375,5 +375,4 @@ If no upload target can be resolved, `Deploy-NovaPackage` fails fast with a clea
 ## RELATED LINKS
 
 - https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/New-NovaModulePackage.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaCli.md
 - https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Publish-NovaModule.md

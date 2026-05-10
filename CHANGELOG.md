@@ -10,13 +10,77 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a repository-local agentic coding setup under `.github/` for Copilot/AI-assisted repository work.
+    - Includes repository instructions, focused agent role definitions, repo-specific skills, and reusable task prompts.
+    - Aligns the agent guidance with Nova's existing PowerShell, Pester, CodeScene, GitHub Actions, and release
+      conventions.
+  - Adds a discussion-first architect flow so `architect.agent.md` together with `design-change.prompt.md` now keeps
+    the early phase conversational, asks clarifying questions, presents design directions, and only finalizes the
+    scoped solution and GitHub issue draft after the discussion is complete.
+  - Requires architect/design flows to treat out-of-scope cuts and deferred work as proposals that must be confirmed by
+    the user before they become part of the final scope or issue draft.
+    - Includes branch-aware Conventional Commit guidance that derives ticket references from `$GIT_BRANCH_NAME` and
+      keeps
+      commit suggestions concise and English-only.
+    - Treats CodeScene Code Health as authoritative, requires safeguard checks before commit/PR readiness, and carries
+      the
+      repository's trailing-newline formatting rule into the agent flow.
+      - Keeps local agentic work moving silently when CodeScene tooling is unavailable on a contributor machine, while
+        pull requests and CI remain the effective CodeScene gate.
+    - Adds repository-local PowerShell style guidance for indentation, spacing, braces/wrapping, and blank-line usage.
+    - Adds a dedicated docs-site agent and documentation-separation guidance so website docs keep a clear CLI-vs-cmdlet
+      split.
+    - Makes the repository agent files valid Copilot custom-agent profiles by adding the required YAML frontmatter so
+      they load correctly in `/agent`.
+    - Makes the release-manager flow own PR-template-based release summaries and removes the old standalone
+      PR-description
+      prompt.
+    - Adds reusable markdown-authoring guidance so copy-ready Markdown output can use safe outer `~~~` fences without
+      breaking inner triple-backtick code blocks.
+    - Aligns the repository guidance with actual Copilot CLI formats by using `.github/copilot-instructions.md`,
+      `.github/instructions/*.instructions.md`, and `.github/skills/<skill-name>/SKILL.md`, while keeping
+      `.github/prompts/*.prompt.md` as explicit prompt templates.
+    - Makes the relevant agent and prompt outputs explicitly point to the `markdown-authoring` skill when they produce
+      Markdown summaries or UI-ready Markdown text.
+    - Adds focused CodeScene skills for refactoring with Code Health and for safeguarding AI-touched code before commit
+      or
+      PR readiness, instead of overloading the broader `codescene-quality` skill.
+- Added a root-level `RELEASE_NOTE.md` that is separate from `CHANGELOG.md`.
+    - `CHANGELOG.md` remains the exhaustive release history.
+    - `RELEASE_NOTE.md` now captures only public cmdlet, CLI, configuration, and migration-impacting changes, including
+      backfilled summaries for the existing released versions in `CHANGELOG.md`.
+    - `Tests.yml` now validates both files, and `Publish.yml` now finalizes both files during stable release
+      preparation.
+    - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
+
 ### Changed
+
+- `Package.Latest` now supports policy values: `"never"`, `"stable"`, and `"always"`.
+  - `"stable"` keeps the floating `latest` alias pinned to stable package versions.
+  - Legacy boolean values still work for now and map to `"always"` / `"never"` for backward compatibility.
+- Release-history handling now uses a separate root-level `RELEASE_NOTE.md`.
+    - `CHANGELOG.md` remains the exhaustive release history.
+    - `RELEASE_NOTE.md` now captures only public cmdlet, CLI, configuration, and migration-impacting changes, including
+      backfilled summaries for the existing released versions in `CHANGELOG.md`.
+    - `Tests.yml` now validates both files, and `Publish.yml` now finalizes both files during stable release
+      preparation.
+    - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
 
 ### Deprecated
 
+- Boolean `Package.Latest` values are deprecated and will be removed in the next major version.
+
 ### Removed
 
+- Removed the repository's Codecov integration in favor of CodeScene-only coverage reporting.
+  - `Tests.yml` no longer uploads CI coverage results to Codecov.
+  - The standalone `codecov.yml` configuration has been removed from the repository.
+
 ### Fixed
+
+- Clarified contributor release/test guidance in `README.md` so repository and CI test runs still install `Pester 5.7.1`
+  explicitly, while the published `NovaModuleTools` manifest continues to declare that dependency for installed
+  workflows.
 
 ### Security
 
@@ -74,9 +138,8 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 ### Deprecated
 
 - `Invoke-NovaRelease` parameters that differ from `Publish-NovaModule` and `% nova release` such as `-Local`,
-  `-Repository`,
-  `-ModuleDirectoryPath`, and `-ApiKey` are now the primary PowerShell release parameters, while `-PublishOption` is
-  deprecated.
+  `-Repository`, `-ModuleDirectoryPath`, and `-ApiKey` are now the primary PowerShell release parameters, while 
+  `-PublishOption` is deprecated and will be removed in the next major version.
 
 ### Fixed
 
@@ -343,29 +406,6 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 - First release to `psgallery`
 - All basic functionality of Module is ready
 
-[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.9.0...HEAD
-
-[1.9.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.8.0...Version_1.9.0
-
-[1.8.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.7.0...Version_1.8.0
-
-[1.3.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.2.5-preview...Version_1.3.0
-
-[1.2.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.1.4-preview...Version_1.2.0
-
-[1.1.3]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.1.0...Version_1.1.3
-
-[1.1.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.0.0...Version_1.1.0
-
-[1.0.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.9...Version_1.0.0
-
-[0.0.9]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.8...Version_0.0.9
-
-[0.0.7]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.6...Version_0.0.7
-
-[0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
-
-[0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 
 [Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.1...HEAD
 [2.3.1]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.0...2.3.1
@@ -385,4 +425,3 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-

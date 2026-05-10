@@ -48,7 +48,7 @@ Use this `project.json` shape when you want to control package types and the pac
       "NuGet",
       "Zip"
     ],
-    "Latest": true,
+    "Latest": "stable",
     "OutputDirectory": {
       "Path": "artifacts/packages",
       "Clean": true
@@ -62,16 +62,22 @@ a `.nupkg` file.
 
 Supported `Package.Types` values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
 
-`Package.Latest` is optional and defaults to `false`. When set to `true`, `New-NovaModulePackage` also writes a
-companion `*.latest.*` artifact for each selected package type while keeping the normal versioned file.
+`Package.Latest` is optional and defaults to `"never"`.
+
+Set `Package.Latest` to `"stable"` when only stable versions should also write companion `*.latest.*` artifacts.
+
+Set `Package.Latest` to `"always"` when both stable and preview versions should also write companion `*.latest.*`
+artifacts.
+
+Set `Package.Latest` to `"never"` when only the versioned package file(s) should be written.
 
 `Package.PackageFileName` lets you override the base package file name.
 
 `Package.AddVersionToFileName` defaults to `false`. When you set it to `true`, Nova appends `.<Version>` from
 `project.json` to the configured `Package.PackageFileName` before the package extension is applied.
 
-When both `Package.AddVersionToFileName` and `Package.Latest` are enabled, `New-NovaModulePackage` replaces that
-appended version suffix with `.latest` for the companion artifact.
+When `Package.AddVersionToFileName` is enabled and `Package.Latest` is `"stable"` or `"always"`, `New-NovaModulePackage`
+replaces that appended version suffix with `.latest` for the companion artifact.
 
 `Package.OutputDirectory.Clean` defaults to `true`, which deletes the configured package output directory before a new
 package is created. Set it to `false` when you want to keep existing files in that directory.
@@ -113,8 +119,8 @@ package output directory.
 PS> New-NovaModulePackage
 ```
 
-When `Package.Latest` is `true`, the command keeps the normal versioned package file and also writes a companion latest
-file such as `NovaModuleTools.latest.nupkg`.
+When `Package.Latest` is `"stable"` and the project version is stable, the command keeps the normal versioned package
+file and also writes a companion latest file such as `NovaModuleTools.latest.nupkg`.
 
 ### EXAMPLE 5
 
@@ -291,4 +297,3 @@ guard only for the current packaging run.
 
 - https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
 - https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Test-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaCli.md

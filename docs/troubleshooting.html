@@ -217,13 +217,14 @@ pwsh -NoLogo -Command 'Import-Module (Get-NovaProjectInfo).OutputModuleDir -Forc
                 <h2><code>Install-NovaCli</code> says it is for macOS/Linux only</h2>
                 <p><strong>Likely cause:</strong> that is the current intended behavior. The standalone launcher is for
                     macOS/Linux shell use.</p>
-                <p><strong>Fix:</strong> on Windows, import the module and use the PowerShell cmdlets directly. If you
-                    explicitly need the routed CLI surface from PowerShell, call <code>Invoke-NovaCli</code>.</p>
+                <p><strong>Fix:</strong> on Windows, import the module and use the PowerShell cmdlets directly. The
+                    standalone <code>nova</code> launcher is a separate macOS/Linux install path, not something that
+                    appears automatically after <code>Import-Module</code>.</p>
                 <pre><code>PS&gt; Import-Module NovaModuleTools
 PS&gt; Get-NovaProjectInfo
-PS&gt; Invoke-NovaCli version</code></pre>
-                <p><strong>Success looks like:</strong> you can run Nova commands from PowerShell on Windows without
-                    installing the standalone launcher.</p>
+PS&gt; Invoke-NovaBuild</code></pre>
+                <p><strong>Success looks like:</strong> the NovaModuleTools cmdlets work in your PowerShell session on
+                    Windows, and you do not need a separate launcher install for that workflow.</p>
                 <p><a class="text-link" href="./getting-started.html#entrypoints">See entrypoint guidance</a></p>
             </section>
 
@@ -285,10 +286,10 @@ PS&gt; Invoke-NovaCli version</code></pre>
                 <h2>Package output contains both versioned and <code>latest</code> artifacts</h2>
                 <p><strong>Likely cause:</strong> <code>Package.Latest</code> is enabled.</p>
                 <p><strong>Fix:</strong> if you only want versioned files, remove the setting or set it to
-                    <code>false</code>.</p>
+                    <code>"never"</code>.</p>
                 <pre><code>{
   "Package": {
-    "Latest": false
+    "Latest": "never"
   }
 }</code></pre>
                 <p><strong>Success looks like:</strong> the next package run creates only the normal versioned

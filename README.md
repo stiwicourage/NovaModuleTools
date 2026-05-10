@@ -32,6 +32,9 @@ This README is the single developer-documentation entry point for the repository
 Start here when you work on NovaModuleTools itself:
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — contribution expectations and review checklist
+- [.github/copilot-instructions.md](./.github/copilot-instructions.md) —
+  repository-local
+  guidance for Copilot/AI agents and maintainers
 - [Development workflow](#development-workflow) — local setup, build, test, reload, and quality loop
 - [Repository structure and ownership](#repository-structure-and-ownership) — architecture and folder responsibilities
 - [CI/CD and release automation](#cicd-and-release-automation) — workflow, release, and publish responsibilities
@@ -39,14 +42,36 @@ Start here when you work on NovaModuleTools itself:
 Suggested reading order:
 
 1. Read [CONTRIBUTING.md](./CONTRIBUTING.md)
-2. Follow [Development workflow](#development-workflow) for local iteration
-3. Use [Repository structure and ownership](#repository-structure-and-ownership) when deciding where changes belong
-4. Use [CI/CD and release automation](#cicd-and-release-automation) when your change touches workflows, release
+2. Read [.github/copilot-instructions.md](./.github/copilot-instructions.md) when you
+   want
+   repository-local coding guidance for Copilot/AI-assisted work
+3. Follow [Development workflow](#development-workflow) for local iteration
+4. Use [Repository structure and ownership](#repository-structure-and-ownership) when deciding where changes belong
+5. Use [CI/CD and release automation](#cicd-and-release-automation) when your change touches workflows, release
    automation, or publishing
 
 ## Development workflow
 
 This section describes how to work on the NovaModuleTools repository itself.
+
+Repository-local Copilot/AI guidance now lives under:
+
+- `.github/copilot-instructions.md` - repository-wide Copilot instructions that apply across NovaModuleTools work
+- `.github/instructions/` - path-specific Copilot instructions stored as `*.instructions.md`
+- `.github/agents/` - focused agent roles for architecture, implementation, testing, release, and review work
+- `.github/skills/` - repo-specific Copilot skills stored as `<skill-name>/SKILL.md`
+- `.github/prompts/` - reusable task prompts such as design framing, issue implementation, CI fixes, coverage work, and
+  release prep; prompt files are referenced explicitly in chat, not auto-loaded like instructions or skills
+- `CHANGELOG.md` and `RELEASE_NOTE.md` - exhaustive release history plus interface-focused release summaries
+
+The files under `.github/agents/` are valid Copilot custom agent profiles and should be available from `/agent` when
+Copilot is started from the NovaModuleTools repository root.
+
+For new or still-fuzzy work, start with `architect.agent.md` together with `design-change.prompt.md`. That pair should
+lead with discussion, questions, and design options rather than a finished solution in the first reply. Use
+`implement-issue.prompt.md` once the scope, acceptance criteria, and follow-on implementation path are already clear.
+If architect proposes that part of the request is out of scope, treat that as a proposal to confirm rather than a final
+decision.
 
 ### Prerequisites
 
@@ -277,8 +302,9 @@ Notes:
 - `Test-NovaBuild` validates the built module output, not just loose source files
 - it writes NUnit XML to `artifacts/TestResults.xml`
 - it respects `BuildRecursiveFolders` when discovering tests
-- `Pester` is a test-time dependency, not a transitive install dependency of the published `NovaModuleTools` module
-- install `Pester 5.7.1` explicitly in contributor or CI environments before running `Test-NovaBuild`
+- contributor and CI environments should still install `Pester 5.7.1` explicitly before running `Test-NovaBuild`
+- the published `NovaModuleTools` manifest also declares `Pester 5.7.1`, so installed end-user workflows can still
+  resolve that dependency automatically
 
 ### Create a package artifact
 
@@ -314,7 +340,7 @@ Use this `project.json` shape when you want to control the package types and out
     "PackageFileName": "AgentInstaller",
     "AddVersionToFileName": true,
     "Types": ["NuGet", "Zip"],
-    "Latest": true,
+    "Latest": "stable",
     "OutputDirectory": {
       "Path": "artifacts/packages",
       "Clean": true
@@ -326,14 +352,16 @@ Use this `project.json` shape when you want to control the package types and out
 - `Types` is optional. When it is missing, empty, or null, Nova defaults to `NuGet` and creates a `.nupkg`.
 - Supported `Types` values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
 - Use `Types = ["Zip"]` when you only want a `.zip`, or `Types = ["NuGet", "Zip"]` when you want both files.
-- `Latest` is optional and defaults to `false`. When set to `true`, Nova also creates a companion `*.latest.*`
-  artifact for each selected package type, such as `NovaModuleTools.latest.nupkg` next to the normal versioned file.
+- `Latest` is optional and defaults to `"never"`.
+- Set `Latest` to `"stable"` when only stable versions should also create companion `*.latest.*` artifacts.
+- Set `Latest` to `"always"` when both stable and preview versions should also create companion `*.latest.*` artifacts.
+- Set `Latest` to `"never"` when you only want versioned package files.
 - `PackageFileName` lets you override the base artifact name.
 - `AddVersionToFileName` defaults to `false`. When set to `true`, Nova appends `.<Version>` from `project.json` to the
   configured `PackageFileName`, so `AgentInstaller` becomes `AgentInstaller.2.3.4` before the package
   extension is applied.
-- When both `AddVersionToFileName` and `Latest` are enabled, the companion artifact substitutes that appended version
-  suffix with `.latest`, such as `AgentInstaller.latest.nupkg`.
+- When `AddVersionToFileName` is enabled and `Latest` is `"stable"` or `"always"`, the companion artifact substitutes
+  the appended version suffix with `.latest`, such as `AgentInstaller.latest.nupkg`.
 - `Path` selects where the package artifact(s) are written.
 - `Clean` defaults to `true` and removes that output directory before a new package is created.
 - Set `Clean` to `false` when you want to keep existing files in the package output directory.
@@ -440,8 +468,8 @@ workflow configuration, and emits CI-friendly reports such as:
 - `artifacts/pester-coverage.cobertura.xml`
 - `artifacts/coverage-low.txt`
 
-The `Tests.yml` workflow reuses that Cobertura artifact for Codecov, for the pull-request CodeScene coverage-gate check,
-and for the develop/manual CodeScene upload-and-analysis flow.
+The `Tests.yml` workflow reuses that Cobertura artifact for the pull-request CodeScene coverage-gate check and for the
+develop/manual CodeScene upload-and-analysis flow.
 The CodeScene pull-request gate downloads the uploaded artifact and runs `cs-coverage check`, while the develop/manual
 CodeScene step uploads coverage through `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1` before it triggers a follow-up
 analysis run.
@@ -476,6 +504,13 @@ Important distinction:
 - `docs/*.html` → GitHub Pages end-user guides
 - `README.md` and `CONTRIBUTING.md` → contributor documentation
 
+Within that split, keep CLI and cmdlet documentation separate:
+
+- `docs/*.html` should use `nova` CLI syntax when a CLI variant exists
+- PowerShell cmdlets may appear in `docs/*.html` only when there is no CLI equivalent for that step, such as
+  `Install-Module -Name NovaModuleTools`
+- `docs/NovaModuleTools/en-US/*.md` remains the cmdlet-help surface
+
 If you want build-generated PowerShell help, place it under `docs/<ProjectName>/`.
 Markdown elsewhere under `docs/` is ignored by help generation, so you can keep non-help docs there when needed.
 
@@ -493,7 +528,8 @@ This section explains how the NovaModuleTools repository is organized and what e
 ├── src/                        # production PowerShell code and packaged resources
 ├── tests/                      # Pester suites and reusable test helpers
 ├── project.json                # NovaModuleTools project definition
-└── CHANGELOG.md                # release notes and unreleased change tracking
+├── CHANGELOG.md                # exhaustive release history and unreleased change tracking
+└── RELEASE_NOTE.md             # interface-focused release notes for public usage changes
 ```
 
 ### Source code layout
@@ -629,6 +665,7 @@ Responsibilities currently covered by the release pipeline include:
 
 - updating `project.json`
 - finalizing `CHANGELOG.md`
+- finalizing `RELEASE_NOTE.md`
 - creating release tags
 - committing release changes back to `main`
 - publishing to PowerShell Gallery
@@ -658,6 +695,8 @@ When you change CI, build, or release behavior:
 - update command help if public command behavior changes
 - update `README.md` when contributor workflow changes
 - update `CHANGELOG.md` when the change is relevant to users or maintainers
+- update `RELEASE_NOTE.md` when the change affects public cmdlet usage, CLI usage, configuration semantics, or migration
+  expectations
 
 ## Documentation ownership rules
 

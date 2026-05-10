@@ -6,7 +6,7 @@ function Get-NovaPackageMetadataList {
     )
 
     $packageTypeList = @(Get-NovaConfiguredPackageTypeList -PackageSettings $ProjectInfo.Package)
-    $includeLatest = Test-NovaPackageLatestEnabled -PackageSettings $ProjectInfo.Package
+    $includeLatest = Test-NovaPackageLatestEnabled -PackageSettings $ProjectInfo.Package -Version $ProjectInfo.Version
 
     return @(
     foreach ($packageType in $packageTypeList) {
@@ -42,24 +42,38 @@ function Get-NovaConfiguredPackageTypeList {
 function Test-NovaPackageLatestEnabled {
     [CmdletBinding()]
     param(
+        [AllowNull()]$PackageSettings,
+        [Parameter(Mandatory)][string]$Version
+    )
+
+    $latestPolicy = Get-NovaPackageLatestPolicy -PackageSettings $PackageSettings
+    switch ($latestPolicy) {
+        'always' {
+            return $true
+        }
+        'stable' {
+            return Test-NovaPackageVersionIsStable -Version $Version
+        }
+        default {
+            return $false
+        }
+    }
+}
+
+function Get-NovaPackageLatestPolicy {
+    [CmdletBinding()]
+    param(
         [AllowNull()]$PackageSettings
     )
 
-    if ($PackageSettings -is [System.Collections.IDictionary]) {
-        if ( $PackageSettings.Contains('Latest')) {
-            return [bool]$PackageSettings['Latest']
-        }
+    return ConvertTo-NovaPackageLatestPolicy -Value (Get-NovaPackageSettingValue -InputObject $PackageSettings -Name 'Latest')
+}
 
-        return $false
-    }
+function Test-NovaPackageVersionIsStable {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Version
+    )
 
-    if ($null -eq $PackageSettings) {
-        return $false
-    }
-
-    if ($PackageSettings.PSObject.Properties.Name -contains 'Latest') {
-        return [bool]$PackageSettings.Latest
-    }
-
-    return $false
+    return [string]::IsNullOrWhiteSpace(([semver]$Version).PreReleaseLabel)
 }
