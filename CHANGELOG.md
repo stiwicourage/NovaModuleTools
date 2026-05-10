@@ -45,6 +45,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Adds focused CodeScene skills for refactoring with Code Health and for safeguarding AI-touched code before commit
       or
       PR readiness, instead of overloading the broader `codescene-quality` skill.
+- Added a root-level `RELEASE_NOTE.md` that is separate from `CHANGELOG.md`.
+    - `CHANGELOG.md` remains the exhaustive release history.
+    - `RELEASE_NOTE.md` now captures only public cmdlet, CLI, configuration, and migration-impacting changes, including
+      backfilled summaries for the existing released versions in `CHANGELOG.md`.
+    - `Tests.yml` now validates both files, and `Publish.yml` now finalizes both files during stable release
+      preparation.
+    - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
 
 ### Changed
 
@@ -74,16 +81,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clarified contributor release/test guidance in `README.md` so repository and CI test runs still install `Pester 5.7.1`
   explicitly, while the published `NovaModuleTools` manifest continues to declare that dependency for installed
   workflows.
-
-### Documentation
-
-- Added a root-level `RELEASE_NOTE.md` that is separate from `CHANGELOG.md`.
-    - `CHANGELOG.md` remains the exhaustive release history.
-    - `RELEASE_NOTE.md` now captures only public cmdlet, CLI, configuration, and migration-impacting changes, including
-      backfilled summaries for the existing released versions in `CHANGELOG.md`.
-    - `Tests.yml` now validates both files, and `Publish.yml` now finalizes both files during stable release
-      preparation.
-    - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
 
 ### Security
 
