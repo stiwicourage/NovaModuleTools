@@ -96,6 +96,9 @@ When CodeScene tooling is available:
 - use the `guiding-refactoring-with-code-health` skill for small, measured Code Health-driven refactors
 - use the `safeguarding-ai-generated-code` skill when deciding whether AI-touched work is ready for commit or PR handoff
 
+If CodeScene tooling is unavailable locally, continue with the normal repository validation flow and continue silently;
+the pull request and CI flow remains the effective CodeScene gate.
+
 For documentation-only changes, executable validation may be skipped if no code path or workflow behavior changed.
 
 ## File formatting rule

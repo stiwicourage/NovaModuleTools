@@ -16,6 +16,8 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 - Use the PR template categories as the review frame.
 - Treat CodeScene maintainability and changed-code coverage results as release-blocking signals unless risk is accepted
   explicitly.
+- If local CodeScene tooling is unavailable, continue the review with normal validation and rely on PR/CI as the
+  effective CodeScene gate.
 - Check whether website docs preserve the CLI-vs-cmdlet separation when `docs/*.html` or help markdown changed.
 
 ## Inputs to inspect

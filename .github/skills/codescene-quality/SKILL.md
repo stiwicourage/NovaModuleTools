@@ -29,6 +29,8 @@ Use the narrower sibling skills when the task is more specific:
 - Treat Code Health as the repository's authoritative maintainability signal.
 - Aim for Code Health `10.0` on touched files, not merely "good enough."
 - Treat CodeScene findings as actionable maintainability signals.
+- If CodeScene tooling is unavailable locally, continue with the normal repository validation flow and continue silently;
+  pull requests and CI remain the effective CodeScene gate.
 - Fix duplicated test structure by extracting or parameterizing setup.
 - Add the smallest test that covers the missing changed-code branch.
 - Prefer incremental refactors over large rewrites.
@@ -42,7 +44,7 @@ Use the narrower sibling skills when the task is more specific:
 ## Verification
 
 - Re-run the affected test file(s)
-- Re-run the CodeScene file review after the refactor
-- Run the pre-commit safeguard before suggesting a commit
-- Run a change-set analysis before suggesting a PR for larger branch work
+- Re-run the CodeScene file review after the refactor when local CodeScene tooling is available
+- Run the pre-commit safeguard before suggesting a commit when local CodeScene tooling is available
+- Run a change-set analysis before suggesting a PR for larger branch work when local CodeScene tooling is available
 - Run `./run.ps1` after code changes

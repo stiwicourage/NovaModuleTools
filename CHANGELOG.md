@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Treats CodeScene Code Health as authoritative, requires safeguard checks before commit/PR readiness, and carries
       the
       repository's trailing-newline formatting rule into the agent flow.
+      - Keeps local agentic work moving silently when CodeScene tooling is unavailable on a contributor machine, while
+        pull requests and CI remain the effective CodeScene gate.
     - Adds repository-local PowerShell style guidance for indentation, spacing, braces/wrapping, and blank-line usage.
     - Adds a dedicated docs-site agent and documentation-separation guidance so website docs keep a clear CLI-vs-cmdlet
       split.
@@ -49,6 +51,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Package.Latest` now supports policy values: `"never"`, `"stable"`, and `"always"`.
   - `"stable"` keeps the floating `latest` alias pinned to stable package versions.
   - Legacy boolean values still work for now and map to `"always"` / `"never"` for backward compatibility.
+- Release-history handling now uses a separate root-level `RELEASE_NOTE.md`.
+    - `CHANGELOG.md` remains the exhaustive release history.
+    - `RELEASE_NOTE.md` now captures only public cmdlet, CLI, configuration, and migration-impacting changes, including
+      backfilled summaries for the existing released versions in `CHANGELOG.md`.
+    - `Tests.yml` now validates both files, and `Publish.yml` now finalizes both files during stable release
+      preparation.
+    - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
 
 ### Deprecated
 
