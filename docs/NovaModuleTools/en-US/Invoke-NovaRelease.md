@@ -29,12 +29,6 @@ PS> Invoke-NovaRelease [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <st
 PS> Invoke-NovaRelease -Repository <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [-OverrideWarning] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
-### PublishOption
-
-```text
-PS> Invoke-NovaRelease -PublishOption <hashtable> [-SkipTests] [-ContinuousIntegration] [-OverrideWarning] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
-```
-
 ## DESCRIPTION
 
 `Invoke-NovaRelease` orchestrates a full release flow:
@@ -220,37 +214,6 @@ AcceptedValues: [ ]
 HelpMessage: ''
 ```
 
-### -PublishOption
-
-DEPRECATED: This function will be removed in a future version.
-Legacy hashtable form for publish behavior.
-
-Common keys:
-
-- `Local`
-- `Repository`
-- `ApiKey`
-- `ModuleDirectoryPath`
-
-Prefer the direct `-Local`, `-Repository`, `-ModuleDirectoryPath`, and `-ApiKey` parameters for new automation.
-
-```yaml
-Type: System.Collections.Hashtable
-DefaultValue: '@{}'
-SupportsWildcards: false
-Aliases: [ ]
-ParameterSets:
-  - Name: PublishOption
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: [ ]
-HelpMessage: ''
-```
-
 ### -Path
 
 Project root path where the release command should run.
@@ -334,12 +297,6 @@ ParameterSets:
     Position: Named
   - Name: Repository
     Position: Named
-  - Name: PublishOption
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
 DontShow: false
 AcceptedValues: [ ]
 HelpMessage: ''

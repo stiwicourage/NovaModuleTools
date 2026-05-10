@@ -463,6 +463,11 @@ Describe 'Nova command model - project, help, and build behavior' {
         $script:helpActivationTestCases | Should -Not -BeNullOrEmpty
     }
 
+    It 'help docs keep Invoke-NovaCli out of the user-facing help surface' {
+        $script:helpActivationTestCases.HelpTarget | Should -Not -Contain 'Invoke-NovaCli'
+        (Test-Path -LiteralPath (Join-Path $script:helpDocsDir 'en-US/Invoke-NovaCli.md')) | Should -BeFalse
+    }
+
     It 'Get-Help loads synopsis for every command help file discovered in docs' {
         foreach ($testCase in $script:helpActivationTestCases) {
             $help = Get-Help $testCase.HelpTarget -ErrorAction Stop
@@ -510,12 +515,17 @@ Describe 'Nova command model - project, help, and build behavior' {
             'WhatIf',
             'Confirm'
         )
+        $undocumentedLegacyParametersByCommand = @{
+            'Invoke-NovaRelease' = @('PublishOption')
+        }
 
         foreach ($testCase in $script:helpActivationTestCases) {
             $command = Get-Command $testCase.HelpTarget -ErrorAction Stop
+            $undocumentedLegacyParameters = @($undocumentedLegacyParametersByCommand[$testCase.HelpTarget])
             $expectedParameterNames = @(
             $command.Parameters.Keys |
                     Where-Object {$_ -notin $commonParameterNames} |
+                    Where-Object {$_ -notin $undocumentedLegacyParameters} |
                     Sort-Object
             )
 
@@ -538,6 +548,13 @@ Describe 'Nova command model - project, help, and build behavior' {
                 Assert-TestPowerShellHelpExcludesCliSyntax -Text $parameterText -Subject "$( $testCase.HelpTarget ) parameter help for -$parameterName"
             }
         }
+    }
+
+    It 'Get-Help keeps legacy Invoke-NovaRelease -PublishOption guidance out of user-facing help' {
+        $fullText = Get-Help Invoke-NovaRelease -Full -ErrorAction Stop | Out-String
+
+        $fullText | Should -Not -Match ([regex]::Escape('-PublishOption'))
+        {Get-Help Invoke-NovaRelease -Parameter PublishOption -ErrorAction Stop} | Should -Throw
     }
 
     It 'Get-Help explains how to manage prerelease self-update eligibility' {
