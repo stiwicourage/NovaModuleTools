@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [2.4.0] - 2026-05-10
+
+### Added
+
 - Added a repository-local agentic coding setup under `.github/` for Copilot/AI-assisted repository work.
     - Includes repository instructions, focused agent role definitions, repo-specific skills, and reusable task prompts.
     - Aligns the agent guidance with Nova's existing PowerShell, Pester, CodeScene, GitHub Actions, and release
@@ -81,8 +95,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clarified contributor release/test guidance in `README.md` so repository and CI test runs still install `Pester 5.7.1`
   explicitly, while the published `NovaModuleTools` manifest continues to declare that dependency for installed
   workflows.
-
-### Security
 
 ## [2.3.1] - 2026-05-08
 
@@ -406,8 +418,8 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 - First release to `psgallery`
 - All basic functionality of Module is ready
 
-
-[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.1...HEAD
+[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/2.4.0...HEAD
+[2.4.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.1...2.4.0
 [2.3.1]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.0...2.3.1
 [2.3.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.2.0...2.3.0
 [2.2.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_2.1.0...2.2.0
@@ -425,3 +437,4 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
+

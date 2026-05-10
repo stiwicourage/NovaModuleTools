@@ -10,6 +10,18 @@ changes will be included in the next **stable** release!
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [2.4.0] - 2026-05-10
+
+### Changed
+
 - `Package.Latest` in `project.json` now accepts the policy values `"never"`, `"stable"`, and `"always"`.
     - Use `"stable"` when the floating `latest` package alias should follow stable package versions only.
 
@@ -17,12 +29,6 @@ changes will be included in the next **stable** release!
 
 - Boolean `Package.Latest` values are deprecated and still map to `"always"` / `"never"` for now.
     - Migrate to the string-based policy values before the next major version.
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [2.3.1] - 2026-05-08
 
@@ -204,3 +210,4 @@ their own `Pester` installation step. The regression was fixed in `2.3.0`.
 ### Added
 
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
+
