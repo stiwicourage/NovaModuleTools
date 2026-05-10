@@ -33,8 +33,7 @@ By default, the launcher is installed to `~/.local/bin/nova` on macOS and Linux.
 
 After a successful install, `Install-NovaCli` also prints the release notes link from the installed module manifest.
 
-Use this command when you want `nova` to be available as a launcher-oriented CLI entrypoint instead of invoking
-`Invoke-NovaCli` directly from PowerShell.
+Use this command when you want `nova` to be available directly from your shell as the launcher-oriented CLI entrypoint.
 
 ## EXAMPLES
 
@@ -176,5 +175,4 @@ After running `Install-NovaCli`, add the destination directory to your shell `PA
 
 ## RELATED LINKS
 
-- `Invoke-NovaCli`
 - `Publish-NovaModule`
