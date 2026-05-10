@@ -3,10 +3,6 @@
 This file summarizes public cmdlet, CLI, configuration, and migration changes for NovaModuleTools.
 `CHANGELOG.md` remains the exhaustive record of all changes in each release.
 
-Historical internal-only detail remains in `CHANGELOG.md`.
-This file now backfills the public-facing release summaries from the existing release history and should continue
-forward.
-
 ## [Unreleased]
 
 ### Added
