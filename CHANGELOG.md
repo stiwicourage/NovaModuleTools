@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The architect/design flow now surfaces settled vs unresolved design items before finalization, offers explicit choices
+  for full finalization vs design-package-only handoff, and clarifies how to use design notes versus the paste-ready
+  GitHub issue draft.
+
 ### Deprecated
 
 ### Removed
@@ -437,4 +441,3 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-

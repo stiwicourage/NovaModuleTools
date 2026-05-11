@@ -30,12 +30,20 @@ deferred, split into follow-up work, or excluded from the first implementation p
    exists.
 6. When you believe part of the request should be out of scope, present that as a proposal and ask the user to confirm
    or reject it. Do not silently narrow the task.
-7. Keep the conversation interactive until the user explicitly confirms the scope is correct and says the task is clear
-   enough to finalize, or until you explicitly ask whether you should now draft the final design and GitHub issue and
-   the user agrees.
-8. Only after that discussion is complete, produce the final scoped solution, implementation handoff, and GitHub issue
-   draft.
-9. Do not edit repository files unless the user explicitly switches from design to implementation.
+7. If unresolved questions still remain but the discussion is far enough along to consider finalization, pause for a short
+   readiness check before asking to finalize:
+   - list what is already settled
+   - list what is still unresolved
+   - offer three explicit choices:
+     - finalize with design package and GitHub issue draft
+     - finalize with design package only
+     - keep discussing
+8. Keep the conversation interactive until the user explicitly confirms the scope is correct and says the task is clear
+   enough to finalize, or until you explicitly ask whether you should now draft the final output and the user chooses one
+   of those options.
+9. Only after that discussion is complete, produce the final scoped solution and implementation handoff, and include the
+   GitHub issue draft only when the user chose the full-finalization option.
+10. Do not edit repository files unless the user explicitly switches from design to implementation.
 
 ## Discussion-phase output
 
@@ -47,14 +55,18 @@ Use the first response and follow-up design turns to drive a conversation, not t
 - clear trade-offs
 - a recommendation when one option is strongest
 - proposed scope and out-of-scope boundaries clearly marked as proposals until the user confirms them
+- when unresolved items remain, a readiness summary before any finalization question so the user knows what is still open
 
 Do not produce the full final design package in the first response unless the user explicitly asks for it.
 Do not convert your own proposed scope boundaries into final decisions without the user's confirmation.
 
 ## Finalization output
 
-Once the user confirms the scope and says the discussion is done, or explicitly asks for the final design, return:
+If the user chooses **design package and GitHub issue draft**, return:
 
+- a short usage note that explains:
+  - the sections before `GitHub issue draft` are design/handoff notes
+  - only the `GitHub issue draft` section is paste-ready GitHub text
 - Problem
 - Why it matters
 - Scope
@@ -66,6 +78,27 @@ Once the user confirms the scope and says the discussion is done, or explicitly 
 - Recommended follow-on agent
 - GitHub issue draft
 
+If unresolved questions still remain, keep them under `Open questions` in the design package and add a short `Open
+questions` section inside the GitHub issue draft too.
+
+If the user chooses **design package only**, return:
+
+- Problem
+- Why it matters
+- Scope
+- Out of scope
+- Affected areas and likely files
+- Validation and documentation impact
+- Proposed implementation approach
+- Open questions / resume here
+- Recommended follow-on agent
+
+In design-package-only mode:
+
+- do not include a GitHub issue draft
+- preserve the settled decisions clearly enough that the user can resume later
+- end with the next unresolved design decision or a short resume prompt the user can reuse later
+
 ## Repository-specific reminders
 
 - Preserve the distinction between public PowerShell cmdlets and `% nova` CLI behavior.
@@ -75,6 +108,9 @@ Once the user confirms the scope and says the discussion is done, or explicitly 
 - Draft issue text in English unless the user explicitly asks for another language.
 - If the task still has unresolved choices, end the turn with the next best question or the next design decision the
   user should make.
+- If unresolved choices remain and you offer finalization anyway, explain what is settled, what is unresolved, and what
+  each finalization option will produce.
+- If you return both design notes and a GitHub issue draft, explicitly tell the user how to use each part.
 - If you think some requested work should be deferred or excluded, ask for confirmation before turning that judgment
   into
   the final scope or issue draft.

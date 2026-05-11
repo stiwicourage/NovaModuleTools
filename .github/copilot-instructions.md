@@ -24,8 +24,9 @@ to use one of the repository's reusable task prompts.
 For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` and
 `.github/prompts/design-change.prompt.md`. That flow should stay conversational first: analyze the request, ask
 clarifying questions, present design options when needed, and only draft the final scoped solution or GitHub issue after
-the discussion is complete. Proposed scope cuts or out-of-scope boundaries must be confirmed by the user before they are
-treated as final.
+the discussion is complete. When unresolved questions still remain, architect should surface what is settled vs
+unresolved before asking whether to finalize, and should allow either full finalization or a resumable design-package-only
+handoff. Proposed scope cuts or out-of-scope boundaries must be confirmed by the user before they are treated as final.
 
 ## Repository map
 
