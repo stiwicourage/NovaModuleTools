@@ -49,7 +49,9 @@ when your Copilot session starts from the NovaModuleTools repository root.
 When you are shaping a new change, start with `architect.agent.md` and `design-change.prompt.md` so the first phase is a
 design conversation: analysis, clarifying questions, and solution options before any final scoped proposal or GitHub
 issue draft is produced. Proposed out-of-scope boundaries should be confirmed by the user before they become part of the
-final scope. Use `implement-issue.prompt.md` after the change is already scoped.
+final scope. When unresolved design questions still remain, architect should summarize what is settled vs unresolved
+before asking whether to finalize, and it should support either a full issue-ready handoff or a resumable
+design-package-only handoff. Use `implement-issue.prompt.md` after the change is already scoped.
 
 Pull requests against `main` and `develop` also run a CodeScene coverage-gate check when CI has produced the Cobertura coverage artifact, so PRs can be blocked when changed code falls below the configured coverage threshold.
 

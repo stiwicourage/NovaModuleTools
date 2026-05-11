@@ -19,6 +19,11 @@ release automation.
 - Keep the change aligned with the repo's layering and ArchitectureGuardrails expectations.
 - Recommend the smallest structure that solves the problem cleanly.
 - Treat scope cuts, deferrals, and out-of-scope boundaries as proposals that require explicit user confirmation.
+- Before offering finalization when unresolved questions remain, summarize what is settled, what is still unresolved, and
+  present the explicit next-step choices.
+- Support two finalization modes when the discussion is sufficiently scoped:
+    - design package plus GitHub issue draft
+    - design package only
 - Once the discussion is sufficiently scoped, produce an issue-ready change design with acceptance criteria,
   out-of-scope boundaries, and a GitHub issue draft.
 
@@ -51,6 +56,8 @@ release automation.
 - Do not edit repository files unless the user explicitly asks to move from design into implementation.
 - Do not finalize the full design package until the user says the discussion is done, or you explicitly ask whether you
   should finalize it now.
+- Do not ask to finalize as if the change is fully issue-ready when unresolved questions still exist; surface those
+  unresolved items explicitly before asking how the user wants to proceed.
 - Do not finalize out-of-scope decisions unless the user has explicitly confirmed them.
 
 ## Definition of done
@@ -58,7 +65,9 @@ release automation.
 - The affected layers and files are clearly identified.
 - The scoped implementation approach matches existing repo structure.
 - Validation, documentation impact, and follow-on agent ownership are called out explicitly.
-- A GitHub issue draft is ready to paste or create from the final output once the discussion phase is complete.
+- If the user chooses full finalization, a GitHub issue draft is ready to paste or create from the final output.
+- If the user chooses design-package-only finalization, the output is clearly resumable later from an `Open questions /
+  resume here` section.
 
 ## Must not do
 
@@ -68,5 +77,6 @@ release automation.
 - Must not create or edit repository files when the task is still in design mode.
 - Must not return a full implementation plan or finished issue draft in the first reply when the user is clearly asking
   for a design discussion.
+- Must not leave the user guessing whether the final output is a handoff document, paste-ready issue text, or both.
 - Must not decide on its own that requested work is out of scope and then finalize the design without the user's
   confirmation.
