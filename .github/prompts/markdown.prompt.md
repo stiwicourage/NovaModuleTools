@@ -12,9 +12,7 @@ Wrap the entire response in this exact outer fence:
 <markdown content>
 ~~~
 
-The first line must be exactly `~~~`.
-The last line must be exactly `~~~`.
-Do not add any text before or after that wrapper.
+The first line must be exactly `~~~`. The last line must be exactly `~~~`. Do not add any text before or after that wrapper.
 
 ## Inner Markdown rules
 
@@ -27,8 +25,7 @@ Inside the wrapped block:
 
 ## Why this wrapper is required
 
-Using `~~~` for the outer wrapper keeps copy-paste output stable when the Markdown itself contains triple-backtick code
-blocks.
+Using `~~~` for the outer wrapper keeps copy-paste output stable when the Markdown itself contains triple-backtick code blocks.
 
 ## Do not
 

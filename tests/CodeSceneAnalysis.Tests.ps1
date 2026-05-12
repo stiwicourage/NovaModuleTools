@@ -74,10 +74,11 @@ function Invoke-WebRequest {
 "@
 
         $result = Invoke-CodeSceneAnalysisTestScript -RunnerContent $runnerContent
+        $outputText = ($result.Output -join [Environment]::NewLine)
 
         $result.ExitCode | Should -Not -Be 0
-        ($result.Output -join [Environment]::NewLine) | Should -Match 'project owner'
-        ($result.Output -join [Environment]::NewLine) | Should -Match 'separate from CS_ACCESS_TOKEN'
+        $outputText | Should -Match 'project owner'
+        $outputText | Should -Match '(?s)separate from.*CS_ACCESS_TOKEN'
     }
 
     It 'still uploads coverage when CoveragePath is provided' {

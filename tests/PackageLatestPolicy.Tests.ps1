@@ -41,7 +41,7 @@ Describe 'Package latest policy behavior' {
         InModuleScope $script:moduleName -Parameters @{TestCase = $_} {
             param($TestCase)
 
-            $projectRoot = Join-Path $TestDrive "package-latest-$($TestCase.Name)"
+            $projectRoot = Join-Path $TestDrive "package-latest-$( $TestCase.Name )"
             New-Item -ItemType Directory -Path $projectRoot -Force | Out-Null
             $projectJson = ([ordered]@{
                 ProjectName = 'PackageLatestProject'

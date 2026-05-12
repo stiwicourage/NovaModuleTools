@@ -11,14 +11,14 @@ function Get-AliasInFunctionFromFile {
         $ast = [System.Management.Automation.Language.Parser]::ParseFile($filePath, [ref]$null, [ref]$null)
 
         $functionNodes = $ast.FindAll({
-                param($node)
-                $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
-            }, $true)
+            param($node)
+            $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
+        }, $true)
 
         $function = $functionNodes[0]
-        $paramsAttributes = $function.Body.ParamBlock.Attributes 
+        $paramsAttributes = $function.Body.ParamBlock.Attributes
 
-        $aliases = ($paramsAttributes | Where-Object { $_.TypeName -like 'Alias' } | ForEach-Object PositionalArguments).Value
+        $aliases = ($paramsAttributes | Where-Object {$_.TypeName -like 'Alias'} | ForEach-Object PositionalArguments).Value
         $aliases
     } catch {
         return

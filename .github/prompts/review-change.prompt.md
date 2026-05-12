@@ -18,5 +18,4 @@ Review a NovaModuleTools change set with emphasis on correctness, maintainabilit
 - Watch for CLI vs PowerShell wording drift.
 - Watch for CodeScene maintainability regressions in tests.
 - Treat publish/release automation edits as high-risk even when the diff is small.
-- Follow the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`) when the review output is
-  intended to be pasted as Markdown.
+- Follow the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`) when the review output is intended to be pasted as Markdown.

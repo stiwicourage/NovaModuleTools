@@ -7,8 +7,7 @@ description: Guidance for changing NovaModuleTools public commands, private help
 
 ## When to use
 
-Use this skill when changing public commands, private helpers, CLI routing support, packaging behavior, or project.json
-resolution.
+Use this skill when changing public commands, private helpers, CLI routing support, packaging behavior, or project.json resolution.
 
 ## Relevant files
 
@@ -28,8 +27,7 @@ resolution.
 - Put implementation detail in the correct private domain folder.
 - Preserve native PowerShell semantics and Nova naming patterns.
 - Reuse existing workflow-context helpers and shared adapters.
-- Follow the repository's PowerShell style rules: 4-space indentation, same-line opening braces, restrained blank lines,
-  full cmdlet names, and readable operator spacing.
+- Follow the repository's PowerShell style rules: 4-space indentation, same-line opening braces, restrained blank lines, full cmdlet names, and readable operator spacing.
 
 ## Common pitfalls
 

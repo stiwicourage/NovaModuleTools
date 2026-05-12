@@ -7,8 +7,7 @@ description: Guidance for producing valid, copy-safe Markdown files and UI-ready
 
 ## When to use
 
-Use this skill when producing Markdown files in the repository or Markdown output that must be copied directly from the
-UI, such as release summaries, PR-template-shaped text, contributor docs, or reusable prompt output.
+Use this skill when producing Markdown files in the repository or Markdown output that must be copied directly from the UI, such as release summaries, PR-template-shaped text, contributor docs, or reusable prompt output.
 
 ## Relevant files
 
@@ -33,8 +32,7 @@ UI, such as release summaries, PR-template-shaped text, contributor docs, or reu
 
 ## Copy-safe fence rules
 
-- When the entire response must be wrapped, start with a line containing exactly `~~~` and end with a line containing
-  exactly `~~~`.
+- When the entire response must be wrapped, start with a line containing exactly `~~~` and end with a line containing exactly `~~~`.
 - Do not place prose before or after that outer wrapper.
 - Inside the wrapped block, use normal Markdown.
 - For inner code examples, use triple backticks and include a language when helpful.

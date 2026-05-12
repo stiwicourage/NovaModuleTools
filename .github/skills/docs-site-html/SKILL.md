@@ -7,8 +7,7 @@ description: Guidance for NovaModuleTools website documentation so docs/*.html s
 
 ## When to use
 
-Use this skill when changing `docs/*.html`, end-user examples, installation guidance, or any documentation that appears
-on the NovaModuleTools website.
+Use this skill when changing `docs/*.html`, end-user examples, installation guidance, or any documentation that appears on the NovaModuleTools website.
 
 ## Relevant files
 

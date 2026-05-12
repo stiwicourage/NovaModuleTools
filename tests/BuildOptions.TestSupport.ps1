@@ -9,17 +9,17 @@ function New-TestProjectRoot {
     New-Item -ItemType Directory -Path $root -Force | Out-Null
 
     foreach ($dir in @(
-            'src/public',
-            'src/public/nested',
-            'src/private',
-            'src/private/a',
-            'src/private/b',
-            'src/classes',
-            'src/classes/nested',
-            'tests',
-            'tests/nested',
-            'docs'
-        )) {
+        'src/public',
+        'src/public/nested',
+        'src/private',
+        'src/private/a',
+        'src/private/b',
+        'src/classes',
+        'src/classes/nested',
+        'tests',
+        'tests/nested',
+        'docs'
+    )) {
         New-Item -ItemType Directory -Path (Join-Path $root $dir) -Force | Out-Null
     }
 
@@ -55,15 +55,15 @@ function Write-TestProjectJson {
         }
     }
 
-    if ($Options.ContainsKey('BuildRecursiveFolders')) {
+    if ( $Options.ContainsKey('BuildRecursiveFolders')) {
         $project.BuildRecursiveFolders = [bool]$Options.BuildRecursiveFolders
     }
 
-    if ($Options.ContainsKey('SetSourcePath')) {
+    if ( $Options.ContainsKey('SetSourcePath')) {
         $project.SetSourcePath = [bool]$Options.SetSourcePath
     }
 
-    if ($Options.ContainsKey('FailOnDuplicateFunctionNames')) {
+    if ( $Options.ContainsKey('FailOnDuplicateFunctionNames')) {
         $project.FailOnDuplicateFunctionNames = [bool]$Options.FailOnDuplicateFunctionNames
     }
 
@@ -137,7 +137,7 @@ function Invoke-BuildAndParsePsm1Ast {
     $errors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($psm1, [ref]$tokens, [ref]$errors)
     if ($errors -and $errors.Count -gt 0) {
-        throw "Built psm1 parse errors: $(@($errors | ForEach-Object Message) -join '; ')"
+        throw "Built psm1 parse errors: $( @($errors | ForEach-Object Message) -join '; ' )"
     }
 
     return $ast
@@ -194,7 +194,7 @@ function Get-NestedSourceBuildSummary {
 
     return [pscustomobject]@{
         Ast = $ast
-        TypeNames = @($ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.TypeDefinitionAst] }, $true) | ForEach-Object Name)
+        TypeNames = @($ast.FindAll({param($n) $n -is [System.Management.Automation.Language.TypeDefinitionAst]}, $true) | ForEach-Object Name)
         FunctionAsts = $functionAsts
         FunctionNames = @($functionAsts | ForEach-Object Name)
     }
@@ -267,14 +267,16 @@ function Get-TopLevelFunctionAstFromAst {
     )
 
     $all = @($Ast.FindAll({
-                param($n)
-                $n -is [System.Management.Automation.Language.FunctionDefinitionAst]
-            }, $true))
+        param($n)
+        $n -is [System.Management.Automation.Language.FunctionDefinitionAst]
+    }, $true))
 
     $top = foreach ($candidate in $all) {
         $nested = $false
         foreach ($other in $all) {
-            if ($other -eq $candidate) { continue }
+            if ($other -eq $candidate) {
+                continue
+            }
 
             if ($other.Extent.StartOffset -lt $candidate.Extent.StartOffset -and $other.Extent.EndOffset -gt $candidate.Extent.EndOffset) {
                 $nested = $true
@@ -282,7 +284,9 @@ function Get-TopLevelFunctionAstFromAst {
             }
         }
 
-        if (-not $nested) { $candidate }
+        if (-not $nested) {
+            $candidate
+        }
     }
 
     return @($top)
@@ -296,12 +300,12 @@ function Write-TestMarkerPesterFile {
     )
 
     $content = @"
-Describe '$($TestCase.Name)' {
+Describe '$( $TestCase.Name )' {
     It 'imports built module and writes marker' {
-        Import-Module '$($TestCase.BuiltModulePath)' -Force
-        Get-Module -Name '$($TestCase.ProjectName)' | Should -Not -BeNullOrEmpty
-        Set-Content -LiteralPath '$($TestCase.MarkerPath)' -Value '$($TestCase.Name)' -Encoding utf8 -NoNewline
-        (Get-Content -LiteralPath '$($TestCase.MarkerPath)' -Raw) | Should -Be '$($TestCase.Name)'
+        Import-Module '$( $TestCase.BuiltModulePath )' -Force
+        Get-Module -Name '$( $TestCase.ProjectName )' | Should -Not -BeNullOrEmpty
+        Set-Content -LiteralPath '$( $TestCase.MarkerPath )' -Value '$( $TestCase.Name )' -Encoding utf8 -NoNewline
+        (Get-Content -LiteralPath '$( $TestCase.MarkerPath )' -Raw) | Should -Be '$( $TestCase.Name )'
     }
 }
 "@

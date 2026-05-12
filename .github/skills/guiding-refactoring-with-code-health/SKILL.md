@@ -7,9 +7,7 @@ description: Use when refactoring unhealthy code and needing Code Health finding
 
 ## Overview
 
-Use Code Health as the control signal for refactoring. The agent should first understand why a file is hard to work
-with, establish a measurable baseline, then improve it in small structural steps and verify that each step helped. The
-goal is not just cleaner code, but code that is easier for both humans and agents to understand and modify safely.
+Use Code Health as the control signal for refactoring. The agent should first understand why a file is hard to work with, establish a measurable baseline, then improve it in small structural steps and verify that each step helped. The goal is not just cleaner code, but code that is easier for both humans and agents to understand and modify safely.
 
 ## When to use
 
@@ -17,8 +15,7 @@ goal is not just cleaner code, but code that is easier for both humans and agent
 - The user asks for refactoring help and wants an objective way to measure progress.
 - A safeguard or review points to complexity, size, low cohesion, or deep nesting.
 
-Do not use this skill when the task is to rank project-wide priorities. Use CodeScene's project-level debt and hotspot
-tools instead.
+Do not use this skill when the task is to rank project-wide priorities. Use CodeScene's project-level debt and hotspot tools instead.
 
 ## Quick reference
 
@@ -29,14 +26,11 @@ tools instead.
 
 1. Run `code_health_review` on the target file.
 2. Record the current `code_health_score` so the refactoring starts from a measurable baseline.
-3. Identify the highest-leverage structural problems, such as excessive responsibilities, deep nesting, low cohesion, or
-   hard-to-follow control flow.
+3. Identify the highest-leverage structural problems, such as excessive responsibilities, deep nesting, low cohesion, or hard-to-follow control flow.
 4. Propose 3 to 5 small structural refactor steps, not a single rewrite.
 5. After each meaningful step, re-run `code_health_review` to see whether the targeted structural problems were reduced.
 6. Use `code_health_score` as the compact checkpoint to confirm directional improvement across iterations.
-7. Stop only when the targeted structural issues are substantially reduced and the score has measurably improved, or
-   when
-   the user explicitly accepts a partial uplift.
+7. Stop only when the targeted structural issues are substantially reduced and the score has measurably improved, or when the user explicitly accepts a partial uplift.
 
 ## Common mistakes
 

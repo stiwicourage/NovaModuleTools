@@ -1,7 +1,7 @@
 # Release notes
 
 This file summarizes public cmdlet, CLI, configuration, and migration changes for NovaModuleTools.
-`CHANGELOG.md` remains the exhaustive record of all changes in each release. **PREVIEW / UNRELEASED** 
+`CHANGELOG.md` remains the exhaustive record of all changes in each release. **PREVIEW / UNRELEASED**
 changes will be included in the next **stable** release!
 
 ## [Unreleased]
@@ -34,18 +34,15 @@ changes will be included in the next **stable** release!
 
 ### Fixed
 
-- `nova bump` and `Update-NovaModuleVersion` now reuse parent Git repository history when a project lives in a nested
-  folder, instead of falling back to `Patch`.
-- Non-git bump flows now stop with a clear override-warning requirement instead of presenting `Patch | Commits: 0` as if
-  the value had been inferred automatically.
+- `nova bump` and `Update-NovaModuleVersion` now reuse parent Git repository history when a project lives in a nested folder, instead of falling back to `Patch`.
+- Non-git bump flows now stop with a clear override-warning requirement instead of presenting `Patch | Commits: 0` as if the value had been inferred automatically.
 
 ## [2.3.0] - 2026-05-06
 
 ### Changed
 
 - Prerelease self-update confirmation now defaults to `No`.
-    - `Update-NovaModuleTool`, `Update-NovaModuleTools`, and `% nova update` now require an explicit `Y` before a
-      prerelease self-update continues.
+    - `Update-NovaModuleTool`, `Update-NovaModuleTools`, and `% nova update` now require an explicit `Y` before a prerelease self-update continues.
 
 ### Fixed
 
@@ -56,8 +53,7 @@ changes will be included in the next **stable** release!
 ## [2.2.0] - 2026-05-06 [YANKED]
 
 This release was yanked because it removed the implicit `Pester` dependency before Nova's CI/CD test flow installed
-`Pester` explicitly. Projects using `NovaModuleTools 2.2.0` could fail to run tests in CI/CD unless maintainers added
-their own `Pester` installation step. The regression was fixed in `2.3.0`.
+`Pester` explicitly. Projects using `NovaModuleTools 2.2.0` could fail to run tests in CI/CD unless maintainers added their own `Pester` installation step. The regression was fixed in `2.3.0`.
 
 ### Changed
 
@@ -66,33 +62,27 @@ their own `Pester` installation step. The regression was fixed in `2.3.0`.
     - Existing automation should move away from deprecated `-PublishOption` usage.
 - Stable `0.y.z` bump planning now stays on the major-zero line even when commit history implies a breaking change.
     - Nova now plans the next minor version instead of auto-jumping to `1.0.0`.
-- `Update-NovaModuleVersion -Preview` and `% nova bump --preview` now enter the preview track deterministically from
-  stable versions.
+- `Update-NovaModuleVersion -Preview` and `% nova bump --preview` now enter the preview track deterministically from stable versions.
     - Stable versions always become the next patch preview, for example `0.2.0 -> 0.2.1-preview`.
 
 ## [2.1.0] - 2026-04-29
 
 ### Added
 
-- `Install-NovaCli` and a packaged `nova` launcher now let macOS and Linux users install and run `nova` directly from
-  zsh or bash.
+- `Install-NovaCli` and a packaged `nova` launcher now let macOS and Linux users install and run `nova` directly from zsh or bash.
 - Mutating Nova commands now support native `-WhatIf` / `-Confirm`, and the routed CLI now supports `--what-if`,
   `--confirm`, and `--verbose` without dropping into PowerShell's `Suspend` prompt.
-- Self-update support is now available through `Update-NovaModuleTool`, `Update-NovaModuleTools`, and `nova update`,
-  with matching notification preference commands and CLI routes.
+- Self-update support is now available through `Update-NovaModuleTool`, `Update-NovaModuleTools`, and `nova update`, with matching notification preference commands and CLI routes.
 - `nova version --installed` / `-i` now shows the installed NovaModuleTools version beside the current project version.
 - `Test-NovaBuild -Build` and `nova test --build` can now rebuild the project before running Pester.
 - `Update-NovaModuleVersion -Preview` and `nova bump --preview` now support explicit preview-version iteration.
-- `New-NovaModulePackage` / `nova package` and `Deploy-NovaPackage` / `nova deploy` now add generic package build and
-  raw upload workflows.
-- `-SkipTests` / `--skip-tests` and `-ContinuousIntegration` / `--continuous-integration` now support CI-oriented
-  package, publish, release, and versioning flows.
+- `New-NovaModulePackage` / `nova package` and `Deploy-NovaPackage` / `nova deploy` now add generic package build and raw upload workflows.
+- `-SkipTests` / `--skip-tests` and `-ContinuousIntegration` / `--continuous-integration` now support CI-oriented package, publish, release, and versioning flows.
 
 ### Changed
 
 - Nova now uses the Nova command model and a CLI-native help system as the primary workflow surface.
-- `Publish-NovaModule -Local` and `nova publish --local` now reload the published module from the local install path
-  into the current PowerShell session.
+- `Publish-NovaModule -Local` and `nova publish --local` now reload the published module from the local install path into the current PowerShell session.
 
 ### Removed
 
@@ -122,8 +112,7 @@ their own `Pester` installation step. The regression was fixed in `2.3.0`.
 
 ### Added
 
-- Added `BuildRecursiveFolders`, `SetSourcePath`, and `FailOnDuplicateFunctionNames` project settings for more explicit
-  build control.
+- Added `BuildRecursiveFolders`, `SetSourcePath`, and `FailOnDuplicateFunctionNames` project settings for more explicit build control.
 
 ### Changed
 
@@ -133,8 +122,7 @@ their own `Pester` installation step. The regression was fixed in `2.3.0`.
 
 ### Added
 
-- Resource format files named `Name.format.ps1xml` are now imported automatically through the generated module
-  manifest.
+- Resource format files named `Name.format.ps1xml` are now imported automatically through the generated module manifest.
 
 ## [1.2.0] - 2025-09-17
 
@@ -150,8 +138,7 @@ their own `Pester` installation step. The regression was fixed in `2.3.0`.
 
 ### Added
 
-- `Update-NovaModuleVersion` now supports preview tags, and project/build metadata now follows semver naming more
-  consistently.
+- `Update-NovaModuleVersion` now supports preview tags, and project/build metadata now follows semver naming more consistently.
 - Preview builds can now use `preview` or `prerelease` labels, for example `1.2.3-preview`.
 
 ## [1.1.0] - 2025-08-28
@@ -164,8 +151,7 @@ their own `Pester` installation step. The regression was fixed in `2.3.0`.
 
 ### Added
 
-- Added the optional `CopyResourcesToModuleRoot` project setting so resource files can be copied to the module root when
-  needed.
+- Added the optional `CopyResourcesToModuleRoot` project setting so resource files can be copied to the module root when needed.
 
 ### Fixed
 

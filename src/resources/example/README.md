@@ -17,8 +17,7 @@ It is meant to help a new user understand the smallest useful setup that can:
   - includes all current top-level project settings, including `CopyResourcesToModuleRoot`, `BuildRecursiveFolders`,
     `SetSourcePath`, and `FailOnDuplicateFunctionNames`
   - includes optional manifest metadata such as `ProjectUri`, `ReleaseNotes`, and `LicenseUri`
-  - includes a complete `Package` example so new users can see where package metadata and generic raw upload settings
-    belong
+  - includes a complete `Package` example so new users can see where package metadata and generic raw upload settings belong
   - includes named `Package.Repositories` examples for `PS> Deploy-NovaPackage` / `% nova deploy`
 - `src/public/Get-ExampleGreeting.ps1` – a public function exported from the built module
 - `src/private/Get-ExampleConfiguration.ps1` – a private helper used by the public function
@@ -31,8 +30,7 @@ It is meant to help a new user understand the smallest useful setup that can:
 
 Run these commands from the repository root:
 
-If `./dist/NovaModuleTools` is not available yet, build `NovaModuleTools` from the repository root first, or use the
-PowerShell Gallery workflow below.
+If `./dist/NovaModuleTools` is not available yet, build `NovaModuleTools` from the repository root first, or use the PowerShell Gallery workflow below.
 
 ```text
 PS> Import-Module ./dist/NovaModuleTools -Force
@@ -75,9 +73,7 @@ After `New-NovaModulePackage`, the package artifact is written to:
 src/resources/example/artifacts/packages/
 ```
 
-The example project sets `Package.Types` to `['NuGet', 'Zip']` and `Package.Latest` to `"stable"`, so stable packing
-generates the normal versioned `.nupkg` / `.zip` files plus companion `*.latest.*` files in the package output
-directory.
+The example project sets `Package.Types` to `['NuGet', 'Zip']` and `Package.Latest` to `"stable"`, so stable packing generates the normal versioned `.nupkg` / `.zip` files plus companion `*.latest.*` files in the package output directory.
 
 The example `project.json` also shows how to configure raw package upload settings such as:
 
@@ -119,6 +115,4 @@ This example is intentionally small, but it demonstrates the most important Nova
 - how tests should import the built module from `dist/`
 - where the current package, packaging, and raw-upload configuration keys live in `project.json`
 
-If you want a new project scaffold, use `PS> Initialize-NovaModule` (`% nova init`). If you want a concrete project you
-can
-inspect, run, or copy through `% nova init --example` / `% nova init -e`, use this example folder.
+If you want a new project scaffold, use `PS> Initialize-NovaModule` (`% nova init`). If you want a concrete project you can inspect, run, or copy through `% nova init --example` / `% nova init -e`, use this example folder.

@@ -1,4 +1,3 @@
-
 function Read-AwesomeHost {
     [CmdletBinding()]
     param (

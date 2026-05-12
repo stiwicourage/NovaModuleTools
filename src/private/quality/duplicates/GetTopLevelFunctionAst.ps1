@@ -5,14 +5,16 @@ function Get-TopLevelFunctionAst {
     )
 
     $all = @($Ast.FindAll({
-                param($n)
-                $n -is [System.Management.Automation.Language.FunctionDefinitionAst]
-            }, $true))
+        param($n)
+        $n -is [System.Management.Automation.Language.FunctionDefinitionAst]
+    }, $true))
 
     $top = foreach ($candidate in $all) {
         $nested = $false
         foreach ($other in $all) {
-            if ($other -eq $candidate) { continue }
+            if ($other -eq $candidate) {
+                continue
+            }
 
             if ($other.Extent.StartOffset -lt $candidate.Extent.StartOffset -and $other.Extent.EndOffset -gt $candidate.Extent.EndOffset) {
                 $nested = $true

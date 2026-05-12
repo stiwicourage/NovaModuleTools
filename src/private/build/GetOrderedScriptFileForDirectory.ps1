@@ -20,10 +20,10 @@ function Get-OrderedScriptFileForDirectory {
     $root = $ProjectRoot
 
     return @(
-        $items |
+    $items |
             Sort-Object -Stable -Property @(
-                @{ Expression = { (Get-NormalizedRelativePath -Root $root -FullName $_.FullName).ToLowerInvariant() } },
-                @{ Expression = { $_.FullName.ToLowerInvariant() } }
+                @{Expression = {(Get-NormalizedRelativePath -Root $root -FullName $_.FullName).ToLowerInvariant()}},
+                @{Expression = {$_.FullName.ToLowerInvariant()}}
             )
     )
 }

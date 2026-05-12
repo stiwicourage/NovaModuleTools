@@ -1,15 +1,15 @@
 {
-    "ProjectName": "",
-    "Description": "",
-    "Version": "",
+  "ProjectName": "",
+  "Description": "",
+  "Version": "",
   "Preamble": [],
-    "Manifest": {
-        "Author": "",
-        "PowerShellHostVersion": "",
-        "GUID": "",
-        "Tags": [],
-        "ProjectUri": ""
-    },
+  "Manifest": {
+    "Author": "",
+    "PowerShellHostVersion": "",
+    "GUID": "",
+    "Tags": [],
+    "ProjectUri": ""
+  },
   "Package": {
     "Types": [
       "NuGet"
@@ -19,13 +19,13 @@
       "Clean": true
     }
   },
-    "Pester": {
-        "TestResult": {
-            "Enabled": true,
-            "OutputFormat": "NUnitXml"
-        },
-        "Output": {
-            "Verbosity": "Detailed"
-        }
+  "Pester": {
+    "TestResult": {
+      "Enabled": true,
+      "OutputFormat": "NUnitXml"
+    },
+    "Output": {
+      "Verbosity": "Detailed"
     }
+  }
 }

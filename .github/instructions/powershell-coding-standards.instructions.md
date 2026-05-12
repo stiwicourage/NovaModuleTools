@@ -20,8 +20,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 
 - Put internal helpers in the correct domain folder under `src/private/`.
 - Reuse existing adapters and shared helpers before adding new infrastructure calls.
-- Keep direct environment access, Git execution, upload requests, and self-update execution in their approved helper
-  locations. `tests/ArchitectureGuardrails.Tests.ps1` is authoritative.
+- Keep direct environment access, Git execution, upload requests, and self-update execution in their approved helper locations. `tests/ArchitectureGuardrails.Tests.ps1` is authoritative.
 - Prefer explicit workflow-context objects (`[pscustomobject]` / ordered hashtables) for multi-step flows.
 
 ## Error and behavior rules
@@ -38,9 +37,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - Use 4 spaces per indentation level.
 - Indent block contents one level inside `function`, `if`, `switch`, `foreach`, `for`, `while`, `try`, `catch`,
   `finally`, `class`, and method bodies.
-- When an expression wraps onto the next line, indent the continuation line one extra level instead of trying to align
-  it
-  visually to a previous token column.
+- When an expression wraps onto the next line, indent the continuation line one extra level instead of trying to align it visually to a previous token column.
 
 ### Spacing
 
@@ -56,8 +53,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 
 ### Wrapping and braces
 
-- Use same-line opening braces for functions, control statements, `try` / `catch` / `finally`, `switch` labels, classes,
-  and methods.
+- Use same-line opening braces for functions, control statements, `try` / `catch` / `finally`, `switch` labels, classes, and methods.
 - Keep `elseif`, `else`, `catch`, and `finally` on the same line as the preceding closing brace.
 - Keep closing braces on their own line.
 - Prefer multi-line `param(...)`, hashtables, and long argument sets over overly long single lines.

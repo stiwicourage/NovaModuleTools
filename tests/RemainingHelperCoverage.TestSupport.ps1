@@ -106,7 +106,7 @@ function Get-TestNovaPackageProjectInfo {
         $null = $manifest.Remove('LicenseUri')
     }
 
-    if ([string]::IsNullOrWhiteSpace($PackageFileName)) {
+    if ( [string]::IsNullOrWhiteSpace($PackageFileName)) {
         $PackageFileName = "PackageProject.$Version.nupkg"
     }
 

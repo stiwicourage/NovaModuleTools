@@ -43,8 +43,7 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 - The changed behavior is covered.
 - The touched tests are readable and low-duplication.
 - Validation and CodeScene implications are addressed.
-- The pre-commit CodeScene safeguard is clean before the work is treated as commit-ready when local CodeScene tooling is
-  available.
+- The pre-commit CodeScene safeguard is clean before the work is treated as commit-ready when local CodeScene tooling is available.
 
 ## Must not do
 

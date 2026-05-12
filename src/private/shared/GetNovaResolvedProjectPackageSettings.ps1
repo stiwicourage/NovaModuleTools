@@ -51,7 +51,7 @@ function ConvertTo-NovaPackageLatestPolicy {
     }
 
     $policy = "$Value".Trim()
-    if ([string]::IsNullOrWhiteSpace($policy)) {
+    if ( [string]::IsNullOrWhiteSpace($policy)) {
         return 'never'
     }
 

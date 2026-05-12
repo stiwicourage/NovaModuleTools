@@ -4,8 +4,7 @@
 
 Use this file as the repository-wide Copilot instruction entry point for NovaModuleTools.
 
-NovaModuleTools is not a generic PowerShell repo. It has a strong split between public commands, private helpers,
-Pester-heavy testing, GitHub Actions automation, CodeScene coverage gates, and Keep a Changelog / SemVer release flow.
+NovaModuleTools is not a generic PowerShell repo. It has a strong split between public commands, private helpers, Pester-heavy testing, GitHub Actions automation, CodeScene coverage gates, and Keep a Changelog / SemVer release flow.
 
 ## Start here
 
@@ -17,22 +16,15 @@ Read these files before making non-trivial changes:
 4. The relevant file in `.github/instructions/`
 5. The relevant skill under `.github/skills/<skill-name>/SKILL.md`
 
-Prompt templates under `.github/prompts/*.prompt.md` are not auto-loaded. Reference them explicitly in chat when you
-want
-to use one of the repository's reusable task prompts.
+Prompt templates under `.github/prompts/*.prompt.md` are not auto-loaded. Reference them explicitly in chat when you want to use one of the repository's reusable task prompts.
 
 For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` and
-`.github/prompts/design-change.prompt.md`. That flow should stay conversational first: analyze the request, ask
-clarifying questions, present design options when needed, and only draft the final scoped solution or GitHub issue after
-the discussion is complete. When unresolved questions still remain, architect should surface what is settled vs
-unresolved before asking whether to finalize, and should allow either full finalization or a resumable design-package-only
-handoff. Proposed scope cuts or out-of-scope boundaries must be confirmed by the user before they are treated as final.
+`.github/prompts/design-change.prompt.md`. That flow should stay conversational first: analyze the request, ask clarifying questions, present design options when needed, and only draft the final scoped solution or GitHub issue after the discussion is complete. When unresolved questions still remain, architect should surface what is settled vs unresolved before asking whether to finalize, and should allow either full finalization or a resumable design-package-only handoff. Proposed scope cuts or out-of-scope boundaries must be confirmed by the user before they are treated as final.
 
 ## Repository map
 
 - `src/public/` - public PowerShell command surface; one top-level function per file
-- `src/private/` - internal helpers grouped by domain (`build/`, `cli/`, `package/`, `quality/`, `release/`,
-  `scaffold/`, `shared/`, `update/`)
+- `src/private/` - internal helpers grouped by domain (`build/`, `cli/`, `package/`, `quality/`, `release/`, `scaffold/`, `shared/`, `update/`)
 - `tests/` - Pester tests and shared test-support scripts
 - `scripts/build/` - local analyzer and build helpers
 - `scripts/build/ci/` - CI coverage, CodeScene, and artifact helpers
@@ -58,11 +50,8 @@ handoff. Proposed scope cuts or out-of-scope boundaries must be confirmed by the
 
 - When you are asked to suggest or prepare a commit message, answer in English.
 - Use Conventional Commit format.
-- Extract the ticket number from `$GIT_BRANCH_NAME` and render it as `(#<number>)` immediately after the type when one
-  is
-  available.
-- If `$GIT_BRANCH_NAME` starts with `hotfix/` or `bug/`, use `fix` as the type even when the implementation looks more
-  like a feature. Use `fix!` if that branch change is also breaking.
+- Extract the ticket number from `$GIT_BRANCH_NAME` and render it as `(#<number>)` immediately after the type when one is available.
+- If `$GIT_BRANCH_NAME` starts with `hotfix/` or `bug/`, use `fix` as the type even when the implementation looks more like a feature. Use `fix!` if that branch change is also breaking.
 - Otherwise estimate the type from the actual change:
     - `feat` for feature work
     - `fix` for bug fixes
@@ -74,11 +63,8 @@ handoff. Proposed scope cuts or out-of-scope boundaries must be confirmed by the
 
 ## Markdown output guidance
 
-- When the output is intended to be copied as Markdown from the UI or written to a Markdown file, follow
-  the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
-- Apply that rule especially to release summaries, review summaries, contributor-facing Markdown docs, prompt output,
-  and
-  PR-template-shaped text.
+- When the output is intended to be copied as Markdown from the UI or written to a Markdown file, follow the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
+- Apply that rule especially to release summaries, review summaries, contributor-facing Markdown docs, prompt output, and PR-template-shaped text.
 
 ## Validation expectations
 
@@ -97,8 +83,7 @@ When CodeScene tooling is available:
 - use the `guiding-refactoring-with-code-health` skill for small, measured Code Health-driven refactors
 - use the `safeguarding-ai-generated-code` skill when deciding whether AI-touched work is ready for commit or PR handoff
 
-If CodeScene tooling is unavailable locally, continue with the normal repository validation flow and continue silently;
-the pull request and CI flow remains the effective CodeScene gate.
+If CodeScene tooling is unavailable locally, continue with the normal repository validation flow and continue silently; the pull request and CI flow remains the effective CodeScene gate.
 
 For documentation-only changes, executable validation may be skipped if no code path or workflow behavior changed.
 

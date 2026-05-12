@@ -160,7 +160,7 @@ Describe 'Invoke-NovaBuild options' {
     }
 
     It 'BuildRecursiveFolders=false excludes nested classes/private and nested public' {
-        $root = New-TestProjectWithNestedSourceFiles -TestDriveRoot $TestDrive -Name 'NoRecurse' -Options @{ ProjectName = 'NoRecurse'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false }
+        $root = New-TestProjectWithNestedSourceFiles -TestDriveRoot $TestDrive -Name 'NoRecurse' -Options @{ProjectName = 'NoRecurse'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false}
         $summary = Get-NestedSourceBuildSummary -ProjectRoot $root
 
         $summary.TypeNames | Should -Not -Contain 'NestedThing'
@@ -169,7 +169,7 @@ Describe 'Invoke-NovaBuild options' {
     }
 
     It 'BuildRecursiveFolders=true includes nested classes/private but never nested public' {
-        $root = New-TestProjectWithNestedSourceFiles -TestDriveRoot $TestDrive -Name 'Recurse' -Options @{ ProjectName = 'Recurse'; BuildRecursiveFolders = $true; FailOnDuplicateFunctionNames = $false } -IncludeTopLevelFiles
+        $root = New-TestProjectWithNestedSourceFiles -TestDriveRoot $TestDrive -Name 'Recurse' -Options @{ProjectName = 'Recurse'; BuildRecursiveFolders = $true; FailOnDuplicateFunctionNames = $false} -IncludeTopLevelFiles
         $summary = Get-NestedSourceBuildSummary -ProjectRoot $root
 
         $summary.TypeNames | Should -Contain 'NestedThing'
@@ -178,7 +178,7 @@ Describe 'Invoke-NovaBuild options' {
         $summary.FunctionNames | Should -Contain 'Invoke-PrivateTop'
         $summary.FunctionNames | Should -Not -Contain 'Invoke-NestedPublic'
 
-        $classOffset = ($summary.Ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.TypeDefinitionAst] -and $n.Name -eq 'NestedThing' }, $true) | Select-Object -First 1).Extent.StartOffset
+        $classOffset = ($summary.Ast.FindAll({param($n) $n -is [System.Management.Automation.Language.TypeDefinitionAst] -and $n.Name -eq 'NestedThing'}, $true) | Select-Object -First 1).Extent.StartOffset
         $publicOffset = ($summary.FunctionAsts | Where-Object Name -eq 'Invoke-PublicTop' | Select-Object -First 1).Extent.StartOffset
         $privateOffset = ($summary.FunctionAsts | Where-Object Name -eq 'Invoke-PrivateTop' | Select-Object -First 1).Extent.StartOffset
 
@@ -194,7 +194,7 @@ Describe 'Invoke-NovaBuild options' {
     }
 
     It 'missing BuildRecursiveFolders defaults to true for classes/private but never nested public' {
-        $root = New-TestProjectWithNestedSourceFiles -TestDriveRoot $TestDrive -Name 'RecurseDefault' -Options @{ ProjectName = 'RecurseDefault'; SetSourcePath = $false; FailOnDuplicateFunctionNames = $false }
+        $root = New-TestProjectWithNestedSourceFiles -TestDriveRoot $TestDrive -Name 'RecurseDefault' -Options @{ProjectName = 'RecurseDefault'; SetSourcePath = $false; FailOnDuplicateFunctionNames = $false}
 
         (Get-TestProjectInfoValue -ProjectRoot $root -PropertyName 'BuildRecursiveFolders') | Should -BeTrue
 
@@ -207,7 +207,7 @@ Describe 'Invoke-NovaBuild options' {
 
     It 'missing SetSourcePath defaults to true and emits source markers' {
         $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'SetSourceDefault'
-        Write-TestProjectJson -ProjectRoot $root -Options @{ ProjectName = 'SetSourceDefault'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false }
+        Write-TestProjectJson -ProjectRoot $root -Options @{ProjectName = 'SetSourceDefault'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false}
 
         [System.IO.File]::WriteAllText((Join-Path $root 'src/public/PublicTop.ps1'), 'function Invoke-PublicTop { }')
 
@@ -225,7 +225,7 @@ Describe 'Invoke-NovaBuild options' {
 
     It 'SetSourcePath=false preserves current concatenation output exactly' {
         $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'SetSourceOff'
-        Write-TestProjectJson -ProjectRoot $root -Options @{ ProjectName = 'SetSourceOff'; BuildRecursiveFolders = $false; SetSourcePath = $false; FailOnDuplicateFunctionNames = $false }
+        Write-TestProjectJson -ProjectRoot $root -Options @{ProjectName = 'SetSourceOff'; BuildRecursiveFolders = $false; SetSourcePath = $false; FailOnDuplicateFunctionNames = $false}
 
         [System.IO.File]::WriteAllText((Join-Path $root 'src/classes/Strict.ps1'), 'Set-StrictMode -Version Latest')
         [System.IO.File]::WriteAllText((Join-Path $root 'src/public/PublicTop.ps1'), 'function Invoke-PublicTop { "public" }')
@@ -244,7 +244,7 @@ Describe 'Invoke-NovaBuild options' {
 
     It 'SetSourcePath=true writes one normalized relative source marker before each file and keeps the module importable' {
         $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'SetSourceOn'
-        Write-TestProjectJson -ProjectRoot $root -Options @{ ProjectName = 'SetSourceOn'; BuildRecursiveFolders = $true; SetSourcePath = $true; FailOnDuplicateFunctionNames = $false }
+        Write-TestProjectJson -ProjectRoot $root -Options @{ProjectName = 'SetSourceOn'; BuildRecursiveFolders = $true; SetSourcePath = $true; FailOnDuplicateFunctionNames = $false}
 
         [System.IO.File]::WriteAllText((Join-Path $root 'src/classes/nested/Thing.ps1'), 'class NestedThing { [string]$Name }')
         [System.IO.File]::WriteAllText((Join-Path $root 'src/public/PublicTop.ps1'), 'function Invoke-PublicTop { "public" }')
@@ -254,7 +254,7 @@ Describe 'Invoke-NovaBuild options' {
         $content = [System.IO.File]::ReadAllText($psm1)
         $newLine = [Environment]::NewLine
 
-        ([regex]::Matches($content, '(?m)^# Source: .+$')).Count | Should -Be 3
+                ([regex]::Matches($content, '(?m)^# Source: .+$')).Count | Should -Be 3
         $content | Should -Not -Match '\\'
 
         $classBlock = "# Source: src/classes/nested/Thing.ps1${newLine}class NestedThing { [string]`$Name }"
@@ -276,7 +276,7 @@ Describe 'Invoke-NovaBuild options' {
         $publicIndex | Should -BeLessThan $privateIndex
 
         Remove-Module SetSourceOn -ErrorAction SilentlyContinue
-        { Import-Module (Split-Path -Parent $psm1) -Force -ErrorAction Stop } | Should -Not -Throw
+        {Import-Module (Split-Path -Parent $psm1) -Force -ErrorAction Stop} | Should -Not -Throw
         Get-Command Invoke-PublicTop -Module SetSourceOn | Should -Not -BeNullOrEmpty
         Remove-Module SetSourceOn -ErrorAction SilentlyContinue
     }
@@ -298,8 +298,8 @@ Describe 'Invoke-NovaBuild options' {
     }
 
     Context 'Test-NovaBuild discovery for BuildRecursiveFolders=<BuildRecursiveFolders>' -ForEach @(
-        @{ Name = 'TestsTopOnly'; BuildRecursiveFolders = $false; ExpectedNestedMarker = $false }
-        @{ Name = 'TestsRecursive'; BuildRecursiveFolders = $true; ExpectedNestedMarker = $true }
+        @{Name = 'TestsTopOnly'; BuildRecursiveFolders = $false; ExpectedNestedMarker = $false}
+        @{Name = 'TestsRecursive'; BuildRecursiveFolders = $true; ExpectedNestedMarker = $true}
     ) {
         It 'runs the expected set of top-level and nested tests' {
             $project = New-TestProjectWithMarkerTests -TestDriveRoot $TestDrive -Name $_.Name -BuildRecursiveFolders $_.BuildRecursiveFolders
@@ -324,7 +324,7 @@ Describe 'Invoke-NovaBuild options' {
     }
 
     It 'missing FailOnDuplicateFunctionNames defaults to true and fails on duplicate top-level function names' {
-        $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupDefault' -Options @{ ProjectName = 'DupDefault'; BuildRecursiveFolders = $false; SetSourcePath = $false }
+        $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupDefault' -Options @{ProjectName = 'DupDefault'; BuildRecursiveFolders = $false; SetSourcePath = $false}
         $expectedModulePath = Get-BuiltModuleFilePath -ProjectRoot $root
 
         (Get-TestProjectInfoValue -ProjectRoot $root -PropertyName 'FailOnDuplicateFunctionNames') | Should -BeTrue
@@ -368,7 +368,7 @@ Describe 'Invoke-NovaBuild options' {
     }
 
     It 'FailOnDuplicateFunctionNames=true fails when built psm1 contains duplicate top-level function names' {
-        $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupFail' -Options @{ ProjectName = 'DupFail'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $true }
+        $root = New-TestProjectWithDuplicateFunctions -TestDriveRoot $TestDrive -Name 'DupFail' -Options @{ProjectName = 'DupFail'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $true}
         $expectedModulePath = Get-BuiltModuleFilePath -ProjectRoot $root
 
         Assert-InvokeNovaBuildThrows -ProjectRoot $root -ExpectedError ([pscustomobject]@{
@@ -381,7 +381,7 @@ Describe 'Invoke-NovaBuild options' {
 
     It 'FailOnDuplicateFunctionNames=false allows duplicates (last wins) for backward compatibility' {
         $root = New-TestProjectRoot -TestDriveRoot $TestDrive -Name 'DupAllowed'
-        Write-TestProjectJson -ProjectRoot $root -Options @{ ProjectName = 'DupAllowed'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false }
+        Write-TestProjectJson -ProjectRoot $root -Options @{ProjectName = 'DupAllowed'; BuildRecursiveFolders = $false; FailOnDuplicateFunctionNames = $false}
 
         Set-Content -LiteralPath (Join-Path $root 'src/public/Dup.ps1') -Value 'function Invoke-Dup { "first" }' -Encoding utf8
         Set-Content -LiteralPath (Join-Path $root 'src/private/Dup.ps1') -Value 'function Invoke-Dup { "second" }' -Encoding utf8

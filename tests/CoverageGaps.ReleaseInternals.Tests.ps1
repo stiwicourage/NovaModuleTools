@@ -681,7 +681,7 @@ Describe 'Coverage gaps for release and git internals' {
 
             $records = @(& {Assert-NovaVersionBumpInferenceAvailability -ProjectRoot $projectRoot -CommitMessages @() -OverrideWarningRequested} 3>&1)
 
-            { $null = $records } | Should -Not -Throw
+            {$null = $records} | Should -Not -Throw
             @($records | Where-Object {$_ -is [System.Management.Automation.WarningRecord]}).Count | Should -Be 1
             (@($records | Where-Object {$_ -is [System.Management.Automation.WarningRecord]} | ForEach-Object Message) -join [Environment]::NewLine) | Should -Match 'Cannot infer the version bump label from Git history'
         }

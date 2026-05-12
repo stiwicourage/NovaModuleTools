@@ -8,7 +8,7 @@ function Test-ProjectSchema {
     )
     Write-Verbose "Running Schema test against using $Schema schema"
     $SchemaPath = @{
-        Build  = Get-ResourceFilePath -FileName 'Schema-Build.json'
+        Build = Get-ResourceFilePath -FileName 'Schema-Build.json'
         Pester = Get-ResourceFilePath -FileName 'Schema-Pester.json'
     }
     try {

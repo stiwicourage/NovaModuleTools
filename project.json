@@ -41,7 +41,7 @@
       "OutputFormat": "NUnitXml"
     },
     "Output": {
-      "Verbosity": "Detailed"
+      "Verbosity": "Normal"
     }
   }
 }
