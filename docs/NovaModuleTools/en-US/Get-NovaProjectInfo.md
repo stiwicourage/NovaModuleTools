@@ -37,8 +37,7 @@ PS> Get-NovaProjectInfo [-Installed] [<CommonParameters>]
 
 ## DESCRIPTION
 
-`Get-NovaProjectInfo` reads the `project.json` file in a NovaModuleTools project and returns a project information
-object with:
+`Get-NovaProjectInfo` reads the `project.json` file in a NovaModuleTools project and returns a project information object with:
 
 - the raw project metadata
 - normalized project paths such as `src/`, `tests/`, `docs/`, and `dist/`
@@ -49,8 +48,7 @@ Use this command from scripts, tests, or troubleshooting when you want one objec
 
 When you use `-Version`, the command returns only the project version string instead of the full project object.
 
-When you use `-Installed`, the command returns the installed `NovaModuleTools` module name and version string instead of
-project metadata.
+When you use `-Installed`, the command returns the installed `NovaModuleTools` module name and version string instead of project metadata.
 
 ## EXAMPLES
 

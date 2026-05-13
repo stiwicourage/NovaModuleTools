@@ -588,6 +588,15 @@ Describe '$projectName tests' {
         }
     }
 
+    It 'Invoke-NovaCli help for init documents the optional Agentic Copilot starter prompt' {
+        InModuleScope $script:moduleName {
+            $longHelp = Invoke-NovaCli -Command '--help' -Arguments @('init')
+
+            $longHelp | Should -Match 'Agentic Copilot starter package'
+            $longHelp | Should -Match 'defaults to No'
+        }
+    }
+
     It 'Invoke-NovaCli help for build, bump, publish, and release documents the continuous integration options' -ForEach @(
         @{CommandName = 'build'}
         @{CommandName = 'bump'}

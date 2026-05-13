@@ -28,14 +28,12 @@ PS> New-NovaModulePackage [-SkipTests] [-OverrideWarning] [-WhatIf] [-Confirm] [
 `New-NovaModulePackage` runs the normal NovaModuleTools build and test flow, then packages the built module output from
 `dist/<ProjectName>/` into the package formats requested by `Package.Types`.
 
-Use `-SkipTests` when tests already ran earlier in your pipeline and you only want to skip `Test-NovaBuild` for this
-packaging run. `Invoke-NovaBuild` still runs so the package is created from fresh built output.
+Use `-SkipTests` when tests already ran earlier in your pipeline and you only want to skip `Test-NovaBuild` for this packaging run. `Invoke-NovaBuild` still runs so the package is created from fresh built output.
 
 Use `-OverrideWarning` only when you intentionally want the nested build to continue even though a file under
 `src/public` contains zero or multiple top-level functions.
 
-The package is written to `artifacts/packages/` by default. You can override generic package metadata through the
-optional `Package` section in `project.json`.
+The package is written to `artifacts/packages/` by default. You can override generic package metadata through the optional `Package` section in `project.json`.
 
 Use this `project.json` shape when you want to control package types and the package output directory:
 
@@ -57,8 +55,7 @@ Use this `project.json` shape when you want to control package types and the pac
 }
 ```
 
-`Package.Types` is optional. When it is missing, empty, or null, `New-NovaModulePackage` defaults to `NuGet` and creates
-a `.nupkg` file.
+`Package.Types` is optional. When it is missing, empty, or null, `New-NovaModulePackage` defaults to `NuGet` and creates a `.nupkg` file.
 
 Supported `Package.Types` values are `NuGet`, `Zip`, `.nupkg`, and `.zip`, and matching is case-insensitive.
 
@@ -79,11 +76,9 @@ Set `Package.Latest` to `"never"` when only the versioned package file(s) should
 When `Package.AddVersionToFileName` is enabled and `Package.Latest` is `"stable"` or `"always"`, `New-NovaModulePackage`
 replaces that appended version suffix with `.latest` for the companion artifact.
 
-`Package.OutputDirectory.Clean` defaults to `true`, which deletes the configured package output directory before a new
-package is created. Set it to `false` when you want to keep existing files in that directory.
+`Package.OutputDirectory.Clean` defaults to `true`, which deletes the configured package output directory before a new package is created. Set it to `false` when you want to keep existing files in that directory.
 
-This command is intended for NovaModuleTools user projects that need a deployable package artifact without publishing to
-PowerShell Gallery.
+This command is intended for NovaModuleTools user projects that need a deployable package artifact without publishing to PowerShell Gallery.
 
 ## EXAMPLES
 
@@ -93,8 +88,7 @@ PowerShell Gallery.
 PS> New-NovaModulePackage
 ```
 
-Builds the project, runs `Test-NovaBuild`, cleans `artifacts/packages/` by default, and writes a new `.nupkg` there
-when `Package.Types` is omitted or resolves to `NuGet`.
+Builds the project, runs `Test-NovaBuild`, cleans `artifacts/packages/` by default, and writes a new `.nupkg` there when `Package.Types` is omitted or resolves to `NuGet`.
 
 ### EXAMPLE 2
 
@@ -110,8 +104,7 @@ Previews the build, test, and packaging workflow without writing a package artif
 PS> New-NovaModulePackage
 ```
 
-When `Package.Types` is `@('NuGet', 'Zip')`, the command writes both `*.nupkg` and `*.zip` artifacts to the configured
-package output directory.
+When `Package.Types` is `@('NuGet', 'Zip')`, the command writes both `*.nupkg` and `*.zip` artifacts to the configured package output directory.
 
 ### EXAMPLE 4
 
@@ -119,8 +112,7 @@ package output directory.
 PS> New-NovaModulePackage
 ```
 
-When `Package.Latest` is `"stable"` and the project version is stable, the command keeps the normal versioned package
-file and also writes a companion latest file such as `NovaModuleTools.latest.nupkg`.
+When `Package.Latest` is `"stable"` and the project version is stable, the command keeps the normal versioned package file and also writes a companion latest file such as `NovaModuleTools.latest.nupkg`.
 
 ### EXAMPLE 5
 
@@ -128,8 +120,7 @@ file and also writes a companion latest file such as `NovaModuleTools.latest.nup
 PS> New-NovaModulePackage
 ```
 
-When `Package.PackageFileName` is `AgentInstaller` and `Package.AddVersionToFileName` is `true`, the command writes
-package files such as `AgentInstaller.2.3.4.nupkg` and `AgentInstaller.latest.nupkg`.
+When `Package.PackageFileName` is `AgentInstaller` and `Package.AddVersionToFileName` is `true`, the command writes package files such as `AgentInstaller.2.3.4.nupkg` and `AgentInstaller.latest.nupkg`.
 
 ### EXAMPLE 6
 
@@ -159,8 +150,7 @@ Builds the project and creates the package artifact without re-running `Test-Nov
 
 ### -SkipTests
 
-Skip `Test-NovaBuild` for this packaging run. `Invoke-NovaBuild` still runs before packaging so the artifact is created
-from fresh built output.
+Skip `Test-NovaBuild` for this packaging run. `Invoke-NovaBuild` still runs before packaging so the artifact is created from fresh built output.
 
 This option is mainly intended for CI/CD flows where tests already passed earlier in the pipeline.
 
@@ -183,8 +173,7 @@ HelpMessage: ''
 
 ### -OverrideWarning
 
-Continue the nested build even if the `src/public` layout guard reports that a public file does not contain exactly one
-top-level function.
+Continue the nested build even if the `src/public` layout guard reports that a public file does not contain exactly one top-level function.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -249,9 +238,7 @@ HelpMessage: ''
 
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
--InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
@@ -264,8 +251,7 @@ You can't pipe objects to this cmdlet.
 
 ### System.Management.Automation.PSCustomObject
 
-Returns one artifact metadata object per generated package, including the package type, generated package path, output
-directory, and source module directory.
+Returns one artifact metadata object per generated package, including the package type, generated package path, output directory, and source module directory.
 
 ## NOTES
 
@@ -280,18 +266,14 @@ Package metadata reuses values from `project.json` when possible, including:
 - `Manifest.ReleaseNotes`
 - `Manifest.LicenseUri`
 
-`Manifest.Tags`, `Manifest.ProjectUri`, `Manifest.ReleaseNotes`, and `Manifest.LicenseUri` are optional. When they are
-missing, `New-NovaModulePackage` omits the matching package metadata fields instead of treating them as required.
+`Manifest.Tags`, `Manifest.ProjectUri`, `Manifest.ReleaseNotes`, and `Manifest.LicenseUri` are optional. When they are missing, `New-NovaModulePackage` omits the matching package metadata fields instead of treating them as required.
 
-Use the top-level `Package` section only for generic packaging overrides such as package type selection, output
-directory, or package file name. `New-NovaModulePackage` always allows packaging when you invoke it; there is no
-separate
+Use the top-level `Package` section only for generic packaging overrides such as package type selection, output directory, or package file name. `New-NovaModulePackage` always allows packaging when you invoke it; there is no separate
 `Package.Enabled` switch.
 
 When `-SkipTests` is used, only `Test-NovaBuild` is skipped. Build still runs.
 
-Files under `src/public` are expected to contain exactly one top-level function each. `-OverrideWarning` bypasses that
-guard only for the current packaging run.
+Files under `src/public` are expected to contain exactly one top-level function each. `-OverrideWarning` bypasses that guard only for the current packaging run.
 
 ## RELATED LINKS
 

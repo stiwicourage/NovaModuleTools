@@ -13,8 +13,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - Keep public command files small and delegating.
 - Keep exactly one top-level public function per file in `src/public/`.
 - Public mutating commands should support PowerShell `ShouldProcess` semantics.
-- Preserve existing naming and command model conventions such as `Invoke-Nova*`, `Get-Nova*`, `Update-Nova*`, and the
-  `nova` CLI routing model.
+- Preserve existing naming and command model conventions such as `Invoke-Nova*`, `Get-Nova*`, `Update-Nova*`, and the `nova` CLI routing model.
 
 ## Internal structure rules
 

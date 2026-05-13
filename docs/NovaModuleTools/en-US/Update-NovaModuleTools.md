@@ -29,16 +29,12 @@ PS> Update-NovaModuleTool [-WhatIf] [-Confirm] [<CommonParameters>]
 
 The cmdlet is also available through the compatibility alias `Update-NovaModuleTools`.
 
-Before it runs `Update-Module`, it resolves the best available update candidate by using the stored prerelease
-preference exposed through `Get-NovaUpdateNotificationPreference`, `Set-NovaUpdateNotificationPreference`, and
-those PowerShell preference commands.
+Before it runs `Update-Module`, it resolves the best available update candidate by using the stored prerelease preference exposed through `Get-NovaUpdateNotificationPreference`, `Set-NovaUpdateNotificationPreference`, and those PowerShell preference commands.
 
 When prerelease notifications are disabled, `Update-NovaModuleTool` only considers stable releases and never passes
 `-AllowPrerelease` to the update flow.
 
-When prerelease notifications are enabled, `Update-NovaModuleTool` may target a prerelease. If the selected target is a
-prerelease, the command always asks for explicit confirmation before it proceeds, and that prerelease confirmation
-defaults to `No` so pressing Enter cancels the update.
+When prerelease notifications are enabled, `Update-NovaModuleTool` may target a prerelease. If the selected target is a prerelease, the command always asks for explicit confirmation before it proceeds, and that prerelease confirmation defaults to `No` so pressing Enter cancels the update.
 
 Stable updates do not require prerelease confirmation.
 
@@ -52,8 +48,7 @@ After a successful update, `Update-NovaModuleTool` prints the release notes link
 PS> Update-NovaModuleTool
 ```
 
-Updates the installed `NovaModuleTools` module by using the stored prerelease preference to resolve the update
-candidate.
+Updates the installed `NovaModuleTools` module by using the stored prerelease preference to resolve the update candidate.
 
 ### EXAMPLE 2
 
@@ -87,8 +82,7 @@ Previews the resolved update action without running `Update-Module`.
 
 ### -WhatIf
 
-Shows what would happen if the cmdlet runs. `Update-NovaModuleTool` resolves the target version first, then previews the
-selected stable or prerelease update action without changing the installed module.
+Shows what would happen if the cmdlet runs. `Update-NovaModuleTool` resolves the target version first, then previews the selected stable or prerelease update action without changing the installed module.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -144,16 +138,14 @@ You can't pipe objects to this cmdlet.
 
 ### PSCustomObject
 
-Returns a self-update plan/result object that shows the current version, the resolved target version, whether a newer
-update was available, whether the target was prerelease, and whether the update ran or was cancelled.
+Returns a self-update plan/result object that shows the current version, the resolved target version, whether a newer update was available, whether the target was prerelease, and whether the update ran or was cancelled.
 
 ## NOTES
 
 If the PowerShell Gallery cannot be reached well enough to resolve an update candidate, the command stops before calling
 `Update-Module`.
 
-Use `Get-NovaUpdateNotificationPreference` and `Set-NovaUpdateNotificationPreference` to inspect or change the stored
-prerelease setting.
+Use `Get-NovaUpdateNotificationPreference` and `Set-NovaUpdateNotificationPreference` to inspect or change the stored prerelease setting.
 
 ## RELATED LINKS
 

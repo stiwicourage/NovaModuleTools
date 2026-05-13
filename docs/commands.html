@@ -174,7 +174,9 @@ PS&gt; Install-NovaCli -DestinationDirectory ~/bin -Force</code></pre>
                         <div class="surface-note" data-command-visibility="powershell">
                             <p><strong>Cmdlet:</strong> <code>Initialize-NovaModule</code></p>
                         </div>
-                        <p>Create the minimal scaffold or the example scaffold for a new module project.</p>
+                        <p>Create the minimal scaffold or the example scaffold for a new module project. Both interactive
+                            flows can also add the optional Agentic Copilot starter package, which follows Nova's
+                            maintained agentic guidance through a filtered starter mirror.</p>
                         <ul class="plain-list">
                             <li><strong>Use when:</strong> you are creating a fresh NovaModuleTools project</li>
                             <li data-command-visibility="command-line" hidden><strong>Remember:</strong> pass the target path
@@ -291,7 +293,8 @@ PS&gt; Invoke-NovaBuild -ContinuousIntegration</code></pre>
                         <ul class="plain-list">
                             <li><strong>Use when:</strong> you want the standard Nova test flow</li>
                             <li data-command-visibility="command-line" hidden><strong>Best launcher option:</strong>
-                                <code>--build</code> rebuilds before testing</li>
+                                <code>--build</code> rebuilds before testing
+                            </li>
                             <li data-command-visibility="powershell"><strong>Cmdlet extras:</strong>
                                 <code>-Build</code>, <code>-TagFilter</code>, <code>-ExcludeTagFilter</code>,
                                 <code>-OutputVerbosity</code>, and <code>-OutputRenderMode</code></li>
@@ -333,9 +336,11 @@ PS&gt; Test-NovaBuild -TagFilter unit,fast</code></pre>
                         <ul class="plain-list">
                             <li><strong>Use when:</strong> you want a reusable package artifact from the built module</li>
                             <li data-command-visibility="command-line" hidden><strong>Common option:</strong>
-                                <code>--skip-tests</code> when tests already ran earlier in CI/CD</li>
+                                <code>--skip-tests</code> when tests already ran earlier in CI/CD
+                            </li>
                             <li data-command-visibility="powershell"><strong>Common parameter:</strong>
-                                <code>-SkipTests</code> when tests already ran earlier in CI/CD</li>
+                                <code>-SkipTests</code> when tests already ran earlier in CI/CD
+                            </li>
                         </ul>
                         <div class="surface-example" data-command-example>
                             <div class="surface-example__meta">
@@ -525,11 +530,13 @@ PS&gt; Update-NovaModuleVersion -ContinuousIntegration</code></pre>
                         <ul class="plain-list">
                             <li data-command-visibility="command-line" hidden><strong>Use:</strong> <code>nova version</code> for
                                 <code>project.json</code>, <code>nova version --installed</code> for the installed
-                                current project/module, and <code>nova --version</code> for NovaModuleTools itself</li>
+                                current project/module, and <code>nova --version</code> for NovaModuleTools itself
+                            </li>
                             <li data-command-visibility="powershell"><strong>Use:</strong>
                                 <code>Get-NovaProjectInfo -Version</code> for <code>project.json</code> and
                                 <code>Get-NovaProjectInfo -Installed</code> for the installed NovaModuleTools tool
-                                version</li>
+                                version
+                            </li>
                         </ul>
                         <div class="surface-example" data-command-example>
                             <div class="surface-example__meta">
@@ -566,7 +573,8 @@ PS&gt; Get-NovaProjectInfo -Installed</code></pre>
                         <ul class="plain-list">
                             <li><strong>Use when:</strong> you want to update the tool itself rather than a project</li>
                             <li><strong>Behavior:</strong> stable updates are always eligible; prerelease targets still
-                                need the stored preference and an explicit confirmation</li>
+                                need the stored preference and an explicit confirmation
+                            </li>
                         </ul>
                         <div class="surface-example" data-command-example>
                             <div class="surface-example__meta">
@@ -598,7 +606,8 @@ PS&gt; Update-NovaModuleTools</code></pre>
                         <p>Inspect or change whether prerelease self-updates are eligible.</p>
                         <ul class="plain-list">
                             <li><strong>Use when:</strong> you want to stay on stable releases or opt into prerelease
-                                updates on purpose</li>
+                                updates on purpose
+                            </li>
                             <li><strong>Settings file:</strong> <code>%APPDATA%</code> on Windows, otherwise
                                 <code>$XDG_CONFIG_HOME</code> when set, then
                                 <code>~/.config/NovaModuleTools/settings.json</code></li>

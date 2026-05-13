@@ -26,21 +26,17 @@ PS> Test-NovaBuild [-Build] [-OverrideWarning] [[-TagFilter] <string[]>] [[-Excl
 
 ## DESCRIPTION
 
-`Test-NovaBuild` reads the Pester configuration from `project.json`, resolves the correct test path, and runs the test
-suite against the current project.
+`Test-NovaBuild` reads the Pester configuration from `project.json`, resolves the correct test path, and runs the test suite against the current project.
 
 Use `-Build` when you want Nova to rebuild the project output before the Pester run starts.
 
-When `-Build` is used, `-OverrideWarning` lets that nested build continue even if the `src/public` layout guard reports
-zero or multiple top-level functions in a public file.
+When `-Build` is used, `-OverrideWarning` lets that nested build continue even if the `src/public` layout guard reports zero or multiple top-level functions in a public file.
 
 With the default
 `BuildRecursiveFolders=true`, test files in nested folders under `tests` are discovered and run. Set
-`BuildRecursiveFolders=false` to limit discovery to top-level `tests/*.Tests.ps1` files, following Pester's normal
-test-file convention. The generated Pester XML report is written to `artifacts/TestResults.xml`.
+`BuildRecursiveFolders=false` to limit discovery to top-level `tests/*.Tests.ps1` files, following Pester's normal test-file convention. The generated Pester XML report is written to `artifacts/TestResults.xml`.
 
-This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
-planned test run and XML output path without creating `artifacts/` or invoking Pester.
+This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the planned test run and XML output path without creating `artifacts/` or invoking Pester.
 
 ## EXAMPLES
 
@@ -125,8 +121,7 @@ HelpMessage: ''
 
 ### -OverrideWarning
 
-When `-Build` is also used, continue the nested build even if the `src/public` layout guard reports that a public file
-does not contain exactly one top-level function.
+When `-Build` is also used, continue the nested build even if the `src/public` layout guard reports that a public file does not contain exactly one top-level function.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -237,9 +232,7 @@ HelpMessage: ''
 
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
--InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS

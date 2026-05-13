@@ -80,6 +80,8 @@ Please also make sure your contribution includes the right kind of follow-up wor
 - update `CHANGELOG.md` when the change is relevant to users, maintainers, or future contributors
 - update `RELEASE_NOTE.md` when the change affects public cmdlet usage, CLI usage, configuration semantics, or migration expectations
 - keep `src/resources/example/` useful if your change affects the real-world project layout or workflow
+- run `./scripts/build/Sync-AgenticCopilotScaffold.ps1` when `.github/agents/`, `.github/instructions/`,
+  `.github/skills/`, `.github/prompts/`, or `.github/copilot-instructions.md` changes should flow into future Agentic Copilot scaffolds
 
 Documentation ownership is intentionally split:
 

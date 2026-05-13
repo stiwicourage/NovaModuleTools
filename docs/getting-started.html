@@ -156,7 +156,8 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                             <td>Standalone <code>nova</code> launcher</td>
                             <td>You want to run Nova from zsh or bash on macOS/Linux.</td>
                             <td>Install the launcher once with <code>Install-NovaCli</code> before you expect
-                                <code>nova</code> to resolve in your shell.</td>
+                                <code>nova</code> to resolve in your shell.
+                            </td>
                         </tr>
                         </tbody>
                     </table>
@@ -192,14 +193,16 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                         <pre><code>% nova init --example --path ~/Work</code></pre>
                     </div>
                 </div>
-                <p>Nova asks for the project name, description, version, author, minimum PowerShell version, and whether
-                    Git should be initialized. It then creates a project folder under the path you selected.</p>
+                <p>Nova asks for the project name, description, version, author, minimum PowerShell version, whether
+                    Git should be initialized, and whether Nova should add the optional Agentic Copilot starter package.
+                    The Agentic package follows Nova's maintained agentic guidance through a filtered starter mirror.
+                    Nova then creates a project folder under the path you selected.</p>
                 <div class="notice" data-command-visibility="command-line" hidden>
                     <strong>CLI caveat:</strong>
                     <p>Use <code>% nova init --path ~/Work</code> or <code>% nova init -p ~/Work</code>, not positional
                         path
                         syntax such as <code>% nova init
-                        ~/Work</code>. Positional paths are intentionally rejected with migration guidance.</p>
+                            ~/Work</code>. Positional paths are intentionally rejected with migration guidance.</p>
                 </div>
                 <div class="notice notice--warning" data-command-visibility="command-line" hidden>
                     <strong>Another important caveat:</strong>
@@ -303,8 +306,9 @@ pwsh -NoLogo -Command "Get-ExampleGreeting -Name 'Nova user' -AsObject"</code></
                         <pre><code>% nova init</code></pre>
                     </div>
                 </div>
-                <p>The minimal scaffold still asks for the same core project metadata, but it gives you a smaller
-                    starter layout than the example project.</p>
+                <p>The minimal scaffold still asks for the same core project metadata, including the optional Agentic
+                    Copilot setup question, but it gives you a smaller starter layout than the example project. When
+                    enabled, the Agentic package uses the same filtered starter mirror as the example scaffold.</p>
                 <p>Use the example scaffold when you want the fastest learning path. Use the minimal scaffold when you
                     want the leanest new project.</p>
             </section>

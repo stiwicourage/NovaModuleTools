@@ -8,6 +8,9 @@ changes will be included in the next **stable** release!
 
 ### Added
 
+- `Initialize-NovaModule` and `% nova init` now offer an optional Agentic Copilot starter package in both the minimal and example interactive scaffold flows.
+    - The starter package follows a filtered mirror of Nova's maintained agentic guidance so newly scaffolded projects receive a broader Nova-style agentic baseline without Nova-specific CodeScene or docs-site surfaces.
+
 ### Changed
 
 ### Deprecated
@@ -196,4 +199,3 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ### Added
 
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
-

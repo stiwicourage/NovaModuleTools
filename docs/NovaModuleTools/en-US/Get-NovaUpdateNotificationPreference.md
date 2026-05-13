@@ -28,8 +28,7 @@ PS> Get-NovaUpdateNotificationPreference [<CommonParameters>]
 `Get-NovaUpdateNotificationPreference` returns the current user preference that controls whether
 `Update-NovaModuleTool` / `Update-NovaModuleTools` may select prerelease versions of `NovaModuleTools`.
 
-The same stored preference is also used by `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) when it decides
-whether a prerelease self-update is eligible.
+The same stored preference is also used by `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) when it decides whether a prerelease self-update is eligible.
 
 Stable self-updates remain available and do not require prerelease eligibility.
 
@@ -41,8 +40,7 @@ Stable self-updates remain available and do not require prerelease eligibility.
 PS> Get-NovaUpdateNotificationPreference
 ```
 
-Shows whether prerelease self-updates are currently enabled, whether stable self-updates remain available, and where the
-preference is stored.
+Shows whether prerelease self-updates are currently enabled, whether stable self-updates remain available, and where the preference is stored.
 
 ### EXAMPLE 2
 
@@ -75,14 +73,11 @@ Returns the prerelease self-update state, the always-available stable-update sta
 
 ## NOTES
 
-Use `Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications` to stop prerelease self-updates from being
-eligible.
+Use `Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications` to stop prerelease self-updates from being eligible.
 
 Use `Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications` to allow prerelease self-updates again.
 
-When prerelease notifications are enabled again, `Update-NovaModuleTool` / `Update-NovaModuleTools` may again select a
-prerelease target. Prerelease self-updates still require explicit confirmation before the update proceeds, and that
-confirmation defaults to `No` so pressing Enter cancels the update.
+When prerelease notifications are enabled again, `Update-NovaModuleTool` / `Update-NovaModuleTools` may again select a prerelease target. Prerelease self-updates still require explicit confirmation before the update proceeds, and that confirmation defaults to `No` so pressing Enter cancels the update.
 
 ## RELATED LINKS
 

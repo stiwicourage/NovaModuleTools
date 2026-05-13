@@ -70,6 +70,19 @@ function Get-NovaModulePesterQuestion {
     }
 }
 
+function Get-NovaModuleAgenticCopilotQuestion {
+    return @{
+        Caption = 'Agentic Copilot setup'
+        Message = 'Do you want Nova to add Agentic Copilot setup files to this project?'
+        Prompt = 'EnableAgenticCopilot'
+        Default = 'No'
+        Choice = [ordered]@{
+            Yes = 'Add Agentic Copilot setup'
+            No = 'Skip Agentic Copilot setup'
+        }
+    }
+}
+
 function Get-NovaModuleQuestionSet {
     [CmdletBinding()]
     param(
@@ -77,6 +90,7 @@ function Get-NovaModuleQuestionSet {
     )
 
     $questions = Get-NovaModuleBaseQuestionSet
+    $questions.EnableAgenticCopilot = Get-NovaModuleAgenticCopilotQuestion
 
     if (-not $Example) {
         $questions.EnablePester = Get-NovaModulePesterQuestion

@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `Initialize-NovaModule` and `% nova init` now offer an optional interactive Agentic Copilot starter package for both the minimal and example scaffold flows.
+    - The new prompt appears after the Git question, defaults to `No`, and adds one shared Nova-maintained starter tree when enabled.
+    - Example scaffolds now merge the existing example README with the Agentic starter README instead of flattening the example guide into the generic starter file.
+    - The starter tree is now generated from a filtered mirror of Nova's own agentic `.github/` files, with a dedicated sync script and drift test so future scaffolds and `dist` stay aligned with the maintained source guidance.
+
 ### Changed
 
 - The architect/design flow now surfaces settled vs unresolved design items before finalization, offers explicit choices for full finalization vs design-package-only handoff, and clarifies how to use design notes versus the paste-ready GitHub issue draft.
@@ -46,7 +51,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - `CHANGELOG.md` remains the exhaustive release history.
   - `RELEASE_NOTE.md` now captures only public cmdlet, CLI, configuration, and migration-impacting changes, including backfilled summaries for the existing released versions in `CHANGELOG.md`.
   - `Tests.yml` now validates both files, and `Publish.yml` now finalizes both files during stable release preparation.
-    - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
+      - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
 
 ### Changed
 
@@ -57,7 +62,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - `CHANGELOG.md` remains the exhaustive release history.
   - `RELEASE_NOTE.md` now captures only public cmdlet, CLI, configuration, and migration-impacting changes, including backfilled summaries for the existing released versions in `CHANGELOG.md`.
   - `Tests.yml` now validates both files, and `Publish.yml` now finalizes both files during stable release preparation.
-    - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
+      - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
 
 ### Deprecated
 
@@ -95,7 +100,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Restore Nova-managed project test runs in CI/CD after `2.2.0` dropped the implicit `Pester` dependency.
     - CI/CD environments no longer need custom logic to install `Pester` themselves before running project tests.
   - Published `NovaModuleTools` manifests once again pull in `Pester 5.7.1` implicitly so existing CI/CD test flows keep working without extra installation logic.
-    - `Test-NovaBuild` fails with a clear dependency error when `Pester` is not installed.
+      - `Test-NovaBuild` fails with a clear dependency error when `Pester` is not installed.
 
 ## [2.2.0] - 2026-05-06 [YANKED]
 
@@ -203,8 +208,8 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
   - The `nova` launcher now supports `--continuous-integration` / `-i` on `nova build`, `nova bump`, `nova publish`, and `nova release` while keeping `nova version -i` dedicated to the installed-version view.
   - Build re-activates the freshly built module after the build succeeds, bump re-activates it before the version update starts, and publish/release restore the built module again after publish completes.
   - Repository publish no longer forces verbose `Publish-PSResource` output unless verbose logging was explicitly requested.
-    - CI bump now reuses the already activated built-module command when the current session is already running from
-      `dist/`, so publish-then-bump prerelease automation can continue in the same session without losing private helper bindings.
+      - CI bump now reuses the already activated built-module command when the current session is already running from
+        `dist/`, so publish-then-bump prerelease automation can continue in the same session without losing private helper bindings.
   - `Update-NovaModuleVersion -ContinuousIntegration` now also falls back to a patch bump when `HEAD` already matches the latest tag, so release automation can prepare the next prerelease version without requiring an extra commit.
 - Keep standalone `nova bump` output stable by formatting version-update results in the CLI layer instead of relying on PowerShell's default object rendering.
     - `nova bump --what-if` and `% run.ps1` now surface a predictable summary for previous version, new version, label, and commit count.
@@ -275,8 +280,8 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
     - `BuildRecursiveFolders` (default `true`): recursive discovery for `src/classes`, `src/private` and `tests`.
   - `SetSourcePath` (default `true`): include `# Source: <relative path>` before each concatenated source file in generated `dist/<Project>/<Project>.psm1`.
   - `FailOnDuplicateFunctionNames` (default `true`): fail build when duplicate top-level function names exist in generated `dist/<Project>/<Project>.psm1`.
-    - Missing values for these settings are now treated as `true`.
-    - The rebranded `NovaModuleTools` module now uses its own module `GUID`.
+      - Missing values for these settings are now treated as `true`.
+      - The rebranded `NovaModuleTools` module now uses its own module `GUID`.
 
 ### Changed
 
