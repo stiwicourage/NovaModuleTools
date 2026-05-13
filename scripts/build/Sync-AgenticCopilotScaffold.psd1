@@ -271,6 +271,10 @@
             New = '- Issue'
         }
         @{
+            Old = '- `pwsh -NoLogo -NoProfile -File ./run.ps1` before completion'
+            New = ''
+        }
+        @{
             Old = '- `pwsh -NoLogo -NoProfile -File ./run.ps1`'
             New = ''
         }

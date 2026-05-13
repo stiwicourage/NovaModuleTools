@@ -38,4 +38,5 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 ## Verification
 
 - Targeted Pester file(s)
-- `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` when PowerShell code changed before completion
+- `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` when PowerShell code changed
+
