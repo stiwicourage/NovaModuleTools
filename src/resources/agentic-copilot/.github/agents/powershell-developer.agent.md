@@ -13,7 +13,8 @@ Implement PowerShell command and helper changes in the {{ProjectName}} style.
 
 - Change the relevant public command and private helper flow.
 - Keep public files delegating and internal helpers domain-aligned.
-- Add or update tests and documentation for the changed behavior.
+- Preserve Nova's `project.json`-driven build model; do not add hand-written source `.psm1` or module `.psd1` files.
+- Add or update source-mirrored tests and PlatyPS-compatible help docs for the changed behavior.
 
 ## Inputs to inspect
 
@@ -37,6 +38,7 @@ Implement PowerShell command and helper changes in the {{ProjectName}} style.
 ## Definition of done
 
 - Production code and tests both reflect the intended behavior.
+- Build output still comes from Nova-generated `dist/` files, not hand-authored module files in `src/`.
 - Docs/changelog review is complete.
 - The relevant validation commands have been run.
 

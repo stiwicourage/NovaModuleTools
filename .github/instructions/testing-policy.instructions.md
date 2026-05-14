@@ -14,6 +14,8 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 - Prefer targeted tests close to the changed workflow area before running the full quality loop.
 - Keep test names explicit about the behavior being proven.
 - Reuse `*.TestSupport.ps1` helpers where possible.
+- For every new or changed `src/**/*.ps1` file, add or update the matching source-mirrored `.Tests.ps1` file.
+- Use broad guardrail, architecture, command-model, or integration tests only for behavior that genuinely spans multiple source files; do not use them as the default place for unit coverage of unrelated source files.
 
 ## Repository test structure
 
@@ -21,6 +23,8 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 - `tests/ArchitectureGuardrails.Tests.ps1` - layering and adapter boundaries
 - `tests/*Coverage*.Tests.ps1` - targeted coverage and regression gaps
 - `tests/*TestSupport.ps1` - shared helpers and reusable fixtures
+- Source-mirrored tests should use `tests/public/<Name>.Tests.ps1`, `tests/private/<domain>/<Name>.Tests.ps1`, and `tests/classes/<Name>.Tests.ps1` for matching `src/public/`, `src/private/`, and `src/classes/` files.
+- Repeated setup belongs in `tests/TestHelpers/` or `tests/*TestSupport.ps1`, not in duplicated blocks across mirrored tests.
 
 ## Coverage and CodeScene
 

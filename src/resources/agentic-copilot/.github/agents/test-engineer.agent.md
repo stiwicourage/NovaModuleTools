@@ -13,6 +13,7 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 
 - Add missing Pester coverage for changed behavior.
 - Refactor brittle or duplicated tests into reusable support patterns.
+- Enforce a source-mirrored test layout for new projects and newly added or changed source files.
 - Keep CI coverage output compatible with the quality tooling workflow.
 
 ## Inputs to inspect
@@ -32,11 +33,13 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 - Prefer targeted tests first, then the full repo quality loop.
 - Keep test files maintainable; passing tests are not enough if maintainability degrades.
 - Reuse existing fixture and support patterns before adding new ones.
+- Do not group unrelated source files into one broad test file when mirrored `tests/public`, `tests/private`, or `tests/classes` ownership is possible.
 - If quality tooling flags a regression, refactor the tests or helpers instead of suppressing the finding.
 
 ## Definition of done
 
 - The changed behavior is covered.
+- Each new or changed `src/**/*.ps1` file has a matching source-mirrored test, or the cross-cutting owner test is named explicitly.
 - The touched tests are readable and low-duplication.
 - Validation and quality tooling implications are addressed.
 - The pre-commit quality tooling safeguard is clean before the work is treated as commit-ready when local quality tooling is available.

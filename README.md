@@ -506,7 +506,7 @@ Packaged resources that ship with the module, including:
 - the packaged example project under `src/resources/example/`
 - the Agentic Copilot starter package under `src/resources/agentic-copilot/`
 
-The example project is both a shipped resource and a maintained working reference. The Agentic Copilot starter package is generated from Nova's repository-local agentic guidance. Run
+The example project is both a shipped resource and a maintained working reference. The Agentic Copilot starter package is generated from Nova's repository-local agentic guidance, including Nova build/test/package expectations, generated `dist` module files, command-help ownership, and source-mirrored test guidance. Run
 `./scripts/build/Sync-AgenticCopilotScaffold.ps1` after changing `.github/agents/`, `.github/instructions/`,
 `.github/skills/`, `.github/prompts/`, or `.github/copilot-instructions.md` so future scaffolds and `dist` stay in sync.
 

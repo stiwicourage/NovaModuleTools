@@ -43,4 +43,18 @@ Describe 'Agentic Copilot scaffold sync' {
             Test-Path -LiteralPath $scaffoldPath | Should -BeFalse
         }
     }
+
+    It 'documents Nova-managed project expectations in the starter guidance' {
+        $instructionContent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/copilot-instructions.md') -Raw
+        $developerSkillContent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/skills/powershell-module-development/SKILL.md') -Raw
+        $testingPolicyContent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/testing-policy.instructions.md') -Raw
+        $readmeContent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot 'README.md') -Raw
+
+        $instructionContent | Should -Match 'Do not create or maintain hand-written module `\.psm1` or module `\.psd1` files in source'
+        $developerSkillContent | Should -Match 'Nova generates those files under `dist/\{\{ProjectName\}\}/`'
+        $instructionContent | Should -Match 'docs/\{\{ProjectName\}\}/en-US/'
+        $testingPolicyContent | Should -Match 'For every new or changed `src/\*\*/\*\.ps1` file'
+        $testingPolicyContent | Should -Match 'Source-mirrored tests should use'
+        $readmeContent | Should -Match 'every new or changed `src/\*\*/\*\.ps1` file should have one focused `\.Tests\.ps1` file'
+    }
 }

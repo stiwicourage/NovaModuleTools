@@ -25,9 +25,13 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 
 - Keep public commands thin and delegating.
 - Put implementation detail in the correct private domain folder.
+- Treat `project.json` as the source of truth for Nova build, package, manifest, and release metadata.
+- Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source; Nova generates those files under `dist/<ProjectName>/`.
 - Preserve native PowerShell semantics and Nova naming patterns.
 - Reuse existing workflow-context helpers and shared adapters.
 - Follow the repository's PowerShell style rules: 4-space indentation, same-line opening braces, restrained blank lines, full cmdlet names, and readable operator spacing.
+- Add or update PlatyPS-compatible help under `docs/<ProjectName>/en-US/` when public commands or public classes change.
+- Add or update the source-mirrored Pester test file for every changed `src/**/*.ps1` file.
 
 ## Common pitfalls
 
@@ -35,6 +39,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Mixing CLI flag spellings into PowerShell command output
 - Calling `git`, `Invoke-WebRequest`, `Update-Module`, or `$env:` from the wrong layer
 - Replacing explicit warning opt-ins with generic force semantics
+- Creating a root module `.psm1` or module manifest `.psd1` by hand instead of letting Nova generate them from `project.json`
 
 ## Verification
 

@@ -32,7 +32,7 @@
     TextReplacements = @(
         @{
             Old = 'NovaModuleTools is not a generic PowerShell repo. It has a strong split between public commands, private helpers, Pester-heavy testing, GitHub Actions automation, CodeScene coverage gates, and Keep a Changelog / SemVer release flow.'
-            New = '{{ProjectName}} is a PowerShell module project. Keep public commands, private helpers, Pester tests, release history, and documentation aligned with the generated project layout.'
+            New = '{{ProjectName}} is a Nova-managed PowerShell module project. Keep public commands, private helpers, Pester tests, release history, and documentation aligned with `project.json` and the generated project layout.'
         }
         @{
             Old = 'CodeScene'
@@ -305,6 +305,14 @@
         @{
             Old = 'paste-ready GitHub text'
             New = 'paste-ready tracker text'
+        }
+        @{
+            Old = 'docs/<ProjectName>/en-US/'
+            New = 'docs/{{ProjectName}}/en-US/'
+        }
+        @{
+            Old = 'dist/<ProjectName>/'
+            New = 'dist/{{ProjectName}}/'
         }
         @{
             Old = '- `pwsh -NoLogo -NoProfile -File ./run.ps1` before completion'

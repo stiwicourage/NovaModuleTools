@@ -17,6 +17,9 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 - Treat quality tooling maintainability and changed-code coverage results as release-blocking signals unless risk is accepted explicitly.
 - If local quality tooling is unavailable, continue the review with normal validation and rely on PR/CI as the effective quality tooling gate.
 - Check whether project docs preserve the CLI-vs-cmdlet separation when project docs or help markdown changed.
+- Check that Nova projects still use generated `dist/` module files instead of hand-written source `.psm1` or module `.psd1` files.
+- Check that public commands/classes have matching PlatyPS-compatible help and that new source files have source-mirrored tests.
+- Flag broad catch-all test files when focused source-mirrored tests would make ownership clearer.
 
 ## Inputs to inspect
 

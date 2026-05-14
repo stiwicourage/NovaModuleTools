@@ -14,6 +14,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - Keep exactly one top-level public function per file in `src/public/`.
 - Public mutating commands should support PowerShell `ShouldProcess` semantics.
 - Preserve existing naming and command model conventions such as `Invoke-<function>*`, `Get-<function>*`, `Update-<function>*`.
+- Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source. Nova generates the built module root and manifest under `dist/{{ProjectName}}/` from `project.json` and `src/**/*.ps1`.
 
 ## Internal structure rules
 
@@ -64,6 +65,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - Do not stack multiple blank lines.
 - Avoid decorative blank lines inside short blocks.
 - Keep one blank line between top-level declarations when a file contains more than one declaration.
+- Modified or created text files, including `.ps1` files, must end with exactly one trailing newline and no extra blank lines after the final statement.
 
 ## Maintainability rules
 
