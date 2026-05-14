@@ -41,6 +41,8 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - Treat `project.json` as the source of truth for project metadata, build output, package settings, and release settings.
 - Use Nova commands and repository wrappers for build, test, package, and release workflows; do not replace them with ad hoc PowerShell module build scripts.
 - Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source; Nova generates the built module root and manifest under `dist/<ProjectName>/` from `project.json` and `src/**/*.ps1`.
+- Do not exclude or suppress PSScriptAnalyzer rules in repository analyzer helpers; fix the code that violates analyzer rules instead.
+- Keep `run.ps1` as the local quality loop: run ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
 - Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` after every meaningful change.
 - Update tests when behavior changes.
 - Prefer existing helpers and support files over ad hoc duplication.

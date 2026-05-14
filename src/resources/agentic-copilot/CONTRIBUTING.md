@@ -9,6 +9,8 @@ Before opening a pull request:
 - use `tests/TestHelpers/` or test-support files for shared setup instead of broad catch-all test files
 - add or update PlatyPS-compatible help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change
 - use Nova commands and `project.json` for build, test, package, and release behavior
+- keep `run.ps1` ordered as ScriptAnalyzer, then `Invoke-NovaBuild`, then `Test-NovaBuild`
+- do not exclude or suppress PSScriptAnalyzer rules
 - do not hand-create module `.psm1` or module `.psd1` files in source
 - review `README.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` when the workflow or public behavior changed
 - keep PowerShell cmdlet guidance, CLI guidance, and contributor guidance clearly separated

@@ -30,6 +30,8 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Preserve native PowerShell semantics and Nova naming patterns.
 - Reuse existing workflow-context helpers and shared adapters.
 - Follow the repository's PowerShell style rules: 4-space indentation, same-line opening braces, restrained blank lines, full cmdlet names, and readable operator spacing.
+- Keep ScriptAnalyzer strict: do not add excluded rules, suppression attributes, or settings that hide analyzer findings.
+- Keep `run.ps1`-style local checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
 - Add or update PlatyPS-compatible help under `docs/<ProjectName>/en-US/` when public commands or public classes change.
 - Add or update the source-mirrored Pester test file for every changed `src/**/*.ps1` file.
 
@@ -40,6 +42,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Calling `git`, `Invoke-WebRequest`, `Update-Module`, or `$env:` from the wrong layer
 - Replacing explicit warning opt-ins with generic force semantics
 - Creating a root module `.psm1` or module manifest `.psd1` by hand instead of letting Nova generate them from `project.json`
+- Excluding PSScriptAnalyzer rules instead of fixing the code that violates them
 
 ## Verification
 

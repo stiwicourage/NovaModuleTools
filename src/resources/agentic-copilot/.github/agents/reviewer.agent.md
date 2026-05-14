@@ -20,6 +20,7 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 - Check that Nova projects still use generated `dist/` module files instead of hand-written source `.psm1` or module `.psd1` files.
 - Check that public commands/classes have matching PlatyPS-compatible help and that new source files have source-mirrored tests.
 - Flag broad catch-all test files when focused source-mirrored tests would make ownership clearer.
+- Flag any PSScriptAnalyzer rule excludes or suppressions; the code should be fixed instead.
 
 ## Inputs to inspect
 

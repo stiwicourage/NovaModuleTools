@@ -27,7 +27,7 @@ PS> Initialize-NovaModule [-Path <string>] [-Example] [-WhatIf] [-Confirm] [<Com
 
 `Initialize-NovaModule` creates a new project folder, the standard `src/` layout, and a starter `project.json` file.
 
-The command collects project details interactively, including the module name, description, version, author, minimum PowerShell version, Git initialization, and an optional Agentic Copilot starter package. The Agentic package follows Nova's maintained agentic guidance through a filtered starter mirror, including Nova build/test/package expectations, generated `dist` module files, command-help ownership, and source-mirrored test guidance. For the standard scaffold, the interactive flow also includes optional basic Pester support.
+The command collects project details interactively, including the module name, description, version, author, minimum PowerShell version, Git initialization, and an optional Agentic Copilot starter package. The Agentic package follows Nova's maintained agentic guidance through a filtered starter mirror, including Nova build/test/package expectations, strict ScriptAnalyzer guidance without excluded rules, generated `dist` module files, command-help ownership, and source-mirrored test guidance. For the standard scaffold, the interactive flow also includes optional basic Pester support.
 
 If you enter an invalid answer during the interactive flow, `Initialize-NovaModule` reports the validation problem immediately and retries that prompt before it continues to the next question.
 
@@ -136,7 +136,7 @@ This cmdlet does not emit an output object.
 
 ## NOTES
 
-Generated projects start with NovaModuleTools defaults for recursive discovery, source markers, and duplicate-function validation. The packaged example scaffold keeps its bundled example source and tests, while still updating prompt-driven metadata such as project name, description, version, author, and PowerShell host version. The optional Agentic Copilot starter package adds repository-local Copilot workflow files under the project root and `.github/` that tell agents to keep build/test/package workflows on Nova, leave `.psm1` / `.psd1` files to generated `dist` output, maintain PlatyPS-compatible help, and mirror new tests to source files.
+Generated projects start with NovaModuleTools defaults for recursive discovery, source markers, and duplicate-function validation. The packaged example scaffold keeps its bundled example source and tests, while still updating prompt-driven metadata such as project name, description, version, author, and PowerShell host version. The optional Agentic Copilot starter package adds repository-local Copilot workflow files under the project root and `.github/` that tell agents to keep build/test/package workflows on Nova, run ScriptAnalyzer before build/test without excluding rules, leave `.psm1` / `.psd1` files to generated `dist` output, maintain PlatyPS-compatible help, and mirror new tests to source files.
 
 `Initialize-NovaModule` uses `SupportsShouldProcess`, so `Get-Help Initialize-NovaModule -Full` surfaces native
 `-WhatIf` and

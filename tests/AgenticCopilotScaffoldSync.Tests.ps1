@@ -53,6 +53,8 @@ Describe 'Agentic Copilot scaffold sync' {
         $instructionContent | Should -Match 'Do not create or maintain hand-written module `\.psm1` or module `\.psd1` files in source'
         $developerSkillContent | Should -Match 'Nova generates those files under `dist/\{\{ProjectName\}\}/`'
         $instructionContent | Should -Match 'docs/\{\{ProjectName\}\}/en-US/'
+        $instructionContent | Should -Match 'Do not exclude or suppress PSScriptAnalyzer rules'
+        $readmeContent | Should -Match 'ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`'
         $testingPolicyContent | Should -Match 'For every new or changed `src/\*\*/\*\.ps1` file'
         $testingPolicyContent | Should -Match 'Source-mirrored tests should use'
         $readmeContent | Should -Match 'every new or changed `src/\*\*/\*\.ps1` file should have one focused `\.Tests\.ps1` file'

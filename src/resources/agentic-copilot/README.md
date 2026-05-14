@@ -19,6 +19,8 @@ Follow this workflow when working with Copilot in this repository.
 ## Nova project expectations
 
 - Use Nova commands and `project.json` for build, test, package, and release behavior.
+- Keep `run.ps1` as the local quality loop: ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
+- Do not exclude or suppress PSScriptAnalyzer rules; fix analyzer findings in the code.
 - Do not hand-create module `.psm1` or module `.psd1` files in source; Nova generates them under `dist/{{ProjectName}}/`.
 - Add PlatyPS-compatible help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change.
 - Keep tests mirrored to source files: every new or changed `src/**/*.ps1` file should have one focused `.Tests.ps1` file, for example `src/private/foo/Get-Thing.ps1` -> `tests/private/foo/Get-Thing.Tests.ps1`.

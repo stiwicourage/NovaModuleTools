@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - The starter tree is now generated from a filtered mirror of Nova's own agentic `.github/` files, with a dedicated sync script and drift test so future scaffolds and `dist` stay aligned with the maintained source guidance.
     - The generated architect/design prompt now requires final design packages and issue/work item drafts to be returned as copy-ready Markdown using the project Markdown authoring guidance.
   - The generated guidance now explicitly keeps Agentic Copilot projects on the Nova build model, treats `.psm1` / `.psd1` files as generated `dist` output, requires PlatyPS-compatible help for public commands/classes, and expects one focused source-mirrored test file for every new or changed `src/**/*.ps1` file.
+  - The generated guidance now keeps local `run.ps1` quality loops ordered as ScriptAnalyzer, `Invoke-NovaBuild`, then `Test-NovaBuild`, and tells agents to fix ScriptAnalyzer findings instead of excluding or suppressing rules.
 
 ### Changed
 

@@ -12,6 +12,7 @@ changes will be included in the next **stable** release!
     - The starter package follows a filtered mirror of Nova's maintained agentic guidance so newly scaffolded projects receive a broader Nova-style agentic baseline without Nova-specific CodeScene or docs-site surfaces.
     - Generated architect/design guidance now requires final design packages and issue/work item drafts to be returned as copy-ready Markdown using the project Markdown authoring guidance.
   - Generated implementation/test guidance now keeps projects on Nova build/test/package workflows, treats `.psm1` / `.psd1` files as generated output, and calls out PlatyPS help plus one focused source-mirrored test file for every new or changed `src/**/*.ps1` file.
+  - Generated quality-loop guidance now keeps ScriptAnalyzer first and tells agents to fix ScriptAnalyzer findings instead of excluding or suppressing rules.
 
 ### Changed
 

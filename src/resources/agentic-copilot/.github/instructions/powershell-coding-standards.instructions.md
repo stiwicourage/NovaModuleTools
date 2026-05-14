@@ -28,6 +28,8 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - Prefer clear, structured Nova errors over silent fallback behavior.
 - Preserve existing warning semantics; do not rename warning opt-ins to a generic `-Force` pattern.
 - Keep CLI spellings and PowerShell spellings distinct in messages and docs.
+- Do not add PSScriptAnalyzer `ExcludeRule`, `ExcludeRules`, suppression attributes, or generated settings that hide analyzer findings. Fix the rule violation instead.
+- Keep local quality wrappers ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
 
 ## Formatting rules
 
