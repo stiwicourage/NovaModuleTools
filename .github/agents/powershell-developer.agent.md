@@ -17,6 +17,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 - Read `project.json` `Manifest.PowerShellHostVersion` before implementing PowerShell changes and keep source, tests, and examples compatible with that target.
 - Keep one externally called function per file and match the file name to that function. In `src/private/`, additional functions may stay only as same-file support helpers called by that file's entry function.
 - Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort source-code matrix while shaping `src/**/*.ps1`.
+- Use `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth while changing PowerShell code or analyzer helpers.
 - Add or update source-mirrored tests and valid PlatyPS-compatible help docs for the changed behavior, using the Microsoft.PowerShell.PlatyPS cmdlets instead of hand-written help structure.
 - Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the bottom.
 
@@ -42,6 +43,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 - Keep raw infrastructure calls behind approved adapters.
 - Preserve existing command names, warning semantics, and output shape.
 - Keep new or heavily changed source functions inside the warning thresholds from `.github/instructions/code-quality-matrix.instructions.md` unless the scope explicitly justifies otherwise.
+- Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1` for normal analyzer loops; use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repository-approved settings.
 - When help files change, keep `docs/<ProjectName>/en-US/*.md` valid for `Import-MarkdownCommandHelp`: use `New-MarkdownCommandHelp` for new files, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff.
 
 ## Definition of done

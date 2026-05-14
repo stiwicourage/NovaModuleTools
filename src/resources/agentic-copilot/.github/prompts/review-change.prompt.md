@@ -7,11 +7,12 @@ Review a {{ProjectName}} change set with emphasis on correctness, maintainabilit
 1. Start with the highest-risk public command, workflow, or release path in the diff.
 2. Compare the changed files against the relevant repository instructions and skills.
 3. Check changed `src/**/*.ps1` and `tests/**/*.ps1` against `.github/instructions/code-quality-matrix.instructions.md`.
-4. Check changed `docs/<ProjectName>/en-US/*.md` against `.github/instructions/platyps-help.instructions.md` when command help was added or updated; flag files that do not follow the `New-MarkdownCommandHelp` / `Update-MarkdownCommandHelp` / `Test-MarkdownCommandHelp` workflow or the required PlatyPS section structure.
-5. Check whether tests, docs, and changelog updates match the change.
-6. Call out the smallest set of meaningful issues first.
-7. Note any missing validation or follow-up work.
-8. If the review is returned as Markdown or copy-ready UI text, format it according to the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
+4. Check changed PowerShell validation flow against `.github/instructions/psscriptanalyzer.instructions.md`; flag direct analyzer usage that bypasses the repository wrapper or repo-approved settings without a clear reason.
+5. Check changed `docs/<ProjectName>/en-US/*.md` against `.github/instructions/platyps-help.instructions.md` when command help was added or updated; flag files that do not follow the `New-MarkdownCommandHelp` / `Update-MarkdownCommandHelp` / `Test-MarkdownCommandHelp` workflow or the required PlatyPS section structure.
+6. Check whether tests, docs, and changelog updates match the change.
+7. Call out the smallest set of meaningful issues first.
+8. Note any missing validation or follow-up work.
+9. If the review is returned as Markdown or copy-ready UI text, format it according to the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
 
 ## Repository-specific reminders
 

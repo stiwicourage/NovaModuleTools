@@ -17,6 +17,7 @@ Read these files before making non-trivial changes:
 5. The relevant skill under `.github/skills/<skill-name>/SKILL.md`
 6. `.github/instructions/code-quality-matrix.instructions.md` when shaping or reviewing `src/**/*.ps1` or `tests/**/*.ps1`
 7. `.github/instructions/platyps-help.instructions.md` when creating or updating `docs/<ProjectName>/en-US/*.md`
+8. `.github/instructions/psscriptanalyzer.instructions.md` when changing PowerShell code, test helpers, or analyzer wrappers
 
 Prompt templates under `.github/prompts/*.prompt.md` are not auto-loaded. Reference them explicitly in chat when you want to use one of the repository's reusable task prompts.
 
@@ -44,6 +45,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - Use Nova commands and repository wrappers for build, test, package, and release workflows; do not replace them with ad hoc PowerShell module build scripts.
 - Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source; Nova generates the built module root and manifest under `dist/<ProjectName>/` from `project.json` and `src/**/*.ps1`.
 - Do not exclude or suppress PSScriptAnalyzer rules in repository analyzer helpers; fix the code that violates analyzer rules instead.
+- Use `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth. Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1`, and only use direct `Invoke-ScriptAnalyzer` for focused local checks or deliberate analyzer-tooling changes.
 - Keep `run.ps1` as the local quality loop: run ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
 - If `run.ps1` or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before review, handoff, or commit. Do not treat a failing local quality loop as an acceptable stopping point.
 - Keep file/function ownership explicit: `src/public/` files should own exactly one top-level function each, and `src/private/` files should expose at most one externally called function per file. Additional private functions may stay only as support helpers used from the same file, and the file name should match the function that owns the file.

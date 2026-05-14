@@ -33,8 +33,8 @@ New-MarkdownCommandHelp @newMarkdownHelp
 
 ```powershell
 Measure-PlatyPSMarkdown -Path ./docs/<ProjectName>/en-US/*.md |
-    Where-Object FileType -match 'CommandHelp' |
-    Update-MarkdownCommandHelp -Path {$_.FilePath}
+        Where-Object FileType -match 'CommandHelp' |
+        Update-MarkdownCommandHelp -Path {$_.FilePath}
 ```
 
 5. Validate the final help with `Test-MarkdownCommandHelp -DetailView`, and inspect `Import-MarkdownCommandHelp` diagnostics when the structure or build result is unclear.
@@ -43,7 +43,7 @@ Measure-PlatyPSMarkdown -Path ./docs/<ProjectName>/en-US/*.md |
 Test-MarkdownCommandHelp -Path ./docs/<ProjectName>/en-US/*.md -DetailView
 
 Import-MarkdownCommandHelp -Path ./docs/<ProjectName>/en-US/<CommandName>.md |
-    Select-Object -ExpandProperty Diagnostics
+        Select-Object -ExpandProperty Diagnostics
 ```
 
 6. Remember the build path: Nova effectively runs `Measure-PlatyPSMarkdown | Import-MarkdownCommandHelp | Export-MamlCommandHelp`. If your help files fail that path, the help is not done yet.

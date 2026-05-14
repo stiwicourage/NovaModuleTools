@@ -132,7 +132,9 @@ PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
                     source-mirrored test guidance, instructions to fix ScriptAnalyzer findings reported by
                     <code>run.ps1</code> before handoff, explicit public/private PowerShell file ownership guidance, a
                     best-effort src/tests quality matrix delivered through Agentic Copilot guidance files instead of a
-                    required <code>.codescene/code-health-rules.json</code>, explicit valid-PlatyPS help guidance for
+                    required <code>.codescene/code-health-rules.json</code>, explicit PSScriptAnalyzer workflow
+                    guidance for <code>./scripts/build/Invoke-ScriptAnalyzerCI.ps1</code>, <code>./run.ps1</code>, and
+                    focused <code>Invoke-ScriptAnalyzer</code> usage, explicit valid-PlatyPS help guidance for
                     <code>docs/&lt;ProjectName&gt;/en-US/*.md</code> using
                     <code>New-MarkdownCommandHelp</code>, <code>Update-MarkdownCommandHelp</code>, and
                     <code>Test-MarkdownCommandHelp</code>, and a strict file-ending rule for changed or generated text

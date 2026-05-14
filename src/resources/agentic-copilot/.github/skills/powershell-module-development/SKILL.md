@@ -33,6 +33,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort source-code matrix. Keep new or heavily changed source functions at or below the warning thresholds for lines of code (`16`), cyclomatic complexity (`6`), complex conditional branches (`6`), max arguments (`4`), and nesting depth (`6`) unless the change explicitly justifies more.
 - Reuse existing workflow-context helpers and shared adapters.
 - Follow the repository's PowerShell style rules: 4-space indentation, same-line opening braces, restrained blank lines, full cmdlet names, and readable operator spacing.
+- Follow `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth. Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1`, and use direct `Invoke-ScriptAnalyzer` only for focused local checks or deliberate analyzer-tooling work.
 - Keep ScriptAnalyzer strict: do not add excluded rules, suppression attributes, or settings that hide analyzer findings.
 - Keep `run.ps1`-style local checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
 - If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before handoff instead of just reporting the failure.
@@ -51,6 +52,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Ignoring the source-code matrix and letting new or heavily changed functions grow far beyond the warning thresholds without justification
 - Writing plain Markdown under `docs/<ProjectName>/en-US/` that lacks YAML metadata or the PlatyPS structure expected by `Import-MarkdownCommandHelp`
 - Editing PlatyPS YAML and section structure by hand when `New-MarkdownCommandHelp` or `Update-MarkdownCommandHelp` should have regenerated it
+- Bypassing the repository analyzer wrapper/settings with ad hoc `Invoke-ScriptAnalyzer`, `-EnableExit`, or broad rule-exclusion changes
 - Ignoring the project's `Manifest.PowerShellHostVersion` target and introducing PowerShell 7.x-only features into a `5.1` project
 - Excluding PSScriptAnalyzer rules instead of fixing the code that violates them
 

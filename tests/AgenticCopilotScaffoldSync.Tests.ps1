@@ -18,6 +18,7 @@ BeforeAll {
             Instruction = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/copilot-instructions.md') -Raw
             QualityMatrix = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/code-quality-matrix.instructions.md') -Raw
             PlatyPsHelp = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/platyps-help.instructions.md') -Raw
+            ScriptAnalyzer = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/psscriptanalyzer.instructions.md') -Raw
             CodingStandards = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/powershell-coding-standards.instructions.md') -Raw
             TestingPolicy = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/testing-policy.instructions.md') -Raw
             DeveloperAgent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/agents/powershell-developer.agent.md') -Raw
@@ -70,6 +71,7 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.Instruction | Should -Match 'Do not create or maintain hand-written module `\.psm1` or module `\.psd1` files in source'
         $content.Instruction | Should -Match 'Manifest\.PowerShellHostVersion'
         $content.Instruction | Should -Match 'code-quality-matrix\.instructions\.md'
+        $content.Instruction | Should -Match 'psscriptanalyzer\.instructions\.md'
         $content.Instruction | Should -Match 'src/private/` files should expose at most one externally called function per file'
         $content.Instruction | Should -Match 'file name should match the function that owns the file'
         $content.Instruction | Should -Match 'review every changed or created text file and ensure it ends with exactly one trailing newline and no extra blank lines at the bottom'
@@ -79,6 +81,7 @@ Describe 'Agentic Copilot scaffold sync' {
 
         $content.CodingStandards | Should -Match 'Invoke-\{\{ShortName\}\}\*'
         $content.CodingStandards | Should -Match 'code-quality-matrix\.instructions\.md'
+        $content.CodingStandards | Should -Match 'psscriptanalyzer\.instructions\.md'
         $content.CodingStandards | Should -Match 'Match the file name to that top-level public function name'
         $content.CodingStandards | Should -Match 'In `src/private/`, keep at most one externally called function per file and match the file name to that entry function'
         $content.CodingStandards | Should -Match 'If two private functions are both called from outside their file, split them into separate same-named files'
@@ -88,11 +91,13 @@ Describe 'Agentic Copilot scaffold sync' {
 
         $content.TestingPolicy | Should -Match 'Manifest\.PowerShellHostVersion'
         $content.TestingPolicy | Should -Match 'code-quality-matrix\.instructions\.md'
+        $content.TestingPolicy | Should -Match 'psscriptanalyzer\.instructions\.md'
         $content.TestingPolicy | Should -Match 'For every new or changed `src/\*\*/\*\.ps1` file'
         $content.TestingPolicy | Should -Match 'Source-mirrored tests should use'
 
         $content.ImplementPrompt | Should -Match 'Keep file/function ownership explicit: one externally called function per file'
         $content.ImplementPrompt | Should -Match 'code-quality-matrix\.instructions\.md'
+        $content.ImplementPrompt | Should -Match 'psscriptanalyzer\.instructions\.md'
         $content.ReviewPrompt | Should -Match 'code-quality-matrix\.instructions\.md'
     }
 
@@ -146,6 +151,35 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.Agents | Should -Match 'New-MarkdownCommandHelp'
         $content.Contributing | Should -Match 'New-MarkdownCommandHelp'
         $content.Readme | Should -Match 'New-MarkdownCommandHelp'
+    }
+
+    It 'documents proper PSScriptAnalyzer usage guidance' {
+        $content = & $script:getAgenticScaffoldGuidanceContent
+
+        $content.ScriptAnalyzer | Should -Match 'PSScriptAnalyzer is the supported static analyzer'
+        $content.ScriptAnalyzer | Should -Match 'Invoke-ScriptAnalyzerCI\.ps1'
+        $content.ScriptAnalyzer | Should -Match 'Invoke-ScriptAnalyzer'
+        $content.ScriptAnalyzer | Should -Match 'repository-approved analyzer settings through `-Settings`'
+        $content.ScriptAnalyzer | Should -Match 'Invoke-ScriptAnalyzer -Fix'
+        $content.ScriptAnalyzer | Should -Match 'EnableExit'
+
+        $content.Instruction | Should -Match 'Prefer `\./scripts/build/Invoke-ScriptAnalyzerCI\.ps1` and `\./run\.ps1`'
+
+        $content.DeveloperSkill | Should -Match 'psscriptanalyzer\.instructions\.md'
+        $content.DeveloperSkill | Should -Match 'Invoke-ScriptAnalyzer'
+        $content.DeveloperAgent | Should -Match 'psscriptanalyzer\.instructions\.md'
+        $content.DeveloperAgent | Should -Match 'Invoke-ScriptAnalyzerCI\.ps1'
+        $content.TestEngineerAgent | Should -Match 'psscriptanalyzer\.instructions\.md'
+        $content.TestingPolicy | Should -Match 'Invoke-ScriptAnalyzerCI\.ps1'
+        $content.ReviewerAgent | Should -Match 'psscriptanalyzer\.instructions\.md'
+        $content.ReviewerAgent | Should -Match 'bypasses repository-approved settings'
+        $content.ImplementPrompt | Should -Match 'Prefer `\./scripts/build/Invoke-ScriptAnalyzerCI\.ps1` and `\./run\.ps1`'
+        $content.ReviewPrompt | Should -Match 'psscriptanalyzer\.instructions\.md'
+
+        $content.Agents | Should -Match 'psscriptanalyzer\.instructions\.md'
+        $content.Agents | Should -Match 'Invoke-ScriptAnalyzerCI\.ps1'
+        $content.Contributing | Should -Match 'psscriptanalyzer\.instructions\.md'
+        $content.Readme | Should -Match 'psscriptanalyzer\.instructions\.md'
     }
 
     It 'documents agent and starter expectations without adding a CodeScene config file' {

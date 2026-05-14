@@ -18,16 +18,17 @@ Implement the issue in the {{ProjectName}} repository using the repository-local
 6. Inspect `project.json` `Manifest.PowerShellHostVersion` before changing PowerShell code, tests, or examples, and keep the implementation compatible with that target.
 7. Implement the smallest maintainable fix.
 8. Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort quality matrix for changed `src/**/*.ps1` and `tests/**/*.ps1`; keep new or heavily changed code within the relevant warning thresholds unless the scope explicitly justifies otherwise.
-9. Do not add PSScriptAnalyzer excluded rules or suppressions; fix analyzer findings in the code.
-10. If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before handoff instead of only reporting the failure.
-11. Keep file/function ownership explicit: one externally called function per file, with private-file extras limited to same-file support helpers, and keep the file name aligned to the entry function.
-12. Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the bottom.
-13. Add or update the matching source-mirrored Pester file for every changed `src/**/*.ps1` file; if the behavior is genuinely cross-cutting, document which integration/guardrail test owns it and why a mirrored unit test is not practical.
-14. Add or update valid PlatyPS-compatible help under `docs/<ProjectName>/en-US/` when public commands or public classes change. Use `New-MarkdownCommandHelp` for new help, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff; do not replace command help with plain Markdown prose.
-15. Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `RELEASE_NOTE.md`, help docs, and project docs as applicable.
-16. If a commit message is requested, derive it from `$GIT_BRANCH_NAME` and the implemented change using the repository's Conventional Commit rules.
-17. Run the relevant validation, then summarize what changed, why, and how it was verified.
-18. If that summary is returned as Markdown or copy-ready UI output, format it according to the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
+9. Follow `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth. Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1`, and use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repository-approved settings.
+10. Do not add PSScriptAnalyzer excluded rules, suppressions, or ad hoc analyzer settings that hide findings; fix analyzer findings in the code.
+11. If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before handoff instead of only reporting the failure.
+12. Keep file/function ownership explicit: one externally called function per file, with private-file extras limited to same-file support helpers, and keep the file name aligned to the entry function.
+13. Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the bottom.
+14. Add or update the matching source-mirrored Pester file for every changed `src/**/*.ps1` file; if the behavior is genuinely cross-cutting, document which integration/guardrail test owns it and why a mirrored unit test is not practical.
+15. Add or update valid PlatyPS-compatible help under `docs/<ProjectName>/en-US/` when public commands or public classes change. Use `New-MarkdownCommandHelp` for new help, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff; do not replace command help with plain Markdown prose.
+16. Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `RELEASE_NOTE.md`, help docs, and project docs as applicable.
+17. If a commit message is requested, derive it from `$GIT_BRANCH_NAME` and the implemented change using the repository's Conventional Commit rules.
+18. Run the relevant validation, then summarize what changed, why, and how it was verified.
+19. If that summary is returned as Markdown or copy-ready UI output, format it according to the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
 
 ## Repository-specific reminders
 
