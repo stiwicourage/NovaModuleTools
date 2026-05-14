@@ -19,6 +19,7 @@ Implement PowerShell command and helper changes in the {{ProjectName}} style.
 - Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort source-code matrix while shaping `src/**/*.ps1`.
 - Use `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth while changing PowerShell code or analyzer helpers.
 - Add or update source-mirrored tests and valid PlatyPS-compatible help docs for the changed behavior, using the Microsoft.PowerShell.PlatyPS cmdlets instead of hand-written help structure.
+- Every new public entry point must add its matching help file in the same change.
 - Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the bottom.
 
 ## Inputs to inspect
@@ -41,13 +42,14 @@ Implement PowerShell command and helper changes in the {{ProjectName}} style.
 - Preserve existing command names, warning semantics, and output shape.
 - Keep new or heavily changed source functions inside the warning thresholds from `.github/instructions/code-quality-matrix.instructions.md` unless the scope explicitly justifies otherwise.
 - Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1` for normal analyzer loops; use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repository-approved settings.
-- When help files change, keep `docs/{{ProjectName}}/en-US/*.md` valid for `Import-MarkdownCommandHelp`: use `New-MarkdownCommandHelp` for new files, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff.
+- When help files change, keep `docs/{{ProjectName}}/en-US/*.md` valid for `Import-MarkdownCommandHelp`: use `New-MarkdownCommandHelp` for new files, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff. A new public `src/public/*.ps1` file is not done until its matching help file exists.
 
 ## Definition of done
 
 - Production code and tests both reflect the intended behavior.
 - Build output still comes from Nova-generated `dist/` files, not hand-authored module files in `src/`.
 - Public/private file ownership still follows the one externally called function per file rule.
+- Every new public entry point has its matching help file.
 - Any ScriptAnalyzer findings reported by `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` are resolved.
 - Every changed or generated text file has been checked and ends with exactly one trailing newline and no extra blank lines at the bottom.
 - Docs/changelog review is complete.

@@ -8,6 +8,7 @@ Before opening a pull request:
 - keep tests mirrored to changed source files: one focused `.Tests.ps1` file for every new or changed `src/**/*.ps1` file
 - use `tests/TestHelpers/` or test-support files for shared setup instead of broad catch-all test files
 - add or update PlatyPS-compatible help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change
+- when you add a new public function, create its matching help file in the same change
 - use Nova commands and `project.json` for build, test, package, and release behavior
 - keep PowerShell code, tests, and examples compatible with `project.json` `Manifest.PowerShellHostVersion`; if the project targets `5.1`, do not add PowerShell 7.x-only features
 - keep `run.ps1` ordered as ScriptAnalyzer, then `Invoke-NovaBuild`, then `Test-NovaBuild`

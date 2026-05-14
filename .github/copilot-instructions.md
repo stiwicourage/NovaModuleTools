@@ -51,6 +51,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - Keep file/function ownership explicit: `src/public/` files should own exactly one top-level function each, and `src/private/` files should expose at most one externally called function per file. Additional private functions may stay only as support helpers used from the same file, and the file name should match the function that owns the file.
 - Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort quality matrix for `src/**/*.ps1` and `tests/**/*.ps1`; generated projects should follow that guidance through Agentic Copilot files, not by depending on a required `.codescene/code-health-rules.json`.
 - Generate valid PlatyPS help under `docs/NovaModuleTools/en-US/` whenever command help changes. Use the Microsoft.PowerShell.PlatyPS workflow (`New-MarkdownCommandHelp`, `Update-MarkdownCommandHelp`, `Test-MarkdownCommandHelp`) instead of hand-authoring command-help structure, and do not write plain Markdown that `Import-MarkdownCommandHelp` cannot parse.
+- Every new public entry point requires its matching help file in the same change. A new `src/public/*.ps1` file is not complete until the matching `docs/NovaModuleTools/en-US/<CommandName>.md` file exists.
 - Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` after every meaningful change.
 - Update tests when behavior changes.
 - Prefer existing helpers and support files over ad hoc duplication.
@@ -58,7 +59,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - Target Code Health `10.0` for AI-touched files; `9.x` is not the goal state.
 - Prefer small, incremental refactors over large rewrites when fixing maintainability issues.
 - Keep `docs/*.html`, `docs/NovaModuleTools/en-US/*.md`, and contributor docs clearly separated by audience and syntax.
-- Add or update PlatyPS-compatible command help under `docs/NovaModuleTools/en-US/` when public commands or public classes change.
+- Add or update PlatyPS-compatible command help under `docs/NovaModuleTools/en-US/` when public commands or public classes change, and create matching help immediately for every new public entry point.
 - For every new or changed `src/**/*.ps1` file, add or update one focused source-mirrored Pester file: use `tests/public/<Name>.Tests.ps1` for `src/public/<Name>.ps1`, `tests/private/<domain>/<Name>.Tests.ps1` for `src/private/<domain>/<Name>.ps1`, and `tests/classes/<Name>.Tests.ps1` for `src/classes/<Name>.ps1`.
 - Use shared helpers under `tests/TestHelpers/` or `tests/*TestSupport.ps1` for repeated setup; do not hide unrelated source-file coverage in broad catch-all test files unless the behavior is genuinely cross-cutting.
 

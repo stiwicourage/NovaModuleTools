@@ -188,7 +188,8 @@ PS&gt; Install-NovaCli -DestinationDirectory ~/bin -Force</code></pre>
                             <code>./run.ps1</code>, and focused <code>Invoke-ScriptAnalyzer</code> usage, explicit
                             valid-PlatyPS help guidance for <code>docs/&lt;ProjectName&gt;/en-US/*.md</code> using
                             <code>New-MarkdownCommandHelp</code>, <code>Update-MarkdownCommandHelp</code>, and
-                            <code>Test-MarkdownCommandHelp</code>, and a strict file-ending rule for changed or
+                            <code>Test-MarkdownCommandHelp</code>, with a matching help file required for every new
+                            public entry point, and a strict file-ending rule for changed or
                             generated text files.
                         </p>
                         <p>If you enable the Agentic package, Nova also asks for a short project name used in generated

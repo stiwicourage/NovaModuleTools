@@ -39,6 +39,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before handoff instead of just reporting the failure.
 - Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the end.
 - Add or update valid PlatyPS-compatible help under `docs/NovaModuleTools/en-US/` when public commands or public classes change. Use `New-MarkdownCommandHelp` for new help, `Update-MarkdownCommandHelp` to refresh existing help metadata, and `Test-MarkdownCommandHelp` to validate structure before handoff instead of writing plain Markdown from scratch.
+- For every new public `src/public/*.ps1` file, create the matching help file immediately in the same change.
 - Add or update the source-mirrored Pester test file for every changed `src/**/*.ps1` file.
 
 ## Common pitfalls
@@ -52,6 +53,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Ignoring the source-code matrix and letting new or heavily changed functions grow far beyond the warning thresholds without justification
 - Writing plain Markdown under `docs/NovaModuleTools/en-US/` that lacks YAML metadata or the PlatyPS structure expected by `Import-MarkdownCommandHelp`
 - Editing PlatyPS YAML and section structure by hand when `New-MarkdownCommandHelp` or `Update-MarkdownCommandHelp` should have regenerated it
+- Adding a new public entry point without the matching help file in `docs/NovaModuleTools/en-US/`
 - Bypassing the repository analyzer wrapper/settings with ad hoc `Invoke-ScriptAnalyzer`, `-EnableExit`, or broad rule-exclusion changes
 - Ignoring the project's `Manifest.PowerShellHostVersion` target and introducing PowerShell 7.x-only features into a `5.1` project
 - Excluding PSScriptAnalyzer rules instead of fixing the code that violates them
