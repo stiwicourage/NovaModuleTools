@@ -36,13 +36,11 @@ Handle versioning, changelog shaping, release-flow documentation, and publish au
 
 - Treat release automation as high-risk.
 - Keep Keep a Changelog structure intact.
-- Use only the official Keep a Changelog section types in `CHANGELOG.md` and `RELEASE_NOTE.md`: `Added`, `Changed`,
-  `Deprecated`, `Removed`, `Fixed`, and `Security`.
+- Use only the official Keep a Changelog section types in `CHANGELOG.md` and `RELEASE_NOTE.md`: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, and `Security`.
 - Do not invent extra changelog section headings such as `Documentation`; place documentation-related release notes under the official type that best matches the actual impact.
 - Distinguish contributor docs from end-user docs.
 - Treat `.github/pull_request_template.md` as the authoritative format for structured release summaries.
-- When the release summary is returned as Markdown or copy-ready UI output, it must follow the `markdown-authoring`
-  skill (`.github/skills/markdown-authoring/SKILL.md`).
+- When the release summary is returned as Markdown or copy-ready UI output, it must follow the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
 
 ## Definition of done
 

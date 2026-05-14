@@ -67,8 +67,7 @@ If the user chooses **design package and GitHub issue draft**, return:
 - Recommended follow-on agent
 - GitHub issue draft
 
-If unresolved questions still remain, keep them under `Open questions` in the design package and add a short `Open
-questions` section inside the GitHub issue draft too.
+If unresolved questions still remain, keep them under `Open questions` in the design package and add a short `Open questions` section inside the GitHub issue draft too.
 
 If the user chooses **design package only**, return:
 
