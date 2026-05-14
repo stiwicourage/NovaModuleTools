@@ -75,6 +75,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 
 ## Maintainability rules
 
+- Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort source-code matrix for `src/**/*.ps1`; warning thresholds are the default ceiling for new or heavily changed code.
 - Favor short functions and extracted helpers over large nested logic.
 - Avoid copy/paste across source or test files.
 - Add comments only when the code would otherwise be hard to follow.

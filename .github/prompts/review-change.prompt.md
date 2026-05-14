@@ -6,10 +6,11 @@ Review a NovaModuleTools change set with emphasis on correctness, maintainabilit
 
 1. Start with the highest-risk public command, workflow, or release path in the diff.
 2. Compare the changed files against the relevant repository instructions and skills.
-3. Check whether tests, docs, and changelog updates match the change.
-4. Call out the smallest set of meaningful issues first.
-5. Note any missing validation or follow-up work.
-6. If the review is returned as Markdown or copy-ready UI text, format it according to the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
+3. Check changed `src/**/*.ps1` and `tests/**/*.ps1` against `.github/instructions/code-quality-matrix.instructions.md`.
+4. Check whether tests, docs, and changelog updates match the change.
+5. Call out the smallest set of meaningful issues first.
+6. Note any missing validation or follow-up work.
+7. If the review is returned as Markdown or copy-ready UI text, format it according to the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
 
 ## Repository-specific reminders
 

@@ -17,7 +17,6 @@ Use the narrower sibling skills when the task is more specific:
 ## Relevant files and tools
 
 - `tests/ArchitectureGuardrails.Tests.ps1`
-- `tests/*Coverage*.Tests.ps1`
 - `tests/*TestSupport.ps1`
 - `.github/actions/check-coverage/action.yml`
 - `scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`

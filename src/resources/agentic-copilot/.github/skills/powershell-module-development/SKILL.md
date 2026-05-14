@@ -30,6 +30,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source; Nova generates those files under `dist/{{ProjectName}}/`.
 - Preserve native PowerShell semantics and Nova naming patterns.
 - Keep one externally called function per file and match the file name to that function. In `src/private/`, additional functions may stay only as same-file support helpers called by that file's entry function.
+- Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort source-code matrix. Keep new or heavily changed source functions at or below the warning thresholds for lines of code (`16`), cyclomatic complexity (`6`), complex conditional branches (`6`), max arguments (`4`), and nesting depth (`6`) unless the change explicitly justifies more.
 - Reuse existing workflow-context helpers and shared adapters.
 - Follow the repository's PowerShell style rules: 4-space indentation, same-line opening braces, restrained blank lines, full cmdlet names, and readable operator spacing.
 - Keep ScriptAnalyzer strict: do not add excluded rules, suppression attributes, or settings that hide analyzer findings.
@@ -47,6 +48,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Replacing explicit warning opt-ins with generic force semantics
 - Creating a root module `.psm1` or module manifest `.psd1` by hand instead of letting Nova generate them from `project.json`
 - Grouping two externally called private helpers in one file instead of splitting them into separate same-named files
+- Ignoring the source-code matrix and letting new or heavily changed functions grow far beyond the warning thresholds without justification
 - Ignoring the project's `Manifest.PowerShellHostVersion` target and introducing PowerShell 7.x-only features into a `5.1` project
 - Excluding PSScriptAnalyzer rules instead of fixing the code that violates them
 

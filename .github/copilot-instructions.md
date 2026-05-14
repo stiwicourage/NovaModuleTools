@@ -15,6 +15,7 @@ Read these files before making non-trivial changes:
 3. `.github/pull_request_template.md`
 4. The relevant file in `.github/instructions/`
 5. The relevant skill under `.github/skills/<skill-name>/SKILL.md`
+6. `.github/instructions/code-quality-matrix.instructions.md` when shaping or reviewing `src/**/*.ps1` or `tests/**/*.ps1`
 
 Prompt templates under `.github/prompts/*.prompt.md` are not auto-loaded. Reference them explicitly in chat when you want to use one of the repository's reusable task prompts.
 
@@ -45,6 +46,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - Keep `run.ps1` as the local quality loop: run ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
 - If `run.ps1` or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before review, handoff, or commit. Do not treat a failing local quality loop as an acceptable stopping point.
 - Keep file/function ownership explicit: `src/public/` files should own exactly one top-level function each, and `src/private/` files should expose at most one externally called function per file. Additional private functions may stay only as support helpers used from the same file, and the file name should match the function that owns the file.
+- Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort quality matrix for `src/**/*.ps1` and `tests/**/*.ps1`; generated projects should follow that guidance through Agentic Copilot files, not by depending on a required `.codescene/code-health-rules.json`.
 - Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` after every meaningful change.
 - Update tests when behavior changes.
 - Prefer existing helpers and support files over ad hoc duplication.

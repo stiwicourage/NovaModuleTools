@@ -16,6 +16,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 - Preserve Nova's `project.json`-driven build model; do not add hand-written source `.psm1` or module `.psd1` files.
 - Read `project.json` `Manifest.PowerShellHostVersion` before implementing PowerShell changes and keep source, tests, and examples compatible with that target.
 - Keep one externally called function per file and match the file name to that function. In `src/private/`, additional functions may stay only as same-file support helpers called by that file's entry function.
+- Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort source-code matrix while shaping `src/**/*.ps1`.
 - Add or update source-mirrored tests and PlatyPS-compatible help docs for the changed behavior.
 - Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the bottom.
 
@@ -40,6 +41,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 - Keep `ShouldProcess` behavior where the command already supports it.
 - Keep raw infrastructure calls behind approved adapters.
 - Preserve existing command names, warning semantics, and output shape.
+- Keep new or heavily changed source functions inside the warning thresholds from `.github/instructions/code-quality-matrix.instructions.md` unless the scope explicitly justifies otherwise.
 
 ## Definition of done
 

@@ -23,6 +23,7 @@ Follow this workflow when working with Copilot in this repository.
 - Keep `run.ps1` as the local quality loop: ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
 - If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before review or handoff.
 - Keep one externally called function per file and match the file name to that function. Public files own one command each; private files may keep extra functions only as same-file support helpers.
+- Follow `.github/instructions/code-quality-matrix.instructions.md` as the best-effort src/tests quality matrix. It guides agents and reviewers without requiring a `.codescene/code-health-rules.json` file in this generated project.
 - Make every changed or generated text file end with exactly one trailing newline and no extra blank lines at the bottom before handoff.
 - Do not exclude or suppress PSScriptAnalyzer rules; fix analyzer findings in the code.
 - Do not hand-create module `.psm1` or module `.psd1` files in source; Nova generates them under `dist/{{ProjectName}}/`.
