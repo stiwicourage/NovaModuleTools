@@ -20,7 +20,7 @@ Use this file when creating or updating command help under `docs/NovaModuleTools
 
 ```powershell
 $newMarkdownHelp = @{
-    CommandInfo  = Get-Command -Module '<ProjectName>'
+    CommandInfo  = Get-Command -Module 'NovaModuleTools'
     OutputFolder = './docs'
     WithModulePage = $true
     Force = $true
@@ -28,11 +28,11 @@ $newMarkdownHelp = @{
 New-MarkdownCommandHelp @newMarkdownHelp
 ```
 
-3. Keep the resulting command-help files under `docs/<ProjectName>/en-US/` before handoff. If you generate files in a staging folder first, move the command-help markdown files into the repository's locale folder before you finish.
+3. Keep the resulting command-help files under `docs/NovaModuleTools/en-US/` before handoff. If you generate files in a staging folder first, move the command-help markdown files into the repository's locale folder before you finish.
 4. For existing command help, refresh syntax and parameter metadata with `Update-MarkdownCommandHelp` instead of editing the generated YAML structure by hand.
 
 ```powershell
-Measure-PlatyPSMarkdown -Path ./docs/<ProjectName>/en-US/*.md |
+Measure-PlatyPSMarkdown -Path ./docs/NovaModuleTools/en-US/*.md |
         Where-Object FileType -match 'CommandHelp' |
         Update-MarkdownCommandHelp -Path {$_.FilePath}
 ```
@@ -40,9 +40,9 @@ Measure-PlatyPSMarkdown -Path ./docs/<ProjectName>/en-US/*.md |
 5. Validate the final help with `Test-MarkdownCommandHelp -DetailView`, and inspect `Import-MarkdownCommandHelp` diagnostics when the structure or build result is unclear.
 
 ```powershell
-Test-MarkdownCommandHelp -Path ./docs/<ProjectName>/en-US/*.md -DetailView
+Test-MarkdownCommandHelp -Path ./docs/NovaModuleTools/en-US/*.md -DetailView
 
-Import-MarkdownCommandHelp -Path ./docs/<ProjectName>/en-US/<CommandName>.md |
+Import-MarkdownCommandHelp -Path ./docs/NovaModuleTools/en-US/<CommandName>.md |
         Select-Object -ExpandProperty Diagnostics
 ```
 

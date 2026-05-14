@@ -111,10 +111,6 @@
             New = '- `.github/actions/` - reusable workflow actions, when present'
         }
         @{
-            Old = '- `docs/{{ProjectName}}/en-US/` - command help source'
-            New = '- `docs/<ProjectName>/en-US/` - command help source, when present'
-        }
-        @{
             Old = '- `docs/NovaModuleTools/en-US/` - command help source'
             New = '- `docs/{{ProjectName}}/en-US/` - command help source'
         }

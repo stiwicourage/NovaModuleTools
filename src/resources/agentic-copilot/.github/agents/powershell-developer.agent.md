@@ -41,7 +41,7 @@ Implement PowerShell command and helper changes in the {{ProjectName}} style.
 - Preserve existing command names, warning semantics, and output shape.
 - Keep new or heavily changed source functions inside the warning thresholds from `.github/instructions/code-quality-matrix.instructions.md` unless the scope explicitly justifies otherwise.
 - Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1` for normal analyzer loops; use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repository-approved settings.
-- When help files change, keep `docs/<ProjectName>/en-US/*.md` valid for `Import-MarkdownCommandHelp`: use `New-MarkdownCommandHelp` for new files, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff.
+- When help files change, keep `docs/{{ProjectName}}/en-US/*.md` valid for `Import-MarkdownCommandHelp`: use `New-MarkdownCommandHelp` for new files, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff.
 
 ## Definition of done
 

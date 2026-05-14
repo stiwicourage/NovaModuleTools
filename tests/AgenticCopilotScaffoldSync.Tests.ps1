@@ -111,7 +111,7 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.QualityMatrix | Should -Match '\|\s+`function_lines_of_code_warning`\s+\|\s+`70`\s+\|\s+`500`\s+\|'
         $content.QualityMatrix | Should -Match 'unit_test_consecutive_asserts_for_large_block'
 
-        $content.DeveloperSkill | Should -Match 'Nova generates those files under `dist/(<ProjectName>|\{\{ProjectName\}\})/`'
+        $content.DeveloperSkill | Should -Match 'Nova generates those files under `dist/(NovaModuleTools|\{\{ProjectName\}\})/`'
         $content.DeveloperSkill | Should -Match 'code-quality-matrix\.instructions\.md'
         $content.DeveloperSkill | Should -Match 'Keep one externally called function per file and match the file name to that function'
         $content.DeveloperSkill | Should -Match 'Grouping two externally called private helpers in one file'
@@ -135,7 +135,7 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.PlatyPsHelp | Should -Match 'SYNOPSIS`, `SYNTAX`, optional `ALIASES`, `DESCRIPTION`, `EXAMPLES`, `PARAMETERS`, `INPUTS`, `OUTPUTS`, `NOTES`, and `RELATED LINKS`'
 
         $content.Instruction | Should -Match 'platyps-help\.instructions\.md'
-        $content.Instruction | Should -Match 'Generate valid PlatyPS help under `docs/(<ProjectName>|\{\{ProjectName\}\})/en-US/`'
+        $content.Instruction | Should -Match 'Generate valid PlatyPS help under `docs/(NovaModuleTools|\{\{ProjectName\}\})/en-US/`'
         $content.Instruction | Should -Match 'New-MarkdownCommandHelp`, `Update-MarkdownCommandHelp`, `Test-MarkdownCommandHelp`'
 
         $content.DeveloperSkill | Should -Match 'valid PlatyPS-compatible help'
@@ -144,7 +144,7 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.DeveloperAgent | Should -Match 'valid PlatyPS-compatible help docs'
         $content.DeveloperAgent | Should -Match 'New-MarkdownCommandHelp'
         $content.ReviewerAgent | Should -Match 'Test-MarkdownCommandHelp'
-        $content.ImplementPrompt | Should -Match 'valid PlatyPS-compatible help under `docs/(<ProjectName>|\{\{ProjectName\}\})/en-US/`'
+        $content.ImplementPrompt | Should -Match 'valid PlatyPS-compatible help under `docs/(NovaModuleTools|\{\{ProjectName\}\})/en-US/`'
         $content.ImplementPrompt | Should -Match 'New-MarkdownCommandHelp'
         $content.ReviewPrompt | Should -Match 'New-MarkdownCommandHelp'
 
