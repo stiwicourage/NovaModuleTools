@@ -6,7 +6,6 @@
 
 ## Affected area
 
-- [ ] CLI behavior
 - [ ] Public PowerShell cmdlet behavior
 - [ ] Scaffolding or project layout
 - [ ] Build, test, analyzer, or CI behavior
