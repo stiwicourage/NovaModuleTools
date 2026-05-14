@@ -67,7 +67,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - Do not stack multiple blank lines.
 - Avoid decorative blank lines inside short blocks.
 - Keep one blank line between top-level declarations when a file contains more than one declaration.
-- Modified or created text files, including `.ps1` files, must end with exactly one trailing newline and no extra blank lines after the final statement.
+- Every changed or generated text file, including `.ps1` files, must end with exactly one trailing newline and no extra blank lines at the bottom.
 
 ## Maintainability rules
 
@@ -81,3 +81,4 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - Recheck `tests/ArchitectureGuardrails.Tests.ps1` when changing layering or helper placement.
 - Run `./run.ps1` before considering a code change complete.
 - Resolve any ScriptAnalyzer findings that `./run.ps1` reports before handoff.
+- Before handoff, review the changed/generated text files and normalize any file endings that violate the single-trailing-newline rule.

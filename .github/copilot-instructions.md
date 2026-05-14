@@ -98,8 +98,8 @@ For documentation-only changes, executable validation may be skipped if no code 
 
 ## File formatting rule
 
-- Modified or created text files must end with exactly one trailing newline.
-- Do not leave multiple blank lines at the end of edited files.
+- Before handoff, review every changed or created text file and ensure it ends with exactly one trailing newline and no extra blank lines at the bottom.
+- Do not leave any edited file with extra blank lines at the end, even if the functional code change is already complete.
 - Do not alter internal whitespace just to enforce the trailing newline rule.
 
 ## Safety constraints

@@ -34,6 +34,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Keep ScriptAnalyzer strict: do not add excluded rules, suppression attributes, or settings that hide analyzer findings.
 - Keep `run.ps1`-style local checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
 - If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before handoff instead of just reporting the failure.
+- Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the end.
 - Add or update PlatyPS-compatible help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change.
 - Add or update the source-mirrored Pester test file for every changed `src/**/*.ps1` file.
 

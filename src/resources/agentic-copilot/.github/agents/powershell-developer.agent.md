@@ -16,6 +16,7 @@ Implement PowerShell command and helper changes in the {{ProjectName}} style.
 - Preserve Nova's `project.json`-driven build model; do not add hand-written source `.psm1` or module `.psd1` files.
 - Read `project.json` `Manifest.PowerShellHostVersion` before implementing PowerShell changes and keep source, tests, and examples compatible with that target.
 - Add or update source-mirrored tests and PlatyPS-compatible help docs for the changed behavior.
+- Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the bottom.
 
 ## Inputs to inspect
 
@@ -41,6 +42,7 @@ Implement PowerShell command and helper changes in the {{ProjectName}} style.
 - Production code and tests both reflect the intended behavior.
 - Build output still comes from Nova-generated `dist/` files, not hand-authored module files in `src/`.
 - Any ScriptAnalyzer findings reported by `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` are resolved.
+- Every changed or generated text file has been checked and ends with exactly one trailing newline and no extra blank lines at the bottom.
 - Docs/changelog review is complete.
 - The relevant validation commands have been run.
 
