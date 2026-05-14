@@ -49,6 +49,8 @@ Do not produce the full final design package in the first response unless the us
 
 ## Finalization output
 
+All finalization output is copy-ready Markdown. Apply the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`) for copy-safe UI output, including any required wrapping, and do not add prose outside the final output.
+
 If the user chooses **design package and GitHub issue draft**, return:
 
 - a short usage note that explains:
@@ -85,12 +87,13 @@ In design-package-only mode:
 - do not include a GitHub issue draft
 - preserve the settled decisions clearly enough that the user can resume later
 - end with the next unresolved design decision or a short resume prompt the user can reuse later
+- still apply the `markdown-authoring` skill to the final response
 
 ## Repository-specific reminders
 
 - Preserve the distinction between public PowerShell cmdlets and `% nova` CLI behavior.
 - Keep contributor docs, command help, website docs, changelog entries, and release notes separated by audience.
-- If the final design summary or GitHub issue draft is returned as Markdown or copy-ready UI output, format it according to the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
+- Final design summaries and GitHub issue drafts are always copy-ready Markdown output; apply the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
 - Draft issue text in English unless the user explicitly asks for another language.
 - If the task still has unresolved choices, end the turn with the next best question or the next design decision the user should make.
 - If unresolved choices remain and you offer finalization anyway, explain what is settled, what is unresolved, and what each finalization option will produce.

@@ -62,6 +62,7 @@ Design or reshape changes that cross public commands, private helper boundaries,
 - If the user chooses full finalization, a GitHub issue draft is ready to paste or create from the final output.
 - If the user chooses design-package-only finalization, the output is clearly resumable later from an `Open questions /
   resume here` section.
+- Finalization output is copy-ready Markdown that applies the project `markdown-authoring` skill.
 
 ## Must not do
 
@@ -71,4 +72,5 @@ Design or reshape changes that cross public commands, private helper boundaries,
 - Must not create or edit repository files when the task is still in design mode.
 - Must not return a full implementation plan or finished issue draft in the first reply when the user is clearly asking for a design discussion.
 - Must not leave the user guessing whether the final output is a handoff document, paste-ready issue text, or both.
+- Must not return finalization Markdown that skips the project `markdown-authoring` guidance.
 - Must not decide on its own that requested work is out of scope and then finalize the design without the user's confirmation.

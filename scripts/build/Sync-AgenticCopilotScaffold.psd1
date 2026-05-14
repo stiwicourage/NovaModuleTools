@@ -263,12 +263,48 @@
             New = '- Run full regression tests'
         }
         @{
-            Old = 'GitHub issue'
-            New = 'issue'
+            Old = 'or GitHub release automation.'
+            New = 'or release automation.'
         }
         @{
-            Old = '- issue'
-            New = '- Issue'
+            Old = 'a GitHub issue-ready change design'
+            New = 'a tracker-ready change design'
+        }
+        @{
+            Old = 'an issue-ready change design'
+            New = 'a tracker-ready change design'
+        }
+        @{
+            Old = 'fully issue-ready'
+            New = 'fully tracker-ready'
+        }
+        @{
+            Old = 'and a GitHub issue draft'
+            New = 'and an issue/work item draft'
+        }
+        @{
+            Old = 'a GitHub issue draft'
+            New = 'an issue/work item draft'
+        }
+        @{
+            Old = 'GitHub issue draft'
+            New = 'issue/work item draft'
+        }
+        @{
+            Old = 'GitHub issue'
+            New = 'issue/work item'
+        }
+        @{
+            Old = 'issue-ready change design'
+            New = 'tracker-ready change design'
+        }
+        @{
+            Old = 'issue drafting'
+            New = 'issue/work item drafting'
+        }
+        @{
+            Old = 'paste-ready GitHub text'
+            New = 'paste-ready tracker text'
         }
         @{
             Old = '- `pwsh -NoLogo -NoProfile -File ./run.ps1` before completion'

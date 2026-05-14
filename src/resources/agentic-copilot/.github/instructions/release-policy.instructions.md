@@ -6,7 +6,7 @@ applyTo: "CHANGELOG.md,RELEASE_NOTE.md,project.json,.github/pull_request_templat
 
 ## Scope
 
-Use this file when changing versioning, changelog handling, package metadata, publish workflows, or GitHub release automation.
+Use this file when changing versioning, changelog handling, package metadata, publish workflows, or release automation.
 
 ## Versioning rules
 
