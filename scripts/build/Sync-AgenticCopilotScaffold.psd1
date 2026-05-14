@@ -307,14 +307,6 @@
             New = 'paste-ready tracker text'
         }
         @{
-            Old = 'docs/<ProjectName>/en-US/'
-            New = 'docs/{{ProjectName}}/en-US/'
-        }
-        @{
-            Old = 'dist/<ProjectName>/'
-            New = 'dist/{{ProjectName}}/'
-        }
-        @{
             Old = '- `pwsh -NoLogo -NoProfile -File ./run.ps1` before completion'
             New = ''
         }

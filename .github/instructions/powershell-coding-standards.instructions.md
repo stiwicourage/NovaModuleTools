@@ -33,6 +33,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - Preserve existing warning semantics; do not rename warning opt-ins to a generic `-Force` pattern.
 - Keep CLI spellings and PowerShell spellings distinct in messages and docs.
 - Read `project.json` `Manifest.PowerShellHostVersion` before changing PowerShell source, scripts, or tests, and keep new usage compatible with that target. A `5.1` project must not receive PowerShell 7.x-only syntax, cmdlets, parameters, or APIs unless compatibility is explicitly guarded and within scope.
+- When public command help changes, follow `.github/instructions/platyps-help.instructions.md` and use `New-MarkdownCommandHelp`, `Update-MarkdownCommandHelp`, and `Test-MarkdownCommandHelp` instead of hand-authoring the help structure.
 - Do not add PSScriptAnalyzer `ExcludeRule`, `ExcludeRules`, suppression attributes, or generated settings that hide analyzer findings. Fix the rule violation instead.
 - Keep local quality wrappers ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
 - If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before treating the change as complete.

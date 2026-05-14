@@ -23,7 +23,7 @@ Implement the issue in the {{ProjectName}} repository using the repository-local
 11. Keep file/function ownership explicit: one externally called function per file, with private-file extras limited to same-file support helpers, and keep the file name aligned to the entry function.
 12. Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the bottom.
 13. Add or update the matching source-mirrored Pester file for every changed `src/**/*.ps1` file; if the behavior is genuinely cross-cutting, document which integration/guardrail test owns it and why a mirrored unit test is not practical.
-14. Add or update PlatyPS-compatible help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change.
+14. Add or update valid PlatyPS-compatible help under `docs/<ProjectName>/en-US/` when public commands or public classes change. Use `New-MarkdownCommandHelp` for new help, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff; do not replace command help with plain Markdown prose.
 15. Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `RELEASE_NOTE.md`, help docs, and project docs as applicable.
 16. If a commit message is requested, derive it from `$GIT_BRANCH_NAME` and the implemented change using the repository's Conventional Commit rules.
 17. Run the relevant validation, then summarize what changed, why, and how it was verified.

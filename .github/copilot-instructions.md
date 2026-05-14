@@ -16,6 +16,7 @@ Read these files before making non-trivial changes:
 4. The relevant file in `.github/instructions/`
 5. The relevant skill under `.github/skills/<skill-name>/SKILL.md`
 6. `.github/instructions/code-quality-matrix.instructions.md` when shaping or reviewing `src/**/*.ps1` or `tests/**/*.ps1`
+7. `.github/instructions/platyps-help.instructions.md` when creating or updating `docs/<ProjectName>/en-US/*.md`
 
 Prompt templates under `.github/prompts/*.prompt.md` are not auto-loaded. Reference them explicitly in chat when you want to use one of the repository's reusable task prompts.
 
@@ -47,6 +48,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - If `run.ps1` or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before review, handoff, or commit. Do not treat a failing local quality loop as an acceptable stopping point.
 - Keep file/function ownership explicit: `src/public/` files should own exactly one top-level function each, and `src/private/` files should expose at most one externally called function per file. Additional private functions may stay only as support helpers used from the same file, and the file name should match the function that owns the file.
 - Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort quality matrix for `src/**/*.ps1` and `tests/**/*.ps1`; generated projects should follow that guidance through Agentic Copilot files, not by depending on a required `.codescene/code-health-rules.json`.
+- Generate valid PlatyPS help under `docs/<ProjectName>/en-US/` whenever command help changes. Use the Microsoft.PowerShell.PlatyPS workflow (`New-MarkdownCommandHelp`, `Update-MarkdownCommandHelp`, `Test-MarkdownCommandHelp`) instead of hand-authoring command-help structure, and do not write plain Markdown that `Import-MarkdownCommandHelp` cannot parse.
 - Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` after every meaningful change.
 - Update tests when behavior changes.
 - Prefer existing helpers and support files over ad hoc duplication.

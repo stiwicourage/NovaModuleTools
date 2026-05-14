@@ -202,8 +202,11 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                     source-mirrored test guidance, instructions to fix ScriptAnalyzer findings reported by
                     <code>run.ps1</code> before handoff, explicit public/private PowerShell file ownership guidance, a
                     best-effort src/tests quality matrix delivered through Agentic Copilot guidance files instead of a
-                    required <code>.codescene/code-health-rules.json</code>, and a strict file-ending rule for changed
-                    or generated text files.
+                    required <code>.codescene/code-health-rules.json</code>, explicit valid-PlatyPS help guidance for
+                    <code>docs/&lt;ProjectName&gt;/en-US/*.md</code> using
+                    <code>New-MarkdownCommandHelp</code>, <code>Update-MarkdownCommandHelp</code>, and
+                    <code>Test-MarkdownCommandHelp</code>, and a strict file-ending rule for changed or generated text
+                    files.
                     Nova then creates a project folder under the path you selected.</p>
                 <p>If you enable the Agentic package, Nova also asks for a short project name used in generated guidance
                     placeholders such as <code>Invoke-&lt;ShortName&gt;*</code>. For NovaModuleTools the short name is

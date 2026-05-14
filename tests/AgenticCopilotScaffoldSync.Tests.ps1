@@ -17,6 +17,7 @@ BeforeAll {
         return [pscustomobject]@{
             Instruction = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/copilot-instructions.md') -Raw
             QualityMatrix = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/code-quality-matrix.instructions.md') -Raw
+            PlatyPsHelp = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/platyps-help.instructions.md') -Raw
             CodingStandards = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/powershell-coding-standards.instructions.md') -Raw
             TestingPolicy = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/testing-policy.instructions.md') -Raw
             DeveloperAgent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/agents/powershell-developer.agent.md') -Raw
@@ -81,6 +82,8 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.CodingStandards | Should -Match 'Match the file name to that top-level public function name'
         $content.CodingStandards | Should -Match 'In `src/private/`, keep at most one externally called function per file and match the file name to that entry function'
         $content.CodingStandards | Should -Match 'If two private functions are both called from outside their file, split them into separate same-named files'
+        $content.CodingStandards | Should -Match 'platyps-help\.instructions\.md'
+        $content.CodingStandards | Should -Match 'New-MarkdownCommandHelp'
         $content.CodingStandards | Should -Match 'Every changed or generated text file, including `\.ps1` files, must end with exactly one trailing newline and no extra blank lines at the bottom'
 
         $content.TestingPolicy | Should -Match 'Manifest\.PowerShellHostVersion'
@@ -97,13 +100,13 @@ Describe 'Agentic Copilot scaffold sync' {
         $content = & $script:getAgenticScaffoldGuidanceContent
 
         $content.QualityMatrix | Should -Match 'does \*\*not\*\* require a `\.codescene/code-health-rules\.json` file in generated projects'
-        $content.QualityMatrix | Should -Match '\| `function_lines_of_code_warning` \| `16` \| `31` \|'
-        $content.QualityMatrix | Should -Match '\| `function_cyclomatic_complexity_warning` \| `6` \| `11` \|'
-        $content.QualityMatrix | Should -Match '\| `function_max_arguments` \| `4` \| — \|'
-        $content.QualityMatrix | Should -Match '\| `function_lines_of_code_warning` \| `70` \| `500` \|'
+        $content.QualityMatrix | Should -Match '\|\s+`function_lines_of_code_warning`\s+\|\s+`16`\s+\|\s+`31`\s+\|'
+        $content.QualityMatrix | Should -Match '\|\s+`function_cyclomatic_complexity_warning`\s+\|\s+`6`\s+\|\s+`11`\s+\|'
+        $content.QualityMatrix | Should -Match '\|\s+`function_max_arguments`\s+\|\s+`4`\s+\|\s+—\s+\|'
+        $content.QualityMatrix | Should -Match '\|\s+`function_lines_of_code_warning`\s+\|\s+`70`\s+\|\s+`500`\s+\|'
         $content.QualityMatrix | Should -Match 'unit_test_consecutive_asserts_for_large_block'
 
-        $content.DeveloperSkill | Should -Match 'Nova generates those files under `dist/\{\{ProjectName\}\}/`'
+        $content.DeveloperSkill | Should -Match 'Nova generates those files under `dist/(<ProjectName>|\{\{ProjectName\}\})/`'
         $content.DeveloperSkill | Should -Match 'code-quality-matrix\.instructions\.md'
         $content.DeveloperSkill | Should -Match 'Keep one externally called function per file and match the file name to that function'
         $content.DeveloperSkill | Should -Match 'Grouping two externally called private helpers in one file'
@@ -112,6 +115,37 @@ Describe 'Agentic Copilot scaffold sync' {
 
         $content.PesterSkill | Should -Match 'code-quality-matrix\.instructions\.md'
         $content.PesterSkill | Should -Match 'four consecutive asserts or four large assertion blocks per suite'
+    }
+
+    It 'documents valid PlatyPS help generation guidance' {
+        $content = & $script:getAgenticScaffoldGuidanceContent
+
+        $content.PlatyPsHelp | Should -Match 'must be valid PlatyPS command-help markdown'
+        $content.PlatyPsHelp | Should -Match 'Microsoft\.PowerShell\.PlatyPS'
+        $content.PlatyPsHelp | Should -Match 'New-MarkdownCommandHelp'
+        $content.PlatyPsHelp | Should -Match 'Update-MarkdownCommandHelp'
+        $content.PlatyPsHelp | Should -Match 'Test-MarkdownCommandHelp'
+        $content.PlatyPsHelp | Should -Match 'YAML metadata block'
+        $content.PlatyPsHelp | Should -Match 'Import-MarkdownCommandHelp'
+        $content.PlatyPsHelp | Should -Match 'SYNOPSIS`, `SYNTAX`, optional `ALIASES`, `DESCRIPTION`, `EXAMPLES`, `PARAMETERS`, `INPUTS`, `OUTPUTS`, `NOTES`, and `RELATED LINKS`'
+
+        $content.Instruction | Should -Match 'platyps-help\.instructions\.md'
+        $content.Instruction | Should -Match 'Generate valid PlatyPS help under `docs/(<ProjectName>|\{\{ProjectName\}\})/en-US/`'
+        $content.Instruction | Should -Match 'New-MarkdownCommandHelp`, `Update-MarkdownCommandHelp`, `Test-MarkdownCommandHelp`'
+
+        $content.DeveloperSkill | Should -Match 'valid PlatyPS-compatible help'
+        $content.DeveloperSkill | Should -Match 'New-MarkdownCommandHelp'
+        $content.DeveloperSkill | Should -Match 'writing plain Markdown'
+        $content.DeveloperAgent | Should -Match 'valid PlatyPS-compatible help docs'
+        $content.DeveloperAgent | Should -Match 'New-MarkdownCommandHelp'
+        $content.ReviewerAgent | Should -Match 'Test-MarkdownCommandHelp'
+        $content.ImplementPrompt | Should -Match 'valid PlatyPS-compatible help under `docs/(<ProjectName>|\{\{ProjectName\}\})/en-US/`'
+        $content.ImplementPrompt | Should -Match 'New-MarkdownCommandHelp'
+        $content.ReviewPrompt | Should -Match 'New-MarkdownCommandHelp'
+
+        $content.Agents | Should -Match 'New-MarkdownCommandHelp'
+        $content.Contributing | Should -Match 'New-MarkdownCommandHelp'
+        $content.Readme | Should -Match 'New-MarkdownCommandHelp'
     }
 
     It 'documents agent and starter expectations without adding a CodeScene config file' {

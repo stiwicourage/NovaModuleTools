@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       - The generated guidance now keeps local `run.ps1` quality loops ordered as ScriptAnalyzer, `Invoke-NovaBuild`, then `Test-NovaBuild`, and tells agents to fix ScriptAnalyzer findings reported by `run.ps1` instead of excluding, suppressing, or handing them off unresolved.
     - The generated PowerShell guidance now requires public files to keep one top-level function per file, requires private files to keep at most one externally called function per file, and keeps any extra private functions limited to same-file support helpers whose file names match the owning function.
     - The generated guidance now includes a best-effort src/tests quality matrix in Agentic Copilot instructions so PowerShell, test, and review flows can shape code toward the preferred thresholds without requiring `.codescene/code-health-rules.json` in generated projects.
+    - The generated guidance now requires `docs/<ProjectName>/en-US/*.md` to stay valid PlatyPS help with YAML metadata and build-compatible structure, and now tells agents to use the documented `New-MarkdownCommandHelp` / `Update-MarkdownCommandHelp` / `Test-MarkdownCommandHelp` workflow instead of replacing command help with plain Markdown that breaks `nova build`.
     - The generated PowerShell guidance now requires agents to review every changed or generated text file before handoff and normalize the file ending to exactly one trailing newline with no extra blank lines at the bottom.
 
 ### Changed
