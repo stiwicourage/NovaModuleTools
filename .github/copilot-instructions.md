@@ -43,6 +43,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source; Nova generates the built module root and manifest under `dist/<ProjectName>/` from `project.json` and `src/**/*.ps1`.
 - Do not exclude or suppress PSScriptAnalyzer rules in repository analyzer helpers; fix the code that violates analyzer rules instead.
 - Keep `run.ps1` as the local quality loop: run ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
+- If `run.ps1` or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before review, handoff, or commit. Do not treat a failing local quality loop as an acceptable stopping point.
 - Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` after every meaningful change.
 - Update tests when behavior changes.
 - Prefer existing helpers and support files over ad hoc duplication.

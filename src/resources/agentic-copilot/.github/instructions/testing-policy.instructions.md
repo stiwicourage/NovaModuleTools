@@ -22,7 +22,6 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 
 - `tests/*Command*.Tests.ps1` - public command, CLI, and workflow behavior
 - `tests/*Architecture*.Tests.ps1` - layering and adapter boundaries
-- `tests/*Coverage*.Tests.ps1` - targeted coverage and regression gaps
 - `tests/*TestSupport.ps1` - shared helpers and reusable fixtures
 - Source-mirrored tests should use `tests/public/<Name>.Tests.ps1`, `tests/private/<domain>/<Name>.Tests.ps1`, and `tests/classes/<Name>.Tests.ps1` for matching `src/public/`, `src/private/`, and `src/classes/` files.
 - Repeated setup belongs in `tests/TestHelpers/` or `tests/*TestSupport.ps1`, not in duplicated blocks across mirrored tests.

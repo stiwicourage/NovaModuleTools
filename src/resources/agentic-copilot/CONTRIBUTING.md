@@ -11,6 +11,7 @@ Before opening a pull request:
 - use Nova commands and `project.json` for build, test, package, and release behavior
 - keep PowerShell code, tests, and examples compatible with `project.json` `Manifest.PowerShellHostVersion`; if the project targets `5.1`, do not add PowerShell 7.x-only features
 - keep `run.ps1` ordered as ScriptAnalyzer, then `Invoke-NovaBuild`, then `Test-NovaBuild`
+- if `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before you ask for review
 - do not exclude or suppress PSScriptAnalyzer rules
 - do not hand-create module `.psm1` or module `.psd1` files in source
 - review `README.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` when the workflow or public behavior changed

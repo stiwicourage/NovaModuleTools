@@ -90,7 +90,6 @@ In design-package-only mode:
 
 ## Repository-specific reminders
 
-- Preserve the distinction between public PowerShell cmdlets and `% nova` CLI behavior.
 - Keep contributor docs, command help, project docs, changelog entries, and release notes separated by audience.
 - Final design summaries and issue/work item drafts are always copy-ready Markdown output; apply the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
 - Draft issue text in English unless the user explicitly asks for another language.

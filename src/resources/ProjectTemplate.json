@@ -2,7 +2,10 @@
   "ProjectName": "",
   "Description": "",
   "Version": "",
-  "Preamble": [],
+  "Preamble": [
+    "Set-StrictMode -Version Latest",
+    "$ErrorActionPreference = 'Stop'"
+  ],
   "Manifest": {
     "Author": "",
     "PowerShellHostVersion": "",

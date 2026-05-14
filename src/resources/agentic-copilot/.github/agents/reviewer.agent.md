@@ -22,6 +22,7 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 - Check that public commands/classes have matching PlatyPS-compatible help and that new source files have source-mirrored tests.
 - Flag broad catch-all test files when focused source-mirrored tests would make ownership clearer.
 - Flag any PSScriptAnalyzer rule excludes or suppressions; the code should be fixed instead.
+- Flag unresolved ScriptAnalyzer findings from `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1`; they should be fixed instead of deferred.
 
 ## Inputs to inspect
 
@@ -34,7 +35,6 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 
 - `/markdown-authoring`
 - `/pester-testing`
-
 - `/release-and-changelog`
 
 ## Constraints

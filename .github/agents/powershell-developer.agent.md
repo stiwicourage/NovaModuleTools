@@ -43,6 +43,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 
 - Production code and tests both reflect the intended behavior.
 - Build output still comes from Nova-generated `dist/` files, not hand-authored module files in `src/`.
+- Any ScriptAnalyzer findings reported by `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` are resolved.
 - Docs/changelog review is complete.
 - The relevant validation commands have been run.
 
