@@ -9,8 +9,7 @@ Review a {{ProjectName}} change set with emphasis on correctness, maintainabilit
 3. Check whether tests, docs, and changelog updates match the change.
 4. Call out the smallest set of meaningful issues first.
 5. Note any missing validation or follow-up work.
-6. If the review is returned as Markdown or copy-ready UI text, format it according to the `markdown-authoring` skill
-   (`.github/skills/markdown-authoring/SKILL.md`).
+6. If the review is returned as Markdown or copy-ready UI text, format it according to the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
 
 ## Repository-specific reminders
 

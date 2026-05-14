@@ -44,9 +44,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 
 ### Spacing
 
-- Use one space between language keywords and `(` in control statements such as `if (...)`, `foreach (...)`,
-  `switch (...)`,
-  `while (...)`, and `for (...)`.
+- Use one space between language keywords and `(` in control statements such as `if (...)`, `foreach (...)`, `switch (...)`, `while (...)`, and `for (...)`.
 - Use one space before an opening `{`.
 - Use one space around binary, comparison, and logical operators.
 - Use one space after commas in parameter and argument lists.

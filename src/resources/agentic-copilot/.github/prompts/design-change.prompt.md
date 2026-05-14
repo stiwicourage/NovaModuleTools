@@ -67,8 +67,7 @@ If the user chooses **design package and issue/work item draft**, return:
 - Recommended follow-on agent
 - issue/work item draft
 
-If unresolved questions still remain, keep them under `Open questions` in the design package and add a short `Open
-questions` section inside the issue/work item draft too.
+If unresolved questions still remain, keep them under `Open questions` in the design package and add a short `Open questions` section inside the issue/work item draft too.
 
 If the user chooses **design package only**, return:
 
