@@ -11,7 +11,8 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 ## Test expectations
 
 - Behavior changes require Pester coverage.
-- Prefer targeted tests close to the changed workflow area before running the full quality loop.
+- Use `Test-NovaBuild` as the authoritative test entrypoint in Nova-managed projects. Do not validate with direct `Invoke-Pester`, because it can bypass Nova's build/import/StrictMode flow and disagree with what users see later.
+- Prefer the smallest `Test-NovaBuild` scope the project already supports before running the full quality loop.
 - Keep test names explicit about the behavior being proven.
 - Reuse `*.TestSupport.ps1` helpers where possible.
 - For every new or changed `src/**/*.ps1` file, add or update the matching source-mirrored `.Tests.ps1` file.
@@ -37,12 +38,13 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 ## Common pitfalls
 
 - Many tests expect the built module under `dist/NovaModuleTools`; build first when needed.
+- Direct `Invoke-Pester` runs can hide Nova-specific build/import/StrictMode behavior and should not be used as the project test entrypoint.
 - Some support helpers must be dot-sourced and re-exported inside `BeforeAll`.
 - Duplicated test setup can lower Code Health even when tests pass.
 - Docs-only changes usually do not need executable validation, but workflow/test docs must still be kept accurate.
 
 ## Verification
 
-- Targeted Pester file(s)
+- `Test-NovaBuild`
 - `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` when PowerShell code changed
 - `pwsh -NoLogo -NoProfile -File ./run.ps1` before completion

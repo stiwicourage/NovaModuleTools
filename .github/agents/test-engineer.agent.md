@@ -37,7 +37,7 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 
 ## Constraints
 
-- Prefer targeted tests first, then the full repo quality loop.
+- Prefer the smallest `Test-NovaBuild` scope the project already supports, then the full repo quality loop.
 - Keep test files maintainable; passing tests are not enough if Code Health degrades.
 - Reuse existing fixture and support patterns before adding new ones.
 - Do not group unrelated source files into one broad test file when mirrored `tests/public`, `tests/private`, or `tests/classes` ownership is possible.
@@ -45,12 +45,14 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 - If CodeScene flags a regression, refactor the tests or helpers instead of suppressing the finding.
 - Keep new or heavily changed tests inside the warning thresholds from `.github/instructions/code-quality-matrix.instructions.md` unless the scope explicitly justifies otherwise.
 - Use `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` as the normal analyzer entrypoint for changed test/helpers, and only fall back to direct `Invoke-ScriptAnalyzer` for focused local investigation with the repository-approved settings.
+- Use `Test-NovaBuild` as the test entrypoint for Nova-managed projects; do not validate with direct `Invoke-Pester`.
 
 ## Definition of done
 
 - The changed behavior is covered.
 - Each new or changed `src/**/*.ps1` file has a matching source-mirrored test, or the cross-cutting owner test is named explicitly.
 - The touched tests are readable and low-duplication.
+- Validation uses `Test-NovaBuild` for project test execution.
 - Validation and CodeScene implications are addressed.
 - The pre-commit CodeScene safeguard is clean before the work is treated as commit-ready when local CodeScene tooling is available.
 

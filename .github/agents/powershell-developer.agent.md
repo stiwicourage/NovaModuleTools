@@ -45,6 +45,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 - Preserve existing command names, warning semantics, and output shape.
 - Keep new or heavily changed source functions inside the warning thresholds from `.github/instructions/code-quality-matrix.instructions.md` unless the scope explicitly justifies otherwise.
 - Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1` for normal analyzer loops; use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repository-approved settings.
+- Validate Nova-managed project tests through `Test-NovaBuild`; do not call `Invoke-Pester` directly.
 - When help files change, keep `docs/NovaModuleTools/en-US/*.md` valid for `Import-MarkdownCommandHelp`: use `New-MarkdownCommandHelp` for new files, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff. A new public `src/public/*.ps1` file is not done until its matching help file exists.
 
 ## Definition of done
@@ -53,6 +54,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 - Build output still comes from Nova-generated `dist/` files, not hand-authored module files in `src/`.
 - Public/private file ownership still follows the one externally called function per file rule.
 - Every new public entry point has its matching help file.
+- Project test validation ran through `Test-NovaBuild`.
 - Any ScriptAnalyzer findings reported by `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` are resolved.
 - Every changed or generated text file has been checked and ends with exactly one trailing newline and no extra blank lines at the bottom.
 - Docs/changelog review is complete.

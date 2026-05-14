@@ -47,6 +47,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - Do not exclude or suppress PSScriptAnalyzer rules in repository analyzer helpers; fix the code that violates analyzer rules instead.
 - Use `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth. Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1`, and only use direct `Invoke-ScriptAnalyzer` for focused local checks or deliberate analyzer-tooling changes.
 - Keep `run.ps1` as the local quality loop: run ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
+- Use `Test-NovaBuild` as the authoritative test entrypoint in Nova-managed projects. Do not call `Invoke-Pester` directly, because it can bypass Nova's build/import/StrictMode flow and disagree with the result users get later.
 - If `run.ps1` or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before review, handoff, or commit. Do not treat a failing local quality loop as an acceptable stopping point.
 - Keep file/function ownership explicit: `src/public/` files should own exactly one top-level function each, and `src/private/` files should expose at most one externally called function per file. Additional private functions may stay only as support helpers used from the same file, and the file name should match the function that owns the file.
 - Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort quality matrix for `src/**/*.ps1` and `tests/**/*.ps1`; generated projects should follow that guidance through Agentic Copilot files, not by depending on a required `.codescene/code-health-rules.json`.
@@ -88,7 +89,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 Use the smallest validation set that proves the change, then run the repository quality loop before finishing code work:
 
 - local quality loop: `pwsh -NoLogo -NoProfile -File ./run.ps1`
-- targeted tests: `Invoke-Pester -Path ./tests/<File>.Tests.ps1 -Output Detailed`
+- test validation: `Test-NovaBuild`
 - analyzer only: `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
 - CI-parity coverage flow: `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts`
 

@@ -13,13 +13,14 @@ Use this skill when adding tests, closing coverage gaps, fixing regressions, or 
 
 - `tests/*.Tests.ps1`
 - `tests/*TestSupport.ps1`
-- `pwsh -NoLogo -NoProfile -Command "Invoke-Pester -Path ./tests/<File>.Tests.ps1 -Output Detailed"`
+- `Test-NovaBuild`
 
 ## Expected practices
 
 - Match existing `Describe` / `It` naming style.
 - Prefer support helpers for repeated setup.
 - Build/import the dist module when the test file expects it.
+- Use `Test-NovaBuild` as the authoritative test entrypoint in Nova-managed projects. Do not validate with direct `Invoke-Pester`, because it can miss the Nova build/import/StrictMode flow.
 - Add coverage for both happy paths and explicit warnings/errors when behavior changed.
 - For every new or changed `src/**/*.ps1` file, add or update one focused test file that mirrors the source path under `tests/`.
 - Keep test files and helpers compatible with `project.json` `Manifest.PowerShellHostVersion`; if a project targets `5.1`, do not introduce PowerShell 7.x-only syntax, cmdlets, parameters, or APIs in the tests.
@@ -32,6 +33,7 @@ Use this skill when adding tests, closing coverage gaps, fixing regressions, or 
 - Forgetting that many tests assume `dist/{{ProjectName}}` already exists
 - Duplicating setup instead of extending `*.TestSupport.ps1`
 - Exporting helper functions at the wrong time in test lifecycle
+- Validating a Nova-managed project with direct `Invoke-Pester` instead of `Test-NovaBuild`
 - Passing tests while still degrading maintainability through duplication
 - Grouping unrelated source files into one large test file when a source-mirrored layout would make ownership clearer
 - Adding source files without a matching mirrored test or an explicit cross-cutting-test justification
@@ -39,6 +41,6 @@ Use this skill when adding tests, closing coverage gaps, fixing regressions, or 
 
 ## Verification
 
-- Run the touched test file(s) directly first
+- Run `Test-NovaBuild`
 - Run full regression tests before finishing code changes
 - If coverage is the goal, inspect `artifacts/pester-coverage.cobertura.xml` via the CI helper flow

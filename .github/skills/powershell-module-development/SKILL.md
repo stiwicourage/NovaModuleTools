@@ -60,6 +60,6 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 
 ## Verification
 
-- Targeted Pester file(s) for the changed behavior
+- `Test-NovaBuild` for the changed behavior
 - `tests/ArchitectureGuardrails.Tests.ps1` implications checked
 - `pwsh -NoLogo -NoProfile -File ./run.ps1`

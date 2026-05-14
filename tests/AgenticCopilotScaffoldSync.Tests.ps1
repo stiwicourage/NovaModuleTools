@@ -163,6 +163,33 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.Readme | Should -Match 'New-MarkdownCommandHelp'
     }
 
+    It 'documents Test-NovaBuild-only project test guidance' {
+        $content = & $script:getAgenticScaffoldGuidanceContent
+
+        $content.Instruction | Should -Match 'Use `Test-NovaBuild` as the authoritative test entrypoint'
+        $content.Instruction | Should -Match 'Do not call `Invoke-Pester` directly'
+        $content.Instruction | Should -Not -Match 'Invoke-Pester -Path'
+
+        $content.TestingPolicy | Should -Match 'Use `Test-NovaBuild` as the authoritative test entrypoint'
+        $content.TestingPolicy | Should -Match 'Do not validate with direct `Invoke-Pester`'
+        $content.TestingPolicy | Should -Not -Match 'Invoke-Pester -Path'
+
+        $content.PesterSkill | Should -Match 'Test-NovaBuild'
+        $content.PesterSkill | Should -Match 'Do not validate with direct `Invoke-Pester`'
+        $content.PesterSkill | Should -Not -Match 'Invoke-Pester -Path'
+
+        $content.DeveloperSkill | Should -Match '`Test-NovaBuild` for the changed behavior'
+        $content.DeveloperAgent | Should -Match 'Validate Nova-managed project tests through `Test-NovaBuild`'
+        $content.TestEngineerAgent | Should -Match 'Use `Test-NovaBuild` as the test entrypoint'
+        $content.ReviewerAgent | Should -Match 'bypasses `Test-NovaBuild` with direct `Invoke-Pester`'
+        $content.ImplementPrompt | Should -Match 'Validate Nova-managed project tests through `Test-NovaBuild`'
+        $content.ReviewPrompt | Should -Match 'bypasses `Test-NovaBuild` with direct `Invoke-Pester`'
+
+        $content.Agents | Should -Match 'Use `Test-NovaBuild` as the project test entrypoint'
+        $content.Contributing | Should -Match 'use `Test-NovaBuild` as the project test entrypoint'
+        $content.Readme | Should -Match 'Use `Test-NovaBuild` as the project test entrypoint'
+    }
+
     It 'documents proper PSScriptAnalyzer usage guidance' {
         $content = & $script:getAgenticScaffoldGuidanceContent
 

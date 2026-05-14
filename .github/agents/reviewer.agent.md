@@ -25,6 +25,7 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 - Review changed `src/**/*.ps1` and `tests/**/*.ps1` against `.github/instructions/code-quality-matrix.instructions.md`; flag new or heavily changed code that exceeds the warning thresholds without a clear, explicit reason.
 - Flag public files that do not keep exactly one top-level function, and flag private files that group multiple externally called functions instead of limiting extra functions to same-file support helpers. Also flag file/function name mismatches for public commands or externally called private helpers.
 - Flag broad catch-all test files when focused source-mirrored tests would make ownership clearer.
+- Flag Nova-managed validation that bypasses `Test-NovaBuild` with direct `Invoke-Pester`.
 - Flag any PSScriptAnalyzer rule excludes or suppressions; the code should be fixed instead.
 - Flag unresolved ScriptAnalyzer findings from `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1`; they should be fixed instead of deferred.
 

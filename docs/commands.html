@@ -185,7 +185,9 @@ PS&gt; Install-NovaCli -DestinationDirectory ~/bin -Force</code></pre>
                             src/tests quality matrix delivered through Agentic Copilot guidance files instead of a
                             required <code>.codescene/code-health-rules.json</code>, explicit PSScriptAnalyzer
                             workflow guidance for <code>./scripts/build/Invoke-ScriptAnalyzerCI.ps1</code>,
-                            <code>./run.ps1</code>, and focused <code>Invoke-ScriptAnalyzer</code> usage, explicit
+                            <code>./run.ps1</code>, focused <code>Invoke-ScriptAnalyzer</code> usage, and
+                            Test-NovaBuild-only project test guidance that forbids direct
+                            <code>Invoke-Pester</code>, explicit
                             valid-PlatyPS help guidance for <code>docs/&lt;ProjectName&gt;/en-US/*.md</code> using
                             <code>New-MarkdownCommandHelp</code>, <code>Update-MarkdownCommandHelp</code>, and
                             <code>Test-MarkdownCommandHelp</code>, with a matching help file required for every new
