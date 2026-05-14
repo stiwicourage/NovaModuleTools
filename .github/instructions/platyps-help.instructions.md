@@ -1,5 +1,5 @@
 ---
-applyTo: "docs/**/*.md"
+applyTo: "docs/NovaModuleTools/**/*.md"
 ---
 
 # PlatyPS command help rules

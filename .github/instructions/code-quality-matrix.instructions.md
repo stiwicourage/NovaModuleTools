@@ -1,5 +1,5 @@
 ---
-applyTo: "src/**/*.ps1,tests/**/*.ps1"
+applyTo: "src/**/*.ps1,tests/**/*.ps1,scripts/**/*.ps1"
 ---
 
 # Agentic code quality matrix

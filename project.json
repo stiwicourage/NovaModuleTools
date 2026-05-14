@@ -19,6 +19,10 @@
       {
         "ModuleName": "Microsoft.PowerShell.PlatyPS",
         "ModuleVersion": "1.0.1"
+      },
+      {
+        "ModuleName": "PSScriptAnalyzer",
+        "ModuleVersion": "1.25.0"
       }
     ],
     "Tags": [
