@@ -339,7 +339,7 @@
             New = ''
         }
         @{
-            Old = '- [ ] CLI behavior'
+            Old = '- Preserve the distinction between public PowerShell cmdlets and `% nova` CLI behavior.'
             New = ''
         }
     )

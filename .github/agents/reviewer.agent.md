@@ -37,8 +37,8 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 - `/docs-site-html`
 - `/markdown-authoring`
 - `/pester-testing`
-- `/github-actions`
 - `/release-and-changelog`
+- `/github-actions`
 
 ## Constraints
 
