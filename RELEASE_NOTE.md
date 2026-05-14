@@ -11,7 +11,7 @@ changes will be included in the next **stable** release!
 - `Initialize-NovaModule` and `% nova init` now offer an optional Agentic Copilot starter package in both the minimal and example interactive scaffold flows.
     - The starter package follows a filtered mirror of Nova's maintained agentic guidance so newly scaffolded projects receive a broader Nova-style agentic baseline without Nova-specific CodeScene or docs-site surfaces.
     - Generated architect/design guidance now requires final design packages and issue/work item drafts to be returned as copy-ready Markdown using the project Markdown authoring guidance.
-  - Generated implementation/test guidance now keeps projects on Nova build/test/package workflows, treats `.psm1` / `.psd1` files as generated output, calls out PlatyPS help plus one focused source-mirrored test file for every new or changed `src/**/*.ps1` file, and tells agents to honor `project.json` `Manifest.PowerShellHostVersion` when writing PowerShell code and tests.
+  - Generated implementation/test guidance now keeps projects on Nova build/test/package workflows, treats `.psm1` / `.psd1` files as generated output, calls out PlatyPS help plus one focused source-mirrored test file for every new or changed `src/**/*.ps1` file, tells agents to honor `project.json` `Manifest.PowerShellHostVersion` when writing PowerShell code and tests, and now asks for a short project name so placeholders such as `Invoke-<ShortName>*` can be replaced in the generated starter files.
   - Generated quality-loop guidance now keeps ScriptAnalyzer first and tells agents to fix ScriptAnalyzer findings instead of excluding or suppressing rules.
 
 ### Changed

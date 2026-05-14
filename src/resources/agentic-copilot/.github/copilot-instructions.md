@@ -30,8 +30,8 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - `scripts/build/ci/` - CI coverage, quality tooling, and artifact helpers
 - workflow files - repository workflow automation, when present
 - reusable workflow actions - reusable workflow actions, when present
-- `docs/{{ProjectName}}/en-US/` - command help source, when present
-- `docs/` - project documentation, when present
+- `docs/{{ProjectName}}/en-US/` - command help source
+- `docs/` - project documentation
 
 ## Repository-wide rules
 
@@ -50,7 +50,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - Treat maintainability as a release-readiness concern for this repository.
 - Keep AI-touched files small, clear, and easy to review.
 - Prefer small, incremental refactors over large rewrites when fixing maintainability issues.
-- Keep command help, contributor docs, and release history clearly separated by audience and syntax.
+- Keep command help `docs/{{ProjectName}}/en-US/*.md`, contributor docs, and release history clearly separated by audience and syntax.
 - Add or update PlatyPS-compatible command help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change.
 - For every new or changed `src/**/*.ps1` file, add or update one focused source-mirrored Pester file: use `tests/public/<Name>.Tests.ps1` for `src/public/<Name>.ps1`, `tests/private/<domain>/<Name>.Tests.ps1` for `src/private/<domain>/<Name>.ps1`, and `tests/classes/<Name>.Tests.ps1` for `src/classes/<Name>.ps1`.
 - Use shared helpers under `tests/TestHelpers/` or `tests/*TestSupport.ps1` for repeated setup; do not hide unrelated source-file coverage in broad catch-all test files unless the behavior is genuinely cross-cutting.

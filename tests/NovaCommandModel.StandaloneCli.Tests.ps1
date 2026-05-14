@@ -585,6 +585,7 @@ Describe '$projectName tests' {
 
             $longHelp | Should -Match 'Agentic Copilot starter package'
             $longHelp | Should -Match 'defaults to No'
+            $longHelp | Should -Match 'short name'
         }
     }
 

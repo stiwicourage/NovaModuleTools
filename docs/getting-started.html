@@ -201,6 +201,9 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                     without excluded rules, generated <code>dist</code> module files, command-help ownership, and
                     source-mirrored test guidance.
                     Nova then creates a project folder under the path you selected.</p>
+                <p>If you enable the Agentic package, Nova also asks for a short project name used in generated guidance
+                    placeholders such as <code>Invoke-&lt;ShortName&gt;*</code>. For NovaModuleTools the short name is
+                    <code>Nova</code>, but it could also have been <code>NMT</code>.</p>
                 <div class="notice" data-command-visibility="command-line" hidden>
                     <strong>CLI caveat:</strong>
                     <p>Use <code>% nova init --path ~/Work</code> or <code>% nova init -p ~/Work</code>, not positional
@@ -311,8 +314,9 @@ pwsh -NoLogo -Command "Get-ExampleGreeting -Name 'Nova user' -AsObject"</code></
                     </div>
                 </div>
                 <p>The minimal scaffold still asks for the same core project metadata, including the optional Agentic
-                    Copilot setup question, but it gives you a smaller starter layout than the example project. When
-                    enabled, the Agentic package uses the same filtered starter mirror as the example scaffold.</p>
+                    Copilot setup question and the follow-up short-name prompt when you answer Yes, but it gives you a
+                    smaller starter layout than the example project. When enabled, the Agentic package uses the same
+                    filtered starter mirror as the example scaffold.</p>
                 <p>Use the example scaffold when you want the fastest learning path. Use the minimal scaffold when you
                     want the leanest new project.</p>
             </section>

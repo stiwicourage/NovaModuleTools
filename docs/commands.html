@@ -181,6 +181,9 @@ PS&gt; Install-NovaCli -DestinationDirectory ~/bin -Force</code></pre>
                             compatibility guidance, strict ScriptAnalyzer guidance without excluded rules, generated
                             <code>dist</code> module files, command-help ownership, and source-mirrored test guidance.
                         </p>
+                        <p>If you enable the Agentic package, Nova also asks for a short project name used in generated
+                            guidance placeholders such as <code>Invoke-&lt;ShortName&gt;*</code>. For NovaModuleTools the
+                            short name is <code>Nova</code>, but it could also have been <code>NMT</code>.</p>
                         <ul class="plain-list">
                             <li><strong>Use when:</strong> you are creating a fresh NovaModuleTools project</li>
                             <li data-command-visibility="command-line" hidden><strong>Remember:</strong> pass the target path

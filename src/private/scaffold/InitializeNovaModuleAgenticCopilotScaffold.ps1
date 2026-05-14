@@ -1,3 +1,16 @@
+function Get-NovaModuleAgenticCopilotProjectShortName {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][hashtable]$Answer
+    )
+
+    if (-not $Answer.ContainsKey('ProjectShortName') -or [string]::IsNullOrWhiteSpace($Answer.ProjectShortName)) {
+        Stop-NovaOperation -Message 'Project short name is required when Agentic Copilot setup is enabled.' -ErrorId 'Nova.Validation.AgenticCopilotProjectShortNameMissing' -Category InvalidData -TargetObject 'ProjectShortName'
+    }
+
+    return $Answer.ProjectShortName
+}
+
 function Get-NovaModuleAgenticCopilotTemplateTokenMap {
     [CmdletBinding()]
     param(
@@ -12,6 +25,7 @@ function Get-NovaModuleAgenticCopilotTemplateTokenMap {
 
     return [ordered]@{
         '{{ProjectName}}' = $Answer.ProjectName
+        '{{ShortName}}' = Get-NovaModuleAgenticCopilotProjectShortName -Answer $Answer
         '{{ProjectDescription}}' = $description
         '{{StartHereBody}}' = @'
 Use this repository as the starting point for your module.

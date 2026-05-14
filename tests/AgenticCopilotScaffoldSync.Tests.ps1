@@ -46,12 +46,14 @@ Describe 'Agentic Copilot scaffold sync' {
 
     It 'documents Nova-managed project expectations in the starter guidance' {
         $instructionContent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/copilot-instructions.md') -Raw
+        $codingStandardsContent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/powershell-coding-standards.instructions.md') -Raw
         $developerSkillContent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/skills/powershell-module-development/SKILL.md') -Raw
         $testingPolicyContent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/testing-policy.instructions.md') -Raw
         $readmeContent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot 'README.md') -Raw
 
         $instructionContent | Should -Match 'Do not create or maintain hand-written module `\.psm1` or module `\.psd1` files in source'
         $instructionContent | Should -Match 'Manifest\.PowerShellHostVersion'
+        $codingStandardsContent | Should -Match 'Invoke-\{\{ShortName\}\}\*'
         $developerSkillContent | Should -Match 'Nova generates those files under `dist/\{\{ProjectName\}\}/`'
         $developerSkillContent | Should -Match 'PowerShell 7\.x-only'
         $instructionContent | Should -Match 'docs/\{\{ProjectName\}\}/en-US/'

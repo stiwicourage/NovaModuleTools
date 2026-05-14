@@ -64,7 +64,7 @@
         }
         @{
             Old = '- Keep `docs/*.html`, `docs/NovaModuleTools/en-US/*.md`, and contributor docs clearly separated by audience and syntax.'
-            New = '- Keep command help, contributor docs, and release history clearly separated by audience and syntax.'
+            New = '- Keep command help `docs/{{ProjectName}}/en-US/*.md`, contributor docs, and release history clearly separated by audience and syntax.'
         }
         @{
             Old = '- CI-parity coverage flow: `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts`'
@@ -116,11 +116,11 @@
         }
         @{
             Old = '- `docs/NovaModuleTools/en-US/` - command help source'
-            New = '- `docs/<ProjectName>/en-US/` - command help source, when present'
+            New = '- `docs/{{ProjectName}}/en-US/` - command help source'
         }
         @{
             Old = '- `project docs` - end-user GitHub Pages content'
-            New = '- `docs/` - project documentation, when present'
+            New = '- `docs/` - project documentation'
         }
         @{
             Old = '- `.github/instructions/documentation.instructions.md`'
@@ -232,7 +232,7 @@
         }
         @{
             Old = '- project docs - end-user GitHub Pages content'
-            New = '- `docs/` - project documentation, when present'
+            New = '- `docs/` - project documentation'
         }
         @{
             Old = 'applyTo: "tests/**/*.ps1,scripts/build/**/*.ps1,"'
@@ -252,7 +252,7 @@
         }
         @{
             Old = '-Nova*'
-            New = '-<function>*'
+            New = '-{{ShortName}}*'
         }
         @{
             Old = ', and the `nova` CLI routing model.'

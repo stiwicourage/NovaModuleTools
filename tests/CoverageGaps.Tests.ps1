@@ -45,6 +45,7 @@ Describe 'Coverage gaps for scaffold internals' {
                 'PowerShellHostVersion',
                 'EnableGit',
                 'EnableAgenticCopilot',
+                'ProjectShortName',
                 'EnablePester'
             )
             $questions.ProjectName.Default | Should -Be 'MANDATORY'
@@ -55,6 +56,10 @@ Describe 'Coverage gaps for scaffold internals' {
             $questions.EnableAgenticCopilot.Caption | Should -Be 'Agentic Copilot setup'
             $questions.EnableAgenticCopilot.Message | Should -Be 'Do you want Nova to add Agentic Copilot setup files to this project?'
             $questions.EnableAgenticCopilot.Default | Should -Be 'No'
+            $questions.ProjectShortName.Caption | Should -Be 'Project short name'
+            $questions.ProjectShortName.Message | Should -Be 'Enter a short project name for generated guidance placeholders such as Invoke-<ShortName>*. For NovaModuleTools the short name is Nova, but it could also have been NMT.'
+            (& $questions.ProjectShortName.Validation.Test 'Nova') | Should -BeTrue
+            (& $questions.ProjectShortName.Validation.Test 'bad name') | Should -BeFalse
             $questions.EnablePester.Choice.No | Should -Be 'Skip pester testing'
         }
     }
@@ -70,7 +75,8 @@ Describe 'Coverage gaps for scaffold internals' {
                 'Author',
                 'PowerShellHostVersion',
                 'EnableGit',
-                'EnableAgenticCopilot'
+                'EnableAgenticCopilot',
+                'ProjectShortName'
             )
             $questions.Contains('EnablePester') | Should -BeFalse
             $questions.EnableAgenticCopilot.Choice.No | Should -Be 'Skip Agentic Copilot setup'
@@ -136,6 +142,9 @@ Describe 'Coverage gaps for scaffold internals' {
                     'Agentic Copilot setup' {
                         'Yes'
                     }
+                    'Project short name' {
+                        'Nova'
+                    }
                     'Pester Testing' {
                         'Yes'
                     }
@@ -154,6 +163,7 @@ Describe 'Coverage gaps for scaffold internals' {
             $answers.PowerShellHostVersion | Should -Be '7.4'
             $answers.EnableGit | Should -Be 'No'
             $answers.EnableAgenticCopilot | Should -Be 'Yes'
+            $answers.ProjectShortName | Should -Be 'Nova'
             $answers.EnablePester | Should -Be 'Yes'
             Assert-MockCalled Read-AwesomeHost -Times $questions.Count
         }
@@ -170,6 +180,10 @@ Describe 'Coverage gaps for scaffold internals' {
                     return 'NovaSample'
                 }
 
+                if ($Ask.Caption -eq 'Agentic Copilot setup') {
+                    return 'Yes'
+                }
+
                 return 'value'
             }
 
@@ -183,8 +197,36 @@ Describe 'Coverage gaps for scaffold internals' {
                 'Supported PowerShell Version',
                 'Git Version Control',
                 'Agentic Copilot setup',
+                'Project short name',
                 'Pester Testing'
             )
+        }
+    }
+
+    It 'Read-NovaModuleAnswerSet skips the project short name when Agentic Copilot is not selected' {
+        InModuleScope $script:moduleName {
+            $questions = Get-NovaModuleQuestionSet
+            $askedCaptions = [System.Collections.Generic.List[string]]::new()
+            Mock Read-AwesomeHost {
+                $askedCaptions.Add($Ask.Caption)
+
+                switch ($Ask.Caption) {
+                    'Module Name' {
+                        'NovaSample'
+                    }
+                    'Agentic Copilot setup' {
+                        'No'
+                    }
+                    default {
+                        'value'
+                    }
+                }
+            }
+
+            $answers = Read-NovaModuleAnswerSet -Questions $questions
+
+            $answers.Keys | Should -Not -Contain 'ProjectShortName'
+            $askedCaptions | Should -Not -Contain 'Project short name'
         }
     }
 
@@ -446,6 +488,7 @@ Describe 'Coverage gaps for scaffold internals' {
                 AnswerSet = [ordered]@{
                     ProjectName = 'NovaWorkflow'
                     EnableAgenticCopilot = 'Yes'
+                    ProjectShortName = 'Nova'
                 }
                 Layout = [pscustomobject]@{
                     Project = '/tmp/base/NovaWorkflow'
@@ -586,6 +629,7 @@ Describe 'Coverage gaps for scaffold internals' {
                 PowerShellHostVersion = '7.4'
                 EnableGit = 'No'
                 EnableAgenticCopilot = 'Yes'
+                ProjectShortName = 'Nova'
                 EnablePester = 'No'
             }
             $expectedFiles = @(
@@ -628,6 +672,7 @@ Describe 'Coverage gaps for scaffold internals' {
 
             (Get-Content -LiteralPath (Join-Path $projectRoot 'README.md') -Raw) | Should -Match '## Agentic Copilot workflow'
             (Get-Content -LiteralPath (Join-Path $projectRoot 'RELEASE_NOTE.md') -Raw) | Should -Match 'changes for NovaAgenticMinimal'
+            (Get-Content -LiteralPath (Join-Path $projectRoot '.github/instructions/powershell-coding-standards.instructions.md') -Raw) | Should -Match 'Invoke-Nova\*'
         }
     }
 
@@ -641,6 +686,7 @@ Describe 'Coverage gaps for scaffold internals' {
                 PowerShellHostVersion = '7.4'
                 EnableGit = 'No'
                 EnableAgenticCopilot = 'Yes'
+                ProjectShortName = 'Nova'
             }
             Mock Read-NovaModuleAnswerSet {$answer}
             Mock Write-Message {}
@@ -657,6 +703,7 @@ Describe 'Coverage gaps for scaffold internals' {
             $readme | Should -Match '## Start here'
             $readme | Should -Match '## What is in this example\?'
             $readme | Should -Match 'PS> Invoke-NovaBuild'
+            (Get-Content -LiteralPath (Join-Path $projectRoot '.github/instructions/powershell-coding-standards.instructions.md') -Raw) | Should -Match 'Invoke-Nova\*'
         }
     }
 

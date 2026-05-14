@@ -13,7 +13,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - Keep public command files small and delegating.
 - Keep exactly one top-level public function per file in `src/public/`.
 - Public mutating commands should support PowerShell `ShouldProcess` semantics.
-- Preserve existing naming and command model conventions such as `Invoke-<function>*`, `Get-<function>*`, `Update-<function>*`.
+- Preserve existing naming and command model conventions such as `Invoke-{{ShortName}}*`, `Get-{{ShortName}}*`, `Update-{{ShortName}}*`.
 - Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source. Nova generates the built module root and manifest under `dist/{{ProjectName}}/` from `project.json` and `src/**/*.ps1`.
 
 ## Internal structure rules
