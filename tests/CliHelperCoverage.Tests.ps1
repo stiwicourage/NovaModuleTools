@@ -45,8 +45,7 @@ Describe 'Targeted coverage for smaller CLI helper internals' {
             $directHelpUsageError = $null
             try {
                 Assert-NovaCliHelpUsageSupported -Tokens @('--help', 'build')
-            }
-            catch {
+            } catch {
                 $directHelpUsageError = $_
             }
 
@@ -60,8 +59,7 @@ Describe 'Targeted coverage for smaller CLI helper internals' {
             $rootHelpUsageError = $null
             try {
                 Get-NovaCliHelpRequest -Command '--help' -Arguments @('--help')
-            }
-            catch {
+            } catch {
                 $rootHelpUsageError = $_
             }
 
@@ -75,8 +73,7 @@ Describe 'Targeted coverage for smaller CLI helper internals' {
             $subcommandHelpUsageError = $null
             try {
                 Get-NovaCliHelpRequest -Command 'build' -Arguments @('--help', 'extra')
-            }
-            catch {
+            } catch {
                 $subcommandHelpUsageError = $_
             }
 
@@ -99,8 +96,7 @@ Describe 'Targeted coverage for smaller CLI helper internals' {
                 $result.Verbose | Should -BeTrue
                 $result.WhatIf | Should -BeTrue
                 $result.Confirm | Should -BeFalse
-            }
-            finally {
+            } finally {
                 $WhatIfPreference = $previousWhatIfPreference
             }
         }

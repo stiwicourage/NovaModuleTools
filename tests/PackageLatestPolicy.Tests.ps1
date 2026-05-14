@@ -90,8 +90,7 @@ Describe 'Package latest policy behavior' {
             $thrown = $null
             try {
                 ConvertTo-NovaPackageLatestPolicy -Value 'preview'
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

@@ -125,8 +125,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             $thrown = $null
             try {
                 Assert-NovaPublicFunctionFileLayout -ProjectInfo $projectInfo
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -281,8 +280,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             $thrown = $null
             try {
                 Build-Help
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -344,8 +342,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
 
             try {
                 Build-Help
-            }
-            finally {
+            } finally {
                 Remove-Item function:Import-MarkdownCommandHelp -ErrorAction SilentlyContinue
                 Remove-Item function:Export-MamlCommandHelp -ErrorAction SilentlyContinue
             }
@@ -386,8 +383,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
                 {Build-Help} | Should -Not -Throw
                 Assert-MockCalled Get-NovaHelpLocale -Times 0
                 Assert-MockCalled Rename-Item -Times 0
-            }
-            finally {
+            } finally {
                 Remove-Item function:Import-MarkdownCommandHelp -ErrorAction SilentlyContinue
                 Remove-Item function:Export-MamlCommandHelp -ErrorAction SilentlyContinue
             }
@@ -445,8 +441,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
                 $thrown = $null
                 try {
                     Build-Help
-                }
-                catch {
+                } catch {
                     $thrown = $_
                 }
 
@@ -455,8 +450,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
                 $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ObjectNotFound)
                 $thrown.TargetObject | Should -Be '/tmp/dist/NovaModuleTools'
                 Assert-MockCalled Rename-Item -Times 0
-            }
-            finally {
+            } finally {
                 Remove-Item function:Import-MarkdownCommandHelp -ErrorAction SilentlyContinue
                 Remove-Item function:Export-MamlCommandHelp -ErrorAction SilentlyContinue
             }
@@ -485,8 +479,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             $missingSourceError = $null
             try {
                 Build-Module -ProjectInfo $projectInfo
-            }
-            catch {
+            } catch {
                 $missingSourceError = $_
             }
 
@@ -502,8 +495,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
             $psm1WriteError = $null
             try {
                 Build-Module -ProjectInfo $projectInfo
-            }
-            catch {
+            } catch {
                 $psm1WriteError = $_
             }
 
@@ -611,8 +603,7 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
                     ProjectName = 'NovaModuleTools'
                     ManifestFilePSD1 = '/tmp/NovaModuleTools.psd1'
                 })
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

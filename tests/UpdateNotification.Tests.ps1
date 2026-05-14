@@ -102,8 +102,7 @@ Describe 'Update notification behavior' {
             $thrown = $null
             try {
                 Get-NovaUpdateNotificationPreferenceChangeContext
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -317,8 +316,7 @@ Describe 'Update notification behavior' {
             $thrown = $null
             try {
                 Get-NovaModuleSelfUpdateWorkflowContext
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -379,8 +377,7 @@ Describe 'Update notification behavior' {
                         $script:releaseNotesLookupCount++
                         throw 'should not look up release notes'
                     }
-                }
-                else {
+                } else {
                     Mock Invoke-NovaModuleSelfUpdate {}
                     Mock Get-NovaModuleReleaseNotesUri {
                         $script:releaseNotesLookupCount++
@@ -393,8 +390,7 @@ Describe 'Update notification behavior' {
                 $result.Updated | Should -Be $TestCase.ExpectedUpdated -Because $TestCase.Name
                 if ($null -eq $TestCase.ExpectedReleaseNotesUri) {
                     $result.ReleaseNotesUri | Should -BeNullOrEmpty -Because $TestCase.Name
-                }
-                else {
+                } else {
                     $result.ReleaseNotesUri | Should -Be $TestCase.ExpectedReleaseNotesUri -Because $TestCase.Name
                 }
                 if ($TestCase.ExpectedUpdateCalls -gt 0) {
@@ -508,8 +504,7 @@ Describe 'Update notification behavior' {
                 $result.PrereleaseNotificationsEnabled | Should -BeTrue
                 $result.StableReleaseNotificationsEnabled | Should -BeTrue
             }
-        }
-        finally {
+        } finally {
             $env:XDG_CONFIG_HOME = $originalConfigHome
             $env:APPDATA = $originalAppData
         }
@@ -528,8 +523,7 @@ Describe 'Update notification behavior' {
             InModuleScope $script:moduleName -Parameters @{
                 ExpectedPath = if ($IsWindows) {
                     Join-Path $appDataRoot 'NovaModuleTools/settings.json'
-                }
-                else {
+                } else {
                     Join-Path $configRoot 'NovaModuleTools/settings.json'
                 }
             } {
@@ -537,8 +531,7 @@ Describe 'Update notification behavior' {
 
                 Get-NovaUpdateSettingsFilePath | Should -Be $ExpectedPath
             }
-        }
-        finally {
+        } finally {
             $env:XDG_CONFIG_HOME = $originalConfigHome
             $env:APPDATA = $originalAppData
         }
@@ -559,8 +552,7 @@ Describe 'Update notification behavior' {
 
                 Get-NovaSettingsRootPath -IsWindowsPlatform $true | Should -Be $ExpectedRoot
             }
-        }
-        finally {
+        } finally {
             $env:XDG_CONFIG_HOME = $originalConfigHome
             $env:APPDATA = $originalAppData
         }
@@ -579,8 +571,7 @@ Describe 'Update notification behavior' {
 
                 Get-NovaSettingsRootPath | Should -Be $ExpectedRoot
             }
-        }
-        finally {
+        } finally {
             $env:XDG_CONFIG_HOME = $originalConfigHome
             $env:APPDATA = $originalAppData
         }
@@ -653,8 +644,7 @@ Describe 'Update notification behavior' {
             $unsupportedUsageError = $null
             try {
                 ConvertFrom-NovaUpdateCliArgument -Arguments @('--bogus')
-            }
-            catch {
+            } catch {
                 $unsupportedUsageError = $_
             }
 
@@ -1028,8 +1018,7 @@ Continue with the prerelease update?
             $thrown = $null
             try {
                 & $TestCase.Invoke
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

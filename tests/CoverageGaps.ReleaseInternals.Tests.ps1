@@ -204,8 +204,7 @@ Describe 'Coverage gaps for release and git internals' {
             $result.NewVersion | Should -Be $TestCase.PlannedVersion
             if ($null -eq $TestCase.ExpectedAdvisoryPattern) {
                 $result.AdvisoryMessage | Should -BeNullOrEmpty
-            }
-            else {
+            } else {
                 $result.AdvisoryMessage | Should -Match $TestCase.ExpectedAdvisoryPattern
             }
 
@@ -378,8 +377,7 @@ Describe 'Coverage gaps for release and git internals' {
 
                 Assert-MockCalled Publish-PSResource -Times 1 -ParameterFilter {$Path -eq '/tmp/dist' -and $Repository -eq 'PSGallery' -and $ApiKey -eq 'gallery-secret'}
                 $script:publishPsResourceVerbosePreference | Should -Not -Be 'Continue'
-            }
-            finally {
+            } finally {
                 $env:PSGALLERY_API = $originalApiKey
             }
         }
@@ -442,8 +440,7 @@ Describe 'Coverage gaps for release and git internals' {
             $thrown = $null
             try {
                 Publish-NovaBuiltModule -ProjectInfo ([pscustomobject]@{OutputModuleDir = '/tmp/missing'; ProjectName = 'Nova'})
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -660,8 +657,7 @@ Describe 'Coverage gaps for release and git internals' {
             $thrown = $null
             try {
                 Assert-NovaVersionBumpInferenceAvailability -ProjectRoot $projectRoot -CommitMessages @() -WarningVariable warningMessages
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -746,8 +742,7 @@ Describe 'Coverage gaps for release and git internals' {
             $thrown = $null
             try {
                 Get-NovaVersionLabelForBump -ProjectRoot $projectRoot
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -822,8 +817,7 @@ Describe 'Coverage gaps for release and git internals' {
             $thrown = $null
             try {
                 Get-NovaVersionLabelForBump -ProjectRoot $projectRoot
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -849,8 +843,7 @@ Describe 'Coverage gaps for release and git internals' {
             $thrown = $null
             try {
                 Get-NovaVersionLabelForBump -ProjectRoot $projectRoot
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -927,8 +920,7 @@ Describe 'Coverage gaps for release and git internals' {
             $thrown = $null
             try {
                 Get-ResourceFilePath -FileName 'missing.json'
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

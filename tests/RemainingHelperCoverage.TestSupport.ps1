@@ -31,8 +31,7 @@ function Assert-TestNovaPackageArtifactContent {
         $contentTypesText | Should -Match 'PartName="/content/PackageProject/resources/nova"'
         $relsText | Should -Match 'http://schemas.microsoft.com/packaging/2010/07/manifest'
         $relsText | Should -Match 'Target="/PackageProject.nuspec"'
-    }
-    finally {
+    } finally {
         $archive.Dispose()
     }
 }
@@ -52,8 +51,7 @@ function Assert-TestNovaZipPackageArtifactContent {
         $entryNames | Should -Not -Contain 'PackageProject.nuspec'
         $entryNames | Should -Not -Contain '_rels/.rels'
         $entryNames | Should -Not -Contain '[Content_Types].xml'
-    }
-    finally {
+    } finally {
         $archive.Dispose()
     }
 }

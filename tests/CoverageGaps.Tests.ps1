@@ -100,8 +100,7 @@ Describe 'Coverage gaps for scaffold internals' {
             $null = New-Item -ItemType Directory -Path $nested -Force
             $mixedStylePath = if ([System.IO.Path]::DirectorySeparatorChar -eq '/') {
                 $nested.Replace('/', '\')
-            }
-            else {
+            } else {
                 $nested.Replace('\', '/')
             }
 
@@ -197,8 +196,7 @@ Describe 'Coverage gaps for scaffold internals' {
             $thrown = $null
             try {
                 Read-NovaModuleAnswerSet -Questions $questions
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -264,8 +262,7 @@ Describe 'Coverage gaps for scaffold internals' {
             $thrown = $null
             try {
                 Initialize-NovaModuleScaffold -Answer @{EnablePester = 'No'; EnableGit = 'No'; EnableAgenticCopilot = 'No'} -Paths $paths
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -680,8 +677,7 @@ Describe 'Coverage gaps for scaffold internals' {
             $thrown = $null
             try {
                 Initialize-NovaModule -Path '/tmp/does-not-exist' -WhatIf
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -703,8 +699,7 @@ Describe 'Coverage gaps for scaffold internals' {
             $thrown = $null
             try {
                 Assert-NovaModuleQuestionAnswerValid -Question $question -Value 'invalid name!'
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

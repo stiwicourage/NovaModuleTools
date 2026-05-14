@@ -80,8 +80,7 @@ Describe 'Nova command model - standalone CLI behavior' {
             $result.DestinationDirectory | Should -Be $targetDirectory
             (Test-Path -LiteralPath $installedPath) | Should -BeTrue
             Assert-TestInstalledNovaCliSnapshot -Snapshot $snapshot -ModuleName $script:moduleName -InstalledModuleVersion $installedModuleVersion -ExpectedProjectVersionText $expectedProjectVersionText
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -143,8 +142,7 @@ function Invoke-TestCliVerbose {
                 $shortBuildOutput = & $installedPath build -v 2>&1
                 $shortBuildText = @($shortBuildOutput) -join [Environment]::NewLine
                 $shortBuildExitCode = $LASTEXITCODE
-            }
-            finally {
+            } finally {
                 Pop-Location
             }
 
@@ -155,8 +153,7 @@ function Invoke-TestCliVerbose {
             $shortBuildText | Should -Match 'VERBOSE: Running NovaModuleTools Version:'
             $shortBuildText | Should -Match 'VERBOSE: Buidling module psm1 file'
             (Test-Path -LiteralPath (Join-Path $projectRoot 'dist/CliVerboseBuildProject/CliVerboseBuildProject.psm1')) | Should -BeTrue
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -194,8 +191,7 @@ Describe 'CLI WhatIf test project' {
             $resultMap = Get-TestNovaCliWhatIfResultMap -InstalledPath $installedPath -ProjectRoot $projectRoot
 
             Assert-TestNovaCliWhatIfResultMap -ResultMap $resultMap -ProjectJsonPath $projectJsonPath -BuiltModulePath $builtModulePath -TestResultPath $testResultPath
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -225,8 +221,7 @@ Describe 'CLI WhatIf test project' {
 
             $result.ExitCode | Should -Not -Be 0
             $result.Text | Should -Match $expectedPattern
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -268,8 +263,7 @@ Describe '$projectName tests' {
 
             $result = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('publish', '--local', '--path', $publishDir, $testCase.Option) -EnvironmentVariables @{NOVA_CLI_CONFIRM_RESPONSE = $testCase.Response}
             Assert-TestNovaCliPublishConfirmationResult -Result $result -PublishManifestPath $publishManifestPath -TestCase $testCase
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -372,8 +366,7 @@ Describe '$projectName tests' {
             $result.Text | Should -Match 'Version plan: 1\.5\.4-preview -> 2\.0\.0 \| Label: Major \| Commits: 1'
             $result.Text | Should -Not -Match 'Version plan: 1\.5\.4-preview -> 1\.5\.4 \| Label: Patch \| Commits: 0'
             $versionAfterBump | Should -Be '1.5.4-preview'
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -418,8 +411,7 @@ Describe '$projectName tests' {
             foreach ($pattern in $_.UnexpectedPatterns) {
                 $initResult.Text | Should -Not -Match $pattern
             }
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -463,8 +455,7 @@ Describe '$projectName tests' {
             $result.ExitCode | Should -Be 0 -Because $result.Text
             (Test-Path -LiteralPath $builtModulePath) | Should -BeTrue
             (Test-Path -LiteralPath $topMarker) | Should -BeTrue
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -817,8 +808,7 @@ Describe '$projectName tests' {
             $thrown = $null
             try {
                 & $TestCase.Action
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

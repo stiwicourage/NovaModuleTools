@@ -160,8 +160,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $thrown = $null
             try {
                 Get-NovaProjectInfo -Path $projectRoot
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -181,8 +180,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $thrown = $null
             try {
                 Get-NovaProjectInfo -Path $projectRoot
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -429,8 +427,7 @@ Describe 'Nova command model - project, help, and build behavior' {
                 $thrown = $null
                 try {
                     Get-NovaProjectInfo -Path $projectRoot
-                }
-                catch {
+                } catch {
                     $thrown = $_
                 }
 
@@ -477,8 +474,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $(
             if ( [string]::IsNullOrWhiteSpace($help.Synopsis)) {
                 $null
-            }
-            else {
+            } else {
                 ($help.Synopsis -replace '\s+', ' ').Trim()
             }
             ) | Should -Be $testCase.ExpectedSynopsis -Because "$( $testCase.FileName ) synopsis should come from the generated help"
@@ -755,8 +751,7 @@ title: Invoke-NovaBuild
                 $result = Get-NovaHelpLocale -HelpMarkdownFiles (Get-Item -LiteralPath $docPath)
 
                 $result | Should -Be 'da-DK'
-            }
-            finally {
+            } finally {
                 Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
             }
         }
@@ -809,8 +804,7 @@ title: Invoke-NovaBuild
             $projectRoot = '/tmp/nova-project'
             $cfg = if ($TestCase.IncludeOutput) {
                 New-TestPesterConfigStub -IncludeOutput
-            }
-            else {
+            } else {
                 New-TestPesterConfigStub
             }
 

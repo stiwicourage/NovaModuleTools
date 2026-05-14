@@ -111,8 +111,7 @@ function Invoke-TestInstalledNovaCommand {
             Text = (@($output) -join [Environment]::NewLine)
             ExitCode = $LASTEXITCODE
         }
-    }
-    finally {
+    } finally {
         Pop-Location
 
         foreach ($variableName in $EnvironmentVariables.Keys) {
@@ -187,8 +186,7 @@ function Assert-TestInstalledNovaCliBumpBehavior {
 
         ([regex]::Matches($bumpResult.Text, 'Major version zero \(0\.y\.z\) is for initial development')).Count | Should -Be $TestCase.ExpectedWarningCount
         $versionAfterBump | Should -Be $TestCase.ExpectedVersionAfterBump
-    }
-    finally {
+    } finally {
         $env:PSModulePath = $originalModulePath
     }
 }

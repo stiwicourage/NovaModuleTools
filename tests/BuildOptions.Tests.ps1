@@ -95,8 +95,7 @@ Describe 'Invoke-NovaBuild options' {
         $thrown = $null
         try {
             Get-ExampleConfiguration
-        }
-        catch {
+        } catch {
             $thrown = $_
         }
 
@@ -140,8 +139,7 @@ Describe 'Invoke-NovaBuild options' {
 
             $LASTEXITCODE | Should -Be 0 -Because (@($output) -join [Environment]::NewLine)
             $report | Should -Match 'PSScriptAnalyzer: no findings\.'
-        }
-        finally {
+        } finally {
             Remove-Item -LiteralPath (Join-Path $repoRoot 'src/resources/example/dist') -Recurse -Force -ErrorAction SilentlyContinue
             Remove-Item -LiteralPath $exampleArtifactsRoot -Recurse -Force -ErrorAction SilentlyContinue
         }
@@ -214,8 +212,7 @@ Describe 'Invoke-NovaBuild options' {
         Push-Location -LiteralPath $root
         try {
             (Get-NovaProjectInfo).SetSourcePath | Should -BeTrue
-        }
-        finally {
+        } finally {
             Pop-Location
         }
 
@@ -351,12 +348,10 @@ Describe 'Invoke-NovaBuild options' {
             Push-Location -LiteralPath $root
             try {
                 Invoke-NovaBuild
-            }
-            finally {
+            } finally {
                 Pop-Location
             }
-        }
-        catch {
+        } catch {
             $thrown = $_
         }
 

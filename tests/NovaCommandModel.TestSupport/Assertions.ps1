@@ -83,8 +83,7 @@ function Invoke-GetNovaCliCommandPromptKeyAssertion {
 
             $result | Should -Be $TestCase.Expected
             Assert-MockCalled Read-NovaCliPromptKey -Times $TestCase.PromptReadCount
-        }
-        finally {
+        } finally {
             $env:NOVA_CLI_CONFIRM_RESPONSE = $originalResponse
         }
     }
@@ -360,8 +359,7 @@ function Get-TestInstalledNovaCliSnapshot {
     try {
         $snapshot.ProjectVersionText = @((& $InstalledPath version 2>&1)) -join [Environment]::NewLine
         $snapshot.ProjectVersionExitCode = $LASTEXITCODE
-    }
-    finally {
+    } finally {
         Pop-Location
     }
 

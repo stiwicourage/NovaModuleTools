@@ -125,8 +125,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
             InModuleScope $script:moduleName {
                 Get-LocalModulePathEntryList | Should -Be @('/tmp/modules', '/tmp/alt-modules')
             }
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -140,8 +139,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
             InModuleScope $script:moduleName {
                 @(Get-LocalModulePathEntryList) | Should -Be @()
             }
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -326,8 +324,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
             InModuleScope $script:moduleName {
                 Test-ProjectSchema -Schema Build | Should -BeTrue
             }
-        }
-        finally {
+        } finally {
             Pop-Location
         }
     }
@@ -356,8 +353,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
                 $thrown = $null
                 try {
                     Test-ProjectSchema -Schema Build
-                }
-                catch {
+                } catch {
                     $thrown = $_
                 }
 
@@ -367,8 +363,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
                 $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
                 $thrown.TargetObject | Should -Be 'project.json'
             }
-        }
-        finally {
+        } finally {
             Pop-Location
         }
     }
@@ -383,8 +378,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
             $thrown = $null
             try {
                 ConvertTo-NovaPackageType -Type 'tar.gz'
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -460,8 +454,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
             $thrown = $null
             try {
                 Get-NovaPackageAuthorList -AuthorValue 42
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -589,8 +582,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
                     PackagePath = '/tmp/packages/Nova.Package.nupkg'
                     Authors = @('Author A')
                 })
-            }
-            catch {
+            } catch {
                 $missingField = $_
             }
 
@@ -609,8 +601,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
                     PackagePath = '/tmp/packages/Nova.Package.nupkg'
                     Authors = @()
                 })
-            }
-            catch {
+            } catch {
                 $missingAuthors = $_
             }
 
@@ -644,8 +635,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
                 $thrown = $null
                 try {
                     Get-NovaPackageArtifactType -PackagePath $packagePath
-                }
-                catch {
+                } catch {
                     $thrown = $_
                 }
 
@@ -707,8 +697,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
             $thrown = $null
             try {
                 Initialize-NovaPackageOutputDirectory -ProjectInfo ([pscustomobject]@{}) -PackageMetadataList @()
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -776,8 +765,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
             $thrown = $null
             try {
                 Resolve-NovaPackageUploadTypeList -ProjectInfo ([pscustomobject]@{}) -PackageType @('nupkg')
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -868,8 +856,7 @@ function Get-Second {
             $thrown = $null
             try {
                 Stop-NovaOperation -Message 'Missing value for --path' -ErrorId 'Nova.Validation.MissingCliOptionValue' -Category InvalidArgument -TargetObject '--path'
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -916,8 +903,7 @@ function Get-Second {
             $thrown = $null
             try {
                 Read-ProjectJsonData -ProjectJsonPath $ProjectJsonPath
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -1019,8 +1005,7 @@ Locale: en-US
             $thrown = $null
             try {
                 Get-NovaHelpLocale -HelpMarkdownFiles $helpFiles
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -1044,8 +1029,7 @@ Locale: en-US
             $thrown = $null
             try {
                 Get-NovaPackageAuthorList -AuthorValue ([pscustomobject]@{Name = 'Author One'})
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -1062,8 +1046,7 @@ Locale: en-US
             $thrown = $null
             try {
                 Assert-NovaPackageOutputDirectoryCanBeCleared -ProjectInfo $Case.ProjectInfo -OutputDirectory $Case.OutputDirectory
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -1085,8 +1068,7 @@ Locale: en-US
             $missingOutputError = $null
             try {
                 Get-NovaPackageContentItemList -ProjectInfo $projectInfo -PackageMetadata $packageMetadata
-            }
-            catch {
+            } catch {
                 $missingOutputError = $_
             }
 
@@ -1101,8 +1083,7 @@ Locale: en-US
             $emptyOutputError = $null
             try {
                 Get-NovaPackageContentItemList -ProjectInfo $projectInfo -PackageMetadata $packageMetadata
-            }
-            catch {
+            } catch {
                 $emptyOutputError = $_
             }
 
@@ -1223,8 +1204,7 @@ Locale: en-US
                     PackagePath = '/tmp/packages/PackageProject.2.3.4.tar'
                     OutputDirectory = '/tmp/packages'
                 }) -OutputDirectoryReady
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

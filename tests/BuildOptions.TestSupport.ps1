@@ -89,8 +89,7 @@ function Get-BuiltModuleFilePath {
     try {
         $info = Get-NovaProjectInfo
         return (Join-Path $ProjectRoot ("dist/{0}/{0}.psm1" -f $info.ProjectName))
-    }
-    finally {
+    } finally {
         Pop-Location
     }
 }
@@ -110,8 +109,7 @@ function Invoke-TestProjectBuild {
         }
 
         return $psm1
-    }
-    finally {
+    } finally {
         Pop-Location
     }
 }
@@ -153,8 +151,7 @@ function Get-TestProjectInfoValue {
     Push-Location -LiteralPath $ProjectRoot
     try {
         return (Get-NovaProjectInfo).$PropertyName
-    }
-    finally {
+    } finally {
         Pop-Location
     }
 }
@@ -226,8 +223,7 @@ function Assert-InvokeNovaBuildThrows {
         Push-Location -LiteralPath $ProjectRoot
         try {
             Invoke-NovaBuild
-        }
-        finally {
+        } finally {
             Pop-Location
         }
     }
@@ -235,8 +231,7 @@ function Assert-InvokeNovaBuildThrows {
     $thrown = $null
     try {
         & $invokeAction
-    }
-    catch {
+    } catch {
         $thrown = $_
     }
 
@@ -324,8 +319,7 @@ function Invoke-TestProjectTests {
     $scriptPath = Join-Path $ProjectRoot 'Run-TestNovaBuild.ps1'
     $testCommand = if ($BuildBeforeTest) {
         'Test-NovaBuild -Build'
-    }
-    else {
+    } else {
         @(
             'Invoke-NovaBuild'
             'Test-NovaBuild'
@@ -345,8 +339,7 @@ $testCommand
             ExitCode = $LASTEXITCODE
             Output = @($output)
         }
-    }
-    finally {
+    } finally {
         Remove-Item -LiteralPath $scriptPath -Force -ErrorAction SilentlyContinue
     }
 }

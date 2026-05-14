@@ -10,8 +10,7 @@ function Get-TestModuleDisplayVersion {
 
     if ($psData -is [hashtable]) {
         $prereleaseLabel = $psData['Prerelease']
-    }
-    elseif ($null -ne $psData -and $psData.PSObject.Properties.Name -contains 'Prerelease') {
+    } elseif ($null -ne $psData -and $psData.PSObject.Properties.Name -contains 'Prerelease') {
         $prereleaseLabel = $psData.Prerelease
     }
 

@@ -614,8 +614,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $thrown = $null
             try {
                 Update-NovaModuleVersion -Path $projectRoot -WhatIf -WarningVariable warningMessages
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -680,8 +679,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $thrown = $null
             try {
                 Update-NovaModuleVersion -Path $projectRoot -WhatIf
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

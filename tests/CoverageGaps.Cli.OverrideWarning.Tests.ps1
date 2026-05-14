@@ -51,8 +51,7 @@ Describe 'Coverage gaps for CLI override-warning parsing' {
             $thrown = $null
             try {
                 ConvertFrom-NovaPackageCliArgument -Arguments @('--local')
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

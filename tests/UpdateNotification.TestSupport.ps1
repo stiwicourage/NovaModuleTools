@@ -56,8 +56,7 @@ function Invoke-TestAvailableModuleUpdateWarning {
                 OutputRendering = $PSStyle.OutputRendering
                 Warnings = @($script:capturedWarnings)
             }
-        }
-        finally {
+        } finally {
             $PSStyle.OutputRendering = $previousRendering
         }
     }
@@ -84,8 +83,7 @@ function Invoke-TestNotificationPreferenceToggle {
                 $status = Invoke-NovaCli notification
                 $disabled = Invoke-NovaCli notification --disable -Confirm:$false
                 $enabled = Invoke-NovaCli notification --enable -Confirm:$false
-            }
-            else {
+            } else {
                 $status = Get-NovaUpdateNotificationPreference
                 $disabled = Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications -Confirm:$false
                 $enabled = Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications -Confirm:$false
@@ -97,8 +95,7 @@ function Invoke-TestNotificationPreferenceToggle {
                 Enabled = $enabled
             }
         }
-    }
-    finally {
+    } finally {
         $env:XDG_CONFIG_HOME = $originalConfigHome
         $env:APPDATA = $originalAppData
     }
@@ -166,8 +163,7 @@ function Invoke-TestNovaSelfUpdate {
 
         $result = if ($TestOptions.UseCli) {
             Invoke-NovaCli update -Confirm:$false
-        }
-        else {
+        } else {
             Update-NovaModuleTool -Confirm:$false
         }
 

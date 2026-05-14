@@ -407,8 +407,7 @@ Describe 'Nova command model - package upload behavior' {
 
             $result = if ($TestCase.UseExplicitOverride) {
                 Resolve-NovaPackageUploadTarget -ProjectInfo $ProjectInfo -Repository 'LocalRaw' -Url 'https://override.example/upload/' -UploadPath 'manual/path'
-            }
-            else {
+            } else {
                 Resolve-NovaPackageUploadTarget -ProjectInfo $ProjectInfo -Repository 'localraw'
             }
 
@@ -515,8 +514,7 @@ Describe 'Nova command model - package upload behavior' {
                 $result['X-Api-Key'] | Should -Be $TestCase.ExpectedHeaderValue
                 $result.Keys.Count | Should -Be 1
             }
-        }
-        finally {
+        } finally {
             [System.Environment]::SetEnvironmentVariable('NOVA_PACKAGE_CONFIGURED_TOKEN', $originalConfiguredToken, 'Process')
             [System.Environment]::SetEnvironmentVariable('NOVA_PACKAGE_EXPLICIT_TOKEN', $originalExplicitToken, 'Process')
         }
@@ -540,8 +538,7 @@ Describe 'Nova command model - package upload behavior' {
 
             try {
                 Resolve-NovaPackageUploadTarget -ProjectInfo $ProjectInfo
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -745,8 +742,7 @@ Describe 'Nova command model - package upload behavior' {
 
             try {
                 Get-NovaPackageArtifactType -PackagePath '/tmp/package.invalid'
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -774,8 +770,7 @@ Describe 'Nova command model - package upload behavior' {
 
             try {
                 Resolve-NovaPackageUploadOutputFileList -ProjectInfo $ProjectInfo
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -802,8 +797,7 @@ Describe 'Nova command model - package upload behavior' {
 
             try {
                 Resolve-NovaPackageUploadOutputFileSet -OutputDirectory $OutputDirectory -ProjectInfo $ProjectInfo -PackageType 'NuGet'
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -830,8 +824,7 @@ Describe 'Nova command model - package upload behavior' {
             $conflictError = $null
             try {
                 Deploy-NovaPackage -PackageType NuGet -Url 'https://packages.example/raw/'
-            }
-            catch {
+            } catch {
                 $conflictError = $_
             }
 
@@ -858,8 +851,7 @@ Describe 'Nova command model - package upload behavior' {
             $missingPackageError = $null
             try {
                 Deploy-NovaPackage -PackagePath $missingPath -Url 'https://packages.example/raw/'
-            }
-            catch {
+            } catch {
                 $missingPackageError = $_
             }
 
@@ -889,8 +881,7 @@ Describe 'Nova command model - package upload behavior' {
             $thrown = $null
             try {
                 & $InvokeAction $PackagePath
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -909,8 +900,7 @@ Describe 'Nova command model - package upload behavior' {
             $thrown = $null
             try {
                 Get-NovaPackageRepository -ProjectInfo $ProjectInfo -Repository 'MissingRepo'
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -937,8 +927,7 @@ Describe 'Nova command model - package upload behavior' {
             $thrown = $null
             try {
                 Invoke-NovaPackageArtifactUpload -UploadArtifact $uploadArtifact
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -1002,8 +991,7 @@ Describe 'Nova command model - package upload behavior' {
             $thrown = $null
             try {
                 Invoke-NovaPackageArtifactUpload -UploadArtifact $uploadArtifact
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -1051,8 +1039,7 @@ Describe 'Nova command model - package upload behavior' {
                             $InFile -eq $PackagePath
                 }
             }
-        }
-        finally {
+        } finally {
             [System.Environment]::SetEnvironmentVariable('NOVA_PACKAGE_UPLOAD_TOKEN', $originalToken, 'Process')
         }
     }
