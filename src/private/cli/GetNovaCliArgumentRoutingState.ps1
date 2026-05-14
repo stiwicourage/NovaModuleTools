@@ -114,8 +114,7 @@ function Assert-NovaCliArgumentSyntax {
         $replacement = Get-NovaCliLegacyOptionReplacement -Option $argument
         $message = if ( [string]::IsNullOrWhiteSpace($replacement)) {
             "Unsupported CLI option syntax: $argument. Use long options with '--' or single-character short options."
-        }
-        else {
+        } else {
             "Unsupported CLI option syntax: $argument. Use $replacement instead."
         }
 

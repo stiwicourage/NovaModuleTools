@@ -61,8 +61,7 @@ function Read-NovaCliPromptKey {
 
     try {
         return Read-NovaCliConsoleKeyChar
-    }
-    catch {
+    } catch {
         return [char]0
     }
 }
@@ -105,15 +104,13 @@ function Get-NovaCliCommandCancellationInfo {
 
     $message = if (($KeyChar.ToString()).ToUpperInvariant() -eq 'S') {
         'Suspend is not supported in nova CLI mode. Operation cancelled.'
-    }
-    else {
+    } else {
         'Operation cancelled.'
     }
 
     $errorId = if (($KeyChar.ToString()).ToUpperInvariant() -eq 'S') {
         'Nova.Workflow.CliSuspendNotSupported'
-    }
-    else {
+    } else {
         'Nova.Workflow.CliOperationCancelled'
     }
 

@@ -18,8 +18,7 @@ function Invoke-NovaPowerShellScriptWithTimeout {
         if (-not $asyncResult.AsyncWaitHandle.WaitOne($TimeoutMilliseconds)) {
             try {
                 $powershell.Stop()
-            }
-            catch {
+            } catch {
                 $null = $_
             }
 
@@ -28,12 +27,10 @@ function Invoke-NovaPowerShellScriptWithTimeout {
 
         try {
             return $powershell.EndInvoke($asyncResult) | Select-Object -First 1
-        }
-        catch {
+        } catch {
             return $null
         }
-    }
-    finally {
+    } finally {
         $powershell.Dispose()
     }
 }

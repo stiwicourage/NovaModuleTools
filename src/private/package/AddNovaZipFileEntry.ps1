@@ -11,8 +11,7 @@ function Add-NovaZipFileEntry {
     $sourceStream = [System.IO.File]::OpenRead($SourcePath)
     try {
         $sourceStream.CopyTo($entryStream)
-    }
-    finally {
+    } finally {
         $sourceStream.Dispose()
         $entryStream.Dispose()
     }

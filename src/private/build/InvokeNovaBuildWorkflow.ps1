@@ -41,8 +41,7 @@ function Invoke-NovaBuildUpdateNotificationSafely {
 
     try {
         Invoke-NovaBuildUpdateNotification
-    }
-    catch {
+    } catch {
         $null = $_
     }
 }

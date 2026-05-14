@@ -10,8 +10,7 @@ function Read-NovaJsonFileData {
 
     try {
         return Get-Content -LiteralPath $LiteralPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
-    }
-    catch {
+    } catch {
         return $null
     }
 }

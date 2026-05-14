@@ -41,8 +41,7 @@ function Invoke-NovaRelease {
             }
 
             return Invoke-NovaReleaseWorkflow -WorkflowContext $workflowContext
-        }
-        finally {
+        } finally {
             Pop-Location
         }
     }

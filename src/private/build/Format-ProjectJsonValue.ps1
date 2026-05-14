@@ -8,8 +8,7 @@ function Format-ProjectJsonValue {
 
     try {
         return ($Value | ConvertTo-Json -Compress -Depth 10)
-    }
-    catch {
+    } catch {
         return [string]$Value
     }
 }

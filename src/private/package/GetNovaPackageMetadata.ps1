@@ -11,20 +11,17 @@ function Get-NovaPackageMetadata {
     $packageSettings = $ProjectInfo.Package
     $configuredPackageTypes = if ($packageSettings -is [System.Collections.IDictionary]) {
         @($packageSettings['Types'])
-    }
-    else {
+    } else {
         @($packageSettings.Types)
     }
     $defaultPackageType = @($configuredPackageTypes | Where-Object {$_} | Select-Object -First 1)
     $packageType = if ( [string]::IsNullOrWhiteSpace($PackageType)) {
         if ( [string]::IsNullOrWhiteSpace("$( $defaultPackageType )")) {
             'NuGet'
-        }
-        else {
+        } else {
             ConvertTo-NovaPackageType -Type "$( $defaultPackageType )"
         }
-    }
-    else {
+    } else {
         ConvertTo-NovaPackageType -Type $PackageType
     }
     $packageId = "$( $ProjectInfo.Package.Id )".Trim()
@@ -35,8 +32,7 @@ function Get-NovaPackageMetadata {
     $cleanOutputDirectory = [bool]$ProjectInfo.Package.OutputDirectory.Clean
     $contentRoot = if ($packageType -eq 'Zip') {
         "$( $ProjectInfo.ProjectName )"
-    }
-    else {
+    } else {
         "content/$( $ProjectInfo.ProjectName )"
     }
 

@@ -7,8 +7,7 @@ function Get-NovaProjectPackageOutputDirectorySettingsTable {
 
     $outputDirectoryValue = if ( $PackageSettings.Contains('OutputDirectory')) {
         $PackageSettings['OutputDirectory']
-    }
-    else {
+    } else {
         $null
     }
 

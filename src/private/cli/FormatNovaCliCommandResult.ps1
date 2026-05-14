@@ -42,8 +42,7 @@ function Format-NovaCliVersionUpdateResult {
 
     $summaryPrefix = if ($Result.Applied) {
         'Version bump completed:'
-    }
-    else {
+    } else {
         'Version plan:'
     }
 

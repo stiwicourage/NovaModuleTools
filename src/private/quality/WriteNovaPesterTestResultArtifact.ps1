@@ -12,8 +12,7 @@ function Write-NovaPesterTestResultArtifact {
 
     $resolvedReportWriter = if ($null -ne $ReportWriter) {
         $ReportWriter
-    }
-    else {
+    } else {
         (Get-Command -Name Write-NovaPesterTestResultReport -CommandType Function -ErrorAction Stop).ScriptBlock
     }
 

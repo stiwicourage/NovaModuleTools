@@ -76,16 +76,13 @@ $novaModuleToolsTestFailed = $false
 try {
     if (@($ExcludeTag).Count -gt 0) {
         Test-NovaBuild -ExcludeTagFilter $ExcludeTag
-    }
-    else {
+    } else {
         Test-NovaBuild
     }
-}
-catch {
+} catch {
     $novaModuleToolsTestFailed = $true
     Write-Warning "Test-NovaBuild failed: $( $_.Exception.Message )"
-}
-finally {
+} finally {
     Copy-NovaModuleToolsTestResultIfPresent -ProjectRoot $projectInfo.ProjectRoot -ArtifactsDirectory $OutputDirectory
 }
 

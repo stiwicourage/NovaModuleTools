@@ -12,8 +12,7 @@ function Get-NovaPackageArtifactType {
 
     try {
         return ConvertTo-NovaPackageType -Type $extension
-    }
-    catch {
+    } catch {
         Stop-NovaOperation -Message $errorMessage -ErrorId 'Nova.Validation.UnsupportedPackageUploadFileType' -Category InvalidArgument -TargetObject $PackagePath
     }
 }

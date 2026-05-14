@@ -11,8 +11,7 @@ function Invoke-NovaPackageArchiveCreation {
     $archive = [System.IO.Compression.ZipArchive]::new($fileStream, [System.IO.Compression.ZipArchiveMode]::Create, $false)
     try {
         & $EntryWriter $archive
-    }
-    finally {
+    } finally {
         $archive.Dispose()
         $fileStream.Dispose()
     }

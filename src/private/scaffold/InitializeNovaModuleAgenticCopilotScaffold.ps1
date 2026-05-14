@@ -6,8 +6,7 @@ function Get-NovaModuleAgenticCopilotTemplateTokenMap {
 
     $description = if ( [string]::IsNullOrWhiteSpace($Answer.Description)) {
         "$( $Answer.ProjectName ) is a PowerShell module project scaffolded with NovaModuleTools."
-    }
-    else {
+    } else {
         $Answer.Description.TrimEnd('. ') + '.'
     }
 
@@ -100,8 +99,7 @@ function Initialize-NovaModuleAgenticCopilotScaffold {
         $templateContent = Get-Content -LiteralPath $templateFile.FullName -Raw
         $destinationContent = if ($relativePath -eq 'README.md') {
             Get-NovaModuleAgenticCopilotReadmeContent -TemplateContent $templateContent -TokenMap $tokenMap -ProjectRoot $ProjectRoot -Example:$Example
-        }
-        else {
+        } else {
             Expand-NovaModuleAgenticCopilotTemplateContent -Content $templateContent -TokenMap $tokenMap
         }
 

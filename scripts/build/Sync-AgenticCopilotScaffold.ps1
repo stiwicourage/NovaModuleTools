@@ -56,8 +56,7 @@ function Test-AgenticPathExcluded {
             if ( $normalizedRelativePath.StartsWith($normalizedExcludedPath, [System.StringComparison]::Ordinal)) {
                 return $true
             }
-        }
-        elseif ($normalizedRelativePath -eq $normalizedExcludedPath) {
+        } elseif ($normalizedRelativePath -eq $normalizedExcludedPath) {
             return $true
         }
     }
@@ -80,8 +79,7 @@ function Get-AgenticMirrorSourceFile {
 
         if (Test-Path -LiteralPath $resolvedSourcePath -PathType Leaf) {
             Get-Item -LiteralPath $resolvedSourcePath
-        }
-        else {
+        } else {
             Get-ChildItem -LiteralPath $resolvedSourcePath -File -Recurse -Force
         }
     }
@@ -206,8 +204,7 @@ function Invoke-AgenticCopilotScaffoldSync {
             MirroredFileCount = $sourceFileList.Count
             ScaffoldOwnedPathCount = @($manifest.ScaffoldOwnedPaths).Count
         }
-    }
-    finally {
+    } finally {
         if (Test-Path -LiteralPath $stagingParent) {
             Remove-Item -LiteralPath $stagingParent -Recurse -Force
         }

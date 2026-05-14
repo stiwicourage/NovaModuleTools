@@ -15,8 +15,7 @@ function Initialize-NovaModuleScaffold {
 
     if ($Example) {
         Initialize-NovaExampleModuleScaffold -Paths $Paths
-    }
-    else {
+    } else {
         Initialize-NovaDefaultModuleScaffold -Answer $Answer -Paths $Paths
     }
 
