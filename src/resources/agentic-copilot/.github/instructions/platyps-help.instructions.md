@@ -1,5 +1,5 @@
 ---
-applyTo: "docs/**/*.md"
+applyTo: "docs/{{ProjectName}}/**/*.md"
 ---
 
 # PlatyPS command help rules

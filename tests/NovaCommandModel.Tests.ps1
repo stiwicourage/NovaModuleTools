@@ -198,7 +198,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $projectJson = ([ordered]@{
                 ProjectName = 'DefaultCopyResourcesProject'
                 Description = 'Defaulted option test'
-                Version = '0.0.1'
+                Version = '0.1.0-preview'
                 Manifest = [ordered]@{
                     Author = 'Test'
                     PowerShellHostVersion = '7.4'
@@ -222,7 +222,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $projectJson = ([ordered]@{
                 ProjectName = 'DefaultPackageProject'
                 Description = 'Default package option test'
-                Version = '0.0.1'
+                Version = '0.1.0-preview'
                 Manifest = [ordered]@{
                     Author = 'Test Author'
                     PowerShellHostVersion = '7.4'
@@ -239,7 +239,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $projectInfo.Package.OutputDirectory.Path | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts/packages'))
             $projectInfo.Package.OutputDirectory.Clean | Should -BeTrue
             $projectInfo.Package.FileNamePattern | Should -Be 'DefaultPackageProject*'
-            $projectInfo.Package.PackageFileName | Should -Be 'DefaultPackageProject.0.0.1.nupkg'
+            $projectInfo.Package.PackageFileName | Should -Be 'DefaultPackageProject.0.1.0-preview.nupkg'
             $projectInfo.Package.AddVersionToFileName | Should -BeFalse
             $projectInfo.Package.Latest | Should -Be 'never'
             $projectInfo.Package.Authors | Should -Be 'Test Author'

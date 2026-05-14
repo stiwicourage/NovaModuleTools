@@ -161,7 +161,7 @@ Describe 'Coverage gaps for release and git internals' {
         }
         @{
             Name = 'a stable feature bump still warns that 1.0.0 must be set manually'
-            CurrentVersion = '0.0.1'
+            CurrentVersion = '0.1.0-preview'
             Label = 'Minor'
             PreviewRelease = $false
             PlannedVersion = '0.1.0'

@@ -36,7 +36,7 @@ function Write-TestProjectJson {
     $project = [ordered]@{
         ProjectName = ('' + $Options.ProjectName)
         Description = 'Test project'
-        Version = '0.0.1'
+        Version = '0.1.0-preview'
         Manifest = [ordered]@{
             Author = 'Test'
             PowerShellHostVersion = '7.4'

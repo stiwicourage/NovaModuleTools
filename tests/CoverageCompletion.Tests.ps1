@@ -141,9 +141,9 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             Caption = 'Semantic Version'
             Message = 'Starting version'
             Prompt = 'Version'
-            Default = '0.0.1'
+            Default = '0.1.0-preview'
             Responses = @('')
-            Expected = '0.0.1'
+            Expected = '0.1.0-preview'
             ExpectedPromptCalls = 1
             Validation = $null
             ExpectedValidationMessage = $null

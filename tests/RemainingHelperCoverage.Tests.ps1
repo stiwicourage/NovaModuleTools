@@ -307,7 +307,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         $projectJson = ([ordered]@{
             ProjectName = 'SchemaTypesProject'
             Description = 'Schema package types test'
-            Version = '0.0.1'
+            Version = '0.1.0-preview'
             Manifest = [ordered]@{
                 Author = 'Test Author'
                 PowerShellHostVersion = '7.4'
@@ -335,7 +335,7 @@ Describe 'Coverage for remaining manifest, JSON, and help-locale helpers' {
         $projectJson = ([ordered]@{
             ProjectName = 'SchemaTypesProject'
             Description = 'Schema package types test'
-            Version = '0.0.1'
+            Version = '0.1.0-preview'
             Manifest = [ordered]@{
                 Author = 'Test Author'
                 PowerShellHostVersion = '7.4'

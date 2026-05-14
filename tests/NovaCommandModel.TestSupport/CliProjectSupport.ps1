@@ -22,7 +22,7 @@ function Write-TestNovaCliProjectJson {
 {
   "ProjectName": "$ProjectName",
   "Description": "CLI test project",
-  "Version": "0.0.1",
+  "Version": "0.1.0-preview",
   "CopyResourcesToModuleRoot": false,
   "Manifest": {
     "Author": "Test",
@@ -217,7 +217,7 @@ function Assert-TestNovaCliWhatIfResultMap {
     $ResultMap.PreviewBump.Text | Should -Match 'Version plan: 0\.0\.1 -> 0\.0\.2-preview \| Label: Minor \| Commits: 1'
     $ResultMap.Bump.Text | Should -Not -Match 'Version bumped to :'
     $ResultMap.PreviewBump.Text | Should -Not -Match 'Version bumped to :'
-    ((Get-Content -LiteralPath $ProjectJsonPath -Raw | ConvertFrom-Json).Version) | Should -Be '0.0.1'
+    ((Get-Content -LiteralPath $ProjectJsonPath -Raw | ConvertFrom-Json).Version) | Should -Be '0.1.0-preview'
     (Test-Path -LiteralPath $BuiltModulePath) | Should -BeFalse
     (Test-Path -LiteralPath $TestResultPath) | Should -BeFalse
 }
