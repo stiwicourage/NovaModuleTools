@@ -23,7 +23,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 ## Repository map
 
 - `src/public/` - public PowerShell command surface; one top-level function per file
-- `src/private/` - internal helpers grouped by domain (`build/`, `cli/`, `package/`, `quality/`, `release/`, `scaffold/`, `shared/`, `update/`)
+- `src/private/` - internal helpers grouped by domain (`build/`, `cli/`, `package/`, `quality/`, `release/`, `scaffold/`, `shared/`, `update/`); keep one externally called helper per file and limit any extra functions to same-file support helpers
 - `tests/` - Pester tests and shared test-support scripts
 - `scripts/build/` - local analyzer and build helpers
 - `scripts/build/ci/` - CI coverage, CodeScene, and artifact helpers
@@ -44,6 +44,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - Do not exclude or suppress PSScriptAnalyzer rules in repository analyzer helpers; fix the code that violates analyzer rules instead.
 - Keep `run.ps1` as the local quality loop: run ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
 - If `run.ps1` or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before review, handoff, or commit. Do not treat a failing local quality loop as an acceptable stopping point.
+- Keep file/function ownership explicit: `src/public/` files should own exactly one top-level function each, and `src/private/` files should expose at most one externally called function per file. Additional private functions may stay only as support helpers used from the same file, and the file name should match the function that owns the file.
 - Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` after every meaningful change.
 - Update tests when behavior changes.
 - Prefer existing helpers and support files over ad hoc duplication.

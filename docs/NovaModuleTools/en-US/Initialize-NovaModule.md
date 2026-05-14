@@ -28,7 +28,7 @@ PS> Initialize-NovaModule [-Path <string>] [-Example] [-WhatIf] [-Confirm] [<Com
 `Initialize-NovaModule` creates a new project folder, the standard `src/` layout, and a starter `project.json` file.
 
 The command collects project details interactively, including the module name, description, version, author, minimum PowerShell version, Git initialization, and an optional Agentic Copilot starter package. When you enable the Agentic package, Nova also asks for a project short name used in generated guidance placeholders such as `Invoke-<ShortName>*`; for NovaModuleTools the short name is `Nova`, but it could also have been `NMT`. The Agentic package follows Nova's maintained agentic guidance through a filtered starter mirror, including Nova build/test/package expectations, `project.json` `Manifest.PowerShellHostVersion` compatibility guidance, strict ScriptAnalyzer guidance without excluded rules, generated `dist` module files, command-help ownership, source-mirrored test guidance, guidance that ScriptAnalyzer findings reported by
-`run.ps1` must be fixed before handoff, and a strict file-ending rule for changed or generated text files. For the standard scaffold, the interactive flow also includes optional basic Pester support.
+`run.ps1` must be fixed before handoff, explicit public/private PowerShell file ownership rules, and a strict file-ending rule for changed or generated text files. For the standard scaffold, the interactive flow also includes optional basic Pester support.
 
 If you enter an invalid answer during the interactive flow, `Initialize-NovaModule` reports the validation problem immediately and retries that prompt before it continues to the next question.
 

@@ -12,6 +12,7 @@ This file summarizes public cmdlet, CLI, configuration, and migration changes fo
     - Generated architect/design guidance now requires final design packages and issue/work item drafts to be returned as copy-ready Markdown using the project Markdown authoring guidance.
   - Generated implementation/test guidance now keeps projects on Nova build/test/package workflows, treats `.psm1` / `.psd1` files as generated output, calls out PlatyPS help plus one focused source-mirrored test file for every new or changed `src/**/*.ps1` file, tells agents to honor `project.json` `Manifest.PowerShellHostVersion` when writing PowerShell code and tests, and now asks for a short project name so placeholders such as `Invoke-<ShortName>*` can be replaced in the generated starter files.
       - Generated quality-loop guidance now keeps ScriptAnalyzer first and tells agents to fix ScriptAnalyzer findings reported by `run.ps1` instead of excluding, suppressing, or handing them off unresolved.
+    - Generated PowerShell guidance now requires public files to keep one top-level function per file, requires private files to keep at most one externally called function per file, and keeps any extra private functions limited to same-file support helpers whose file names match the owning function.
     - Generated PowerShell guidance now requires agents to review every changed or generated text file before handoff and normalize the file ending to exactly one trailing newline with no extra blank lines at the bottom.
 
 ### Changed

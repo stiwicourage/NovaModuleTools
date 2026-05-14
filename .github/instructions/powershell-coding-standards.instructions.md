@@ -12,6 +12,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 
 - Keep public command files small and delegating.
 - Keep exactly one top-level public function per file in `src/public/`.
+- Match the file name to that top-level public function name.
 - Public mutating commands should support PowerShell `ShouldProcess` semantics.
 - Preserve existing naming and command model conventions such as `Invoke-Nova*`, `Get-Nova*`, `Update-Nova*`, and the `nova` CLI routing model.
 - Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source. Nova generates the built module root and manifest under `dist/<ProjectName>/` from `project.json` and `src/**/*.ps1`.
@@ -19,6 +20,9 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 ## Internal structure rules
 
 - Put internal helpers in the correct domain folder under `src/private/`.
+- In `src/private/`, keep at most one externally called function per file and match the file name to that entry function.
+- Additional functions in a private file are allowed only as support helpers called from that same file.
+- If two private functions are both called from outside their file, split them into separate same-named files.
 - Reuse existing adapters and shared helpers before adding new infrastructure calls.
 - Keep direct environment access, Git execution, upload requests, and self-update execution in their approved helper locations. `tests/ArchitectureGuardrails.Tests.ps1` is authoritative.
 - Prefer explicit workflow-context objects (`[pscustomobject]` / ordered hashtables) for multi-step flows.

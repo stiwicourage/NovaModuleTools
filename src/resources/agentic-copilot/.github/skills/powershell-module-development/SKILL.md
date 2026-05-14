@@ -29,6 +29,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Read `project.json` `Manifest.PowerShellHostVersion` before changing PowerShell code, tests, or examples, and keep new work compatible with that target. A `5.1` project must not receive PowerShell 7.x-only syntax, cmdlets, parameters, or APIs unless the change explicitly adds guarded compatibility handling.
 - Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source; Nova generates those files under `dist/{{ProjectName}}/`.
 - Preserve native PowerShell semantics and Nova naming patterns.
+- Keep one externally called function per file and match the file name to that function. In `src/private/`, additional functions may stay only as same-file support helpers called by that file's entry function.
 - Reuse existing workflow-context helpers and shared adapters.
 - Follow the repository's PowerShell style rules: 4-space indentation, same-line opening braces, restrained blank lines, full cmdlet names, and readable operator spacing.
 - Keep ScriptAnalyzer strict: do not add excluded rules, suppression attributes, or settings that hide analyzer findings.
@@ -45,6 +46,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Calling `git`, `Invoke-WebRequest`, `Update-Module`, or `$env:` from the wrong layer
 - Replacing explicit warning opt-ins with generic force semantics
 - Creating a root module `.psm1` or module manifest `.psd1` by hand instead of letting Nova generate them from `project.json`
+- Grouping two externally called private helpers in one file instead of splitting them into separate same-named files
 - Ignoring the project's `Manifest.PowerShellHostVersion` target and introducing PowerShell 7.x-only features into a `5.1` project
 - Excluding PSScriptAnalyzer rules instead of fixing the code that violates them
 
