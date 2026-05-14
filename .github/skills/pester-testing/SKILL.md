@@ -24,6 +24,7 @@ Use this skill when adding tests, closing coverage gaps, fixing regressions, or 
 - Build/import the dist module when the test file expects it.
 - Add coverage for both happy paths and explicit warnings/errors when behavior changed.
 - For every new or changed `src/**/*.ps1` file, add or update one focused test file that mirrors the source path under `tests/`.
+- Keep test files and helpers compatible with `project.json` `Manifest.PowerShellHostVersion`; if a project targets `5.1`, do not introduce PowerShell 7.x-only syntax, cmdlets, parameters, or APIs in the tests.
 - Keep shared setup in `tests/TestHelpers/` or `*TestSupport.ps1`; do not hide unrelated source-file coverage in broad catch-all test files.
 - If a mirrored test is not practical because the behavior is genuinely cross-cutting, document the reason in the handoff and point to the owning integration or guardrail test.
 

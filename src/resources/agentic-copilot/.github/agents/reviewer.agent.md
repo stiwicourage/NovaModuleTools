@@ -18,6 +18,7 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 - If local quality tooling is unavailable, continue the review with normal validation and rely on PR/CI as the effective quality tooling gate.
 - Check whether project docs preserve the CLI-vs-cmdlet separation when project docs or help markdown changed.
 - Check that Nova projects still use generated `dist/` module files instead of hand-written source `.psm1` or module `.psd1` files.
+- Check changed PowerShell code, tests, and examples against `project.json` `Manifest.PowerShellHostVersion`; flag PowerShell 7.x-only constructs in projects that target `5.1` unless the change explicitly adds guarded compatibility handling.
 - Check that public commands/classes have matching PlatyPS-compatible help and that new source files have source-mirrored tests.
 - Flag broad catch-all test files when focused source-mirrored tests would make ownership clearer.
 - Flag any PSScriptAnalyzer rule excludes or suppressions; the code should be fixed instead.

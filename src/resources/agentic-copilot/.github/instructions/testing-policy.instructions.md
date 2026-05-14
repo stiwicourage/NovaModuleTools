@@ -15,6 +15,7 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 - Keep test names explicit about the behavior being proven.
 - Reuse `*.TestSupport.ps1` helpers where possible.
 - For every new or changed `src/**/*.ps1` file, add or update the matching source-mirrored `.Tests.ps1` file.
+- Keep test files and helpers compatible with `project.json` `Manifest.PowerShellHostVersion`; if a project targets `5.1`, do not rely on PowerShell 7.x-only syntax, cmdlets, parameters, or APIs in the tests.
 - Use broad guardrail, architecture, command-model, or integration tests only for behavior that genuinely spans multiple source files; do not use them as the default place for unit coverage of unrelated source files.
 
 ## Repository test structure

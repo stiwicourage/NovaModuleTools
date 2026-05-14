@@ -14,6 +14,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 - Change the relevant public command and private helper flow.
 - Keep public files delegating and internal helpers domain-aligned.
 - Preserve Nova's `project.json`-driven build model; do not add hand-written source `.psm1` or module `.psd1` files.
+- Read `project.json` `Manifest.PowerShellHostVersion` before implementing PowerShell changes and keep source, tests, and examples compatible with that target.
 - Add or update source-mirrored tests and PlatyPS-compatible help docs for the changed behavior.
 
 ## Inputs to inspect
@@ -50,3 +51,4 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 - Must not mix PowerShell cmdlet UX and `nova` CLI UX.
 - Must not add silent fallbacks for invalid or risky behavior.
 - Must not duplicate helpers that already exist elsewhere in the repo.
+- Must not introduce PowerShell 7.x-only constructs into a `5.1` project unless guarded multi-version support is explicitly part of the change.

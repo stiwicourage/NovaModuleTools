@@ -177,7 +177,8 @@ PS&gt; Install-NovaCli -DestinationDirectory ~/bin -Force</code></pre>
                         <p>Create the minimal scaffold or the example scaffold for a new module project. Both interactive
                             flows can also add the optional Agentic Copilot starter package, which follows Nova's
                             maintained agentic guidance through a filtered starter mirror, including Nova build/test
-                            expectations, strict ScriptAnalyzer guidance without excluded rules, generated
+                            expectations, <code>project.json</code> <code>Manifest.PowerShellHostVersion</code>
+                            compatibility guidance, strict ScriptAnalyzer guidance without excluded rules, generated
                             <code>dist</code> module files, command-help ownership, and source-mirrored test guidance.
                         </p>
                         <ul class="plain-list">

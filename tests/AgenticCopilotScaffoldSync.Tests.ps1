@@ -51,12 +51,16 @@ Describe 'Agentic Copilot scaffold sync' {
         $readmeContent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot 'README.md') -Raw
 
         $instructionContent | Should -Match 'Do not create or maintain hand-written module `\.psm1` or module `\.psd1` files in source'
+        $instructionContent | Should -Match 'Manifest\.PowerShellHostVersion'
         $developerSkillContent | Should -Match 'Nova generates those files under `dist/\{\{ProjectName\}\}/`'
+        $developerSkillContent | Should -Match 'PowerShell 7\.x-only'
         $instructionContent | Should -Match 'docs/\{\{ProjectName\}\}/en-US/'
         $instructionContent | Should -Match 'Do not exclude or suppress PSScriptAnalyzer rules'
+        $testingPolicyContent | Should -Match 'Manifest\.PowerShellHostVersion'
         $readmeContent | Should -Match 'ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`'
         $testingPolicyContent | Should -Match 'For every new or changed `src/\*\*/\*\.ps1` file'
         $testingPolicyContent | Should -Match 'Source-mirrored tests should use'
+        $readmeContent | Should -Match 'If it is `5\.1`, do not introduce PowerShell 7\.x-only features'
         $readmeContent | Should -Match 'every new or changed `src/\*\*/\*\.ps1` file should have one focused `\.Tests\.ps1` file'
     }
 }

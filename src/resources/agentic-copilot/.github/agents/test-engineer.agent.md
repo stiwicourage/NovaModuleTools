@@ -14,6 +14,7 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 - Add missing Pester coverage for changed behavior.
 - Refactor brittle or duplicated tests into reusable support patterns.
 - Enforce a source-mirrored test layout for new projects and newly added or changed source files.
+- Keep test files and helpers compatible with the project's `project.json` `Manifest.PowerShellHostVersion` target.
 - Keep CI coverage output compatible with the quality tooling workflow.
 
 ## Inputs to inspect
@@ -34,6 +35,7 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 - Keep test files maintainable; passing tests are not enough if maintainability degrades.
 - Reuse existing fixture and support patterns before adding new ones.
 - Do not group unrelated source files into one broad test file when mirrored `tests/public`, `tests/private`, or `tests/classes` ownership is possible.
+- Do not introduce PowerShell 7.x-only test syntax or APIs into a project that targets `5.1` unless compatibility coverage is explicitly part of the scope.
 - If quality tooling flags a regression, refactor the tests or helpers instead of suppressing the finding.
 
 ## Definition of done

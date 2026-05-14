@@ -17,14 +17,15 @@ Implement the issue in the NovaModuleTools repository using the repository-local
 4. If the issue is release-, workflow-, or coverage-related, also inspect the matching `.github/workflows/*.yml` and
    `scripts/build/ci/*.ps1` files.
 5. Preserve the Nova build model: use `project.json` and Nova commands for build/test/package/release behavior, and do not create hand-written source `.psm1` or module `.psd1` files.
-6. Implement the smallest maintainable fix.
-7. Do not add PSScriptAnalyzer excluded rules or suppressions; fix analyzer findings in the code.
-8. Add or update the matching source-mirrored Pester file for every changed `src/**/*.ps1` file; if the behavior is genuinely cross-cutting, document which integration/guardrail test owns it and why a mirrored unit test is not practical.
-9. Add or update PlatyPS-compatible help under `docs/<ProjectName>/en-US/` when public commands or public classes change.
-10. Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `RELEASE_NOTE.md`, help docs, and `docs/*.html` as applicable.
-11. If a commit message is requested, derive it from `$GIT_BRANCH_NAME` and the implemented change using the repository's Conventional Commit rules.
-12. Run the relevant validation, then summarize what changed, why, and how it was verified.
-13. If that summary is returned as Markdown or copy-ready UI output, format it according to the `markdown-authoring`
+6. Inspect `project.json` `Manifest.PowerShellHostVersion` before changing PowerShell code, tests, or examples, and keep the implementation compatible with that target.
+7. Implement the smallest maintainable fix.
+8. Do not add PSScriptAnalyzer excluded rules or suppressions; fix analyzer findings in the code.
+9. Add or update the matching source-mirrored Pester file for every changed `src/**/*.ps1` file; if the behavior is genuinely cross-cutting, document which integration/guardrail test owns it and why a mirrored unit test is not practical.
+10. Add or update PlatyPS-compatible help under `docs/<ProjectName>/en-US/` when public commands or public classes change.
+11. Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `RELEASE_NOTE.md`, help docs, and `docs/*.html` as applicable.
+12. If a commit message is requested, derive it from `$GIT_BRANCH_NAME` and the implemented change using the repository's Conventional Commit rules.
+13. Run the relevant validation, then summarize what changed, why, and how it was verified.
+14. If that summary is returned as Markdown or copy-ready UI output, format it according to the `markdown-authoring`
     skill (`.github/skills/markdown-authoring/SKILL.md`).
 
 ## Repository-specific reminders
