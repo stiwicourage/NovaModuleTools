@@ -6,17 +6,7 @@ This file summarizes public cmdlet, CLI, configuration, and migration changes fo
 ## [Unreleased]
 ### Added
 - `Initialize-NovaModule` and `% nova init` now offer an optional Agentic Copilot starter package in both the minimal and example interactive scaffold flows.
-    - The starter package follows a filtered mirror of Nova's maintained agentic guidance so newly scaffolded projects receive a broader Nova-style agentic baseline without Nova-specific CodeScene or docs-site surfaces.
-    - Generated architect/design guidance now requires final design packages and issue/work item drafts to be returned as copy-ready Markdown using the project Markdown authoring guidance.
-  - Generated implementation/test guidance now keeps projects on Nova build/test/package workflows, treats `.psm1` / `.psd1` files as generated output, requires project test validation to run through `Test-NovaBuild` instead of direct `Invoke-Pester`, calls out PlatyPS help plus one focused source-mirrored test file for every new or changed `src/**/*.ps1` file, tells agents to honor `project.json` `Manifest.PowerShellHostVersion` when writing PowerShell code and tests, and now asks for a short project name so placeholders such as `Invoke-<ShortName>*` can be replaced in the generated starter files.
-      - Generated quality-loop guidance now keeps ScriptAnalyzer first and tells agents to fix ScriptAnalyzer findings reported by `run.ps1` instead of excluding, suppressing, or handing them off unresolved.
-    - Generated guidance now points agents to the documented PSScriptAnalyzer workflow, with `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1` as the normal entrypoints and direct `Invoke-ScriptAnalyzer` reserved for focused local checks that reuse repo-approved settings.
-    - Generated PowerShell guidance now requires public files to keep one top-level function per file, requires private files to keep at most one externally called function per file, and keeps any extra private functions limited to same-file support helpers whose file names match the owning function.
-    - Generated guidance now expresses PowerShell source/helper-script maintainability rules through `code-quality-matrix.instructions.md` and keeps test-specific design guidance in the testing instruction/skill files.
-    - Generated guidance now requires `docs/<ProjectName>/en-US/*.md` to stay valid PlatyPS help with YAML metadata and build-compatible structure, points agents to the `New-MarkdownCommandHelp` / `Update-MarkdownCommandHelp` / `Test-MarkdownCommandHelp` workflow, and requires a matching help file for every new public entry point in the same change so command help stays build-compatible from the start.
-    - Generated PowerShell guidance now requires agents to review every changed or generated text file before handoff and normalize the file ending to exactly one trailing newline with no extra blank lines at the bottom.
-    - When Git is enabled during either scaffold flow, Nova now creates or updates a default `.gitignore` in the generated project root and appends only the missing Nova-managed artifact entries instead of overwriting existing ignore rules.
-
+    - The starter package follows a filtered mirror of Nova's maintained agentic guidance so newly scaffolded projects receive a broader Nova-style agentic baseline without Nova-specific surfaces.
 
 ### Changed
 
