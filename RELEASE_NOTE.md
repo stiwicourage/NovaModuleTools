@@ -15,6 +15,7 @@ This file summarizes public cmdlet, CLI, configuration, and migration changes fo
     - Generated guidance now expresses PowerShell source/helper-script maintainability rules through `code-quality-matrix.instructions.md` and keeps test-specific design guidance in the testing instruction/skill files.
     - Generated guidance now requires `docs/<ProjectName>/en-US/*.md` to stay valid PlatyPS help with YAML metadata and build-compatible structure, points agents to the `New-MarkdownCommandHelp` / `Update-MarkdownCommandHelp` / `Test-MarkdownCommandHelp` workflow, and requires a matching help file for every new public entry point in the same change so command help stays build-compatible from the start.
     - Generated PowerShell guidance now requires agents to review every changed or generated text file before handoff and normalize the file ending to exactly one trailing newline with no extra blank lines at the bottom.
+    - When Git is enabled during either scaffold flow, Nova now creates or updates a default `.gitignore` in the generated project root and appends only the missing Nova-managed artifact entries instead of overwriting existing ignore rules.
 
 
 ### Changed

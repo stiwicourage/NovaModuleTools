@@ -64,6 +64,42 @@ function Test-AgenticPathExcluded {
     return $false
 }
 
+function Get-AgenticSourceFileListForPath {
+    param(
+        [Parameter(Mandatory)][string]$RootPath,
+        [Parameter(Mandatory)][string]$SourcePath
+    )
+
+    $resolvedSourcePath = Resolve-AgenticRepositoryPath -RootPath $RootPath -RelativePath $SourcePath
+    if (-not (Test-Path -LiteralPath $resolvedSourcePath)) {
+        throw "Agentic scaffold source path does not exist: $SourcePath"
+    }
+
+    if (Test-Path -LiteralPath $resolvedSourcePath -PathType Leaf) {
+        return @(Get-Item -LiteralPath $resolvedSourcePath)
+    }
+
+    return @(Get-ChildItem -LiteralPath $resolvedSourcePath -File -Recurse -Force)
+}
+
+function ConvertTo-AgenticMirrorSourceFile {
+    param(
+        [Parameter(Mandatory)][string]$RootPath,
+        [Parameter(Mandatory)][System.IO.FileInfo]$SourceFile,
+        [Parameter(Mandatory)][string[]]$ExcludedPathList
+    )
+
+    $relativePath = Get-AgenticRelativePath -RootPath $RootPath -Path $SourceFile.FullName
+    if (Test-AgenticPathExcluded -RelativePath $relativePath -ExcludedPathList $ExcludedPathList) {
+        return $null
+    }
+
+    return [pscustomobject]@{
+        SourcePath = $SourceFile.FullName
+        RelativePath = $relativePath
+    }
+}
+
 function Get-AgenticMirrorSourceFile {
     param(
         [Parameter(Mandatory)][string]$RootPath,
@@ -71,25 +107,12 @@ function Get-AgenticMirrorSourceFile {
         [Parameter(Mandatory)][string[]]$ExcludedPathList
     )
 
-    $sourceFileList = foreach ($sourcePath in $SourcePathList) {
-        $resolvedSourcePath = Resolve-AgenticRepositoryPath -RootPath $RootPath -RelativePath $sourcePath
-        if (-not (Test-Path -LiteralPath $resolvedSourcePath)) {
-            throw "Agentic scaffold source path does not exist: $sourcePath"
-        }
-
-        if (Test-Path -LiteralPath $resolvedSourcePath -PathType Leaf) {
-            Get-Item -LiteralPath $resolvedSourcePath
-        } else {
-            Get-ChildItem -LiteralPath $resolvedSourcePath -File -Recurse -Force
-        }
-    }
-
-    foreach ($sourceFile in $sourceFileList) {
-        $relativePath = Get-AgenticRelativePath -RootPath $RootPath -Path $sourceFile.FullName
-        if (-not (Test-AgenticPathExcluded -RelativePath $relativePath -ExcludedPathList $ExcludedPathList)) {
-            [pscustomobject]@{
-                SourcePath = $sourceFile.FullName
-                RelativePath = $relativePath
+    foreach ($sourcePath in $SourcePathList) {
+        $sourceFileList = @(Get-AgenticSourceFileListForPath -RootPath $RootPath -SourcePath $sourcePath)
+        foreach ($sourceFile in $sourceFileList) {
+            $mirrorSourceFile = ConvertTo-AgenticMirrorSourceFile -RootPath $RootPath -SourceFile $sourceFile -ExcludedPathList $ExcludedPathList
+            if ($null -ne $mirrorSourceFile) {
+                $mirrorSourceFile
             }
         }
     }

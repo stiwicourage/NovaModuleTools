@@ -251,7 +251,7 @@ Describe 'Coverage gaps for scaffold internals' {
         }
     }
 
-    It 'Initialize-NovaModuleScaffold creates directories and optional integrations' {
+    It 'Initialize-NovaModuleScaffold creates directories, a default .gitignore, and optional integrations' {
         InModuleScope $script:moduleName {
             $paths = Get-NovaModuleScaffoldLayout -Path $TestDrive -ProjectName 'Scaffolded'
             $answer = @{
@@ -267,21 +267,24 @@ Describe 'Coverage gaps for scaffold internals' {
             foreach ($directory in @($paths.Project, $paths.Src, $paths.Private, $paths.Public, $paths.Resources, $paths.Classes, $paths.Tests)) {
                 Test-Path -LiteralPath $directory | Should -BeTrue
             }
+            (Test-Path -LiteralPath (Join-Path $paths.Project '.gitignore')) | Should -BeTrue
             Assert-MockCalled New-InitiateGitRepo -Times 1 -ParameterFilter {$DirectoryPath -eq $paths.Project}
         }
     }
 
-    It 'Initialize-NovaModuleScaffold copies the example template and keeps tests in place' {
+    It 'Initialize-NovaModuleScaffold copies the example template and adds a default .gitignore when Git is enabled' {
         InModuleScope $script:moduleName {
             $paths = Get-NovaModuleScaffoldLayout -Path $TestDrive -ProjectName 'ExampleScaffold'
             Mock Write-Message {}
             Mock New-InitiateGitRepo {}
 
-            Initialize-NovaModuleScaffold -Answer @{EnableGit = 'No'; EnableAgenticCopilot = 'No'} -Paths $paths -Example
+            Initialize-NovaModuleScaffold -Answer @{EnableGit = 'Yes'; EnableAgenticCopilot = 'No'} -Paths $paths -Example
 
             (Test-Path -LiteralPath (Join-Path $paths.Project 'README.md')) | Should -BeTrue
             (Test-Path -LiteralPath $paths.Tests) | Should -BeTrue
             (Test-Path -LiteralPath (Join-Path $paths.Public 'Get-ExampleGreeting.ps1')) | Should -BeTrue
+            (Test-Path -LiteralPath (Join-Path $paths.Project '.gitignore')) | Should -BeTrue
+            Assert-MockCalled New-InitiateGitRepo -Times 1 -ParameterFilter {$DirectoryPath -eq $paths.Project}
         }
     }
 
@@ -424,7 +427,7 @@ Describe 'Coverage gaps for scaffold internals' {
         }
     }
 
-    It 'Initialize-NovaModule creates a scaffolded project when confirmed' {
+    It 'Initialize-NovaModule creates a scaffolded project and default .gitignore when Git is enabled' {
         InModuleScope $script:moduleName {
             $answer = @{
                 ProjectName = 'NovaScaffold'
@@ -432,7 +435,7 @@ Describe 'Coverage gaps for scaffold internals' {
                 Version = '1.0.0'
                 Author = 'Tester'
                 PowerShellHostVersion = '7.4'
-                EnableGit = 'No'
+                EnableGit = 'Yes'
                 EnableAgenticCopilot = 'No'
                 EnablePester = 'Yes'
             }
@@ -446,6 +449,7 @@ Describe 'Coverage gaps for scaffold internals' {
             Test-Path -LiteralPath (Join-Path $projectRoot 'project.json') | Should -BeTrue
             Test-Path -LiteralPath (Join-Path $projectRoot 'src/public') | Should -BeTrue
             Test-Path -LiteralPath (Join-Path $projectRoot 'tests') | Should -BeTrue
+            Test-Path -LiteralPath (Join-Path $projectRoot '.gitignore') | Should -BeTrue
         }
     }
 
@@ -571,7 +575,7 @@ Describe 'Coverage gaps for scaffold internals' {
         }
     }
 
-    It 'Initialize-NovaModule -Example creates the packaged example scaffold without asking about Pester' {
+    It 'Initialize-NovaModule -Example creates the packaged example scaffold, adds a default .gitignore when Git is enabled, and skips the Pester prompt' {
         InModuleScope $script:moduleName {
             $answer = @{
                 ProjectName = 'NovaExampleScaffold'
@@ -579,7 +583,7 @@ Describe 'Coverage gaps for scaffold internals' {
                 Version = '1.0.0'
                 Author = 'Tester'
                 PowerShellHostVersion = '7.4'
-                EnableGit = 'No'
+                EnableGit = 'Yes'
                 EnableAgenticCopilot = 'No'
             }
             Mock Read-NovaModuleAnswerSet {$answer}
@@ -593,6 +597,7 @@ Describe 'Coverage gaps for scaffold internals' {
 
             Test-Path -LiteralPath (Join-Path $projectRoot 'tests') | Should -BeTrue
             Test-Path -LiteralPath (Join-Path $projectRoot 'src/public/Get-ExampleGreeting.ps1') | Should -BeTrue
+            Test-Path -LiteralPath (Join-Path $projectRoot '.gitignore') | Should -BeTrue
             $project.ProjectName | Should -Be 'NovaExampleScaffold'
             $project.Description | Should -Be 'Scaffolded from example'
             $project.Manifest.Author | Should -Be 'Tester'

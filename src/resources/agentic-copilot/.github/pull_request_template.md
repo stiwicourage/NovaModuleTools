@@ -23,6 +23,8 @@
 
 ## Validation
 
+- [ ] `Invoke-NovaBuild`
+- [ ] `Test-NovaBuild`
 - [ ] Targeted validation for the changed path
 - [ ] Full repository quality loop
 - [ ] Docs-only change; executable validation not needed
