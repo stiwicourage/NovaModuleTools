@@ -77,10 +77,15 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 
 ## Maintainability rules
 
-- Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort source-code matrix for `src/**/*.ps1`; warning thresholds are the default ceiling for new or heavily changed code.
+- Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort source-code maintainability guidance for `src/**/*.ps1`; keep new or heavily changed code short, single-purpose, low-duplication, and split by clear responsibility.
 - Favor short functions and extracted helpers over large nested logic.
+- Replace long `switch` or `if`/`elseif` chains with lookup tables, dispatch helpers, or focused strategy functions when behavior varies by mode, provider, or state.
 - Avoid copy/paste across source or test files.
+- Remove dead code and commented-out code instead of leaving it behind.
+- Prefer concise, specific names over identifiers that hide multiple responsibilities.
+- Replace magic values with named constants, lookup tables, or variables that reveal intent.
 - Add comments only when the code would otherwise be hard to follow.
+- Avoid broad catch blocks that hide failures; catch specific exceptions only when the layer can add useful context.
 
 ## Verification
 

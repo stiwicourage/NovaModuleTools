@@ -22,7 +22,7 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 - Check that public commands/classes have matching valid PlatyPS-compatible help and that new source files have source-mirrored tests. Flag help files under `docs/{{ProjectName}}/en-US/` that look like plain Markdown, break the required PlatyPS section order, or would fail `Test-MarkdownCommandHelp` / `Import-MarkdownCommandHelp`.
 - Flag any new public entry point that does not add its matching help file in the same change.
 - Check analyzer changes and PowerShell validation flow against `.github/instructions/psscriptanalyzer.instructions.md`. Flag direct `Invoke-ScriptAnalyzer` usage that bypasses repository-approved settings or wrapper semantics without a clear reason.
-- Review changed `src/**/*.ps1` and `tests/**/*.ps1` against `.github/instructions/code-quality-matrix.instructions.md`; flag new or heavily changed code that exceeds the warning thresholds without a clear, explicit reason.
+- Review changed `src/**/*.ps1` against `.github/instructions/code-quality-matrix.instructions.md` and `tests/**/*.ps1` against `.github/instructions/testing-policy.instructions.md`; flag new or heavily changed code that ignores those maintainability rules without a clear, explicit reason.
 - Flag public files that do not keep exactly one top-level function, and flag private files that group multiple externally called functions instead of limiting extra functions to same-file support helpers. Also flag file/function name mismatches for public commands or externally called private helpers.
 - Flag broad catch-all test files when focused source-mirrored tests would make ownership clearer.
 - Flag Nova-managed validation that bypasses `Test-NovaBuild` with direct `Invoke-Pester`.

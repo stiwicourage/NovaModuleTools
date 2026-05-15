@@ -16,7 +16,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 - Preserve Nova's `project.json`-driven build model; do not add hand-written source `.psm1` or module `.psd1` files.
 - Read `project.json` `Manifest.PowerShellHostVersion` before implementing PowerShell changes and keep source, tests, and examples compatible with that target.
 - Keep one externally called function per file and match the file name to that function. In `src/private/`, additional functions may stay only as same-file support helpers called by that file's entry function.
-- Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort source-code matrix while shaping `src/**/*.ps1`.
+- Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort source-code maintainability guidance while shaping `src/**/*.ps1`.
 - Use `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth while changing PowerShell code or analyzer helpers.
 - Add or update source-mirrored tests and valid PlatyPS-compatible help docs for the changed behavior, using the Microsoft.PowerShell.PlatyPS cmdlets instead of hand-written help structure.
 - Every new public entry point must add its matching help file in the same change.
@@ -43,7 +43,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 - Keep `ShouldProcess` behavior where the command already supports it.
 - Keep raw infrastructure calls behind approved adapters.
 - Preserve existing command names, warning semantics, and output shape.
-- Keep new or heavily changed source functions inside the warning thresholds from `.github/instructions/code-quality-matrix.instructions.md` unless the scope explicitly justifies otherwise.
+- Keep new or heavily changed source functions aligned with `.github/instructions/code-quality-matrix.instructions.md`: short, single-purpose, low-duplication, and split by clear responsibility unless the scope explicitly justifies otherwise.
 - Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1` for normal analyzer loops; use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repository-approved settings.
 - Validate Nova-managed project tests through `Test-NovaBuild`; do not call `Invoke-Pester` directly.
 - When help files change, keep `docs/NovaModuleTools/en-US/*.md` valid for `Import-MarkdownCommandHelp`: use `New-MarkdownCommandHelp` for new files, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff. A new public `src/public/*.ps1` file is not done until its matching help file exists.

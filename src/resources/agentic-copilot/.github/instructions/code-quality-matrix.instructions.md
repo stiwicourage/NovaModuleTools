@@ -1,58 +1,49 @@
----
-applyTo: "src/**/*.ps1,tests/**/*.ps1,scripts/**/*.ps1"
+applyTo: "src/**/*.ps1,scripts/**/*.ps1,run.ps1,reload.ps1"
 ---
 
 # Agentic code quality matrix
 
 ## Purpose
 
-Use this file as the best-effort code quality matrix for generated and reviewed code in this repository.
+Use this file as the best-effort maintainability guidance for PowerShell source and helper scripts in this repository.
 
-The matrix translates the repository's preferred `src/**` and `tests/**` maintainability thresholds into agent guidance, so agents can shape code toward the expected quality from the start. This guidance does **not** require a `.codescene/code-health-rules.json` file in generated projects.
+This file tells Agentic Copilot how to shape source code from the start; Test-specific guidance belongs in `.github/instructions/testing-policy.instructions.md` and the `pester-testing` skill.
 
-## How to use the matrix
+## How to apply this guidance
 
-- Treat warning thresholds as the default design ceiling for new or heavily changed code.
-- Treat alert thresholds as refactor-now signals for new or heavily changed code.
-- When a threshold has no alert value, stay below the warning threshold by default.
-- When a threshold is marked `not used`, do not optimize around it; focus on the other limits instead.
-- If a change must exceed a threshold, call it out in the handoff and explain the trade-off clearly.
+- Use these rules when writing or reviewing `src/**/*.ps1`, `scripts/**/*.ps1`, `run.ps1`, and `reload.ps1`.
+- Prefer these patterns in new or heavily changed code instead of leaving cleanup for later.
+- If a change must violate one of these rules, keep the exception narrow and explain the trade-off clearly in the handoff.
+- Favor small refactors that remove the smell at the source over comments, suppressions, or wrappers that only hide it.
 
-## Source code matrix (`**/src/**`)
+## Function-level guidance
 
-| Threshold                                          | Warning          | Alert | Best-effort authoring guidance                                                                               |
-|----------------------------------------------------|------------------|-------|--------------------------------------------------------------------------------------------------------------|
-| `constructor_max_arguments`                        | `4`              | —     | Extract parameter objects or workflow-context objects before constructors exceed four inputs.                |
-| `file_mean_cyclomatic_complexity_warning`          | `26`             | —     | Split growing files or extract helpers before the file's average complexity drifts past this point.          |
-| `function_complex_conditional_branches_warning`    | `6`              | `11`  | Break up long boolean expressions before complex branch conditions become hard to read.                      |
-| `function_cyclomatic_complexity_warning`           | `6`              | `11`  | Extract helpers and flatten control flow before a function becomes a local hotspot.                          |
-| `function_duplication_min_lines_of_code_for_check` | `6 lines`        | —     | Treat six or more repeated lines as an extraction candidate.                                                 |
-| `function_duplication_min_similarity_percentage`   | `89% similarity` | —     | Consolidate near-copy/paste logic even when names or literals differ slightly.                               |
-| `function_lines_of_code_warning`                   | `16`             | `31`  | Keep new or heavily changed functions short; extract helpers before they drift beyond the warning threshold. |
-| `function_max_arguments`                           | `4`              | —     | Introduce context objects, parameter objects, or helper abstractions before functions exceed four inputs.    |
-| `function_nesting_depth_warning`                   | `6`              | —     | Flatten nested control flow early; do not let new logic grow into deep indentation towers.                   |
+- Keep functions short and single-purpose. If a function starts mixing validation, branching, transformation, and output, extract named helpers instead of growing one long scriptblock.
+- Replace long `switch` statements or `if`/`elseif` chains with lookup hashtables, dispatch tables, or focused strategy helpers when behavior varies by key, state, provider, or mode.
+- Flatten nested control flow early. Extract decision helpers such as `Get-*Action`, `Resolve-*Context`, or `Test-*Condition` instead of building indentation towers.
+- Keep interfaces small. When several inputs always travel together, bundle them into a `[pscustomobject]`, ordered hashtable, or small class instead of growing long parameter lists.
+- Avoid copy/paste. If two flows share the same steps with only small differences, extract the shared helper and pass the variation explicitly.
+- Prefer small helper chains with clear names over one function that tries to do everything.
 
-## Test code matrix (`**/tests/**`)
+## File and module guidance
 
-| Threshold                                          | Warning    | Alert                        | Best-effort authoring guidance                                                                                           |
-|----------------------------------------------------|------------|------------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| `constructor_max_arguments`                        | `5`        | —                            | Keep test helper constructors simple; prefer factory helpers or setup objects before they sprawl.                        |
-| `file_lines_of_code_for_warning`                   | `1000`     | `5000` (`critical`: `10000`) | Split oversized test files by source ownership or behavior before they become hard to review.                            |
-| `file_mean_cyclomatic_complexity_warning`          | `4`        | —                            | Refactor test helpers or `BeforeAll` setup when a file becomes too branch-heavy overall.                                 |
-| `file_primitive_obsession_percentage_for_warning`  | `0.3`      | —                            | Extract builders, fixtures, or named data objects when tests lean too heavily on raw strings, ints, and hashtables.      |
-| `function_bumpy_road_bumps_for_warning`            | `2`        | —                            | Keep each test focused on one logical path; extract setup helpers when the flow breaks into many chunks.                 |
-| `function_bumpy_road_nesting_level_depth`          | `2`        | —                            | Keep test logic shallow and linear; avoid nested setup trees in individual test functions.                               |
-| `function_complex_conditional_branches_warning`    | `2`        | `10`                         | Prefer separate tests or helper functions over highly conditional test logic.                                            |
-| `function_cyclomatic_complexity_warning`           | `9`        | `100`                        | Split test helpers or parameterized cases before one test function turns into control-flow-heavy code.                   |
-| `function_embedded_content_lines_of_code_warning`  | `not used` | `not used`                   | Do not optimize for this metric; focus on the other thresholds instead.                                                  |
-| `function_lines_of_code_warning`                   | `70`       | `500`                        | Keep new or heavily changed test functions compact; extract setup and assertion helpers when they grow too large.        |
-| `function_max_arguments`                           | `4`        | —                            | Keep helper/test function signatures tight; prefer fixtures or context objects over long parameter lists.                |
-| `function_nesting_depth_warning`                   | `4`        | —                            | Flatten nested assertions and setup paths before they become difficult to follow.                                        |
-| `unit_test_consecutive_asserts_for_large_block`    | `4`        | —                            | Split assertion helpers or use richer comparison helpers before an assertion block grows past four consecutive asserts.  |
-| `unit_test_suite_number_of_large_assertion_blocks` | `4`        | —                            | If a suite accumulates multiple large assertion blocks, extract reusable assertion helpers instead of copy/paste growth. |
+- Keep each file focused on one externally owned behavior.
+- Split multi-responsibility private files before they turn into catch-all helpers that mix lookup, mutation, formatting, validation, and transport logic.
+- Hide provider-specific or platform-specific details behind adapters or focused helper boundaries so callers depend on a small common surface instead of scattering provider branches everywhere.
+- Avoid pass-through helpers that only forward parameters to another function without adding policy, validation, translation, or abstraction.
+- Keep private domains balanced. If one `src/private/<domain>/` area keeps absorbing unrelated responsibilities, split by workflow concern before that folder becomes the default dumping ground.
+- Prefer existing platform/library capabilities or approved repository helpers over custom utility layers when the custom code adds no durable value.
+
+## Codebase hygiene
+
+- Leave the file cleaner than you found it.
+- Remove dead code, commented-out code, and obsolete helpers instead of leaving them behind "just in case."
+- Use concise, specific names that reflect one responsibility.
+- Replace unexplained literals with named constants, lookup tables, or variables that reveal intent.
+- Add comments only when names and structure cannot make the intent obvious on their own.
+- Catch specific exceptions only where the layer can add useful context; otherwise let failures surface clearly instead of hiding them behind broad catch blocks or silent fallbacks.
 
 ## Review expectations
 
-- PowerShell implementation agents should use the source code matrix while shaping `src/**/*.ps1`.
-- Test-focused agents should use the test code matrix while shaping `tests/**/*.ps1`.
-- Review agents should flag new or heavily changed code that ignores the warning thresholds without a clear, justified reason.
+- Flag long mixed-responsibility functions, deep nesting, copy/paste blocks, long parameter lists, pass-through helpers, provider-specific branching spread across callers, dead/commented-out code, magic values, and broad or hidden exception handling.
+- When the code smell is test-specific, route that feedback through `.github/instructions/testing-policy.instructions.md` and the `pester-testing` skill instead of stretching this file to cover test-only patterns.

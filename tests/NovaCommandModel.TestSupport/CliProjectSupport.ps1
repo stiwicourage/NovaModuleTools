@@ -212,9 +212,9 @@ function Assert-TestNovaCliWhatIfResultMap {
         $ResultMap[$resultName].Text | Should -Not -Match 'Unknown argument:'
     }
 
-    $ResultMap.Bump.Text | Should -Match 'Version plan: 0\.0\.1 -> 0\.1\.0 \| Label: Minor \| Commits: 1'
-    $ResultMap.BumpCi.Text | Should -Match 'Version plan: 0\.0\.1 -> 0\.1\.0 \| Label: Minor \| Commits: 1'
-    $ResultMap.PreviewBump.Text | Should -Match 'Version plan: 0\.0\.1 -> 0\.0\.2-preview \| Label: Minor \| Commits: 1'
+    $ResultMap.Bump.Text | Should -Match 'Version plan: 0\.1\.0-preview -> 0\.1\.0 \| Label: Minor \| Commits: 1'
+    $ResultMap.BumpCi.Text | Should -Match 'Version plan: 0\.1\.0-preview -> 0\.1\.0 \| Label: Minor \| Commits: 1'
+    $ResultMap.PreviewBump.Text | Should -Match 'Version plan: 0\.1\.0-preview -> 0\.1\.0-preview01 \| Label: Minor \| Commits: 1'
     $ResultMap.Bump.Text | Should -Not -Match 'Version bumped to :'
     $ResultMap.PreviewBump.Text | Should -Not -Match 'Version bumped to :'
     ((Get-Content -LiteralPath $ProjectJsonPath -Raw | ConvertFrom-Json).Version) | Should -Be '0.1.0-preview'

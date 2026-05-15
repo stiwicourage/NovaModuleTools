@@ -15,9 +15,10 @@ Read these files before making non-trivial changes:
 3. `.github/pull_request_template.md`
 4. The relevant file in `.github/instructions/`
 5. The relevant skill under `.github/skills/<skill-name>/SKILL.md`
-6. `.github/instructions/code-quality-matrix.instructions.md` when shaping or reviewing `src/**/*.ps1` or `tests/**/*.ps1`
-7. `.github/instructions/platyps-help.instructions.md` when creating or updating `docs/{{ProjectName}}/en-US/*.md`
-8. `.github/instructions/psscriptanalyzer.instructions.md` when changing PowerShell code, test helpers, or analyzer wrappers
+6. `.github/instructions/code-quality-matrix.instructions.md` when shaping or reviewing `src/**/*.ps1` or source-like helper scripts
+7. `.github/instructions/testing-policy.instructions.md` when shaping or reviewing `tests/**/*.ps1`, coverage behavior, or CI test flows
+8. `.github/instructions/platyps-help.instructions.md` when creating or updating `docs/{{ProjectName}}/en-US/*.md`
+9. `.github/instructions/psscriptanalyzer.instructions.md` when changing PowerShell code, test helpers, or analyzer wrappers
 
 Prompt templates under `.github/prompts/*.prompt.md` are not auto-loaded. Reference them explicitly in chat when you want to use one of the repository's reusable task prompts.
 
@@ -50,7 +51,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - Use `Test-NovaBuild` as the authoritative test entrypoint in Nova-managed projects. Do not call `Invoke-Pester` directly, because it can bypass Nova's build/import/StrictMode flow and disagree with the result users get later.
 - If `run.ps1` or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before review, handoff, or commit. Do not treat a failing local quality loop as an acceptable stopping point.
 - Keep file/function ownership explicit: `src/public/` files should own exactly one top-level function each, and `src/private/` files should expose at most one externally called function per file. Additional private functions may stay only as support helpers used from the same file, and the file name should match the function that owns the file.
-- Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort quality matrix for `src/**/*.ps1` and `tests/**/*.ps1`; generated projects should follow that guidance through Agentic Copilot files, not by depending on a required `.codescene/code-health-rules.json`.
+- Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort maintainability guidance for `src/**/*.ps1` and source-like helper scripts, and use `.github/instructions/testing-policy.instructions.md` for test-specific design rules; generated projects should follow that guidance through Agentic Copilot files.
 - Generate valid PlatyPS help under `docs/{{ProjectName}}/en-US/` whenever command help changes. Use the Microsoft.PowerShell.PlatyPS workflow (`New-MarkdownCommandHelp`, `Update-MarkdownCommandHelp`, `Test-MarkdownCommandHelp`) instead of hand-authoring command-help structure, and do not write plain Markdown that `Import-MarkdownCommandHelp` cannot parse.
 - Every new public entry point requires its matching help file in the same change. A new `src/public/*.ps1` file is not complete until the matching `docs/{{ProjectName}}/en-US/<CommandName>.md` file exists.
 - Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` after every meaningful change.

@@ -17,7 +17,7 @@ Implement the issue in the {{ProjectName}} repository using the repository-local
 5. Preserve the Nova build model: use `project.json` and Nova commands for build/test/package/release behavior, and do not create hand-written source `.psm1` or module `.psd1` files.
 6. Inspect `project.json` `Manifest.PowerShellHostVersion` before changing PowerShell code, tests, or examples, and keep the implementation compatible with that target.
 7. Implement the smallest maintainable fix.
-8. Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort quality matrix for changed `src/**/*.ps1` and `tests/**/*.ps1`; keep new or heavily changed code within the relevant warning thresholds unless the scope explicitly justifies otherwise.
+8. Use `.github/instructions/code-quality-matrix.instructions.md` for changed source/helper scripts and `.github/instructions/testing-policy.instructions.md` for changed tests; keep new or heavily changed code short, single-purpose, low-duplication, and easy to scan unless the scope explicitly justifies otherwise.
 9. Follow `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth. Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1`, and use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repository-approved settings.
 10. Do not add PSScriptAnalyzer excluded rules, suppressions, or ad hoc analyzer settings that hide findings; fix analyzer findings in the code.
 11. If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before handoff instead of only reporting the failure.

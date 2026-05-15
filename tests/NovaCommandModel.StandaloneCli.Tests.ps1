@@ -279,7 +279,7 @@ Describe '$projectName tests' {
             Arguments = @('bump', '--preview', '--what-if')
             ExpectedPatterns = @(
                 'What if:'
-                'Version plan: 0\.0\.1-rc1 -> 0\.0\.1-rc2 \| Label: Major \| Commits: 1'
+                'Version plan: 0\.1\.0-preview-rc1 -> 0\.1\.0-preview-rc2 \| Label: Major \| Commits: 1'
             )
             UnexpectedPatterns = @(
                 'Unknown argument:'
@@ -322,7 +322,7 @@ Describe '$projectName tests' {
             ExpectedPatterns = @(
                 'WARNING: Major version zero \(0\.y\.z\) is for initial development'
                 'Version bumped to : 0\.1\.0'
-                'Version bump completed: 0\.0\.1 -> 0\.1\.0 \| Label: Minor \| Commits: 1'
+                'Version bump completed: 0\.1\.0-preview -> 0\.1\.0 \| Label: Minor \| Commits: 1'
             )
             UnexpectedPatterns = @(
                 'What if:'

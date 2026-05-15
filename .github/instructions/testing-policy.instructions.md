@@ -17,7 +17,11 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 - Reuse `*.TestSupport.ps1` helpers where possible.
 - For every new or changed `src/**/*.ps1` file, add or update the matching source-mirrored `.Tests.ps1` file.
 - Keep test files and helpers compatible with `project.json` `Manifest.PowerShellHostVersion`; if a project targets `5.1`, do not rely on PowerShell 7.x-only syntax, cmdlets, parameters, or APIs in the tests.
-- Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort test-code matrix for `tests/**/*.ps1`; warning thresholds are the default ceiling for new or heavily changed tests.
+- Cover both the normal path and the meaningful unhappy, invalid, or boundary cases that the changed behavior introduces.
+- Use mocks or stubs for collaborators when the test needs to isolate behavior or verify side effects.
+- Keep tests isolated and order-independent; do not rely on shared mutable state between tests.
+- Update tests when production signatures or behavior change instead of leaving stale expectations behind.
+- Keep test flows linear and easy to scan; extract setup or assertion helpers when one test starts carrying too many responsibilities.
 - Follow `.github/instructions/psscriptanalyzer.instructions.md` when PowerShell tests, test helpers, or build helpers change. Use `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` for the repo-standard analyzer run, and use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repo-approved settings.
 - Use broad guardrail, architecture, command-model, or integration tests only for behavior that genuinely spans multiple source files; do not use them as the default place for unit coverage of unrelated source files.
 
@@ -41,6 +45,8 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 - Direct `Invoke-Pester` runs can hide Nova-specific build/import/StrictMode behavior and should not be used as the project test entrypoint.
 - Some support helpers must be dot-sourced and re-exported inside `BeforeAll`.
 - Duplicated test setup can lower Code Health even when tests pass.
+- Tests that only cover the happy path can miss the edge cases that caused the change in the first place.
+- Shared mutable state between tests makes failures order-dependent and unreliable.
 - Docs-only changes usually do not need executable validation, but workflow/test docs must still be kept accurate.
 
 ## Verification

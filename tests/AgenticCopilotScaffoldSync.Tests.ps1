@@ -31,7 +31,6 @@ BeforeAll {
             Agents = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot 'AGENTS.md') -Raw
             Contributing = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot 'CONTRIBUTING.md') -Raw
             Readme = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot 'README.md') -Raw
-            CodeSceneRulesPath = Join-Path $script:scaffoldRoot '.codescene/code-health-rules.json'
         }
     }
 }
@@ -90,10 +89,12 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.CodingStandards | Should -Match 'Every changed or generated text file, including `\.ps1` files, must end with exactly one trailing newline and no extra blank lines at the bottom'
 
         $content.TestingPolicy | Should -Match 'Manifest\.PowerShellHostVersion'
-        $content.TestingPolicy | Should -Match 'code-quality-matrix\.instructions\.md'
         $content.TestingPolicy | Should -Match 'psscriptanalyzer\.instructions\.md'
-        $content.TestingPolicy | Should -Match 'For every new or changed `src/\*\*/\*\.ps1` file'
+        $content.TestingPolicy | Should -Match 'normal path and the meaningful unhappy, invalid, or boundary cases'
+        $content.TestingPolicy | Should -Match 'mocks or stubs'
+        $content.TestingPolicy | Should -Match 'isolated and order-independent'
         $content.TestingPolicy | Should -Match 'Source-mirrored tests should use'
+        $content.TestingPolicy | Should -Not -Match 'code-quality-matrix\.instructions\.md'
 
         $content.ImplementPrompt | Should -Match 'Keep file/function ownership explicit: one externally called function per file'
         $content.ImplementPrompt | Should -Match 'code-quality-matrix\.instructions\.md'
@@ -101,25 +102,26 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.ReviewPrompt | Should -Match 'code-quality-matrix\.instructions\.md'
     }
 
-    It 'documents the best-effort quality matrix in mirrored instructions and skills' {
+    It 'documents source maintainability guidance in mirrored instructions and skills' {
         $content = & $script:getAgenticScaffoldGuidanceContent
 
-        $content.QualityMatrix | Should -Match 'does \*\*not\*\* require a `\.codescene/code-health-rules\.json` file in generated projects'
-        $content.QualityMatrix | Should -Match '\|\s+`function_lines_of_code_warning`\s+\|\s+`16`\s+\|\s+`31`\s+\|'
-        $content.QualityMatrix | Should -Match '\|\s+`function_cyclomatic_complexity_warning`\s+\|\s+`6`\s+\|\s+`11`\s+\|'
-        $content.QualityMatrix | Should -Match '\|\s+`function_max_arguments`\s+\|\s+`4`\s+\|\s+—\s+\|'
-        $content.QualityMatrix | Should -Match '\|\s+`function_lines_of_code_warning`\s+\|\s+`70`\s+\|\s+`500`\s+\|'
-        $content.QualityMatrix | Should -Match 'unit_test_consecutive_asserts_for_large_block'
+        $content.QualityMatrix | Should -Match 'best-effort maintainability guidance for PowerShell source and helper scripts'
+        $content.QualityMatrix | Should -Match 'Keep functions short and single-purpose'
+        $content.QualityMatrix | Should -Match 'Replace long `switch` statements or `if`/`elseif` chains with lookup hashtables'
+        $content.QualityMatrix | Should -Match 'Keep interfaces small'
+        $content.QualityMatrix | Should -Match 'Avoid copy/paste'
+        $content.QualityMatrix | Should -Match 'Split multi-responsibility private files'
+        $content.QualityMatrix | Should -Match 'Avoid pass-through helpers'
+        $content.QualityMatrix | Should -Match 'Remove dead code, commented-out code, and obsolete helpers'
+        $content.QualityMatrix | Should -Match 'Catch specific exceptions only'
 
         $content.DeveloperSkill | Should -Match 'Nova generates those files under `dist/(NovaModuleTools|\{\{ProjectName\}\})/`'
         $content.DeveloperSkill | Should -Match 'code-quality-matrix\.instructions\.md'
+        $content.DeveloperSkill | Should -Match 'short, single-purpose, low-duplication, lightly nested'
         $content.DeveloperSkill | Should -Match 'Keep one externally called function per file and match the file name to that function'
         $content.DeveloperSkill | Should -Match 'Grouping two externally called private helpers in one file'
         $content.DeveloperSkill | Should -Match 'Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline'
         $content.DeveloperSkill | Should -Match 'PowerShell 7\.x-only'
-
-        $content.PesterSkill | Should -Match 'code-quality-matrix\.instructions\.md'
-        $content.PesterSkill | Should -Match 'four consecutive asserts or four large assertion blocks per suite'
     }
 
     It 'documents valid PlatyPS help generation guidance' {
@@ -172,15 +174,21 @@ Describe 'Agentic Copilot scaffold sync' {
 
         $content.TestingPolicy | Should -Match 'Use `Test-NovaBuild` as the authoritative test entrypoint'
         $content.TestingPolicy | Should -Match 'Do not validate with direct `Invoke-Pester`'
+        $content.TestingPolicy | Should -Match 'normal path and the meaningful unhappy, invalid, or boundary cases'
+        $content.TestingPolicy | Should -Match 'mocks or stubs'
+        $content.TestingPolicy | Should -Match 'isolated and order-independent'
         $content.TestingPolicy | Should -Not -Match 'Invoke-Pester -Path'
 
         $content.PesterSkill | Should -Match 'Test-NovaBuild'
         $content.PesterSkill | Should -Match 'Do not validate with direct `Invoke-Pester`'
+        $content.PesterSkill | Should -Match 'normal, boundary, and unhappy paths'
+        $content.PesterSkill | Should -Match 'mocks/stubs'
         $content.PesterSkill | Should -Not -Match 'Invoke-Pester -Path'
 
         $content.DeveloperSkill | Should -Match '`Test-NovaBuild` for the changed behavior'
         $content.DeveloperAgent | Should -Match 'Validate Nova-managed project tests through `Test-NovaBuild`'
         $content.TestEngineerAgent | Should -Match 'Use `Test-NovaBuild` as the test entrypoint'
+        $content.TestEngineerAgent | Should -Match 'testing-policy\.instructions\.md'
         $content.ReviewerAgent | Should -Match 'bypasses `Test-NovaBuild` with direct `Invoke-Pester`'
         $content.ImplementPrompt | Should -Match 'Validate Nova-managed project tests through `Test-NovaBuild`'
         $content.ReviewPrompt | Should -Match 'bypasses `Test-NovaBuild` with direct `Invoke-Pester`'
@@ -219,7 +227,7 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.Readme | Should -Match 'psscriptanalyzer\.instructions\.md'
     }
 
-    It 'documents agent and starter expectations without adding a CodeScene config file' {
+    It 'documents agent and starter expectations consistently' {
         $content = & $script:getAgenticScaffoldGuidanceContent
 
         $content.DeveloperAgent | Should -Match 'code-quality-matrix\.instructions\.md'
@@ -227,27 +235,22 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.DeveloperAgent | Should -Match 'Public/private file ownership still follows the one externally called function per file rule'
         $content.DeveloperAgent | Should -Match 'Every changed or generated text file has been checked and ends with exactly one trailing newline and no extra blank lines at the bottom'
 
-        $content.TestEngineerAgent | Should -Match 'code-quality-matrix\.instructions\.md'
+        $content.TestEngineerAgent | Should -Match 'testing-policy\.instructions\.md'
         $content.ReviewerAgent | Should -Match 'Flag public files that do not keep exactly one top-level function'
         $content.ReviewerAgent | Should -Match 'flag private files that group multiple externally called functions'
         $content.ReviewerAgent | Should -Match 'code-quality-matrix\.instructions\.md'
 
         $content.Agents | Should -Match 'Keep one externally called function per file and match the file name to that function'
-        $content.Agents | Should -Match 'does not require `\.codescene/code-health-rules\.json`'
         $content.Agents | Should -Match 'End every changed or generated text file with exactly one trailing newline and no extra blank lines at the bottom'
 
         $content.Contributing | Should -Match 'keep one externally called function per file and match the file name to that function'
-        $content.Contributing | Should -Match 'does not require `\.codescene/code-health-rules\.json`'
         $content.Contributing | Should -Match 'make every changed or generated text file end with exactly one trailing newline and no extra blank lines at the bottom'
 
         $content.Readme | Should -Match 'ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`'
-        $content.Readme | Should -Match 'without requiring a `\.codescene/code-health-rules\.json`'
         $content.Readme | Should -Match 'If `run\.ps1` or `Invoke-ScriptAnalyzerCI\.ps1` reports ScriptAnalyzer findings, fix them before review or handoff'
         $content.Readme | Should -Match 'Keep one externally called function per file and match the file name to that function'
         $content.Readme | Should -Match 'Make every changed or generated text file end with exactly one trailing newline and no extra blank lines at the bottom before handoff'
         $content.Readme | Should -Match 'If it is `5\.1`, do not introduce PowerShell 7\.x-only features'
         $content.Readme | Should -Match 'every new or changed `src/\*\*/\*\.ps1` file should have one focused `\.Tests\.ps1` file'
-
-        Test-Path -LiteralPath $content.CodeSceneRulesPath | Should -BeFalse
     }
 }

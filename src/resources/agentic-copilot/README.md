@@ -25,7 +25,7 @@ Follow this workflow when working with Copilot in this repository.
 - If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before review or handoff.
 - Follow `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth. Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1`, and use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repo-approved settings.
 - Keep one externally called function per file and match the file name to that function. Public files own one command each; private files may keep extra functions only as same-file support helpers.
-- Follow `.github/instructions/code-quality-matrix.instructions.md` as the best-effort src/tests quality matrix. It guides agents and reviewers without requiring a `.codescene/code-health-rules.json` file in this generated project.
+- Follow `.github/instructions/code-quality-matrix.instructions.md` as the best-effort maintainability guidance for source/helper scripts, and `.github/instructions/testing-policy.instructions.md` for test design. These guide agents and reviewers in this generated project.
 - Generate valid PlatyPS help under `docs/{{ProjectName}}/en-US/` whenever command help changes. Use `New-MarkdownCommandHelp`, `Update-MarkdownCommandHelp`, and `Test-MarkdownCommandHelp` instead of hand-writing the help structure.
 - Every new public entry point must add its matching help file in the same change.
 - Make every changed or generated text file end with exactly one trailing newline and no extra blank lines at the bottom before handoff.

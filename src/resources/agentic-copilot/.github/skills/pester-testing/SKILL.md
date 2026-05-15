@@ -24,7 +24,7 @@ Use this skill when adding tests, closing coverage gaps, fixing regressions, or 
 - Add coverage for both happy paths and explicit warnings/errors when behavior changed.
 - For every new or changed `src/**/*.ps1` file, add or update one focused test file that mirrors the source path under `tests/`.
 - Keep test files and helpers compatible with `project.json` `Manifest.PowerShellHostVersion`; if a project targets `5.1`, do not introduce PowerShell 7.x-only syntax, cmdlets, parameters, or APIs in the tests.
-- Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort test-code matrix. Keep new or heavily changed test functions under the warning thresholds for lines of code (`70`), max arguments (`4`), nesting depth (`4`), complex conditional branches (`2`), and bumpy-road bumps (`2`); split assertion helpers before blocks exceed four consecutive asserts or four large assertion blocks per suite.
+- Use `.github/instructions/testing-policy.instructions.md` as the test-design source of truth. Cover normal, boundary, and unhappy paths; isolate collaborators with mocks/stubs where needed; and extract setup or assertion helpers when a test stops being easy to scan.
 - Keep shared setup in `tests/TestHelpers/` or `*TestSupport.ps1`; do not hide unrelated source-file coverage in broad catch-all test files.
 - If a mirrored test is not practical because the behavior is genuinely cross-cutting, document the reason in the handoff and point to the owning integration or guardrail test.
 
@@ -37,7 +37,7 @@ Use this skill when adding tests, closing coverage gaps, fixing regressions, or 
 - Passing tests while still degrading maintainability through duplication
 - Grouping unrelated source files into one large test file when a source-mirrored layout would make ownership clearer
 - Adding source files without a matching mirrored test or an explicit cross-cutting-test justification
-- Ignoring the test-code matrix and letting new or heavily changed tests grow beyond the warning thresholds without justification
+- Ignoring boundary/unhappy-path coverage or test isolation and relying on happy-path-only verification
 
 ## Verification
 
