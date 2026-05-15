@@ -27,7 +27,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 ## Repository map
 
 - `src/public/` - public PowerShell command surface; one top-level function per file
-- `src/private/` - internal helpers grouped by domain (`build/`, `cli/`, `package/`, `quality/`, `release/`, `scaffold/`, `shared/`, `update/`); keep one externally called helper per file and limit any extra functions to same-file support helpers
+- `src/private/` - internal helpers grouped by domain (`build/`, `cli/`, `package/`, `quality/`, `release/`, `scaffold/`, `shared/`, `update/`); keep one externally called helper per file, allow related same-file top-level support helpers, and do not nest function declarations inside other functions
 - `tests/` - Pester tests and shared test-support scripts
 - `scripts/build/` - local analyzer and build helpers
 - `scripts/build/ci/` - CI coverage, CodeScene, and artifact helpers
@@ -50,7 +50,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - Keep `run.ps1` as the local quality loop: run ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
 - Use `Test-NovaBuild` as the authoritative test entrypoint in Nova-managed projects. Do not call `Invoke-Pester` directly, because it can bypass Nova's build/import/StrictMode flow and disagree with the result users get later.
 - If `run.ps1` or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before review, handoff, or commit. Do not treat a failing local quality loop as an acceptable stopping point.
-- Keep file/function ownership explicit: `src/public/` files should own exactly one top-level function each, and `src/private/` files should expose at most one externally called function per file. Additional private functions may stay only as support helpers used from the same file, and the file name should match the function that owns the file.
+- Keep file/function ownership explicit: `src/public/` files should own exactly one top-level function each, and `src/private/` files should expose at most one externally called function per file. Additional private functions may stay only as related top-level support helpers used from the same file, the file name should match the function that owns the file, and PowerShell functions must not declare nested functions inside their bodies.
 - Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort maintainability guidance for `src/**/*.ps1` and source-like helper scripts, and use `.github/instructions/testing-policy.instructions.md` for test-specific design rules; generated projects should follow that guidance through Agentic Copilot files.
 - Generate valid PlatyPS help under `docs/NovaModuleTools/en-US/` whenever command help changes. Use the Microsoft.PowerShell.PlatyPS workflow (`New-MarkdownCommandHelp`, `Update-MarkdownCommandHelp`, `Test-MarkdownCommandHelp`) instead of hand-authoring command-help structure, and do not write plain Markdown that `Import-MarkdownCommandHelp` cannot parse.
 - Every new public entry point requires its matching help file in the same change. A new `src/public/*.ps1` file is not complete until the matching `docs/NovaModuleTools/en-US/<CommandName>.md` file exists.

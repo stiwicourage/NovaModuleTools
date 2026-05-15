@@ -21,8 +21,9 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 
 - Put internal helpers in the correct domain folder under `src/private/`.
 - In `src/private/`, keep at most one externally called function per file and match the file name to that entry function.
-- Additional functions in a private file are allowed only as support helpers called from that same file.
+- Additional functions in a private file are allowed only as related top-level support helpers called from that same file.
 - If two private functions are both called from outside their file, split them into separate same-named files.
+- Do not declare functions inside other functions. Keep private support helpers as sibling top-level functions in the file instead of nested function declarations.
 - Private helper names should stay clear and responsibility-focused; they do not need to mirror the public `Invoke-{{ShortName}}*`, `Get-{{ShortName}}*`, `Update-{{ShortName}}*`, or `nova` CLI route naming conventions unless they are intentionally part of the public surface.
 - Reuse existing adapters and shared helpers before adding new infrastructure calls.
 - Keep direct environment access, Git execution, upload requests, and self-update execution in their approved helper locations. `tests/*Architecture*.Tests.ps1` is authoritative.

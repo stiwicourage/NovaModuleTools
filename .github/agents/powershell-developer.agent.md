@@ -15,7 +15,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 - Keep public files delegating and internal helpers domain-aligned.
 - Preserve Nova's `project.json`-driven build model; do not add hand-written source `.psm1` or module `.psd1` files.
 - Read `project.json` `Manifest.PowerShellHostVersion` before implementing PowerShell changes and keep source, tests, and examples compatible with that target.
-- Keep one externally called function per file and match the file name to that function. In `src/private/`, additional functions may stay only as same-file support helpers called by that file's entry function.
+- Keep one externally called function per file and match the file name to that function. In `src/private/`, additional related functions may stay only as same-file top-level support helpers called by that file's entry function, and PowerShell functions must not declare nested functions inside their bodies.
 - Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort source-code maintainability guidance while shaping `src/**/*.ps1`.
 - Use `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth while changing PowerShell code or analyzer helpers.
 - Add or update source-mirrored tests and valid PlatyPS-compatible help docs for the changed behavior, using the Microsoft.PowerShell.PlatyPS cmdlets instead of hand-written help structure.
@@ -52,7 +52,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 
 - Production code and tests both reflect the intended behavior.
 - Build output still comes from Nova-generated `dist/` files, not hand-authored module files in `src/`.
-- Public/private file ownership still follows the one externally called function per file rule.
+- Public/private file ownership still follows the one externally called function per file rule, with private helpers kept as sibling top-level functions instead of nested function declarations.
 - Every new public entry point has its matching help file.
 - Project test validation ran through `Test-NovaBuild`.
 - Any ScriptAnalyzer findings reported by `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` are resolved.
