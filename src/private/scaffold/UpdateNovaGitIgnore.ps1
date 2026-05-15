@@ -126,4 +126,3 @@ function Update-NovaGitIgnore {
 
     Set-Content -LiteralPath $gitIgnorePath -Value $updatedContent -Encoding utf8 -NoNewline
 }
-
