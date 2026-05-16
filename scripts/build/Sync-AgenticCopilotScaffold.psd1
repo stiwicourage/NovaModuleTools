@@ -1,4 +1,4 @@
-@{
+﻿@{
     OutputPath = 'src/resources/agentic-copilot'
 
     SourcePaths = @(
@@ -344,7 +344,31 @@
         }
         @{
             Old = '- For step-by-step refactoring of unhealthy files, use the `building-maintainable-code` and `guiding-refactoring-with-code-health` skills together: the first picks the right guideline, the second runs measured maintainability checks between steps.'
-            New = '- For step-by-step refactoring of unhealthy files, use the `building-maintainable-code` for checks between steps.'
+            New = '- For step-by-step refactoring of unhealthy files, use the `building-maintainable-code` skill for checks between steps.'
+        }
+        @{
+            Old = ', `codescene-quality`, `safeguarding-ai-generated-code`'
+            New = ''
+        }
+        @{
+            Old = '`codescene-quality`, `safeguarding-ai-generated-code`, '
+            New = ''
+        }
+        @{
+            Old = ', `codescene-quality`, `workflow guidance`, `guiding-refactoring-with-code-health`, `safeguarding-ai-generated-code`'
+            New = ''
+        }
+        @{
+            Old = '- a `code_health_review`, reviewer, or `./run.ps1` run flags maintainability problems'
+            New = '- a reviewer or `./run.ps1` run flags maintainability problems'
+        }
+        @{
+            Old = '- measuring or driving a single file''s score across steps — use `guiding-refactoring-with-code-health` for that'
+            New = '- measuring or driving a single file''s score across steps — use the step-by-step workflow below for that'
+        }
+        @{
+            Old = '. For risk-bearing files, also run `code_health_review` from the `safeguarding-ai-generated-code` skill.'
+            New = '.'
         }
         @{
             Old = 'CommandInfo  = Get-Command -Module NovaModuleTools'
@@ -361,6 +385,10 @@
         @{
             Old = '- `code_health_review` paired with `guiding-refactoring-with-code-health` when iterating on a single unhealthy file'
             New = ''
+        }
+        @{
+            Old = ', or `nova` CLI route naming conventions.'
+            New = '.'
         }
     )
 }

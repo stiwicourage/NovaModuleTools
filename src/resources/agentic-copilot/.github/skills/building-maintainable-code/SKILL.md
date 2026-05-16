@@ -11,14 +11,14 @@ Use this skill when:
 
 - adding a new public command or private helper to {{ProjectName}}
 - refactoring a function, file, or domain folder that has grown over time
-- a `code_health_review`, reviewer, or `./run.ps1` run flags maintainability problems
+- a reviewer or `./run.ps1` run flags maintainability problems
 - you want a concrete, PowerShell-aware playbook for the guidelines
 
 Do not use this skill for:
 
 - test-specific guidance — use the `pester-testing` skill
 - release/changelog work — use the `release-and-changelog` skill
-- measuring or driving a single file's score across steps — use `guiding-refactoring-with-code-health` for that
+- measuring or driving a single file's score across steps — use the step-by-step workflow below for that
 
 The companion instruction file is `.github/instructions/code-quality-matrix.instructions.md`. This skill is the actionable workflow that implements those rules.
 
@@ -67,7 +67,7 @@ Follow these steps for any non-trivial PowerShell change.
 1. Read the changed function and surrounding file. Note where it sits in `src/public/`, `src/private/<domain>/`, or `scripts/`.
 2. For each new or heavily changed function, walk the checklist below in order.
 3. If a step requires a refactor, make it the smallest structural step that fixes the specific finding. Do not bundle unrelated cleanup.
-4. After meaningful steps, run `./run.ps1` (analyzer → build → `Test-NovaBuild`). For risk-bearing files, also run `code_health_review` from the `safeguarding-ai-generated-code` skill.
+4. After meaningful steps, run `./run.ps1` (analyzer → build → `Test-NovaBuild`).
 5. Before handoff, normalize every changed text file to exactly one trailing newline.
 
 ### Step 1 — Short units (≤ 15 lines)

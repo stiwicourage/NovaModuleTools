@@ -135,4 +135,4 @@ This file tells Agentic Copilot how to shape source code from the start. Test-sp
 - Flag long mixed-responsibility functions, deep nesting, duplicated blocks, long parameter lists, pass-through helpers, provider-specific branching spread across callers, dead or commented-out code, magic values, and broad or hidden exception handling.
 - When a finding is unit-level (Guidelines 1–4), prefer raising it before component-level findings (Guidelines 5–8). The unit fix usually makes the component fix smaller.
 - When the code smell is test-specific, route that feedback through `.github/instructions/testing-policy.instructions.md` and the `pester-testing` skill instead of stretching this file to cover test-only patterns.
-- For step-by-step refactoring of unhealthy files, use the `building-maintainable-code` for checks between steps.
+- For step-by-step refactoring of unhealthy files, use the `building-maintainable-code` skill for checks between steps.
