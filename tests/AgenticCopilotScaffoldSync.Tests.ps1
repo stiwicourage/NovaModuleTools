@@ -249,17 +249,20 @@ Describe 'Agentic Copilot scaffold sync' {
 
         $content.Agents | Should -Match 'Keep one externally called function per file and match the file name to that function'
         $content.Agents | Should -Match 'no nested function declarations inside PowerShell functions'
-        $content.Agents | Should -Match 'End every changed or generated text file with exactly one trailing newline and no extra blank lines at the bottom'
+        $content.Agents | Should -Match 'Test-TextFileFormatting\.ps1'
+        $content.Agents | Should -Match 'exactly one newline terminator with no blank spacer line at the bottom'
 
         $content.Contributing | Should -Match 'keep one externally called function per file and match the file name to that function'
         $content.Contributing | Should -Match 'must not declare nested functions inside their bodies'
-        $content.Contributing | Should -Match 'make every changed or generated text file end with exactly one trailing newline and no extra blank lines at the bottom'
+        $content.Contributing | Should -Match 'TextFileFormatting\.Tests\.ps1'
+        $content.Contributing | Should -Match 'make every changed or generated text file end immediately after exactly one newline terminator with no blank spacer line at the bottom'
 
         $content.Readme | Should -Match 'ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`'
         $content.Readme | Should -Match 'If `run\.ps1` or `Invoke-ScriptAnalyzerCI\.ps1` reports ScriptAnalyzer findings, fix them before review or handoff'
         $content.Readme | Should -Match 'Keep one externally called function per file and match the file name to that function'
         $content.Readme | Should -Match 'must not declare nested functions inside their bodies'
-        $content.Readme | Should -Match 'Make every changed or generated text file end with exactly one trailing newline and no extra blank lines at the bottom before handoff'
+        $content.Readme | Should -Match 'Test-TextFileFormatting\.ps1'
+        $content.Readme | Should -Match 'Make every changed or generated text file end immediately after exactly one newline terminator; do not leave a blank spacer line at the bottom'
         $content.Readme | Should -Match 'If it is `5\.1`, do not introduce PowerShell 7\.x-only features'
         $content.Readme | Should -Match 'every new or changed `src/\*\*/\*\.ps1` file should have one focused `\.Tests\.ps1` file'
     }

@@ -16,6 +16,8 @@
         'CHANGELOG.md'
         'RELEASE_NOTE.md'
         '.github/pull_request_template.md'
+        'scripts/build/Test-TextFileFormatting.ps1'
+        'tests/TextFileFormatting.Tests.ps1'
     )
 
     ExcludedPaths = @(

@@ -90,6 +90,80 @@ function Expand-NovaModuleAgenticCopilotTemplateContent {
     return $expandedContent
 }
 
+function Test-NovaModuleAgenticCopilotTemplateFileEnabled {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][hashtable]$Answer,
+        [Parameter(Mandatory)][string]$RelativePath,
+        [switch]$Example
+    )
+
+    if (-not $RelativePath.StartsWith('tests/', [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $true
+    }
+
+    if ($Example) {
+        return $true
+    }
+
+    return $Answer.ContainsKey('EnablePester') -and $Answer.EnablePester -eq 'Yes'
+}
+
+function ConvertTo-NovaModuleAgenticCopilotNormalizedFileContent {
+    [CmdletBinding()]
+    param(
+        [AllowEmptyString()][string]$Content
+    )
+
+    if ($null -eq $Content -or $Content.Length -eq 0) {
+        return $Content
+    }
+
+    $trimmedContent = $Content.TrimEnd([char[]]@([char]13, [char]10))
+    if ($trimmedContent.Length -eq 0) {
+        return $Content
+    }
+
+    $lineEnding = if ( $Content.Contains("`r`n")) {
+        "`r`n"
+    } else {
+        "`n"
+    }
+
+    return $trimmedContent + $lineEnding
+}
+
+function Get-NovaModuleAgenticCopilotDestinationContent {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$RelativePath,
+        [Parameter(Mandatory)][string]$TemplateContent,
+        [Parameter(Mandatory)][System.Collections.IDictionary]$ScaffoldContext
+    )
+
+    if ($RelativePath -eq 'README.md') {
+        return Get-NovaModuleAgenticCopilotReadmeContent -TemplateContent $TemplateContent -TokenMap $ScaffoldContext['TokenMap'] -ProjectRoot $ScaffoldContext['ProjectRoot'] -Example:([bool]$ScaffoldContext['Example'])
+    }
+
+    return Expand-NovaModuleAgenticCopilotTemplateContent -Content $TemplateContent -TokenMap $ScaffoldContext['TokenMap']
+}
+
+function Write-NovaModuleAgenticCopilotDestinationFile {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$DestinationPath,
+        [Parameter(Mandatory)][string]$Content
+    )
+
+    $destinationDirectory = Split-Path -Parent $DestinationPath
+    if (-not (Test-Path -LiteralPath $destinationDirectory)) {
+        New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
+    }
+
+    $normalizedContent = ConvertTo-NovaModuleAgenticCopilotNormalizedFileContent -Content $Content
+    Set-Content -LiteralPath $DestinationPath -Value $normalizedContent -Encoding utf8 -NoNewline
+}
+
 function Initialize-NovaModuleAgenticCopilotScaffold {
     [CmdletBinding()]
     param(
@@ -100,23 +174,22 @@ function Initialize-NovaModuleAgenticCopilotScaffold {
 
     $templateRoot = Get-NovaModuleAgenticCopilotTemplateRoot
     $tokenMap = Get-NovaModuleAgenticCopilotTemplateTokenMap -Answer $Answer
+    $scaffoldContext = [ordered]@{
+        TokenMap = $tokenMap
+        ProjectRoot = $ProjectRoot
+        Example = [bool]$Example
+    }
     $templateFileList = @(Get-ChildItem -LiteralPath $templateRoot -File -Recurse -Force | Sort-Object FullName)
 
     foreach ($templateFile in $templateFileList) {
         $relativePath = Get-NormalizedRelativePath -Root $templateRoot -FullName $templateFile.FullName
+        if (-not (Test-NovaModuleAgenticCopilotTemplateFileEnabled -Answer $Answer -RelativePath $relativePath -Example:$Example)) {
+            continue
+        }
+
         $destinationPath = Join-Path $ProjectRoot ($relativePath -replace '/', [System.IO.Path]::DirectorySeparatorChar)
-        $destinationDirectory = Split-Path -Parent $destinationPath
-        if (-not (Test-Path -LiteralPath $destinationDirectory)) {
-            New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
-        }
-
         $templateContent = Get-Content -LiteralPath $templateFile.FullName -Raw
-        $destinationContent = if ($relativePath -eq 'README.md') {
-            Get-NovaModuleAgenticCopilotReadmeContent -TemplateContent $templateContent -TokenMap $tokenMap -ProjectRoot $ProjectRoot -Example:$Example
-        } else {
-            Expand-NovaModuleAgenticCopilotTemplateContent -Content $templateContent -TokenMap $tokenMap
-        }
-
-        Set-Content -LiteralPath $destinationPath -Value $destinationContent -Encoding utf8
+        $destinationContent = Get-NovaModuleAgenticCopilotDestinationContent -RelativePath $relativePath -TemplateContent $templateContent -ScaffoldContext $scaffoldContext
+        Write-NovaModuleAgenticCopilotDestinationFile -DestinationPath $destinationPath -Content $destinationContent
     }
 }

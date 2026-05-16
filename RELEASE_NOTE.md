@@ -7,6 +7,7 @@ This file summarizes public cmdlet, CLI, configuration, and migration changes fo
 ### Added
 - `Initialize-NovaModule` and `% nova init` now offer an optional Agentic Copilot starter package in both the minimal and example interactive scaffold flows.
     - The starter package follows a filtered mirror of Nova's maintained agentic guidance so newly scaffolded projects receive a broader Nova-style agentic baseline without Nova-specific surfaces.
+  - The starter now includes a generated text-file-formatting guardrail helper and, when project tests are enabled, a Pester guardrail test so trailing blank-line violations fail the normal project test flow.
   - Before the first interactive scaffold question, Nova now also warns when a newer NovaModuleTools release is available by reusing the same non-blocking update warning behavior already used by `build`.
 
 ### Changed
