@@ -82,6 +82,17 @@
     ]
   },
   "Pester": {
+    "CodeCoverage": {
+      "Enabled": false,
+      "Path": [
+        "src/public/*.ps1",
+        "src/private/**/*.ps1",
+        "src/classes/*.ps1"
+      ],
+      "CoveragePercentTarget": 90,
+      "OutputPath": "artifacts/coverage.xml",
+      "OutputFormat": "JaCoCo"
+    },
     "TestResult": {
       "Enabled": true,
       "OutputFormat": "NUnitXml"

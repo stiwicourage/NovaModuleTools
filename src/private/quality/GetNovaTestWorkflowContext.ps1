@@ -31,6 +31,10 @@ function Get-NovaTestWorkflowContext {
     Assert-NovaPesterAvailable
     $projectInfo = Get-NovaProjectInfo
     $pesterConfig = New-PesterConfiguration -Hashtable $projectInfo.Pester
+    $configuredCoveragePercentTarget = Get-NovaConfiguredPesterCoveragePercentTarget -ProjectPesterSettings $projectInfo.Pester
+    if ($null -ne $configuredCoveragePercentTarget) {
+        $pesterConfig.CodeCoverage.CoveragePercentTarget = $configuredCoveragePercentTarget
+    }
 
     $pesterConfig.Run.Path = Get-NovaPesterRunPath -ProjectInfo $projectInfo
     $pesterConfig.Run.PassThru = $true
@@ -67,6 +71,51 @@ function Get-NovaTestOptionValue {
 
     if ( $TestOption.ContainsKey($Name)) {
         return $TestOption[$Name]
+    }
+
+    return $null
+}
+
+function Get-NovaConfiguredPesterCoveragePercentTarget {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$ProjectPesterSettings
+    )
+
+    $codeCoverageSettings = Get-NovaPesterSettingValue -InputObject $ProjectPesterSettings -Name 'CodeCoverage'
+    if ($true -ne [bool](Get-NovaPesterSettingValue -InputObject $codeCoverageSettings -Name 'Enabled')) {
+        return $null
+    }
+
+    $coveragePercentTarget = Get-NovaPesterSettingValue -InputObject $codeCoverageSettings -Name 'CoveragePercentTarget'
+    if ($null -eq $coveragePercentTarget -or [string]::IsNullOrWhiteSpace([string]$coveragePercentTarget)) {
+        return $null
+    }
+
+    return [double]$coveragePercentTarget
+}
+
+function Get-NovaPesterSettingValue {
+    [CmdletBinding()]
+    param(
+        [AllowNull()][object]$InputObject,
+        [Parameter(Mandatory)][string]$Name
+    )
+
+    if ($null -eq $InputObject) {
+        return $null
+    }
+
+    if ($InputObject -is [System.Collections.IDictionary]) {
+        if ( $InputObject.Contains($Name)) {
+            return $InputObject[$Name]
+        }
+
+        return $null
+    }
+
+    if ($InputObject.PSObject.Properties.Name -contains $Name) {
+        return $InputObject.$Name
     }
 
     return $null

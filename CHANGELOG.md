@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 - The architect/design flow now surfaces settled vs unresolved design items before finalization, offers explicit choices for full finalization vs design-package-only handoff, clarifies how to use design notes versus the paste-ready GitHub issue draft, and requires finalization output to follow the project Markdown authoring guidance.
+- `ProjectTemplate.json` and the packaged example `project.json` now include Nova's default Pester `CodeCoverage` block with `Enabled=false`, shared `src/` coverage paths, JaCoCo output, and a `90` percent target so new projects can opt into coverage without hand-authoring the configuration.
 
 
 ### Deprecated
@@ -33,6 +34,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 
 ### Fixed
+- `Test-NovaBuild` now fails when `project.json` configures `Pester.CodeCoverage.CoveragePercentTarget` and the measured coverage percentage is lower than the configured target, instead of passing through Pester's success result unchanged.
+    - Nova now also applies that configured target directly to the Pester runtime configuration, so Pester's own coverage summary shows the configured threshold instead of the default `75%`.
 
 
 ### Security

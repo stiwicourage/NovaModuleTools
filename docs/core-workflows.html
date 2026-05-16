@@ -146,6 +146,9 @@ PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
                     <code>Test-MarkdownCommandHelp</code>, with a matching help file required for every new public
                     entry point, and a strict file-ending rule for changed or generated text
                     files.</p>
+                <p>The generated <code>project.json</code> also starts with Nova's standard <code>Pester</code>
+                    defaults, including a disabled <code>CodeCoverage</code> block you can enable later without
+                    hand-authoring the structure.</p>
                 <p>When you answer <code>Yes</code>, Nova also asks for a short project name used in generated guidance
                     placeholders such as <code>Invoke-&lt;ShortName&gt;*</code>. For NovaModuleTools the short name is
                     <code>Nova</code>, but it could also have been <code>NMT</code>.</p>
@@ -213,6 +216,11 @@ PS&gt; Test-NovaBuild -OutputVerbosity Detailed -OutputRenderMode Ansi</code></p
                 </div>
                 <p><code>Test-NovaBuild</code> reads the Pester configuration from <code>project.json</code>, resolves
                     the test path, and writes results to <code>artifacts/TestResults.xml</code>.</p>
+                <p>Starter projects already include the matching <code>Pester.CodeCoverage</code> block in
+                    <code>project.json</code>, but keep it disabled until you opt in. When you set
+                    <code>Pester.CodeCoverage.Enabled</code> to <code>true</code>, Nova also writes JaCoCo coverage to
+                    <code>artifacts/coverage.xml</code> and stops if the measured coverage percentage is lower than the
+                    configured <code>CoveragePercentTarget</code>.</p>
                 <p>Use <code>-Build</code>, <code>--build</code>, or <code>-b</code> when you want Nova to rebuild the
                     project before the test workflow starts.</p>
                 <p><strong>Important behavior:</strong> when <code>BuildRecursiveFolders</code> is <code>true</code>,

@@ -261,6 +261,8 @@ Notes:
 - `Test-NovaBuild` validates the built module output, not just loose source files
 - it writes NUnit XML to `artifacts/TestResults.xml`
 - it respects `BuildRecursiveFolders` when discovering tests
+- if `project.json` sets `Pester.CodeCoverage.CoveragePercentTarget`, `Test-NovaBuild` fails when the measured coverage percentage is lower than that configured target
+- new template and packaged example `project.json` files already include an opt-in `Pester.CodeCoverage` block with `Enabled=false`, JaCoCo output in `artifacts/coverage.xml`, and a `90` percent target so projects can enable coverage when they are ready
 - contributor and CI environments should still install `Pester 5.7.1` explicitly before running `Test-NovaBuild`
 - the published `NovaModuleTools` manifest also declares `Pester 5.7.1`, so installed end-user workflows can still resolve that dependency automatically
 

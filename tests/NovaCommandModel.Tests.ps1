@@ -854,6 +854,50 @@ title: Invoke-NovaBuild
         }
     }
 
+    It 'Test-NovaBuild runs the real workflow through the post-Pester coverage callback' {
+        $global:novaCoverageAssertionRan = $false
+
+        try {
+            InModuleScope $script:moduleName {
+                $workflowContext = [pscustomobject]@{
+                    BuildRequested = $false
+                    WorkflowParams = @{}
+                    ProjectInfo = [pscustomobject]@{
+                        Pester = @{}
+                    }
+                    TestResultDirectory = '/tmp/nova-project/artifacts'
+                    TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
+                    PesterConfig = New-TestPesterConfigStub -IncludeOutput
+                    TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
+                    TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
+                    CoverageTargetAssertion = [pscustomobject]@{
+                        ScriptBlock = {
+                            param($WorkflowContext, $TestResult)
+
+                            $global:novaCoverageAssertionRan = $true
+                        }
+                    }
+                    Target = '/tmp/nova-project/artifacts/TestResults.xml'
+                    Operation = 'Run Pester tests and write test results'
+                }
+
+                Mock Get-NovaTestWorkflowContext {$workflowContext}
+                Mock Test-Path {$true}
+                Mock Invoke-NovaPester {
+                    [pscustomobject]@{
+                        Result = 'Passed'
+                    }
+                }
+
+                {Test-NovaBuild -Confirm:$false} | Should -Not -Throw
+            }
+
+            $global:novaCoverageAssertionRan | Should -BeTrue
+        } finally {
+            Remove-Variable -Name novaCoverageAssertionRan -Scope Global -ErrorAction SilentlyContinue
+        }
+    }
+
     It 'Test-NovaBuild -Build forwards the build flag into the test workflow context and workflow execution' {
         InModuleScope $script:moduleName {
             Mock Get-NovaTestWorkflowContext {

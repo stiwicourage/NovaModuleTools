@@ -198,6 +198,8 @@ PS&gt; Install-NovaCli -DestinationDirectory ~/bin -Force</code></pre>
                             public entry point, and a strict file-ending rule for changed or
                             generated text files.
                         </p>
+                        <p>New projects also start with Nova's default <code>Pester.CodeCoverage</code> block in
+                            <code>project.json</code>, but keep it disabled until you choose to enable coverage.</p>
                         <p>If you enable the Agentic package, Nova also asks for a short project name used in generated
                             guidance placeholders such as <code>Invoke-&lt;ShortName&gt;*</code>. For NovaModuleTools the
                             short name is <code>Nova</code>, but it could also have been <code>NMT</code>.</p>
@@ -314,6 +316,9 @@ PS&gt; Invoke-NovaBuild -ContinuousIntegration</code></pre>
                         </div>
                         <p>Run Pester for the current project and write results to
                             <code>artifacts/TestResults.xml</code>.</p>
+                        <p>If coverage is enabled in <code>project.json</code>, the same workflow also writes
+                            <code>artifacts/coverage.xml</code> and fails when measured coverage stays below the
+                            configured <code>CoveragePercentTarget</code>.</p>
                         <ul class="plain-list">
                             <li><strong>Use when:</strong> you want the standard Nova test flow</li>
                             <li data-command-visibility="command-line" hidden><strong>Best launcher option:</strong>

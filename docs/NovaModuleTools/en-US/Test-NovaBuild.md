@@ -28,6 +28,8 @@ PS> Test-NovaBuild [-Build] [-OverrideWarning] [[-TagFilter] <string[]>] [[-Excl
 
 `Test-NovaBuild` reads the Pester configuration from `project.json`, resolves the correct test path, and runs the test suite against the current project.
 
+When `project.json` sets `Pester.CodeCoverage.CoveragePercentTarget`, Nova also treats the configured threshold as a failure condition and stops the run if the measured coverage percentage is lower than that target.
+
 Use `-Build` when you want Nova to rebuild the project output before the Pester run starts.
 
 When `-Build` is used, `-OverrideWarning` lets that nested build continue even if the `src/public` layout guard reports zero or multiple top-level functions in a public file.
@@ -245,11 +247,13 @@ You can't pipe objects to this cmdlet.
 
 ### None
 
-This cmdlet does not emit an output object. It throws when the test run fails.
+This cmdlet does not emit an output object. It throws when the test run fails or when a configured code coverage target is not met.
 
 ## NOTES
 
 The generated test result XML is written to `artifacts/TestResults.xml`.
+
+If `project.json` configures `Pester.CodeCoverage.CoveragePercentTarget`, `Test-NovaBuild` also fails when the measured coverage percentage is lower than that configured threshold.
 
 `Test-NovaBuild` uses `SupportsShouldProcess`, so `Get-Help Test-NovaBuild -Full` surfaces native `-WhatIf` and
 `-Confirm` support.

@@ -64,6 +64,23 @@ Describe 'Invoke-NovaBuild options' {
         $example.CopyResourcesToModuleRoot | Should -BeFalse
     }
 
+    It 'project template and packaged example include the opt-in Pester coverage defaults' -ForEach @(
+        @{Name = 'project template'; RelativePath = 'src/resources/ProjectTemplate.json'}
+        @{Name = 'packaged example'; RelativePath = 'src/resources/example/project.json'}
+    ) {
+        $project = Get-Content -LiteralPath (Join-Path $repoRoot $_.RelativePath) -Raw | ConvertFrom-Json
+
+        $project.Pester.CodeCoverage.Enabled | Should -BeFalse
+        $project.Pester.CodeCoverage.Path | Should -Be @(
+            'src/public/*.ps1',
+            'src/private/**/*.ps1',
+            'src/classes/*.ps1'
+        )
+        $project.Pester.CodeCoverage.CoveragePercentTarget | Should -Be 90
+        $project.Pester.CodeCoverage.OutputPath | Should -Be 'artifacts/coverage.xml'
+        $project.Pester.CodeCoverage.OutputFormat | Should -Be 'JaCoCo'
+    }
+
     It 'packaged example project builds and tests successfully as a working reference project' {
         $exampleRoot = Join-Path $repoRoot 'src/resources/example'
         $result = Invoke-TestProjectTests -ProjectRoot $exampleRoot -ModulePath $distModuleDir

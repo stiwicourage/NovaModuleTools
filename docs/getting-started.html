@@ -217,6 +217,10 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                     entry point, and a strict file-ending rule for changed or generated text
                     files.
                     Nova then creates a project folder under the path you selected.</p>
+                <p>The generated <code>project.json</code> also starts with Nova's standard <code>Pester</code>
+                    defaults, including an opt-in <code>CodeCoverage</code> block with <code>Enabled=false</code>,
+                    shared <code>src/</code> coverage paths, JaCoCo output in <code>artifacts/coverage.xml</code>, and
+                    a <code>90</code> percent target you can enable later.</p>
                 <p>If you enable the Agentic package, Nova also asks for a short project name used in generated guidance
                     placeholders such as <code>Invoke-&lt;ShortName&gt;*</code>. For NovaModuleTools the short name is
                     <code>Nova</code>, but it could also have been <code>NMT</code>.</p>
@@ -263,6 +267,10 @@ PS&gt; Test-NovaBuild</code></pre>
                     <li>the built module is written to <code>dist/&lt;ProjectName&gt;/</code></li>
                     <li>the test run writes results to <code>artifacts/TestResults.xml</code></li>
                 </ul>
+                <p>The scaffold keeps code coverage opt-in. When you later set
+                    <code>Pester.CodeCoverage.Enabled</code> to <code>true</code>, the same Nova test flow also writes
+                    <code>artifacts/coverage.xml</code> and stops when the measured coverage percentage is lower than
+                    the configured <code>CoveragePercentTarget</code>.</p>
             </section>
 
             <section class="content-section" id="import-and-run">
