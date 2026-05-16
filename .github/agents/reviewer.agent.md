@@ -41,6 +41,7 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 
 - `/codescene-quality`
 - `/safeguarding-ai-generated-code`
+- `/building-maintainable-code`
 - `/docs-site-html`
 - `/markdown-authoring`
 - `/pester-testing`

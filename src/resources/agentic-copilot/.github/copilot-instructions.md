@@ -60,6 +60,7 @@ For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` a
 - Treat maintainability as a release-readiness concern for this repository.
 - Keep AI-touched files small, clear, and easy to review.
 - Prefer small, incremental refactors over large rewrites when fixing maintainability issues.
+- Use `.github/instructions/code-quality-matrix.instructions.md` and the `building-maintainable-code` skill as the PowerShell-translated source of the ten SIG maintainability guidelines (short and simple units, no duplication, small interfaces, separated concerns, loose coupling, balanced components, small codebase, automated tests, clean code).
 - Keep command help `docs/{{ProjectName}}/en-US/*.md`, contributor docs, and release history clearly separated by audience and syntax.
 - Add or update PlatyPS-compatible command help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change, and create matching help immediately for every new public entry point.
 - For every new or changed `src/**/*.ps1` file, add or update one focused source-mirrored Pester file: use `tests/public/<Name>.Tests.ps1` for `src/public/<Name>.ps1`, `tests/private/<domain>/<Name>.Tests.ps1` for `src/private/<domain>/<Name>.ps1`, and `tests/classes/<Name>.Tests.ps1` for `src/classes/<Name>.ps1`.

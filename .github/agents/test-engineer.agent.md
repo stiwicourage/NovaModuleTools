@@ -33,6 +33,7 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 
 - `/pester-testing`
 - `/codescene-quality`
+- `/building-maintainable-code`
 - `/github-actions`
 - `/guiding-refactoring-with-code-health`
 - `/safeguarding-ai-generated-code`

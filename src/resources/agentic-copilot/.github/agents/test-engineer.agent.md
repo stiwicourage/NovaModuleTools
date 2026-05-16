@@ -32,6 +32,8 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 
 - `/pester-testing`
 
+- `/building-maintainable-code`
+
 ## Constraints
 
 - Prefer the smallest `Test-NovaBuild` scope the project already supports, then the full repo quality loop.

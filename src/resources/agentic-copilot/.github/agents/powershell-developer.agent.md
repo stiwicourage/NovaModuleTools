@@ -33,6 +33,7 @@ Implement PowerShell command and helper changes in the {{ProjectName}} style.
 
 - `/powershell-module-development`
 - `/pester-testing`
+- `/building-maintainable-code`
 
 ## Constraints
 

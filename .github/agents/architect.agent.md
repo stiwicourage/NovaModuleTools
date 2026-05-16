@@ -41,6 +41,7 @@ Design or reshape changes that cross public commands, private helper boundaries,
 - `/release-and-changelog`
 - `/codescene-quality`
 - `/guiding-refactoring-with-code-health`
+- `/building-maintainable-code`
 - `/markdown-authoring`
 
 ## Constraints

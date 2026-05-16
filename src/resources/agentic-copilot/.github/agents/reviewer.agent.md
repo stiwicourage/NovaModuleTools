@@ -39,6 +39,8 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 
 ## Skills to use
 
+- `/building-maintainable-code`
+
 - `/markdown-authoring`
 - `/pester-testing`
 - `/release-and-changelog`

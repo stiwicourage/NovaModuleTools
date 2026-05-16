@@ -33,6 +33,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 
 - `/powershell-module-development`
 - `/pester-testing`
+- `/building-maintainable-code`
 - `/codescene-quality`
 - `/guiding-refactoring-with-code-health`
 - `/safeguarding-ai-generated-code`
