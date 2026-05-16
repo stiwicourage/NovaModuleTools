@@ -18,6 +18,7 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 - Use `.github/instructions/testing-policy.instructions.md` as the test-design source of truth while shaping `tests/**/*.ps1`.
 - Use `.github/instructions/psscriptanalyzer.instructions.md` when changing tests, test helpers, or analyzer/CI helpers so the repo-standard analyzer workflow stays intact.
 - Keep CI coverage output compatible with the quality tooling workflow.
+- Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the bottom.
 
 ## Inputs to inspect
 

@@ -10,6 +10,20 @@ BeforeAll {
     Import-Module $script:distModuleDir -Force
 }
 
+Describe 'Nova .gitignore helper functions' {
+    It 'returns an empty line list when the existing content is empty' {
+        InModuleScope $script:moduleName {
+            @(Get-NovaGitIgnoreLineList -Content '').Count | Should -Be 0
+        }
+    }
+
+    It 'returns an empty string when converting an empty line list to content' {
+        InModuleScope $script:moduleName {
+            ConvertTo-NovaGitIgnoreContent -LineList @() | Should -Be ''
+        }
+    }
+}
+
 Describe 'Update-NovaGitIgnore' {
     It 'creates a default .gitignore when the file is missing' {
         InModuleScope $script:moduleName {

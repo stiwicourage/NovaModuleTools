@@ -249,12 +249,12 @@ Describe 'Coverage gaps for build and duplicate-analysis internals' {
         }
     }
 
-    It 'Invoke-NovaBuildUpdateNotificationSafely swallows update lookup failures' {
+    It 'Invoke-NovaModuleUpdateNotificationSafely swallows update lookup failures' {
         InModuleScope $script:moduleName {
-            Mock Invoke-NovaBuildUpdateNotification {throw 'network issue'}
+            Mock Invoke-NovaModuleUpdateNotification {throw 'network issue'}
 
-            {Invoke-NovaBuildUpdateNotificationSafely} | Should -Not -Throw
-            Assert-MockCalled Invoke-NovaBuildUpdateNotification -Times 1
+            {Invoke-NovaModuleUpdateNotificationSafely} | Should -Not -Throw
+            Assert-MockCalled Invoke-NovaModuleUpdateNotification -Times 1
         }
     }
 

@@ -195,6 +195,8 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                 </div>
                 <p>Nova asks for the project name, description, version, author, minimum PowerShell version, whether
                     Git should be initialized, and whether Nova should add the optional Agentic Copilot starter package.
+                    Before the first question, Nova also checks whether a newer NovaModuleTools release is available and
+                    warns without blocking the scaffold flow.
                     When you enable Git, Nova also creates or updates a default <code>.gitignore</code> in the new
                     project root so common local and CI artifact paths start ignored without overwriting existing ignore
                     rules.

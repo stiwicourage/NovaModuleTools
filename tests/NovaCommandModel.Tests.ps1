@@ -606,7 +606,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             Mock Build-Manifest {$script:steps += 'manifest'}
             Mock Build-Help {$script:steps += 'help'}
             Mock Copy-ProjectResource {$script:steps += 'resources'}
-            Mock Invoke-NovaBuildUpdateNotification {$script:steps += 'notification'}
+            Mock Invoke-NovaModuleUpdateNotificationSafely {$script:steps += 'notification'}
 
             Invoke-NovaBuildWorkflow -WorkflowContext $workflowContext
 
@@ -618,7 +618,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             Assert-MockCalled Build-Manifest -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
             Assert-MockCalled Build-Help -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
             Assert-MockCalled Copy-ProjectResource -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
-            Assert-MockCalled Invoke-NovaBuildUpdateNotification -Times 1
+            Assert-MockCalled Invoke-NovaModuleUpdateNotificationSafely -Times 1
         }
     }
 
@@ -642,7 +642,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             Mock Build-Manifest {$script:steps += 'manifest'}
             Mock Build-Help {$script:steps += 'help'}
             Mock Copy-ProjectResource {$script:steps += 'resources'}
-            Mock Invoke-NovaBuildUpdateNotification {$script:steps += 'notification'}
+            Mock Invoke-NovaModuleUpdateNotificationSafely {$script:steps += 'notification'}
             Mock Import-NovaBuiltModuleForCi {$script:steps += 'ci'}
 
             Invoke-NovaBuildWorkflow -WorkflowContext $workflowContext
@@ -718,7 +718,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             Mock Build-Manifest {throw 'should not build manifest'}
             Mock Build-Help {throw 'should not build help'}
             Mock Copy-ProjectResource {throw 'should not copy resources'}
-            Mock Invoke-NovaBuildUpdateNotification {throw 'should not check for updates'}
+            Mock Invoke-NovaModuleUpdateNotificationSafely {throw 'should not check for updates'}
             Mock Import-NovaBuiltModuleForCi {throw 'should not re-import'}
 
             $result = Invoke-NovaBuild -ContinuousIntegration -WhatIf
@@ -729,7 +729,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             Assert-MockCalled Build-Manifest -Times 0
             Assert-MockCalled Build-Help -Times 0
             Assert-MockCalled Copy-ProjectResource -Times 0
-            Assert-MockCalled Invoke-NovaBuildUpdateNotification -Times 0
+            Assert-MockCalled Invoke-NovaModuleUpdateNotificationSafely -Times 0
             Assert-MockCalled Import-NovaBuiltModuleForCi -Times 0
         }
     }

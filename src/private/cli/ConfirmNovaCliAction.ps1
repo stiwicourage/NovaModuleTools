@@ -43,16 +43,27 @@ function Invoke-NovaCliConsoleReadKey {
 
 function Invoke-NovaCliNativeConsoleReadKey {
     [CmdletBinding()]
-    param([scriptblock]$Reader = {[Console]::ReadKey($true)})
+    param([scriptblock]$Reader)
+
+    if ($null -eq $Reader) {
+        $Reader = Get-NovaCliNativeConsoleReadKeyReader
+    }
 
     return & $Reader
+}
+
+function Get-NovaCliNativeConsoleReadKeyReader {
+    [CmdletBinding()]
+    param()
+
+    return [scriptblock]::Create('[Console]::ReadKey($true)')
 }
 
 function Get-NovaCliConsoleReadKeyReader {
     [CmdletBinding()]
     param()
 
-    return {Invoke-NovaCliNativeConsoleReadKey}
+    return [scriptblock]::Create('Invoke-NovaCliNativeConsoleReadKey')
 }
 
 function Read-NovaCliPromptKey {

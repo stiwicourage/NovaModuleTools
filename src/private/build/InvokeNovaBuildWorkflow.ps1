@@ -15,7 +15,7 @@ function Invoke-NovaBuildWorkflow {
     Build-Manifest -ProjectInfo $projectInfo
     Build-Help -ProjectInfo $projectInfo
     Copy-ProjectResource -ProjectInfo $projectInfo
-    Invoke-NovaBuildUpdateNotificationSafely
+    Invoke-NovaModuleUpdateNotificationSafely
 
     if ($continuousIntegrationRequested) {
         $null = Import-NovaBuiltModuleForCi -ProjectInfo $projectInfo
@@ -35,13 +35,3 @@ function Invoke-NovaBuildDuplicateValidation {
     Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo $ProjectInfo
 }
 
-function Invoke-NovaBuildUpdateNotificationSafely {
-    [CmdletBinding()]
-    param()
-
-    try {
-        Invoke-NovaBuildUpdateNotification
-    } catch {
-        $null = $_
-    }
-}

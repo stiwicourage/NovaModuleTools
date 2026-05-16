@@ -1,4 +1,4 @@
-function Invoke-TestBuildUpdateNotification {
+function Invoke-TestModuleUpdateNotification {
     param(
         [bool]$PrereleaseNotificationsEnabled,
         [object]$LookupResult
@@ -26,7 +26,7 @@ function Invoke-TestBuildUpdateNotification {
         Mock Invoke-NovaModuleUpdateLookup {$LookupResult}
         Mock Write-Warning {$script:capturedWarnings += $Message}
 
-        Invoke-NovaBuildUpdateNotification
+        Invoke-NovaModuleUpdateNotification
         return [pscustomobject]@{
             Warnings = @($script:capturedWarnings)
         }

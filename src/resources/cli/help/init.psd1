@@ -5,6 +5,7 @@
     Description = @(
         'Create a new Nova module scaffold.',
         'Run without options for the interactive flow, or pass an explicit destination path when you want a non-interactive target.',
+        'Before the first interactive question, Nova checks whether a newer NovaModuleTools release is available and warns without blocking the scaffold flow.',
         'When an interactive answer is invalid, Nova shows the validation message immediately and retries that prompt before moving on.',
         'When you enable Git, Nova also creates or updates a default .gitignore in the generated project root so common local and CI artifacts are ignored without overwriting existing .gitignore content.',
         'Both the minimal and example scaffold flows now offer an optional Agentic Copilot starter package after the Git question. The prompt defaults to No, and the package follows Nova''s maintained agentic guidance through a filtered starter mirror.',
@@ -29,7 +30,7 @@
     Examples = @(
         @{
             Command = 'nova init'
-            Description = 'Start the interactive scaffold flow with immediate inline retry for invalid answers, Git-aware .gitignore creation/merge when Git is enabled, the optional Agentic Copilot starter prompt, and the follow-up short-name prompt when Agentic setup is enabled.'
+            Description = 'Start the interactive scaffold flow with an upfront Nova update warning when a newer tool version is available, immediate inline retry for invalid answers, Git-aware .gitignore creation/merge when Git is enabled, the optional Agentic Copilot starter prompt, and the follow-up short-name prompt when Agentic setup is enabled.'
         },
         @{
             Command = 'nova init --path ~/Work'

@@ -1053,6 +1053,27 @@ try {
         }
     }
 
+    It 'Invoke-NovaCliInitCommand delegates init execution through Initialize-NovaModule so shared init behavior stays aligned' {
+        InModuleScope $script:moduleName {
+            Mock ConvertFrom-NovaInitCliArgument {
+                @{
+                    Path = '/tmp/project'
+                    Example = $true
+                }
+            }
+            Mock Initialize-NovaModule {}
+
+            Invoke-NovaCliInitCommand -Arguments @('--example', '--path', '/tmp/project') -ForwardedParameters @{Confirm = $false}
+
+            Assert-MockCalled ConvertFrom-NovaInitCliArgument -Times 1 -ParameterFilter {
+                $Arguments.Count -eq 3 -and $Arguments[0] -eq '--example'
+            }
+            Assert-MockCalled Initialize-NovaModule -Times 1 -ParameterFilter {
+                $Path -eq '/tmp/project' -and $Example -and -not $Confirm
+            }
+        }
+    }
+
     It 'Get-NovaCliLauncherPath reports missing commands, missing file-backed commands, and missing launcher files' {
         InModuleScope $script:moduleName {
             Mock Get-Command {$null}

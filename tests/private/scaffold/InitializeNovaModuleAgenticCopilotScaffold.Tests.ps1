@@ -52,4 +52,52 @@ Describe 'Initialize-NovaModuleAgenticCopilotScaffold' {
             $thrown.TargetObject | Should -Be 'ProjectShortName'
         }
     }
+
+    It 'defaults the project description when the answer description is blank' {
+        InModuleScope $script:moduleName {
+            $tokenMap = Get-NovaModuleAgenticCopilotTemplateTokenMap -Answer @{
+                ProjectName = 'NovaAgentic'
+                ProjectShortName = 'NMT'
+                Description = ' '
+            }
+
+            $tokenMap['{{ProjectDescription}}'] | Should -Be 'NovaAgentic is a PowerShell module project scaffolded with NovaModuleTools.'
+        }
+    }
+
+    It 'falls back to the template README when the example README is missing' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'missing-readme'
+            $null = New-Item -ItemType Directory -Path $projectRoot -Force
+            $tokenMap = [ordered]@{
+                '{{ProjectName}}' = 'NovaAgentic'
+                '{{ShortName}}' = 'NMT'
+                '{{ProjectDescription}}' = 'Agentic scaffold.'
+                '{{StartHereBody}}' = 'Start here'
+            }
+
+            $content = Get-NovaModuleAgenticCopilotReadmeContent -TemplateContent 'Name: {{ProjectName}}' -TokenMap $tokenMap -ProjectRoot $projectRoot -Example
+
+            $content | Should -Be 'Name: NovaAgentic'
+        }
+    }
+
+    It 'falls back to the template README when the example README has no secondary heading' {
+        InModuleScope $script:moduleName {
+            $projectRoot = Join-Path $TestDrive 'readme-without-heading'
+            $readmePath = Join-Path $projectRoot 'README.md'
+            $null = New-Item -ItemType Directory -Path $projectRoot -Force
+            Set-Content -LiteralPath $readmePath -Value '# Example project' -Encoding utf8 -NoNewline
+            $tokenMap = [ordered]@{
+                '{{ProjectName}}' = 'NovaAgentic'
+                '{{ShortName}}' = 'NMT'
+                '{{ProjectDescription}}' = 'Agentic scaffold.'
+                '{{StartHereBody}}' = 'Start here'
+            }
+
+            $content = Get-NovaModuleAgenticCopilotReadmeContent -TemplateContent 'Name: {{ProjectName}}' -TokenMap $tokenMap -ProjectRoot $projectRoot -Example
+
+            $content | Should -Be 'Name: NovaAgentic'
+        }
+    }
 }

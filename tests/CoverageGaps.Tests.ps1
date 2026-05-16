@@ -440,6 +440,7 @@ Describe 'Coverage gaps for scaffold internals' {
                 EnablePester = 'Yes'
             }
             Mock Read-NovaModuleAnswerSet {$answer}
+            Mock Invoke-NovaModuleUpdateNotificationSafely {}
             Mock Write-Message {}
             Mock New-InitiateGitRepo {}
 
@@ -455,9 +456,12 @@ Describe 'Coverage gaps for scaffold internals' {
 
     It 'Get-NovaModuleInitializationWorkflowContext resolves scaffold inputs and ShouldProcess metadata' {
         InModuleScope $script:moduleName {
+            $script:steps = @()
             Mock Resolve-NovaModuleScaffoldBasePath {'/tmp/base'}
             Mock Get-NovaModuleQuestionSet {[ordered]@{ProjectName = @{Prompt = 'Name?'}}}
+            Mock Invoke-NovaModuleUpdateNotificationSafely {$script:steps += 'notification'}
             Mock Read-NovaModuleAnswerSet {
+                $script:steps += 'questions'
                 [ordered]@{
                     ProjectName = 'NovaContext'
                     EnableGit = 'No'
@@ -479,7 +483,9 @@ Describe 'Coverage gaps for scaffold internals' {
             $result.Example | Should -BeTrue
             $result.Target | Should -Be '/tmp/base/NovaContext'
             $result.Action | Should -Be 'Create Nova module scaffold'
+            $script:steps -join ',' | Should -Be 'notification,questions'
             Assert-MockCalled Get-NovaModuleQuestionSet -Times 1 -ParameterFilter {$Example}
+            Assert-MockCalled Invoke-NovaModuleUpdateNotificationSafely -Times 1
             Assert-MockCalled Get-NovaModuleScaffoldLayout -Times 1 -ParameterFilter {
                 $Path -eq '/tmp/base' -and $ProjectName -eq 'NovaContext'
             }
@@ -587,6 +593,7 @@ Describe 'Coverage gaps for scaffold internals' {
                 EnableAgenticCopilot = 'No'
             }
             Mock Read-NovaModuleAnswerSet {$answer}
+            Mock Invoke-NovaModuleUpdateNotificationSafely {}
             Mock Write-Message {}
             Mock New-InitiateGitRepo {}
 

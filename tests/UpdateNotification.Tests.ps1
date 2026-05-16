@@ -1,6 +1,6 @@
 $script:updateNotificationTestSupportPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'UpdateNotification.TestSupport.ps1')).Path
 $global:updateNotificationTestSupportFunctionNameList = @(
-    'Invoke-TestBuildUpdateNotification'
+    'Invoke-TestModuleUpdateNotification'
     'Invoke-TestAvailableModuleUpdateWarning'
     'Invoke-TestNotificationPreferenceToggle'
     'Assert-TestNotificationPreferenceToggleResult'
@@ -817,8 +817,8 @@ Continue with the prerelease update?
         }
     }
 
-    It 'Invoke-NovaBuildUpdateNotification warns about a newer stable release even when prerelease notifications are disabled' {
-        $result = Invoke-TestBuildUpdateNotification -PrereleaseNotificationsEnabled:$false -LookupResult ([pscustomobject]@{
+    It 'Invoke-NovaModuleUpdateNotification warns about a newer stable release even when prerelease notifications are disabled' {
+        $result = Invoke-TestModuleUpdateNotification -PrereleaseNotificationsEnabled:$false -LookupResult ([pscustomobject]@{
             Stable = [pscustomobject]@{Version = '1.1.0'}
             Prerelease = [pscustomobject]@{Version = '1.2.0-preview'}
         })
@@ -830,8 +830,8 @@ Continue with the prerelease update?
         $result.Warnings[0] | Should -Match '% nova update'
     }
 
-    It 'Invoke-NovaBuildUpdateNotification warns about a newer prerelease only when prerelease notifications are enabled' {
-        $result = Invoke-TestBuildUpdateNotification -PrereleaseNotificationsEnabled:$true -LookupResult ([pscustomobject]@{
+    It 'Invoke-NovaModuleUpdateNotification warns about a newer prerelease only when prerelease notifications are enabled' {
+        $result = Invoke-TestModuleUpdateNotification -PrereleaseNotificationsEnabled:$true -LookupResult ([pscustomobject]@{
             Stable = $null
             Prerelease = [pscustomobject]@{Version = '1.1.0-preview'}
         })
@@ -1083,7 +1083,7 @@ Continue with the prerelease update?
         }
     }
 
-    It 'Invoke-NovaBuildUpdateNotification and Update-NovaModuleTool both use the shared prerelease preference helper' {
+    It 'Invoke-NovaModuleUpdateNotification and Update-NovaModuleTool both use the shared prerelease preference helper' {
         InModuleScope $script:moduleName {
             $script:preferenceReadCount = 0
 
@@ -1109,7 +1109,7 @@ Continue with the prerelease update?
             Mock Confirm-NovaPrereleaseModuleUpdate {throw 'should not prompt'}
             Mock Invoke-NovaModuleSelfUpdate {throw 'should not update'}
 
-            Invoke-NovaBuildUpdateNotification
+            Invoke-NovaModuleUpdateNotification
             $result = Update-NovaModuleTool -Confirm:$false
 
             $script:preferenceReadCount | Should -Be 2
@@ -1132,7 +1132,7 @@ Continue with the prerelease update?
         }
     }
 
-    It 'Invoke-NovaBuildUpdateNotification stays silent when lookup returns nothing' {
+    It 'Invoke-NovaModuleUpdateNotification stays silent when lookup returns nothing' {
         InModuleScope $script:moduleName {
             Mock Read-NovaUpdateNotificationPreference {[pscustomobject]@{PrereleaseNotificationsEnabled = $true}}
             Mock Get-NovaInstalledModuleVersionInfo {
@@ -1146,7 +1146,7 @@ Continue with the prerelease update?
             Mock Invoke-NovaModuleUpdateLookup {$null}
             Mock Write-Warning {throw 'should stay silent'}
 
-            {Invoke-NovaBuildUpdateNotification} | Should -Not -Throw
+            {Invoke-NovaModuleUpdateNotification} | Should -Not -Throw
             Assert-MockCalled Write-Warning -Times 0
         }
     }
