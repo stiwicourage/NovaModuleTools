@@ -15,8 +15,14 @@ Use this file when creating or updating command help under `docs/NovaModuleTools
 
 ## Required workflow
 
-1. Load the command surface you are documenting before you touch the help files.
-2. For new command help, generate the initial skeleton with `New-MarkdownCommandHelp` from the actual commands rather than starting from a blank Markdown file.
+1. Build and import the dist module before generating or updating help files. This ensures PlatyPS picks up the correct module name for both the `Module Name` and `external help file` metadata fields.
+
+```powershell
+Invoke-NovaBuild
+Import-Module ./dist/NovaModuleTools/NovaModuleTools.psd1 -Force
+```
+
+2. For new command help, generate the initial skeleton with `New-MarkdownCommandHelp` from the imported module commands rather than starting from a blank Markdown file.
 
 ```powershell
 $newMarkdownHelp = @{
@@ -57,6 +63,7 @@ Import-MarkdownCommandHelp -Path ./docs/NovaModuleTools/en-US/<CommandName>.md |
 - Keep one command-help file per public entry point, and match the markdown file name to the command name.
 - Keep the YAML metadata block at the top of every help file, delimited by `---`.
 - Keep the metadata aligned with the command being documented. At minimum, preserve the same metadata keys used by the repository's existing valid help files, including `document type`, `external help file`, `HelpUri`, `Locale`, `Module Name`, `ms.date`, `PlatyPS schema version`, and `title`.
+- The `external help file` field must always use the module name, not the command name: `NovaModuleTools-Help.xml`. The `Module Name` field must match the project name. When both fields use the module name, Nova build produces a single `<ModuleName>-Help.xml` under `dist/<ModuleName>/en-US/`. If either field contains a command name instead, the build produces per-command XML files and the module manifest cannot find its help.
 - Keep the H1 title equal to the exact command name.
 - Preserve the standard PlatyPS section order with uppercase H2 headers: `SYNOPSIS`, `SYNTAX`, optional `ALIASES`, `DESCRIPTION`, `EXAMPLES`, `PARAMETERS`, `INPUTS`, `OUTPUTS`, `NOTES`, and `RELATED LINKS`.
 - Keep at least one example under `## EXAMPLES`.
@@ -68,6 +75,7 @@ Import-MarkdownCommandHelp -Path ./docs/NovaModuleTools/en-US/<CommandName>.md |
 
 ## Authoring guidance
 
+- Always import the built dist module (`Import-Module ./dist/NovaModuleTools/NovaModuleTools.psd1 -Force`) before running `New-MarkdownCommandHelp` or `Update-MarkdownCommandHelp`. Generating help without the module imported causes PlatyPS to default `external help file` to the command name instead of the module name, which produces per-command XML files that the module manifest cannot find.
 - Prefer generating the initial help shape from the actual public command so syntax and parameter blocks stay aligned with the implementation.
 - When source adds a new public entry point, create the matching help file immediately in the same change even if the narrative text still needs follow-up refinement.
 - When editing an existing help file, preserve the YAML metadata and parameter sections unless you intentionally regenerate the file from the command surface.
@@ -79,6 +87,7 @@ Import-MarkdownCommandHelp -Path ./docs/NovaModuleTools/en-US/<CommandName>.md |
 ## Review expectations
 
 - Reviewers should flag help files that lack YAML metadata, break the expected PlatyPS section structure, skip the `New-MarkdownCommandHelp` / `Update-MarkdownCommandHelp` workflow, or look like plain Markdown prose instead of command help.
+- Reviewers should flag help files where `external help file` contains a command name (e.g., `Get-Something-Help.xml`) instead of the module name (`NovaModuleTools-Help.xml`). This produces per-command XML files that the module manifest cannot locate at runtime.
 - Reviewers should flag help files that would fail `Test-MarkdownCommandHelp` or produce diagnostics/errors when imported with `Import-MarkdownCommandHelp`.
 - Reviewers should flag any new public entry point that does not add its matching command-help file in the same change.
 - Treat build errors from `Import-MarkdownCommandHelp` as a sign that the file is not valid PlatyPS help yet.

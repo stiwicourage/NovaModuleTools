@@ -38,7 +38,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Keep `run.ps1`-style local checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
 - If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before handoff instead of just reporting the failure.
 - Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the end.
-- Add or update valid PlatyPS-compatible help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change. Use `New-MarkdownCommandHelp` for new help, `Update-MarkdownCommandHelp` to refresh existing help metadata, and `Test-MarkdownCommandHelp` to validate structure before handoff instead of writing plain Markdown from scratch.
+- Add or update valid PlatyPS-compatible help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change. Always build and import the dist module first (`Import-Module ./dist/{{ProjectName}}/{{ProjectName}}.psd1 -Force`) before running `New-MarkdownCommandHelp` or `Update-MarkdownCommandHelp`, so PlatyPS writes the module name — not the command name — into `external help file` and `Module Name`. Use `Test-MarkdownCommandHelp` to validate structure before handoff instead of writing plain Markdown from scratch.
 - For every new public `src/public/*.ps1` file, create the matching help file immediately in the same change.
 - Add or update the source-mirrored Pester test file for every changed `src/**/*.ps1` file.
 
@@ -54,6 +54,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Ignoring the source-code guidance and letting new or heavily changed functions grow long, deeply nested, duplicated, or multi-purpose without justification
 - Writing plain Markdown under `docs/{{ProjectName}}/en-US/` that lacks YAML metadata or the PlatyPS structure expected by `Import-MarkdownCommandHelp`
 - Editing PlatyPS YAML and section structure by hand when `New-MarkdownCommandHelp` or `Update-MarkdownCommandHelp` should have regenerated it
+- Generating help markdown without the built module imported, which causes `external help file` to default to the command name and produces per-command XML files instead of a single `<ModuleName>-Help.xml`
 - Adding a new public entry point without the matching help file in `docs/{{ProjectName}}/en-US/`
 - Bypassing the repository analyzer wrapper/settings with ad hoc `Invoke-ScriptAnalyzer`, `-EnableExit`, or broad rule-exclusion changes
 - Ignoring the project's `Manifest.PowerShellHostVersion` target and introducing PowerShell 7.x-only features into a `5.1` project

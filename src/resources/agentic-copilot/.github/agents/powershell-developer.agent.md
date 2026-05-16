@@ -44,7 +44,7 @@ Implement PowerShell command and helper changes in the {{ProjectName}} style.
 - Keep new or heavily changed source functions aligned with `.github/instructions/code-quality-matrix.instructions.md`: short, single-purpose, low-duplication, and split by clear responsibility unless the scope explicitly justifies otherwise.
 - Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1` for normal analyzer loops; use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repository-approved settings.
 - Validate Nova-managed project tests through `Test-NovaBuild`; do not call `Invoke-Pester` directly.
-- When help files change, keep `docs/{{ProjectName}}/en-US/*.md` valid for `Import-MarkdownCommandHelp`: use `New-MarkdownCommandHelp` for new files, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff. A new public `src/public/*.ps1` file is not done until its matching help file exists.
+- When help files change, keep `docs/{{ProjectName}}/en-US/*.md` valid for `Import-MarkdownCommandHelp`: build and import the dist module first (`Import-Module ./dist/{{ProjectName}}/{{ProjectName}}.psd1 -Force`), then use `New-MarkdownCommandHelp` for new files, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff. Generating help without the module imported causes `external help file` to default to the command name instead of the module name, producing per-command XML files that the manifest cannot find. A new public `src/public/*.ps1` file is not done until its matching help file exists.
 
 ## Definition of done
 
