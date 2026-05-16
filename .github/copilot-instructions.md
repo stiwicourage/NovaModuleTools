@@ -2,128 +2,64 @@
 
 ## Purpose
 
-Use this file as the repository-wide Copilot instruction entry point for NovaModuleTools.
-
-NovaModuleTools is not a generic PowerShell repo. It has a strong split between public commands, private helpers, Pester-heavy testing, GitHub Actions automation, CodeScene coverage gates, and Keep a Changelog / SemVer release flow.
+Index of repository-wide Copilot guidance for NovaModuleTools. This file is intentionally thin. Canonical rule text lives in `.github/instructions/` (path-scoped, auto-loaded by Copilot) and how-to guidance lives in `.github/skills/`.
 
 ## Start here
 
-Read these files before making non-trivial changes:
+For non-trivial changes, read in this order:
 
 1. `README.md`
 2. `CONTRIBUTING.md`
 3. `.github/pull_request_template.md`
-4. The relevant file in `.github/instructions/`
-5. The relevant skill under `.github/skills/<skill-name>/SKILL.md`
-6. `.github/instructions/code-quality-matrix.instructions.md` when shaping or reviewing `src/**/*.ps1` or source-like helper scripts
-7. `.github/instructions/testing-policy.instructions.md` when shaping or reviewing `tests/**/*.ps1`, coverage behavior, or CI test flows
-8. `.github/instructions/platyps-help.instructions.md` when creating or updating `docs/NovaModuleTools/en-US/*.md`
-9. `.github/instructions/psscriptanalyzer.instructions.md` when changing PowerShell code, test helpers, or analyzer wrappers
+4. `.github/instructions/repository-conventions.instructions.md` — cross-cutting rules
+5. The topic-scoped instruction file(s) that match the paths you are touching
+6. The skill listed under that topic in the task map below
 
-Prompt templates under `.github/prompts/*.prompt.md` are not auto-loaded. Reference them explicitly in chat when you want to use one of the repository's reusable task prompts.
-
-For new or not-yet-scoped work, start with `.github/agents/architect.agent.md` and `.github/prompts/design-change.prompt.md`. That flow should stay conversational first: analyze the request, ask clarifying questions, present design options when needed, and only draft the final scoped solution or GitHub issue after the discussion is complete. When unresolved questions still remain, architect should surface what is settled vs unresolved before asking whether to finalize, and should allow either full finalization or a resumable design-package-only handoff. Proposed scope cuts or out-of-scope boundaries must be confirmed by the user before they are treated as final.
+For new or not-yet-scoped work, use the `architect` agent with `.github/prompts/design-change.prompt.md`. The architect flow is discussion-first: clarify the request, explore options, and only finalize a scoped solution or issue draft after the discussion is done.
 
 ## Repository map
 
-- `src/public/` - public PowerShell command surface; one top-level function per file
-- `src/private/` - internal helpers grouped by domain (`build/`, `cli/`, `package/`, `quality/`, `release/`, `scaffold/`, `shared/`, `update/`); keep one externally called helper per file, allow related same-file top-level support helpers, and do not nest function declarations inside other functions
-- `tests/` - Pester tests and shared test-support scripts
-- `scripts/build/` - local analyzer and build helpers
-- `scripts/build/ci/` - CI coverage, CodeScene, and artifact helpers
-- `.github/workflows/` - GitHub Actions CI, analyzer, dependency review, and publish automation
-- `.github/actions/` - reusable workflow actions used by release and coverage flows
-- `docs/NovaModuleTools/en-US/` - command help source
-- `docs/*.html` - end-user GitHub Pages content
+- `src/public/` — public PowerShell commands; one top-level function per file, file name matches function name
+- `src/private/` — domain-grouped helpers (`build/`, `cli/`, `package/`, `quality/`, `release/`, `scaffold/`, `shared/`, `update/`); one externally called helper per file
+- `tests/` — Pester tests and shared test-support scripts
+- `scripts/build/` — local analyzer and build helpers
+- `scripts/build/ci/` — CI coverage, CodeScene, and artifact helpers
+- `.github/workflows/` — GitHub Actions CI, analyzer, dependency review, publish automation
+- `.github/actions/` — reusable workflow actions used by release and coverage flows
+- `docs/NovaModuleTools/en-US/` — PlatyPS command help source
+- `docs/*.html` — end-user GitHub Pages content
+- `.github/instructions/` — canonical rules, path-scoped via `applyTo:`
+- `.github/skills/` — how-to playbooks invoked through the `skill` tool
+- `.github/agents/` — role definitions for specialized agents
+- `.github/prompts/` — reusable task prompts (not auto-loaded; invoke explicitly with `@.github/prompts/<name>.prompt.md`)
 
-## Repository-wide rules
+## Task map
 
-- Keep changes small, reviewable, and easy to validate.
-- Do not invent behavior that is not visible in source, tests, docs, workflows, or issues.
-- Preserve the distinction between PowerShell cmdlet UX and `nova` CLI UX.
-- Treat `project.json` as the source of truth for project metadata, build output, package settings, and release settings.
-- Treat `project.json` `Manifest.PowerShellHostVersion` as the compatibility target for PowerShell code, tests, and examples. If a project targets `5.1`, do not introduce PowerShell 7.x-only syntax, cmdlets, parameters, or APIs unless the work explicitly adds guarded compatibility handling.
-- Use Nova commands and repository wrappers for build, test, package, and release workflows; do not replace them with ad hoc PowerShell module build scripts.
-- Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source; Nova generates the built module root and manifest under `dist/NovaModuleTools/` from `project.json` and `src/**/*.ps1`.
-- Do not exclude or suppress PSScriptAnalyzer rules in repository analyzer helpers; fix the code that violates analyzer rules instead.
-- Use `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth. Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1`, and only use direct `Invoke-ScriptAnalyzer` for focused local checks or deliberate analyzer-tooling changes.
-- Keep `run.ps1` as the local quality loop: run ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
-- Use `Test-NovaBuild` as the authoritative test entrypoint in Nova-managed projects. Do not call `Invoke-Pester` directly, because it can bypass Nova's build/import/StrictMode flow and disagree with the result users get later.
-- If `run.ps1` or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before review, handoff, or commit. Do not treat a failing local quality loop as an acceptable stopping point.
-- Keep file/function ownership explicit: `src/public/` files should own exactly one top-level function each, and `src/private/` files should expose at most one externally called function per file. Additional private functions may stay only as related top-level support helpers used from the same file, the file name should match the function that owns the file, and PowerShell functions must not declare nested functions inside their bodies.
-- Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort maintainability guidance for `src/**/*.ps1` and source-like helper scripts, and use `.github/instructions/testing-policy.instructions.md` for test-specific design rules; generated projects should follow that guidance through Agentic Copilot files.
-- Generate valid PlatyPS help under `docs/NovaModuleTools/en-US/` whenever command help changes. Use the Microsoft.PowerShell.PlatyPS workflow (`New-MarkdownCommandHelp`, `Update-MarkdownCommandHelp`, `Test-MarkdownCommandHelp`) instead of hand-authoring command-help structure, and do not write plain Markdown that `Import-MarkdownCommandHelp` cannot parse.
-- Every new public entry point requires its matching help file in the same change. A new `src/public/*.ps1` file is not complete until the matching `docs/NovaModuleTools/en-US/<CommandName>.md` file exists.
-- Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` after every meaningful change.
-- Update tests when behavior changes.
-- Prefer existing helpers and support files over ad hoc duplication.
-- Treat Code Health as authoritative for maintainability in this repository.
-- Target Code Health `10.0` for AI-touched files; `9.x` is not the goal state.
-- Prefer small, incremental refactors over large rewrites when fixing maintainability issues.
-- Use `.github/instructions/code-quality-matrix.instructions.md` and the `building-maintainable-code` skill as the PowerShell-translated source of the ten SIG maintainability guidelines (short and simple units, no duplication, small interfaces, separated concerns, loose coupling, balanced components, small codebase, automated tests, clean code).
-- Keep `docs/*.html`, `docs/NovaModuleTools/en-US/*.md`, and contributor docs clearly separated by audience and syntax.
-- Add or update PlatyPS-compatible command help under `docs/NovaModuleTools/en-US/` when public commands or public classes change, and create matching help immediately for every new public entry point.
-- For every new or changed `src/**/*.ps1` file, add or update one focused source-mirrored Pester file: use `tests/public/<Name>.Tests.ps1` for `src/public/<Name>.ps1`, `tests/private/<domain>/<Name>.Tests.ps1` for `src/private/<domain>/<Name>.ps1`, and `tests/classes/<Name>.Tests.ps1` for `src/classes/<Name>.ps1`.
-- Use shared helpers under `tests/TestHelpers/` or `tests/*TestSupport.ps1` for repeated setup; do not hide unrelated source-file coverage in broad catch-all test files unless the behavior is genuinely cross-cutting.
+The table below shows how to route work. Prompts are the task entry points; each prompt delegates to its agent, which uses the listed skills, which in turn enforce the listed instructions.
 
-## Commit message guidance
+| Task                          | Prompt                                     | Agent                  | Primary skills                                                                       | Primary instructions                                                              |
+| ----------------------------- | ------------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Design or scope a change      | `design-change.prompt.md`                  | `architect`            | `powershell-module-development`, `github-actions`, `release-and-changelog`, `markdown-authoring` | `repository-conventions`, `code-quality-matrix`                                   |
+| Implement an issue            | `implement-issue.prompt.md`                | `powershell-developer` | `powershell-module-development`, `pester-testing`, `building-maintainable-code`, `codescene-quality`, `safeguarding-ai-generated-code` | `repository-conventions`, `code-quality-matrix`, `psscriptanalyzer`, `powershell-coding-standards`, `platyps-help` |
+| Review a change               | `review-change.prompt.md`                  | `reviewer`             | `codescene-quality`, `safeguarding-ai-generated-code`, `building-maintainable-code`, `docs-site`, `markdown-authoring`, `pester-testing`, `release-and-changelog`, `github-actions` | All `.github/instructions/*.instructions.md`                                       |
+| Improve test coverage         | `improve-test-coverage.prompt.md`          | `test-engineer`        | `pester-testing`, `building-maintainable-code`, `codescene-quality`, `github-actions`, `guiding-refactoring-with-code-health`, `safeguarding-ai-generated-code` | `testing-policy`, `psscriptanalyzer`                                              |
+| Prepare a release             | `prepare-release.prompt.md`                | `release-manager`      | `release-and-changelog`, `markdown-authoring`                                        | `release-policy`, `repository-conventions`                                         |
+| Fix a CI failure              | `fix-ci-failure.prompt.md`                 | `powershell-developer` (or `test-engineer`) | `github-actions`, `pester-testing`                                                   | `testing-policy`, `psscriptanalyzer`, `repository-conventions`                     |
+| Update website docs           | (no dedicated prompt — invoke agent)        | `docs-site`            | `docs-site`, `markdown-authoring`                                                    | `documentation-separation`                                                         |
 
-- When you are asked to suggest or prepare a commit message, answer in English.
-- Use Conventional Commit format.
-- Extract the ticket number from `$GIT_BRANCH_NAME` and render it as `(#<number>)` immediately after the type when one is available.
-- If `$GIT_BRANCH_NAME` starts with `hotfix/` or `bug/`, use `fix` as the type even when the implementation looks more like a feature. Use `fix!` if that branch change is also breaking.
-- Otherwise estimate the type from the actual change:
-    - `feat` for feature work
-    - `fix` for bug fixes
-    - `feat!` for breaking feature work
-    - `fix!` for breaking fixes
-- Keep the subject short, specific, and free of unnecessary detail.
-- If you provide multiple commit message suggestions or summarize multiple change options, use bullet points.
-- Do not invent a ticket number when `$GIT_BRANCH_NAME` does not contain one.
+## Notation
 
-## Markdown output guidance
-
-- When the output is intended to be copied as Markdown from the UI or written to a Markdown file, follow the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
-- Apply that rule especially to release summaries, review summaries, contributor-facing Markdown docs, prompt output, and PR-template-shaped text.
-
-## Validation expectations
-
-Use the smallest validation set that proves the change, then run the repository quality loop before finishing code work:
-
-- local quality loop: `pwsh -NoLogo -NoProfile -File ./run.ps1`
-- test validation: `Test-NovaBuild`
-- analyzer only: `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
-- CI-parity coverage flow: `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts`
-
-When CodeScene tooling is available:
-
-- run the pre-commit safeguard on AI-touched changes before suggesting a commit
-- run a branch/change-set analysis before suggesting a PR or declaring a larger change ready
-- if CodeScene reports a regression, refactor instead of treating the work as done
-- use the `guiding-refactoring-with-code-health` skill for small, measured Code Health-driven refactors
-- use the `safeguarding-ai-generated-code` skill when deciding whether AI-touched work is ready for commit or PR handoff
-
-If CodeScene tooling is unavailable locally, continue with the normal repository validation flow and continue silently; the pull request and CI flow remains the effective CodeScene gate.
-
-For documentation-only changes, executable validation may be skipped if no code path or workflow behavior changed.
-
-## File formatting rule
-
-- Before handoff, review every changed or created text file and ensure it ends with exactly one trailing newline and no extra blank lines at the bottom.
-- Do not leave any edited file with extra blank lines at the end, even if the functional code change is already complete.
-- Do not alter internal whitespace just to enforce the trailing newline rule.
-
-## Safety constraints
-
-- Do not publish packages, create tags, or push changes unless explicitly requested.
-- Do not modify GitHub Actions release automation casually; `Publish.yml` mutates `main` and `develop`.
-- Do not bypass warnings or guards silently; Nova uses explicit `-OverrideWarning` / `--override-warning`.
-- Do not add raw infrastructure calls in public commands when an adapter/helper layer already exists.
+- Skills referenced as `/skill-name` in agent files map 1-to-1 to the `name:` field in `.github/skills/<skill-name>/SKILL.md`. The runtime invokes them through the `skill` tool with the bare name.
+- Prompts are referenced by path. Custom prompts are not auto-loaded by the Copilot CLI; invoke them explicitly with `@.github/prompts/<name>.prompt.md`.
+- Instructions auto-load when their `applyTo:` glob matches a file in the change set.
 
 ## Related guidance
 
-- `.github/instructions/powershell-coding-standards.instructions.md`
-- `.github/instructions/testing-policy.instructions.md`
-- `.github/instructions/release-policy.instructions.md`
-- `.github/instructions/documentation-separation.instructions.md`
-- `.github/skills/markdown-authoring/SKILL.md`
+- Cross-cutting rules: `.github/instructions/repository-conventions.instructions.md`
+- Source code maintainability: `.github/instructions/code-quality-matrix.instructions.md` + `building-maintainable-code` skill
+- Testing: `.github/instructions/testing-policy.instructions.md` + `pester-testing` skill
+- PSScriptAnalyzer workflow: `.github/instructions/psscriptanalyzer.instructions.md`
+- PowerShell coding standards: `.github/instructions/powershell-coding-standards.instructions.md`
+- PlatyPS help generation: `.github/instructions/platyps-help.instructions.md`
+- Release flow: `.github/instructions/release-policy.instructions.md` + `release-and-changelog` skill
+- Documentation separation: `.github/instructions/documentation-separation.instructions.md` + `docs-site` skill

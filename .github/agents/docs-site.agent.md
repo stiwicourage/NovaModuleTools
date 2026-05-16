@@ -27,7 +27,7 @@ Keep the GitHub Pages documentation under `docs/*.html` accurate, user-focused, 
 
 ## Skills to use
 
-- `/docs-site-html`
+- `/docs-site`
 - `/markdown-authoring`
 - `/powershell-module-development`
 - `/release-and-changelog`

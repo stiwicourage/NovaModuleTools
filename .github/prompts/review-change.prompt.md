@@ -1,5 +1,7 @@
 # Review a NovaModuleTools change
 
+> Invoke with `@.github/prompts/review-change.prompt.md`. Delegates to the `reviewer` agent.
+
 Review a NovaModuleTools change set with emphasis on correctness, maintainability, validation, and workflow safety.
 
 ## Required process

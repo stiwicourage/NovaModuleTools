@@ -8,7 +8,7 @@ applyTo: "src/**/*.ps1,scripts/**/*.ps1,run.ps1,reload.ps1"
 
 Use this file as the maintainability guidance for PowerShell source and helper scripts in this repository.
 
-It frames ten established software maintainability guidelines in PowerShell terms with concrete thresholds, naming, and language constructs.
+It frames ten widely recognized maintainability dimensions in PowerShell terms: unit size, unit complexity, duplication, interface width, separation of concerns, coupling, component balance, codebase size, automated tests, and clean code. Each guideline below covers one dimension with concrete PowerShell thresholds.
 
 This file tells Agentic Copilot how to shape source code from the start. Test-specific guidance lives in `.github/instructions/testing-policy.instructions.md` and the `pester-testing` skill. The matching operational workflow for these ten rules lives in the `building-maintainable-code` skill.
 
@@ -78,7 +78,7 @@ This file tells Agentic Copilot how to shape source code from the start. Test-sp
 - Rule: public commands depend on private adapter/helper layers, not on raw infrastructure.
 - Why: tight coupling to environment variables, Git, HTTP, file system, or module-update APIs spreads infrastructure leaks across the public surface and breaks tests.
 - How to apply in PowerShell:
-    - Route environment access, Git execution, REST calls, uploads, and self-update behavior through their approved private helpers. `tests/*Architecture*.Tests.ps1` is authoritative.
+    - Route environment access, Git execution, REST calls, uploads, and self-update behavior through their approved private helpers. `tests/ArchitectureGuardrails.Tests.ps1` is authoritative.
     - Hide provider-specific or platform-specific branching behind a small adapter surface so callers depend on a stable contract, not on the provider's quirks.
     - Avoid pass-through helpers that only forward parameters to another function. Either add policy, validation, translation, or abstraction, or call the underlying function directly.
 - Common objection: "The adapter feels redundant." It pays off the moment the underlying call changes, gains an error mode, or needs mocking.

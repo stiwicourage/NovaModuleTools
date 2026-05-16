@@ -1,5 +1,7 @@
 # Implement NovaModuleTools issue
 
+> Invoke with `@.github/prompts/implement-issue.prompt.md`. Delegates to the `powershell-developer` agent.
+
 Implement the issue in the NovaModuleTools repository using the repository-local instructions and skills.
 
 ## Required inputs

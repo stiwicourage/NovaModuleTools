@@ -1,5 +1,7 @@
 # Implement {{ProjectName}} issue
 
+> Invoke with `@.github/prompts/implement-issue.prompt.md`. Delegates to the `powershell-developer` agent.
+
 Implement the issue in the {{ProjectName}} repository using the repository-local instructions and skills.
 
 ## Required inputs
@@ -13,7 +15,7 @@ Implement the issue in the {{ProjectName}} repository using the repository-local
 1. If scope, acceptance criteria, or ownership are still unclear, start with `.github/prompts/design-change.prompt.md` and `architect.agent.md` before implementing.
 2. Read `README.md`, `CONTRIBUTING.md`, `.github/copilot-instructions.md`, and `.github/pull_request_template.md`.
 3. Inspect the relevant public command, matching private helper domain, tests, and docs.
-4. If the issue is release-, workflow-, or coverage-related, also inspect the matching workflow files, when present and `scripts/build/ci/*.ps1` files.
+4. If the issue is release-, workflow-, or coverage-related, also inspect the matching `.github/workflows/*.yml` and `scripts/build/ci/*.ps1` files.
 5. Preserve the Nova build model: use `project.json` and Nova commands for build/test/package/release behavior, and do not create hand-written source `.psm1` or module `.psd1` files.
 6. Inspect `project.json` `Manifest.PowerShellHostVersion` before changing PowerShell code, tests, or examples, and keep the implementation compatible with that target.
 7. Implement the smallest maintainable fix.
@@ -25,9 +27,9 @@ Implement the issue in the {{ProjectName}} repository using the repository-local
 13. Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the bottom.
 14. Add or update the matching source-mirrored Pester file for every changed `src/**/*.ps1` file; if the behavior is genuinely cross-cutting, document which integration/guardrail test owns it and why a mirrored unit test is not practical.
 15. Validate Nova-managed project tests through `Test-NovaBuild`; do not call `Invoke-Pester` directly because it can bypass Nova's build/import/StrictMode flow.
-16. Add or update valid PlatyPS-compatible help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change. Use `New-MarkdownCommandHelp` for new help, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff; do not replace command help with plain Markdown prose.
+16. Add or update valid PlatyPS-compatible help under `docs/NovaModuleTools/en-US/` when public commands or public classes change. Use `New-MarkdownCommandHelp` for new help, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff; do not replace command help with plain Markdown prose.
 17. For every new public entry point, create its matching help file immediately in the same change.
-18. Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `RELEASE_NOTE.md`, help docs, and project docs as applicable.
+18. Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `RELEASE_NOTE.md`, help docs, and `docs/*.html` as applicable.
 19. If a commit message is requested, derive it from `$GIT_BRANCH_NAME` and the implemented change using the repository's Conventional Commit rules.
 20. Run the relevant validation, then summarize what changed, why, and how it was verified.
 21. If that summary is returned as Markdown or copy-ready UI output, format it according to the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).

@@ -1,5 +1,7 @@
 # Improve {{ProjectName}} test coverage
 
+> Invoke with `@.github/prompts/improve-test-coverage.prompt.md`. Delegates to the `test-engineer` agent.
+
 Improve changed-code coverage in {{ProjectName}} without lowering maintainability.
 
 ## Required process
@@ -17,7 +19,7 @@ Improve changed-code coverage in {{ProjectName}} without lowering maintainabilit
 
 ## Repository-specific reminders
 
-- Many tests expect a built `dist/{{ProjectName}}` module.
+- Many tests expect a built `dist/NovaModuleTools` module.
 - The CI coverage flow writes `artifacts/pester-coverage.cobertura.xml`.
 - Use `Test-NovaBuild` as the project test entrypoint; direct `Invoke-Pester` can miss Nova-specific strict-mode behavior.
 - Do not "fix" coverage by weakening assertions or suppressing quality tooling warnings.

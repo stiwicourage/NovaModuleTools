@@ -1,5 +1,7 @@
 # Design a {{ProjectName}} change
 
+> Invoke with `@.github/prompts/design-change.prompt.md`. Delegates to the `architect` agent.
+
 Use this prompt with `architect.agent.md` when a change still needs analysis, scoping, and issue/work item drafting before anyone starts editing files.
 
 This is a discussion-first prompt. The default behavior is to hold a short design conversation with the user before producing a final scoped solution, implementation handoff, or issue/work item draft.
@@ -54,8 +56,8 @@ All finalization output is copy-ready Markdown. Apply the `markdown-authoring` s
 If the user chooses **design package and issue/work item draft**, return:
 
 - a short usage note that explains:
-    - the sections before `issue/work item draft` are design/handoff notes
-    - only the `issue/work item draft` section is paste-ready tracker text
+    - the sections before `GitHub issue draft` are design/handoff notes
+    - only the `GitHub issue draft` section is paste-ready tracker text
 - Problem
 - Why it matters
 - Scope

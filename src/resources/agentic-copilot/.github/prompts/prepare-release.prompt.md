@@ -1,10 +1,12 @@
-# Prepare a {{ProjectName}} release change
+# Prepare a {{ProjectName}} release
+
+> Invoke with `@.github/prompts/prepare-release.prompt.md`. Delegates to the `release-manager` agent.
 
 Prepare release-related changes in {{ProjectName}} without publishing or tagging.
 
 ## Required process
 
-1. Read `CHANGELOG.md`, `RELEASE_NOTE.md`, `project.json`, `README.md`, `CONTRIBUTING.md`, `.github/pull_request_template.md`, and release workflow files, when present.
+1. Read `CHANGELOG.md`, `RELEASE_NOTE.md`, `project.json`, `README.md`, `CONTRIBUTING.md`, `.github/pull_request_template.md`, and `.github/workflows/Publish.yml`.
 2. Inspect the touched versioning, package, publish, or release tests.
 3. Confirm whether the change affects stable releases, prereleases, or both.
 4. Update changelog, release notes, and contributor docs as needed.

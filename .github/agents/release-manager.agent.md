@@ -15,6 +15,7 @@ Handle versioning, changelog shaping, release-flow documentation, and publish au
 - Keep `CHANGELOG.md` accurate and release-ready.
 - Review workflow, docs, and versioning implications together.
 - Produce a release-ready summary that follows `.github/pull_request_template.md` when a release preparation summary is requested.
+- When the release scope is unclear (for example whether the change targets a stable bump, a prerelease, or both), ask one clarifying question before proceeding instead of guessing.
 
 ## Inputs to inspect
 

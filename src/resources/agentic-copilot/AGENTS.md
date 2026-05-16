@@ -1,30 +1,67 @@
-# AGENTS.md
+<!-- Generated from .github/copilot-instructions.md by scripts/build/Sync-AgenticCopilotScaffold.ps1. Do not edit by hand. -->
 
-Use this file as a landing page for work with agents in this repository.
+# {{ProjectName}} Copilot instructions
 
-This repository uses an Agentic Copilot workflow.
+## Purpose
 
-This is a Nova-managed PowerShell module project. Use Nova commands and `project.json` for build, test, package, and release behavior. Match PowerShell code, tests, and examples to `project.json` `Manifest.PowerShellHostVersion`; if it is `5.1`, avoid PowerShell 7.x-only features. Fix any ScriptAnalyzer findings reported by `run.ps1` before handoff. Follow `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth, with `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1` as the normal entrypoints. Use `Test-NovaBuild` as the project test entrypoint and do not validate with direct `Invoke-Pester`. Keep one externally called function per file and match the file name to that function, with private-file extras limited to related same-file top-level support helpers and no nested function declarations inside PowerShell functions. Follow `.github/instructions/code-quality-matrix.instructions.md` for source/helper-script maintainability and
-`.github/instructions/testing-policy.instructions.md` for test design. Keep
-`docs/{{ProjectName}}/en-US/*.md` as valid PlatyPS command help by using `New-MarkdownCommandHelp`,
-`Update-MarkdownCommandHelp`, and `Test-MarkdownCommandHelp`, and create the matching help file immediately for every new public entry point. End every changed or generated text file immediately after exactly one newline terminator with no blank spacer line at the bottom. Use `pwsh -NoLogo -NoProfile -File ./scripts/build/Test-TextFileFormatting.ps1` for a focused check, and keep `tests/TextFileFormatting.Tests.ps1` passing when Pester is enabled. Do not hand-create module
-`.psm1` or module `.psd1` files in source. Do not exclude or suppress PSScriptAnalyzer rules.
+Index of repository-wide Copilot guidance for {{ProjectName}}. This file is intentionally thin. Canonical rule text lives in `.github/instructions/` (path-scoped, auto-loaded by Copilot) and how-to guidance lives in `.github/skills/`.
 
-## Workflow
+## Start here
 
-1. Design
-2. Implement
-3. Review
-4. Prepare release
+For non-trivial changes, read in this order:
 
-For the full workflow, continue with the files below.
+1. `README.md`
+2. `CONTRIBUTING.md`
+3. `.github/pull_request_template.md`
+4. `.github/instructions/repository-conventions.instructions.md` — cross-cutting rules
+5. The topic-scoped instruction file(s) that match the paths you are touching
+6. The skill listed under that topic in the task map below
 
-## Authoritative files
+For new or not-yet-scoped work, use the `architect` agent with `.github/prompts/design-change.prompt.md`. The architect flow is discussion-first: clarify the request, explore options, and only finalize a scoped solution or issue draft after the discussion is done.
 
-- `README.md`
-- `CONTRIBUTING.md`
-- `.github/copilot-instructions.md`
-- `.github/instructions/`
-- `.github/agents/`
-- `.github/skills/`
-- `.github/prompts/`
+## Repository map
+
+- `src/public/` — public PowerShell commands; one top-level function per file, file name matches function name
+- `src/private/` — domain-grouped helpers (`build/`, `cli/`, `package/`, `quality/`, `release/`, `scaffold/`, `shared/`, `update/`); one externally called helper per file
+- `tests/` — Pester tests and shared test-support scripts
+- `scripts/build/` — local analyzer and build helpers
+- `scripts/build/ci/` — CI coverage, quality tooling, and artifact helpers
+- `.github/workflows/` — GitHub Actions CI, analyzer, dependency review, publish automation
+- `.github/actions/` — reusable workflow actions used by release and coverage flows
+- `docs/NovaModuleTools/en-US/` — PlatyPS command help source
+- `docs/*.html` — end-user GitHub Pages content
+- `.github/instructions/` — canonical rules, path-scoped via `applyTo:`
+- `.github/skills/` — how-to playbooks invoked through the `skill` tool
+- `.github/agents/` — role definitions for specialized agents
+- `.github/prompts/` — reusable task prompts (not auto-loaded; invoke explicitly with `@.github/prompts/<name>.prompt.md`)
+
+## Task map
+
+The table below shows how to route work. Prompts are the task entry points; each prompt delegates to its agent, which uses the listed skills, which in turn enforce the listed instructions.
+
+| Task                          | Prompt                                     | Agent                  | Primary skills                                                                       | Primary instructions                                                              |
+| ----------------------------- | ------------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Design or scope a change      | `design-change.prompt.md`                  | `architect`            | `powershell-module-development`, `github-actions`, `release-and-changelog`, `markdown-authoring` | `repository-conventions`, `code-quality-matrix`                                   |
+| Implement an issue            | `implement-issue.prompt.md`                | `powershell-developer` | `powershell-module-development`, `pester-testing`, `building-maintainable-code`, `codescene-quality`, `safeguarding-ai-generated-code` | `repository-conventions`, `code-quality-matrix`, `psscriptanalyzer`, `powershell-coding-standards`, `platyps-help` |
+| Review a change               | `review-change.prompt.md`                  | `reviewer`             | `codescene-quality`, `safeguarding-ai-generated-code`, `building-maintainable-code`, `docs-site`, `markdown-authoring`, `pester-testing`, `release-and-changelog`, `github-actions` | All `.github/instructions/*.instructions.md`                                       |
+| Improve test coverage         | `improve-test-coverage.prompt.md`          | `test-engineer`        | `pester-testing`, `building-maintainable-code`, `codescene-quality`, `github-actions`, `guiding-refactoring-with-code-health`, `safeguarding-ai-generated-code` | `testing-policy`, `psscriptanalyzer`                                              |
+| Prepare a release             | `prepare-release.prompt.md`                | `release-manager`      | `release-and-changelog`, `markdown-authoring`                                        | `release-policy`, `repository-conventions`                                         |
+| Fix a CI failure              | `fix-ci-failure.prompt.md`                 | `powershell-developer` (or `test-engineer`) | `github-actions`, `pester-testing`                                                   | `testing-policy`, `psscriptanalyzer`, `repository-conventions`                     |
+| Update project docs           | (no dedicated prompt — invoke agent)        | `docs-site`            | `docs-site`, `markdown-authoring`                                                    | `documentation-separation`                                                         |
+
+## Notation
+
+- Skills referenced as `/skill-name` in agent files map 1-to-1 to the `name:` field in `.github/skills/<skill-name>/SKILL.md`. The runtime invokes them through the `skill` tool with the bare name.
+- Prompts are referenced by path. Custom prompts are not auto-loaded by the Copilot CLI; invoke them explicitly with `@.github/prompts/<name>.prompt.md`.
+- Instructions auto-load when their `applyTo:` glob matches a file in the change set.
+
+## Related guidance
+
+- Cross-cutting rules: `.github/instructions/repository-conventions.instructions.md`
+- Source code maintainability: `.github/instructions/code-quality-matrix.instructions.md` + `building-maintainable-code` skill
+- Testing: `.github/instructions/testing-policy.instructions.md` + `pester-testing` skill
+- PSScriptAnalyzer workflow: `.github/instructions/psscriptanalyzer.instructions.md`
+- PowerShell coding standards: `.github/instructions/powershell-coding-standards.instructions.md`
+- PlatyPS help generation: `.github/instructions/platyps-help.instructions.md`
+- Release flow: `.github/instructions/release-policy.instructions.md` + `release-and-changelog` skill
+- Documentation separation: `.github/instructions/documentation-separation.instructions.md` + `docs-site` skill

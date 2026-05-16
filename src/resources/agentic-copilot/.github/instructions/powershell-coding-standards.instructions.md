@@ -14,8 +14,8 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - Keep exactly one top-level public function per file in `src/public/`.
 - Match the file name to that top-level public function name.
 - Public mutating commands should support PowerShell `ShouldProcess` semantics.
-- Preserve existing naming and command model conventions for public commands/functions such as `Invoke-{{ShortName}}*`, `Get-{{ShortName}}*`, `Update-{{ShortName}}*`.
-- Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source. Nova generates the built module root and manifest under `dist/{{ProjectName}}/` from `project.json` and `src/**/*.ps1`.
+- Preserve existing naming and command model conventions for public commands/functions such as `Invoke-Nova*`, `Get-Nova*`, `Update-Nova*`.
+- Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source. Nova generates the built module root and manifest under `dist/NovaModuleTools/` from `project.json` and `src/**/*.ps1`.
 
 ## Internal structure rules
 
@@ -24,9 +24,9 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - Additional functions in a private file are allowed only as related top-level support helpers called from that same file.
 - If two private functions are both called from outside their file, split them into separate same-named files.
 - Do not declare functions inside other functions. Keep private support helpers as sibling top-level functions in the file instead of nested function declarations.
-- Private helper names should not use the public `Invoke-{{ShortName}}*`, `Get-{{ShortName}}*`, `Update-{{ShortName}}*`, or `nova` CLI route naming conventions. Give private helpers clear implementation-focused names that describe what the helper does.
+- Private helper names should not use the public `Invoke-Nova*`, `Get-Nova*`, `Update-Nova*`, or `nova` CLI route naming conventions. Give private helpers clear implementation-focused names that describe what the helper does.
 - Reuse existing adapters and shared helpers before adding new infrastructure calls.
-- Keep direct environment access, Git execution, upload requests, and self-update execution in their approved helper locations. `tests/*Architecture*.Tests.ps1` is authoritative.
+- Keep direct environment access, Git execution, upload requests, and self-update execution in their approved helper locations. `tests/ArchitectureGuardrails.Tests.ps1` is authoritative.
 - Prefer explicit workflow-context objects (`[pscustomobject]` / ordered hashtables) for multi-step flows.
 
 ## Error and behavior rules
@@ -92,7 +92,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 ## Verification
 
 - Update or add Pester coverage for behavior changes.
-- Recheck `tests/*Architecture*.Tests.ps1` when changing layering or helper placement.
+- Recheck `tests/ArchitectureGuardrails.Tests.ps1` when changing layering or helper placement.
 - Run full regression tests before considering a code change complete.
 - Resolve any ScriptAnalyzer findings that `./run.ps1` reports before handoff.
 - Before handoff, review the changed/generated text files and normalize any file endings that violate the single-trailing-newline rule.

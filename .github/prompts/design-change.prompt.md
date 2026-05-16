@@ -1,5 +1,7 @@
 # Design a NovaModuleTools change
 
+> Invoke with `@.github/prompts/design-change.prompt.md`. Delegates to the `architect` agent.
+
 Use this prompt with `architect.agent.md` when a change still needs analysis, scoping, and issue drafting before anyone starts editing files.
 
 This is a discussion-first prompt. The default behavior is to hold a short design conversation with the user before producing a final scoped solution, implementation handoff, or GitHub issue draft.

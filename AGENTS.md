@@ -1,8 +1,10 @@
-# {{ProjectName}} Copilot instructions
+<!-- Generated from .github/copilot-instructions.md by scripts/build/Sync-AgenticCopilotScaffold.ps1. Do not edit by hand. -->
+
+# NovaModuleTools Copilot instructions
 
 ## Purpose
 
-Index of repository-wide Copilot guidance for {{ProjectName}}. This file is intentionally thin. Canonical rule text lives in `.github/instructions/` (path-scoped, auto-loaded by Copilot) and how-to guidance lives in `.github/skills/`.
+Index of repository-wide Copilot guidance for NovaModuleTools. This file is intentionally thin. Canonical rule text lives in `.github/instructions/` (path-scoped, auto-loaded by Copilot) and how-to guidance lives in `.github/skills/`.
 
 ## Start here
 
@@ -23,7 +25,7 @@ For new or not-yet-scoped work, use the `architect` agent with `.github/prompts/
 - `src/private/` — domain-grouped helpers (`build/`, `cli/`, `package/`, `quality/`, `release/`, `scaffold/`, `shared/`, `update/`); one externally called helper per file
 - `tests/` — Pester tests and shared test-support scripts
 - `scripts/build/` — local analyzer and build helpers
-- `scripts/build/ci/` — CI coverage, quality tooling, and artifact helpers
+- `scripts/build/ci/` — CI coverage, CodeScene, and artifact helpers
 - `.github/workflows/` — GitHub Actions CI, analyzer, dependency review, publish automation
 - `.github/actions/` — reusable workflow actions used by release and coverage flows
 - `docs/NovaModuleTools/en-US/` — PlatyPS command help source
@@ -45,7 +47,7 @@ The table below shows how to route work. Prompts are the task entry points; each
 | Improve test coverage         | `improve-test-coverage.prompt.md`          | `test-engineer`        | `pester-testing`, `building-maintainable-code`, `codescene-quality`, `github-actions`, `guiding-refactoring-with-code-health`, `safeguarding-ai-generated-code` | `testing-policy`, `psscriptanalyzer`                                              |
 | Prepare a release             | `prepare-release.prompt.md`                | `release-manager`      | `release-and-changelog`, `markdown-authoring`                                        | `release-policy`, `repository-conventions`                                         |
 | Fix a CI failure              | `fix-ci-failure.prompt.md`                 | `powershell-developer` (or `test-engineer`) | `github-actions`, `pester-testing`                                                   | `testing-policy`, `psscriptanalyzer`, `repository-conventions`                     |
-| Update project docs           | (no dedicated prompt — invoke agent)        | `docs-site`            | `docs-site`, `markdown-authoring`                                                    | `documentation-separation`                                                         |
+| Update website docs           | (no dedicated prompt — invoke agent)        | `docs-site`            | `docs-site`, `markdown-authoring`                                                    | `documentation-separation`                                                         |
 
 ## Notation
 

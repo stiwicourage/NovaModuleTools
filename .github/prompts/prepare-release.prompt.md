@@ -1,4 +1,6 @@
-# Prepare a NovaModuleTools release change
+# Prepare a NovaModuleTools release
+
+> Invoke with `@.github/prompts/prepare-release.prompt.md`. Delegates to the `release-manager` agent.
 
 Prepare release-related changes in NovaModuleTools without publishing or tagging.
 

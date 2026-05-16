@@ -10,7 +10,6 @@
     )
 
     ScaffoldOwnedPaths = @(
-        'AGENTS.md'
         'README.md'
         'CONTRIBUTING.md'
         'CHANGELOG.md'
@@ -20,10 +19,18 @@
         'tests/TextFileFormatting.Tests.ps1'
     )
 
+    GeneratedMirrors = @(
+        @{
+            Source = '.github/copilot-instructions.md'
+            RepositoryTarget = 'AGENTS.md'
+            ScaffoldTarget = 'AGENTS.md'
+        }
+    )
+
     ExcludedPaths = @(
         '.github/agents/docs-site.agent.md'
         '.github/instructions/documentation-separation.instructions.md'
-        '.github/skills/docs-site-html/'
+        '.github/skills/docs-site/'
         '.github/skills/codescene-quality/'
         '.github/skills/guiding-refactoring-with-code-health/'
         '.github/skills/safeguarding-ai-generated-code/'

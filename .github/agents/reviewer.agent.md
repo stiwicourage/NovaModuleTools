@@ -14,6 +14,7 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 - Start with the highest-risk workflow or public behavior surface.
 - Check for missing tests, doc drift, changelog gaps, and CI/release side effects.
 - Use the PR template categories as the review frame.
+- When the review scope is genuinely ambiguous (for example which subset of files to focus on, or whether a borderline behavior change is intentional), ask one clarifying question before proceeding instead of guessing.
 - Treat CodeScene maintainability and changed-code coverage results as release-blocking signals unless risk is accepted explicitly.
 - If local CodeScene tooling is unavailable, continue the review with normal validation and rely on PR/CI as the effective CodeScene gate.
 - Check whether website docs preserve the CLI-vs-cmdlet separation when `docs/*.html` or help markdown changed.
@@ -42,7 +43,7 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 - `/codescene-quality`
 - `/safeguarding-ai-generated-code`
 - `/building-maintainable-code`
-- `/docs-site-html`
+- `/docs-site`
 - `/markdown-authoring`
 - `/pester-testing`
 - `/release-and-changelog`

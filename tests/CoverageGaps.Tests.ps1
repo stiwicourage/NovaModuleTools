@@ -668,8 +668,7 @@ Describe 'Coverage gaps for scaffold internals' {
                 '.github/prompts/implement-issue.prompt.md',
                 '.github/prompts/review-change.prompt.md',
                 '.github/prompts/improve-test-coverage.prompt.md',
-                '.github/prompts/prepare-release.prompt.md',
-                '.github/prompts/markdown.prompt.md'
+                '.github/prompts/prepare-release.prompt.md'
             )
             Mock Read-NovaModuleAnswerSet {$answer}
             Mock Write-Message {}

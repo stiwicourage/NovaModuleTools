@@ -16,6 +16,7 @@ BeforeAll {
     $script:getAgenticScaffoldGuidanceContent = {
         return [pscustomobject]@{
             Instruction = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/copilot-instructions.md') -Raw
+            RepositoryConventions = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/repository-conventions.instructions.md') -Raw
             QualityMatrix = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/code-quality-matrix.instructions.md') -Raw
             PlatyPsHelp = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/platyps-help.instructions.md') -Raw
             ScriptAnalyzer = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/psscriptanalyzer.instructions.md') -Raw
@@ -64,52 +65,38 @@ Describe 'Agentic Copilot scaffold sync' {
         }
     }
 
-    It 'documents mirrored .github guidance for PowerShell, tests, and review flows' {
+    It 'keeps the slim Copilot index thin and pointing to canonical rule files' {
         $content = & $script:getAgenticScaffoldGuidanceContent
 
-        $content.Instruction | Should -Match 'Do not create or maintain hand-written module `\.psm1` or module `\.psd1` files in source'
-        $content.Instruction | Should -Match 'Manifest\.PowerShellHostVersion'
+        $content.Instruction | Should -Match 'Index of repository-wide Copilot guidance'
+        $content.Instruction | Should -Match 'Task map'
+        $content.Instruction | Should -Match 'repository-conventions\.instructions\.md'
         $content.Instruction | Should -Match 'code-quality-matrix\.instructions\.md'
         $content.Instruction | Should -Match 'psscriptanalyzer\.instructions\.md'
-        $content.Instruction | Should -Match 'src/private/` files should expose at most one externally called function per file'
-        $content.Instruction | Should -Match 'file name should match the function that owns the file'
-        $content.Instruction | Should -Match 'review every changed or created text file and ensure it ends with exactly one trailing newline and no extra blank lines at the bottom'
-        $content.Instruction | Should -Match 'docs/\{\{ProjectName\}\}/en-US/'
-        $content.Instruction | Should -Match 'Do not exclude or suppress PSScriptAnalyzer rules'
-        $content.Instruction | Should -Match 'If `run\.ps1` or `\./scripts/build/Invoke-ScriptAnalyzerCI\.ps1` reports ScriptAnalyzer findings, fix them before review, handoff, or commit'
+        $content.Instruction | Should -Match 'platyps-help\.instructions\.md'
+        $content.Instruction | Should -Match 'design-change\.prompt\.md'
+        $content.Instruction | Should -Match 'implement-issue\.prompt\.md'
+        $content.Instruction | Should -Match '@\.github/prompts/<name>\.prompt\.md'
+    }
 
-        $content.CodingStandards | Should -Match 'Preserve existing naming and command model conventions for public commands/functions'
-        $content.CodingStandards | Should -Match 'Invoke-\{\{ShortName\}\}\*'
-        $content.CodingStandards | Should -Match 'code-quality-matrix\.instructions\.md'
-        $content.CodingStandards | Should -Match 'psscriptanalyzer\.instructions\.md'
-        $content.CodingStandards | Should -Match 'Match the file name to that top-level public function name'
-        $content.CodingStandards | Should -Match 'In `src/private/`, keep at most one externally called function per file and match the file name to that entry function'
-        $content.CodingStandards | Should -Match 'If two private functions are both called from outside their file, split them into separate same-named files'
-        $content.CodingStandards | Should -Match 'Do not declare functions inside other functions'
-        $content.CodingStandards | Should -Match 'Private helper names should not use the public'
-        $content.CodingStandards | Should -Match 'platyps-help\.instructions\.md'
-        $content.CodingStandards | Should -Match 'New-MarkdownCommandHelp'
-        $content.CodingStandards | Should -Match 'Every changed or generated text file, including `\.ps1` files, must end with exactly one trailing newline and no extra blank lines at the bottom'
+    It 'documents cross-cutting repository conventions in their canonical instruction file' {
+        $content = & $script:getAgenticScaffoldGuidanceContent
 
-        $content.TestingPolicy | Should -Match 'Manifest\.PowerShellHostVersion'
-        $content.TestingPolicy | Should -Match 'psscriptanalyzer\.instructions\.md'
-        $content.TestingPolicy | Should -Match 'normal path and the meaningful unhappy, invalid, or boundary cases'
-        $content.TestingPolicy | Should -Match 'mocks or stubs'
-        $content.TestingPolicy | Should -Match 'isolated and order-independent'
-        $content.TestingPolicy | Should -Match 'Source-mirrored tests should use'
-        $content.TestingPolicy | Should -Not -Match 'code-quality-matrix\.instructions\.md'
-
-        $content.ImplementPrompt | Should -Match 'Keep file/function ownership explicit: one externally called function per file'
-        $content.ImplementPrompt | Should -Match 'code-quality-matrix\.instructions\.md'
-        $content.ImplementPrompt | Should -Match 'psscriptanalyzer\.instructions\.md'
-        $content.ReviewPrompt | Should -Match 'code-quality-matrix\.instructions\.md'
+        $content.RepositoryConventions | Should -Match 'Do not create or maintain hand-written module `\.psm1` or module `\.psd1` files in source'
+        $content.RepositoryConventions | Should -Match 'Manifest\.PowerShellHostVersion'
+        $content.RepositoryConventions | Should -Match 'src/private/` files expose at most one externally called function per file'
+        $content.RepositoryConventions | Should -Match 'file name matches the function name'
+        $content.RepositoryConventions | Should -Match 'review every changed or created text file and ensure it ends with exactly one trailing newline'
+        $content.RepositoryConventions | Should -Match 'test validation: `Test-NovaBuild`'
+        $content.RepositoryConventions | Should -Match 'Invoke-ScriptAnalyzerCI\.ps1'
+        $content.RepositoryConventions | Should -Match 'Conventional Commit format'
     }
 
     It 'documents source maintainability guidance in mirrored instructions and skills' {
         $content = & $script:getAgenticScaffoldGuidanceContent
 
         $content.QualityMatrix | Should -Match 'maintainability guidance for PowerShell source and helper scripts'
-        $content.QualityMatrix | Should -Match 'ten established software maintainability guidelines'
+        $content.QualityMatrix | Should -Match 'ten widely recognized maintainability dimensions'
         $content.QualityMatrix | Should -Match 'Guideline 1 — Write short units of code'
         $content.QualityMatrix | Should -Match 'Guideline 2 — Write simple units of code'
         $content.QualityMatrix | Should -Match 'Guideline 3 — Write code once'
@@ -149,11 +136,6 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.PlatyPsHelp | Should -Match 'matching command-help file in the same change'
         $content.PlatyPsHelp | Should -Match 'SYNOPSIS`, `SYNTAX`, optional `ALIASES`, `DESCRIPTION`, `EXAMPLES`, `PARAMETERS`, `INPUTS`, `OUTPUTS`, `NOTES`, and `RELATED LINKS`'
 
-        $content.Instruction | Should -Match 'platyps-help\.instructions\.md'
-        $content.Instruction | Should -Match 'Generate valid PlatyPS help under `docs/(NovaModuleTools|\{\{ProjectName\}\})/en-US/`'
-        $content.Instruction | Should -Match 'New-MarkdownCommandHelp`, `Update-MarkdownCommandHelp`, `Test-MarkdownCommandHelp`'
-        $content.Instruction | Should -Match 'matching help file.*same change'
-
         $content.DeveloperSkill | Should -Match 'valid PlatyPS-compatible help'
         $content.DeveloperSkill | Should -Match 'New-MarkdownCommandHelp'
         $content.DeveloperSkill | Should -Match 'matching help file immediately in the same change'
@@ -169,8 +151,6 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.ReviewPrompt | Should -Match 'matching help file'
         $content.ReviewPrompt | Should -Match 'New-MarkdownCommandHelp'
 
-        $content.Agents | Should -Match 'matching help file immediately for every new public entry point'
-        $content.Agents | Should -Match 'New-MarkdownCommandHelp'
         $content.Contributing | Should -Match 'create its matching help file in the same change'
         $content.Contributing | Should -Match 'New-MarkdownCommandHelp'
         $content.Readme | Should -Match 'matching help file in the same change'
@@ -180,9 +160,8 @@ Describe 'Agentic Copilot scaffold sync' {
     It 'documents Test-NovaBuild-only project test guidance' {
         $content = & $script:getAgenticScaffoldGuidanceContent
 
-        $content.Instruction | Should -Match 'Use `Test-NovaBuild` as the authoritative test entrypoint'
-        $content.Instruction | Should -Match 'Do not call `Invoke-Pester` directly'
-        $content.Instruction | Should -Not -Match 'Invoke-Pester -Path'
+        $content.RepositoryConventions | Should -Match 'test validation: `Test-NovaBuild`'
+        $content.RepositoryConventions | Should -Not -Match 'Invoke-Pester -Path'
 
         $content.TestingPolicy | Should -Match 'Use `Test-NovaBuild` as the authoritative test entrypoint'
         $content.TestingPolicy | Should -Match 'Do not validate with direct `Invoke-Pester`'
@@ -205,7 +184,6 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.ImplementPrompt | Should -Match 'Validate Nova-managed project tests through `Test-NovaBuild`'
         $content.ReviewPrompt | Should -Match 'bypasses `Test-NovaBuild` with direct `Invoke-Pester`'
 
-        $content.Agents | Should -Match 'Use `Test-NovaBuild` as the project test entrypoint'
         $content.Contributing | Should -Match 'use `Test-NovaBuild` as the project test entrypoint'
         $content.Readme | Should -Match 'Use `Test-NovaBuild` as the project test entrypoint'
     }
@@ -220,7 +198,7 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.ScriptAnalyzer | Should -Match 'Invoke-ScriptAnalyzer -Fix'
         $content.ScriptAnalyzer | Should -Match 'EnableExit'
 
-        $content.Instruction | Should -Match 'Prefer `\./scripts/build/Invoke-ScriptAnalyzerCI\.ps1` and `\./run\.ps1`'
+        $content.RepositoryConventions | Should -Match 'Invoke-ScriptAnalyzerCI\.ps1'
 
         $content.DeveloperSkill | Should -Match 'psscriptanalyzer\.instructions\.md'
         $content.DeveloperSkill | Should -Match 'Invoke-ScriptAnalyzer'
@@ -233,8 +211,6 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.ImplementPrompt | Should -Match 'Prefer `\./scripts/build/Invoke-ScriptAnalyzerCI\.ps1` and `\./run\.ps1`'
         $content.ReviewPrompt | Should -Match 'psscriptanalyzer\.instructions\.md'
 
-        $content.Agents | Should -Match 'psscriptanalyzer\.instructions\.md'
-        $content.Agents | Should -Match 'Invoke-ScriptAnalyzerCI\.ps1'
         $content.Contributing | Should -Match 'psscriptanalyzer\.instructions\.md'
         $content.Readme | Should -Match 'psscriptanalyzer\.instructions\.md'
     }
@@ -254,11 +230,6 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.ReviewerAgent | Should -Match 'flag nested function declarations inside PowerShell functions'
         $content.ReviewerAgent | Should -Match 'code-quality-matrix\.instructions\.md'
 
-        $content.Agents | Should -Match 'Keep one externally called function per file and match the file name to that function'
-        $content.Agents | Should -Match 'no nested function declarations inside PowerShell functions'
-        $content.Agents | Should -Match 'Test-TextFileFormatting\.ps1'
-        $content.Agents | Should -Match 'exactly one newline terminator with no blank spacer line at the bottom'
-
         $content.Contributing | Should -Match 'keep one externally called function per file and match the file name to that function'
         $content.Contributing | Should -Match 'must not declare nested functions inside their bodies'
         $content.Contributing | Should -Match 'TextFileFormatting\.Tests\.ps1'
@@ -272,5 +243,14 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.Readme | Should -Match 'Make every changed or generated text file end immediately after exactly one newline terminator; do not leave a blank spacer line at the bottom'
         $content.Readme | Should -Match 'If it is `5\.1`, do not introduce PowerShell 7\.x-only features'
         $content.Readme | Should -Match 'every new or changed `src/\*\*/\*\.ps1` file should have one focused `\.Tests\.ps1` file'
+    }
+
+    It 'generates AGENTS.md as a mirror of copilot-instructions.md with a do-not-edit banner' {
+        $content = & $script:getAgenticScaffoldGuidanceContent
+
+        $content.Agents | Should -Match 'Generated from \.github/copilot-instructions\.md by scripts/build/Sync-AgenticCopilotScaffold\.ps1\. Do not edit by hand\.'
+        $content.Agents | Should -Match 'Copilot instructions'
+        $content.Agents | Should -Match 'Task map'
+        $content.Agents | Should -Match 'repository-conventions\.instructions\.md'
     }
 }

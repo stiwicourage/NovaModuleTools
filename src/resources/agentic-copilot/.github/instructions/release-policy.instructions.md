@@ -29,13 +29,13 @@ Use this file when changing versioning, changelog handling, package metadata, pu
 - `Publish.yml` owns the release/publish flow.
 - `main` handles stable release commit/tag flow and prepares `develop` for the next prerelease.
 - `develop` handles prerelease publish and next-prerelease bump flow.
-- Do not change branch mutation behavior, tag creation, or publish steps without reading release workflow files, when present and the related custom actions first.
+- Do not change branch mutation behavior, tag creation, or publish steps without reading `.github/workflows/Publish.yml` and the related custom actions first.
 
 ## Documentation rules
 
 - Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` for workflow or release changes.
-- Update command help in `docs/{{ProjectName}}/en-US/` when public command behavior changes.
-- Update project docs only when end-user behavior or examples changed.
+- Update command help in `docs/NovaModuleTools/en-US/` when public command behavior changes.
+- Update `docs/*.html` only when end-user behavior or examples changed.
 - Use `.github/pull_request_template.md` as the authoritative structure when preparing a release summary for review.
 
 ## Agent safety rules

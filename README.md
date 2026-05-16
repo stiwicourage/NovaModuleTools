@@ -55,8 +55,9 @@ Repository-local Copilot/AI guidance now lives under:
 - `.github/instructions/` - path-specific Copilot instructions stored as `*.instructions.md`
 - `.github/agents/` - focused agent roles for architecture, implementation, testing, release, and review work
 - `.github/skills/` - repo-specific Copilot skills stored as `<skill-name>/SKILL.md`
-- `.github/prompts/` - reusable task prompts such as design framing, issue implementation, CI fixes, coverage work, and release prep; prompt files are referenced explicitly in chat, not auto-loaded like instructions or skills
+- `.github/prompts/` - reusable task prompts such as design framing, issue implementation, CI fixes, coverage work, and release prep; prompt files are referenced explicitly in chat as `@.github/prompts/<name>.prompt.md` rather than auto-loaded like instructions or skills
 - `CHANGELOG.md` and `RELEASE_NOTE.md` - exhaustive release history plus interface-focused release summaries
+- `AGENTS.md` - generated mirror of `.github/copilot-instructions.md` for tooling that reads `AGENTS.md` (Codex, Cursor); regenerate with `./scripts/build/Sync-AgenticCopilotScaffold.ps1` after touching the Copilot guidance
 
 The files under `.github/agents/` are valid Copilot custom agent profiles and should be available from `/agent` when Copilot is started from the NovaModuleTools repository root.
 

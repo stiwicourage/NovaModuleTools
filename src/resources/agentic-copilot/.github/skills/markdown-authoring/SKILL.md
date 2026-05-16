@@ -20,7 +20,7 @@ Use this skill when producing Markdown files in the repository or Markdown outpu
 - `README.md`
 - `CONTRIBUTING.md`
 - `CHANGELOG.md`
-- `docs/{{ProjectName}}/en-US/*.md`
+- `docs/NovaModuleTools/en-US/*.md`
 
 ## Expected practices
 
@@ -37,6 +37,26 @@ Use this skill when producing Markdown files in the repository or Markdown outpu
 - Inside the wrapped block, use normal Markdown.
 - For inner code examples, use triple backticks and include a language when helpful.
 - Never use triple backticks as the outer wrapper when the content itself may already contain fenced code blocks.
+
+## Copy-safe wrapper example
+
+Expected output shape when the entire response must be a single copy-ready Markdown block:
+
+~~~
+## Example
+
+Run the build with:
+
+```powershell
+PS> Invoke-NovaBuild
+```
+
+Or from the CLI:
+
+```zsh
+% nova build
+```
+~~~
 
 ## Common pitfalls
 

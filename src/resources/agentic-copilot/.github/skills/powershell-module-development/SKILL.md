@@ -18,8 +18,8 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - `src/private/release/`
 - `src/private/shared/`
 - `project.json`
-- `tests/*Command*.Tests.ps1`
-- `tests/*Architecture*.Tests.ps1`
+- `tests/NovaCommandModel*.Tests.ps1`
+- `tests/ArchitectureGuardrails.Tests.ps1`
 
 ## Expected practices
 
@@ -27,8 +27,8 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Put implementation detail in the correct private domain folder.
 - Treat `project.json` as the source of truth for Nova build, package, manifest, and release metadata.
 - Read `project.json` `Manifest.PowerShellHostVersion` before changing PowerShell code, tests, or examples, and keep new work compatible with that target. A `5.1` project must not receive PowerShell 7.x-only syntax, cmdlets, parameters, or APIs unless the change explicitly adds guarded compatibility handling.
-- Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source; Nova generates those files under `dist/{{ProjectName}}/`.
-- Preserve native PowerShell semantics. Keep Nova naming patterns on public commands, and give private helpers clear implementation-focused names instead of public-style `Invoke-{{ShortName}}*`, `Get-{{ShortName}}*`, or `Update-{{ShortName}}*` naming.
+- Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source; Nova generates those files under `dist/NovaModuleTools/`.
+- Preserve native PowerShell semantics. Keep Nova naming patterns on public commands, and give private helpers clear implementation-focused names instead of public-style `Invoke-Nova*`, `Get-Nova*`, or `Update-Nova*` naming.
 - Keep one externally called function per file and match the file name to that function. In `src/private/`, additional related functions may stay only as same-file top-level support helpers called by that file's entry function; do not declare functions inside functions.
 - Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort source-code maintainability guidance. Keep new or heavily changed code short, single-purpose, low-duplication, lightly nested, and split by clear responsibility; group related inputs instead of growing long parameter lists.
 - Reuse existing workflow-context helpers and shared adapters.
@@ -38,7 +38,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Keep `run.ps1`-style local checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
 - If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before handoff instead of just reporting the failure.
 - Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the end.
-- Add or update valid PlatyPS-compatible help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change. Use `New-MarkdownCommandHelp` for new help, `Update-MarkdownCommandHelp` to refresh existing help metadata, and `Test-MarkdownCommandHelp` to validate structure before handoff instead of writing plain Markdown from scratch.
+- Add or update valid PlatyPS-compatible help under `docs/NovaModuleTools/en-US/` when public commands or public classes change. Use `New-MarkdownCommandHelp` for new help, `Update-MarkdownCommandHelp` to refresh existing help metadata, and `Test-MarkdownCommandHelp` to validate structure before handoff instead of writing plain Markdown from scratch.
 - For every new public `src/public/*.ps1` file, create the matching help file immediately in the same change.
 - Add or update the source-mirrored Pester test file for every changed `src/**/*.ps1` file.
 
@@ -52,9 +52,9 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Grouping two externally called private helpers in one file instead of splitting them into separate same-named files
 - Declaring helper functions inside another function instead of keeping related private helpers as sibling top-level functions in the file
 - Ignoring the source-code guidance and letting new or heavily changed functions grow long, deeply nested, duplicated, or multi-purpose without justification
-- Writing plain Markdown under `docs/{{ProjectName}}/en-US/` that lacks YAML metadata or the PlatyPS structure expected by `Import-MarkdownCommandHelp`
+- Writing plain Markdown under `docs/NovaModuleTools/en-US/` that lacks YAML metadata or the PlatyPS structure expected by `Import-MarkdownCommandHelp`
 - Editing PlatyPS YAML and section structure by hand when `New-MarkdownCommandHelp` or `Update-MarkdownCommandHelp` should have regenerated it
-- Adding a new public entry point without the matching help file in `docs/{{ProjectName}}/en-US/`
+- Adding a new public entry point without the matching help file in `docs/NovaModuleTools/en-US/`
 - Bypassing the repository analyzer wrapper/settings with ad hoc `Invoke-ScriptAnalyzer`, `-EnableExit`, or broad rule-exclusion changes
 - Ignoring the project's `Manifest.PowerShellHostVersion` target and introducing PowerShell 7.x-only features into a `5.1` project
 - Excluding PSScriptAnalyzer rules instead of fixing the code that violates them
@@ -62,5 +62,5 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 ## Verification
 
 - `Test-NovaBuild` for the changed behavior
-- `tests/*Architecture*.Tests.ps1` implications checked
+- `tests/ArchitectureGuardrails.Tests.ps1` implications checked
 

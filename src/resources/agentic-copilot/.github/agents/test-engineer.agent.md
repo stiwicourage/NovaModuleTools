@@ -24,8 +24,8 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 
 - `tests/*.Tests.ps1`
 - `tests/*TestSupport.ps1`
-- repository CI helper scripts, when present
-- workflow files, when present
+- `scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
+- `.github/workflows/Tests.yml`
 - quality tooling findings when available
 
 ## Skills to use
@@ -33,6 +33,7 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 - `/pester-testing`
 
 - `/building-maintainable-code`
+- `/github-actions`
 
 ## Constraints
 

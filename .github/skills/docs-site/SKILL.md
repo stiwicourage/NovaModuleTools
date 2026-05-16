@@ -1,5 +1,5 @@
 ---
-name: docs-site-html
+name: docs-site
 description: Guidance for NovaModuleTools website documentation so docs/*.html stay accurate and clearly separated from cmdlet help and contributor docs.
 ---
 

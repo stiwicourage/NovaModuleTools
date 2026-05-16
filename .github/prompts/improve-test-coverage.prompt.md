@@ -1,5 +1,7 @@
 # Improve NovaModuleTools test coverage
 
+> Invoke with `@.github/prompts/improve-test-coverage.prompt.md`. Delegates to the `test-engineer` agent.
+
 Improve changed-code coverage in NovaModuleTools without lowering maintainability.
 
 ## Required process
