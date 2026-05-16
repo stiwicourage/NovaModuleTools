@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 ### Added
-- `Initialize-NovaModule` and `% nova init` now offer an optional interactive Agentic Copilot starter package for both the minimal and example scaffold flows.
+- `Initialize-NovaModule` and `% nova init` now offer an optional interactive **Agentic Copilot** starter package for both the minimal and example scaffold flows.
     - The new prompt appears after the Git question, defaults to `No`, and adds one shared Nova-maintained starter tree when enabled.
     - Example scaffolds now merge the existing example README with the Agentic starter README instead of flattening the example guide into the generic starter file.
     - The starter tree is now generated from a filtered mirror of Nova's own agentic `.github/` files, with a dedicated sync script and drift test so future scaffolds and `dist` stay aligned with the maintained source guidance.
@@ -34,8 +34,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 
 ### Fixed
-- `Test-NovaBuild` now fails when `project.json` configures `Pester.CodeCoverage.CoveragePercentTarget` and the measured coverage percentage is lower than the configured target, instead of passing through Pester's success result unchanged.
-    - Nova now also applies that configured target directly to the Pester runtime configuration, so Pester's own coverage summary shows the configured threshold instead of the default `75%`.
 
 
 ### Security
