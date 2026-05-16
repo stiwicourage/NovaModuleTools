@@ -30,18 +30,16 @@ Design or reshape changes that cross public commands, private helper boundaries,
 - `.github/copilot-instructions.md`
 - `.github/prompts/design-change.prompt.md`
 - `.github/instructions/*.instructions.md`
-- `tests/ArchitectureGuardrails.Tests.ps1`
+- `tests/*Architecture*.Tests.ps1`
 - Relevant `src/public/` and `src/private/<domain>/` files
-- Relevant `.github/workflows/*.yml`
+- Relevant workflow files, when present
 
 ## Skills to use
 
 - `/powershell-module-development`
-- `/github-actions`
 - `/release-and-changelog`
-
-- `/building-maintainable-code`
 - `/markdown-authoring`
+- `/building-maintainable-code`
 
 ## Constraints
 

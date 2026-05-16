@@ -165,56 +165,29 @@ function Split-AgenticContentByCodeFence {
     return ,$segments.ToArray()
 }
 
-function Invoke-AgenticInlineCodeAwareReplace {
-    param(
-        [Parameter(Mandatory)][string]$Text,
-        [Parameter(Mandatory)][string]$Old,
-        [Parameter(Mandatory)][AllowEmptyString()][string]$New
-    )
-
-    $result = [System.Text.StringBuilder]::new()
-    $isInsideInlineCode = $false
-    $i = 0
-    while ($i -lt $Text.Length) {
-        $character = $Text[$i]
-        if ($character -eq '`') {
-            $isInsideInlineCode = -not $isInsideInlineCode
-            [void]$result.Append($character)
-            $i++
-            continue
-        }
-
-        if (-not $isInsideInlineCode -and $i + $Old.Length -le $Text.Length -and $Text.Substring($i, $Old.Length) -eq $Old) {
-            [void]$result.Append($New)
-            $i += $Old.Length
-            continue
-        }
-
-        [void]$result.Append($character)
-        $i++
-    }
-
-    return $result.ToString()
-}
-
 function ConvertTo-AgenticScaffoldContent {
     param(
         [Parameter(Mandatory)][string]$Content,
-        [Parameter(Mandatory)][object[]]$ReplacementList
+        [Parameter(Mandatory)][object[]]$ReplacementList,
+        [AllowNull()][AllowEmptyCollection()][object[]]$IdentifierReplacementList
     )
 
     $segments = Split-AgenticContentByCodeFence -Content $Content
     $rebuilt = [System.Text.StringBuilder]::new()
     foreach ($segment in $segments) {
-        if ($segment.Kind -eq 'Fenced') {
-            [void]$rebuilt.Append($segment.Text)
-            continue
+        $segmentText = $segment.Text
+        if ($segment.Kind -ne 'Fenced') {
+            foreach ($replacement in $ReplacementList) {
+                $segmentText = $segmentText.Replace([string]$replacement.Old, [string]$replacement.New)
+            }
         }
 
-        $segmentText = $segment.Text
-        foreach ($replacement in $ReplacementList) {
-            $segmentText = Invoke-AgenticInlineCodeAwareReplace -Text $segmentText -Old ([string]$replacement.Old) -New ([string]$replacement.New)
+        if ($IdentifierReplacementList) {
+            foreach ($identifier in $IdentifierReplacementList) {
+                $segmentText = $segmentText.Replace([string]$identifier.Old, [string]$identifier.New)
+            }
         }
+
         [void]$rebuilt.Append($segmentText)
     }
 
@@ -251,7 +224,8 @@ function Write-AgenticMirroredFile {
     param(
         [Parameter(Mandatory)][object]$SourceFile,
         [Parameter(Mandatory)][string]$TargetRoot,
-        [Parameter(Mandatory)][object[]]$ReplacementList
+        [Parameter(Mandatory)][object[]]$ReplacementList,
+        [AllowNull()][AllowEmptyCollection()][object[]]$IdentifierReplacementList
     )
 
     $targetPath = Join-Path $TargetRoot ($SourceFile.RelativePath -replace '/', [System.IO.Path]::DirectorySeparatorChar)
@@ -261,7 +235,7 @@ function Write-AgenticMirroredFile {
     }
 
     $sourceContent = Get-Content -LiteralPath $SourceFile.SourcePath -Raw
-    $targetContent = ConvertTo-AgenticScaffoldContent -Content $sourceContent -ReplacementList $ReplacementList
+    $targetContent = ConvertTo-AgenticScaffoldContent -Content $sourceContent -ReplacementList $ReplacementList -IdentifierReplacementList $IdentifierReplacementList
     Set-Content -LiteralPath $targetPath -Value $targetContent -Encoding utf8 -NoNewline
 }
 
@@ -285,7 +259,8 @@ function Get-AgenticGeneratedMirrorContent {
     param(
         [Parameter(Mandatory)][string]$RootPath,
         [Parameter(Mandatory)][string]$SourceRelativePath,
-        [object[]]$ReplacementList
+        [object[]]$ReplacementList,
+        [AllowNull()][AllowEmptyCollection()][object[]]$IdentifierReplacementList
     )
 
     $sourcePath = Resolve-AgenticRepositoryPath -RootPath $RootPath -RelativePath $SourceRelativePath
@@ -295,10 +270,17 @@ function Get-AgenticGeneratedMirrorContent {
 
     $sourceContent = Get-Content -LiteralPath $sourcePath -Raw
     $banner = "<!-- Generated from $SourceRelativePath by scripts/build/Sync-AgenticCopilotScaffold.ps1. Do not edit by hand. -->`n`n"
-    $body = if ($null -eq $ReplacementList -or $ReplacementList.Count -eq 0) {
+    $hasReplacements = $ReplacementList -and $ReplacementList.Count -gt 0
+    $hasIdentifiers = $IdentifierReplacementList -and $IdentifierReplacementList.Count -gt 0
+    $body = if (-not $hasReplacements -and -not $hasIdentifiers) {
         $sourceContent
     } else {
-        ConvertTo-AgenticScaffoldContent -Content $sourceContent -ReplacementList $ReplacementList
+        $effectiveReplacements = if ($hasReplacements) {
+            $ReplacementList
+        } else {
+            @()
+        }
+        ConvertTo-AgenticScaffoldContent -Content $sourceContent -ReplacementList $effectiveReplacements -IdentifierReplacementList $IdentifierReplacementList
     }
 
     return $banner + $body
@@ -309,7 +291,8 @@ function Invoke-AgenticGeneratedMirrorPlan {
         [Parameter(Mandatory)][string]$RootPath,
         [Parameter(Mandatory)][string]$ScaffoldStagingRoot,
         [Parameter(Mandatory)][object[]]$GeneratedMirrorList,
-        [object[]]$ReplacementList
+        [object[]]$ReplacementList,
+        [AllowNull()][AllowEmptyCollection()][object[]]$IdentifierReplacementList
     )
 
     foreach ($mirror in $GeneratedMirrorList) {
@@ -319,7 +302,7 @@ function Invoke-AgenticGeneratedMirrorPlan {
         }
 
         if ($mirror.ScaffoldTarget) {
-            $scaffoldContent = Get-AgenticGeneratedMirrorContent -RootPath $RootPath -SourceRelativePath $mirror.Source -ReplacementList $ReplacementList
+            $scaffoldContent = Get-AgenticGeneratedMirrorContent -RootPath $RootPath -SourceRelativePath $mirror.Source -ReplacementList $ReplacementList -IdentifierReplacementList $IdentifierReplacementList
             Write-AgenticGeneratedMirrorPath -TargetRoot $ScaffoldStagingRoot -RelativeTarget $mirror.ScaffoldTarget -Content $scaffoldContent
         }
     }
@@ -358,11 +341,11 @@ function Invoke-AgenticCopilotScaffoldSync {
         }
 
         foreach ($sourceFile in $sourceFileList) {
-            Write-AgenticMirroredFile -SourceFile $sourceFile -TargetRoot $stagingRoot -ReplacementList $manifest.TextReplacements
+            Write-AgenticMirroredFile -SourceFile $sourceFile -TargetRoot $stagingRoot -ReplacementList $manifest.TextReplacements -IdentifierReplacementList $manifest.IdentifierReplacements
         }
 
         if ($manifest.ContainsKey('GeneratedMirrors') -and $manifest.GeneratedMirrors) {
-            Invoke-AgenticGeneratedMirrorPlan -RootPath $RootPath -ScaffoldStagingRoot $stagingRoot -GeneratedMirrorList $manifest.GeneratedMirrors -ReplacementList $manifest.TextReplacements
+            Invoke-AgenticGeneratedMirrorPlan -RootPath $RootPath -ScaffoldStagingRoot $stagingRoot -GeneratedMirrorList $manifest.GeneratedMirrors -ReplacementList $manifest.TextReplacements -IdentifierReplacementList $manifest.IdentifierReplacements
         }
 
         if (Test-Path -LiteralPath $TargetRoot) {

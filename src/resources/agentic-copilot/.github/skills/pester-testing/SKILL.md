@@ -15,7 +15,7 @@ Use this skill when adding tests, closing coverage gaps, fixing regressions, or 
 - `tests/*TestSupport.ps1`
 - `Test-NovaBuild`
 
-- `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts`
+- `./scripts/build/ci/Invoke-{{ProjectName}}CI.ps1 -OutputDirectory ./artifacts`
 
 ## Expected practices
 
@@ -32,7 +32,7 @@ Use this skill when adding tests, closing coverage gaps, fixing regressions, or 
 
 ## Common pitfalls
 
-- Forgetting that many tests assume `dist/NovaModuleTools` already exists
+- Forgetting that many tests assume `dist/{{ProjectName}}` already exists
 - Duplicating setup instead of extending `*.TestSupport.ps1`
 - Exporting helper functions at the wrong time in test lifecycle
 - Validating a Nova-managed project with direct `Invoke-Pester` instead of `Test-NovaBuild`

@@ -30,8 +30,8 @@ Handle versioning, changelog shaping, release-flow documentation, and publish au
 
 - `/release-and-changelog`
 - `/markdown-authoring`
-- `/github-actions`
 - `/pester-testing`
+- `/github-actions`
 
 ## Constraints
 

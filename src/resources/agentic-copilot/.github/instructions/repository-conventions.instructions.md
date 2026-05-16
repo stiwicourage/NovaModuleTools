@@ -13,7 +13,7 @@ Canonical rule source for cross-cutting {{ProjectName}} conventions that apply t
 - Treat `project.json` as the source of truth for project metadata, build output, package settings, and release settings.
 - Treat `project.json` `Manifest.PowerShellHostVersion` as the compatibility target for PowerShell code, tests, and examples. If a project targets `5.1`, do not introduce PowerShell 7.x-only syntax, cmdlets, parameters, or APIs unless the work explicitly adds guarded compatibility handling.
 - Use Nova commands and repository wrappers for build, test, package, and release workflows; do not replace them with ad hoc PowerShell module build scripts.
-- Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source; Nova generates the built module root and manifest under `dist/NovaModuleTools/` from `project.json` and `src/**/*.ps1`.
+- Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source; Nova generates the built module root and manifest under `dist/{{ProjectName}}/` from `project.json` and `src/**/*.ps1`.
 
 ## File ownership
 

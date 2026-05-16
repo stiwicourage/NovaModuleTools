@@ -27,8 +27,8 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 
 ## Repository test structure
 
-- `tests/NovaCommandModel*.Tests.ps1` - public command, CLI, and workflow behavior
-- `tests/ArchitectureGuardrails.Tests.ps1` - layering and adapter boundaries
+- `tests/*Command*.Tests.ps1` - public command, CLI, and workflow behavior
+- `tests/*Architecture*.Tests.ps1` - layering and adapter boundaries
 - `tests/*TestSupport.ps1` - shared helpers and reusable fixtures
 - Source-mirrored tests should use `tests/public/<Name>.Tests.ps1`, `tests/private/<domain>/<Name>.Tests.ps1`, and `tests/classes/<Name>.Tests.ps1` for matching `src/public/`, `src/private/`, and `src/classes/` files.
 - Repeated setup belongs in `tests/TestHelpers/` or `tests/*TestSupport.ps1`, not in duplicated blocks across mirrored tests.
@@ -41,7 +41,7 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 
 ## Common pitfalls
 
-- Many tests expect the built module under `dist/NovaModuleTools`; build first when needed.
+- Many tests expect the built module under `dist/{{ProjectName}}`; build first when needed.
 - Direct `Invoke-Pester` runs can hide Nova-specific build/import/StrictMode behavior and should not be used as the project test entrypoint.
 - Some support helpers must be dot-sourced and re-exported inside `BeforeAll`.
 - Duplicated test setup can lower maintainability even when tests pass.

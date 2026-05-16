@@ -25,7 +25,7 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 ## Inputs to inspect
 
 - The relevant file in `src/public/`
-- Matching helpers in `src/private/build|cli|package|quality|release|scaffold|shared|update/`
+- Matching helpers in `src/private/`
 - Matching test files in `tests/`
 - `project.json`
 

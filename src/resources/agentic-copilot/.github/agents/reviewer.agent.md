@@ -17,10 +17,10 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 - When the review scope is genuinely ambiguous (for example which subset of files to focus on, or whether a borderline behavior change is intentional), ask one clarifying question before proceeding instead of guessing.
 - Treat quality tooling maintainability and changed-code coverage results as release-blocking signals unless risk is accepted explicitly.
 - If local quality tooling is unavailable, continue the review with normal validation and rely on PR/CI as the effective quality tooling gate.
-- Check whether project docs preserve the CLI-vs-cmdlet separation when `docs/*.html` or help markdown changed.
+- Check whether project docs preserve the CLI-vs-cmdlet separation when project docs or help markdown changed.
 - Check that Nova projects still use generated `dist/` module files instead of hand-written source `.psm1` or module `.psd1` files.
 - Check changed PowerShell code, tests, and examples against `project.json` `Manifest.PowerShellHostVersion`; flag PowerShell 7.x-only constructs in projects that target `5.1` unless the change explicitly adds guarded compatibility handling.
-- Check that public commands/classes have matching valid PlatyPS-compatible help and that new source files have source-mirrored tests. Flag help files under `docs/NovaModuleTools/en-US/` that look like plain Markdown, break the required PlatyPS section order, or would fail `Test-MarkdownCommandHelp` / `Import-MarkdownCommandHelp`.
+- Check that public commands/classes have matching valid PlatyPS-compatible help and that new source files have source-mirrored tests. Flag help files under `docs/{{ProjectName}}/en-US/` that look like plain Markdown, break the required PlatyPS section order, or would fail `Test-MarkdownCommandHelp` / `Import-MarkdownCommandHelp`.
 - Flag any new public entry point that does not add its matching help file in the same change.
 - Check analyzer changes and PowerShell validation flow against `.github/instructions/psscriptanalyzer.instructions.md`. Flag direct `Invoke-ScriptAnalyzer` usage that bypasses repository-approved settings or wrapper semantics without a clear reason.
 - Review changed `src/**/*.ps1` against `.github/instructions/code-quality-matrix.instructions.md` and `tests/**/*.ps1` against `.github/instructions/testing-policy.instructions.md`; flag new or heavily changed code that ignores those maintainability rules without a clear, explicit reason.
@@ -35,17 +35,16 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 
 - The change diff
 - `.github/pull_request_template.md`
-- Relevant files in `src/`, `tests/`, `docs/`, and `.github/workflows/`
+- Relevant files in `src/`, `tests/`, `docs/`, and workflow files, when present
 - `README.md`, `CONTRIBUTING.md`, and `CHANGELOG.md` when touched
 
 ## Skills to use
 
 - `/building-maintainable-code`
-- `/docs-site`
+- `/documentation`
 - `/markdown-authoring`
 - `/pester-testing`
 - `/release-and-changelog`
-- `/github-actions`
 
 ## Constraints
 

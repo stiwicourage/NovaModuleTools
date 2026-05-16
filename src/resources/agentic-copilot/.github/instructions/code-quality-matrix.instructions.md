@@ -78,7 +78,7 @@ This file tells Agentic Copilot how to shape source code from the start. Test-sp
 - Rule: public commands depend on private adapter/helper layers, not on raw infrastructure.
 - Why: tight coupling to environment variables, Git, HTTP, file system, or module-update APIs spreads infrastructure leaks across the public surface and breaks tests.
 - How to apply in PowerShell:
-    - Route environment access, Git execution, REST calls, uploads, and self-update behavior through their approved private helpers. `tests/ArchitectureGuardrails.Tests.ps1` is authoritative.
+    - Route environment access, Git execution, REST calls, uploads, and self-update behavior through their approved private helpers. `tests/*Architecture*.Tests.ps1` is authoritative.
     - Hide provider-specific or platform-specific branching behind a small adapter surface so callers depend on a stable contract, not on the provider's quirks.
     - Avoid pass-through helpers that only forward parameters to another function. Either add policy, validation, translation, or abstraction, or call the underlying function directly.
 - Common objection: "The adapter feels redundant." It pays off the moment the underlying call changes, gains an error mode, or needs mocking.
@@ -135,4 +135,4 @@ This file tells Agentic Copilot how to shape source code from the start. Test-sp
 - Flag long mixed-responsibility functions, deep nesting, duplicated blocks, long parameter lists, pass-through helpers, provider-specific branching spread across callers, dead or commented-out code, magic values, and broad or hidden exception handling.
 - When a finding is unit-level (Guidelines 1–4), prefer raising it before component-level findings (Guidelines 5–8). The unit fix usually makes the component fix smaller.
 - When the code smell is test-specific, route that feedback through `.github/instructions/testing-policy.instructions.md` and the `pester-testing` skill instead of stretching this file to cover test-only patterns.
-- For step-by-step refactoring of unhealthy files, use the `building-maintainable-code` and `guiding-refactoring-with-code-health` skills together: the first picks the right guideline, the second runs measured maintainability checks between steps.
+- For step-by-step refactoring of unhealthy files, use the `building-maintainable-code` for checks between steps.

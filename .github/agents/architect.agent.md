@@ -37,12 +37,12 @@ Design or reshape changes that cross public commands, private helper boundaries,
 ## Skills to use
 
 - `/powershell-module-development`
-- `/github-actions`
 - `/release-and-changelog`
+- `/markdown-authoring`
+- `/building-maintainable-code`
+- `/github-actions`
 - `/codescene-quality`
 - `/guiding-refactoring-with-code-health`
-- `/building-maintainable-code`
-- `/markdown-authoring`
 
 ## Constraints
 

@@ -25,7 +25,7 @@ The companion instruction file is `.github/instructions/code-quality-matrix.inst
 ## Relevant files and commands
 
 - `src/public/*.ps1` and `src/private/<domain>/*.ps1`
-- `tests/ArchitectureGuardrails.Tests.ps1`
+- `tests/*Architecture*.Tests.ps1`
 
 - `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
 - `Test-NovaBuild`
@@ -224,12 +224,9 @@ Run this short pass before handoff on every changed source file:
 - Adding adapters that only forward parameters. An adapter must add policy, validation, translation, or abstraction.
 - Skipping the test mirror for a "trivial" change. Trivial changes are the ones whose regressions are hardest to spot later.
 - Leaving "leftover" commented-out code "for later." Later is the next bad merge conflict.
-- Treating Code Health 9.x as the goal. Aim for 10.0 on touched files in this repository.
 
 ## Verification
 
-- `pwsh -NoLogo -NoProfile -File ./run.ps1`
 - `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` when iterating quickly on PowerShell changes
 - `Test-NovaBuild` for behavior validation
-- `code_health_review` and `pre_commit_code_health_safeguard` from `safeguarding-ai-generated-code` before suggesting a commit
-- `code_health_review` paired with `guiding-refactoring-with-code-health` when iterating on a single unhealthy file
+

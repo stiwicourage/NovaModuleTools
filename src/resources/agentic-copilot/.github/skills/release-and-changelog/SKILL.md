@@ -15,7 +15,7 @@ Use this skill when working on semantic versioning, release automation, package 
 - `RELEASE_NOTE.md`
 - `project.json`
 - `.github/pull_request_template.md`
-- `.github/workflows/Publish.yml`
+- release workflow files, when present
 - `src/public/InvokeNovaRelease.ps1`
 - `src/public/PublishNovaModule.ps1`
 - `src/public/UpdateNovaModuleVersion.ps1`

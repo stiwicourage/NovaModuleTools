@@ -27,6 +27,17 @@
         }
     )
 
+    IdentifierReplacements = @(
+        @{
+            Old = 'NovaModuleTools'
+            New = '{{ProjectName}}'
+        }
+        @{
+            Old = '-Nova*'
+            New = '-{{ShortName}}*'
+        }
+    )
+
     ExcludedPaths = @(
         '.github/agents/docs-site.agent.md'
         '.github/instructions/documentation-separation.instructions.md'
@@ -248,16 +259,8 @@
             New = 'quality tooling'
         }
         @{
-            Old = 'NovaModuleTools'
-            New = '{{ProjectName}}'
-        }
-        @{
             Old = '- Must not mix PowerShell cmdlet UX and `nova` CLI UX.'
             New = ''
-        }
-        @{
-            Old = '-Nova*'
-            New = '-{{ShortName}}*'
         }
         @{
             Old = ', and the `nova` CLI routing model.'
@@ -337,6 +340,26 @@
         }
         @{
             Old = '- Preserve the distinction between public PowerShell cmdlets and `% nova` CLI behavior.'
+            New = ''
+        }
+        @{
+            Old = '- For step-by-step refactoring of unhealthy files, use the `building-maintainable-code` and `guiding-refactoring-with-code-health` skills together: the first picks the right guideline, the second runs measured maintainability checks between steps.'
+            New = '- For step-by-step refactoring of unhealthy files, use the `building-maintainable-code` for checks between steps.'
+        }
+        @{
+            Old = 'CommandInfo  = Get-Command -Module NovaModuleTools'
+            New = 'CommandInfo  = Get-Command -Module {{ProjectName}}'
+        }
+        @{
+            Old = '- Treating maintainability 9.x as the goal. Aim for 10.0 on touched files in this repository.'
+            New = ''
+        }
+        @{
+            Old = '- `code_health_review` and `pre_commit_code_health_safeguard` from `safeguarding-ai-generated-code` before suggesting a commit'
+            New = ''
+        }
+        @{
+            Old = '- `code_health_review` paired with `guiding-refactoring-with-code-health` when iterating on a single unhealthy file'
             New = ''
         }
     )

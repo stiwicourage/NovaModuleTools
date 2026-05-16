@@ -56,8 +56,8 @@ All finalization output is copy-ready Markdown. Apply the `markdown-authoring` s
 If the user chooses **design package and issue/work item draft**, return:
 
 - a short usage note that explains:
-    - the sections before `GitHub issue draft` are design/handoff notes
-    - only the `GitHub issue draft` section is paste-ready tracker text
+    - the sections before `issue/work item draft` are design/handoff notes
+    - only the `issue/work item draft` section is paste-ready tracker text
 - Problem
 - Why it matters
 - Scope

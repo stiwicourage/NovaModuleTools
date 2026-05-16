@@ -20,7 +20,7 @@ Use this skill when producing Markdown files in the repository or Markdown outpu
 - `README.md`
 - `CONTRIBUTING.md`
 - `CHANGELOG.md`
-- `docs/NovaModuleTools/en-US/*.md`
+- `docs/{{ProjectName}}/en-US/*.md`
 
 ## Expected practices
 

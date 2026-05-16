@@ -26,10 +26,10 @@ For new or not-yet-scoped work, use the `architect` agent with `.github/prompts/
 - `tests/` — Pester tests and shared test-support scripts
 - `scripts/build/` — local analyzer and build helpers
 - `scripts/build/ci/` — CI coverage, quality tooling, and artifact helpers
-- `.github/workflows/` — GitHub Actions CI, analyzer, dependency review, publish automation
-- `.github/actions/` — reusable workflow actions used by release and coverage flows
-- `docs/NovaModuleTools/en-US/` — PlatyPS command help source
-- `docs/*.html` — end-user GitHub Pages content
+- workflow files, when present — GitHub Actions CI, analyzer, dependency review, publish automation
+- reusable workflow actions, when present — reusable workflow actions used by release and coverage flows
+- `docs/{{ProjectName}}/en-US/` — PlatyPS command help source
+- project docs — end-user GitHub Pages content
 - `.github/instructions/` — canonical rules, path-scoped via `applyTo:`
 - `.github/skills/` — how-to playbooks invoked through the `skill` tool
 - `.github/agents/` — role definitions for specialized agents
@@ -41,13 +41,13 @@ The table below shows how to route work. Prompts are the task entry points; each
 
 | Task                          | Prompt                                     | Agent                  | Primary skills                                                                       | Primary instructions                                                              |
 | ----------------------------- | ------------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| Design or scope a change      | `design-change.prompt.md`                  | `architect`            | `powershell-module-development`, `github-actions`, `release-and-changelog`, `markdown-authoring` | `repository-conventions`, `code-quality-matrix`                                   |
+| Design or scope a change      | `design-change.prompt.md`                  | `architect`            | `powershell-module-development`, `workflow guidance`, `release-and-changelog`, `markdown-authoring` | `repository-conventions`, `code-quality-matrix`                                   |
 | Implement an issue            | `implement-issue.prompt.md`                | `powershell-developer` | `powershell-module-development`, `pester-testing`, `building-maintainable-code`, `codescene-quality`, `safeguarding-ai-generated-code` | `repository-conventions`, `code-quality-matrix`, `psscriptanalyzer`, `powershell-coding-standards`, `platyps-help` |
-| Review a change               | `review-change.prompt.md`                  | `reviewer`             | `codescene-quality`, `safeguarding-ai-generated-code`, `building-maintainable-code`, `docs-site`, `markdown-authoring`, `pester-testing`, `release-and-changelog`, `github-actions` | All `.github/instructions/*.instructions.md`                                       |
-| Improve test coverage         | `improve-test-coverage.prompt.md`          | `test-engineer`        | `pester-testing`, `building-maintainable-code`, `codescene-quality`, `github-actions`, `guiding-refactoring-with-code-health`, `safeguarding-ai-generated-code` | `testing-policy`, `psscriptanalyzer`                                              |
+| Review a change               | `review-change.prompt.md`                  | `reviewer`             | `codescene-quality`, `safeguarding-ai-generated-code`, `building-maintainable-code`, `documentation`, `markdown-authoring`, `pester-testing`, `release-and-changelog`, `workflow guidance` | All `.github/instructions/*.instructions.md`                                       |
+| Improve test coverage         | `improve-test-coverage.prompt.md`          | `test-engineer`        | `pester-testing`, `building-maintainable-code`, `codescene-quality`, `workflow guidance`, `guiding-refactoring-with-code-health`, `safeguarding-ai-generated-code` | `testing-policy`, `psscriptanalyzer`                                              |
 | Prepare a release             | `prepare-release.prompt.md`                | `release-manager`      | `release-and-changelog`, `markdown-authoring`                                        | `release-policy`, `repository-conventions`                                         |
-| Fix a CI failure              | `fix-ci-failure.prompt.md`                 | `powershell-developer` (or `test-engineer`) | `github-actions`, `pester-testing`                                                   | `testing-policy`, `psscriptanalyzer`, `repository-conventions`                     |
-| Update project docs           | (no dedicated prompt — invoke agent)        | `docs-site`            | `docs-site`, `markdown-authoring`                                                    | `documentation-separation`                                                         |
+| Fix a CI failure              | `fix-ci-failure.prompt.md`                 | `powershell-developer` (or `test-engineer`) | `workflow guidance`, `pester-testing`                                                   | `testing-policy`, `psscriptanalyzer`, `repository-conventions`                     |
+| Update project docs           | (no dedicated prompt — invoke agent)        | `documentation`            | `documentation`, `markdown-authoring`                                                    | `documentation`                                                         |
 
 ## Notation
 
@@ -64,4 +64,4 @@ The table below shows how to route work. Prompts are the task entry points; each
 - PowerShell coding standards: `.github/instructions/powershell-coding-standards.instructions.md`
 - PlatyPS help generation: `.github/instructions/platyps-help.instructions.md`
 - Release flow: `.github/instructions/release-policy.instructions.md` + `release-and-changelog` skill
-- Documentation separation: `.github/instructions/documentation-separation.instructions.md` + `docs-site` skill
+- Documentation separation: `.github/instructions/documentation.instructions.md` + `documentation` skill

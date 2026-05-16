@@ -22,7 +22,7 @@ Handle versioning, changelog shaping, release-flow documentation, and publish au
 - `CHANGELOG.md`
 - `project.json`
 - `.github/pull_request_template.md`
-- `.github/workflows/Publish.yml`
+- release workflow files, when present
 - Relevant package, release, and publish tests
 - `README.md` / `CONTRIBUTING.md`
 
@@ -30,7 +30,6 @@ Handle versioning, changelog shaping, release-flow documentation, and publish au
 
 - `/release-and-changelog`
 - `/markdown-authoring`
-- `/github-actions`
 - `/pester-testing`
 
 ## Constraints
