@@ -24,7 +24,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - Additional functions in a private file are allowed only as related top-level support helpers called from that same file.
 - If two private functions are both called from outside their file, split them into separate same-named files.
 - Do not declare functions inside other functions. Keep private support helpers as sibling top-level functions in the file instead of nested function declarations.
-- Private helper names should stay clear and responsibility-focused; they do not need to mirror the public `Invoke-Nova*`, `Get-Nova*`, `Update-Nova*`, or `nova` CLI route naming conventions unless they are intentionally part of the public surface.
+- Private helper names should not use the public `Invoke-Nova*`, `Get-Nova*`, `Update-Nova*`, or `nova` CLI route naming conventions. Give private helpers clear implementation-focused names that describe what the helper does.
 - Reuse existing adapters and shared helpers before adding new infrastructure calls.
 - Keep direct environment access, Git execution, upload requests, and self-update execution in their approved helper locations. `tests/ArchitectureGuardrails.Tests.ps1` is authoritative.
 - Prefer explicit workflow-context objects (`[pscustomobject]` / ordered hashtables) for multi-step flows.

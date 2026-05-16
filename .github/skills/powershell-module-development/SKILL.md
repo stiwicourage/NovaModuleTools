@@ -28,7 +28,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Treat `project.json` as the source of truth for Nova build, package, manifest, and release metadata.
 - Read `project.json` `Manifest.PowerShellHostVersion` before changing PowerShell code, tests, or examples, and keep new work compatible with that target. A `5.1` project must not receive PowerShell 7.x-only syntax, cmdlets, parameters, or APIs unless the change explicitly adds guarded compatibility handling.
 - Do not create or maintain hand-written module `.psm1` or module `.psd1` files in source; Nova generates those files under `dist/NovaModuleTools/`.
-- Preserve native PowerShell semantics and Nova naming patterns.
+- Preserve native PowerShell semantics. Keep Nova naming patterns on public commands, and give private helpers clear implementation-focused names instead of public-style `Invoke-Nova*`, `Get-Nova*`, or `Update-Nova*` naming.
 - Keep one externally called function per file and match the file name to that function. In `src/private/`, additional related functions may stay only as same-file top-level support helpers called by that file's entry function; do not declare functions inside functions.
 - Use `.github/instructions/code-quality-matrix.instructions.md` as the best-effort source-code maintainability guidance. Keep new or heavily changed code short, single-purpose, low-duplication, lightly nested, and split by clear responsibility; group related inputs instead of growing long parameter lists.
 - Reuse existing workflow-context helpers and shared adapters.
