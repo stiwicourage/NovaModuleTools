@@ -9,6 +9,7 @@ throw "Expected built $script: moduleName module at: $script: distModuleDir. Run
 
 Remove-Module $script: moduleName -ErrorAction SilentlyContinue
 Import-Module $script: distModuleDir -Force
+
 $script: getTestQualityPesterConfig = {
 return [pscustomobject]@{
 Run = [pscustomobject]@{
@@ -35,9 +36,11 @@ CoveragePercentTarget = 75
 }
 }
 }
+
 $script: getTestQualityProjectInfo = {
 param(
-[Parameter(Mandatory)][object]$PesterSettings
+[Parameter(Mandatory)]
+[object]$PesterSettings
 )
 
 return [pscustomobject]@{
@@ -60,7 +63,8 @@ CoveragePercentTarget = 99
 })
 
 InModuleScope $script: moduleName -Parameters @{
-PesterConfig = $pesterConfig; ProjectInfo = $projectInfo
+PesterConfig = $pesterConfig
+ProjectInfo = $projectInfo
 } {
 param($PesterConfig, $ProjectInfo)
 
@@ -107,7 +111,8 @@ Enabled = $true
 })
 
 InModuleScope $script: moduleName -Parameters @{
-PesterConfig = $pesterConfig; ProjectInfo = $projectInfo
+PesterConfig = $pesterConfig
+ProjectInfo = $projectInfo
 } {
 param($PesterConfig, $ProjectInfo)
 
