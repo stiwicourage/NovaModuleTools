@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Added a non-blocking `scripts/build/Get-TestMirrorStatus.ps1` helper that reports `src/**/*.ps1` files without a matching mirrored test file under `tests/`, to support the migration to the source-mirrored, dot-source-first test layout.
 - Added mirrored, dot-source-first Pester test files for scaffold and update private helpers (`src/private/scaffold/*.ps1` and `src/private/update/*.ps1`), so each unit-level helper now has a focused test file under `tests/private/scaffold/` or `tests/private/update/` instead of being covered only through broad legacy coverage files.
 - Added mirrored, dot-source-first Pester test files for build and shared private helpers (`src/private/build/*.ps1`, `src/private/build/manifest/*.ps1`, and `src/private/shared/*.ps1`), so each unit-level helper now has a focused test file under `tests/private/build/`, `tests/private/build/manifest/`, or `tests/private/shared/` instead of being covered only through broad legacy coverage files.
+- Added mirrored, dot-source-first Pester test files for CLI private helpers (`src/private/cli/*.ps1`), so most CLI argument parsers, prompt helpers, and per-command CLI wrappers now have a focused test file under `tests/private/cli/`. Large cross-cutting CLI orchestrators (`InvokeNovaCliCommandRoute.ps1`, `GetNovaCliArgumentRoutingState.ps1`, `FormatNovaCliCommandHelp.ps1`, `ConfirmNovaCliAction.ps1`, `GetNovaCliInvocationContext.ps1`) stay covered by the existing cross-cutting CLI tests.
 
 
 ### Changed
