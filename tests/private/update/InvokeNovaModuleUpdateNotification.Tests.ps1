@@ -2,13 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/update/InvokeNovaModuleUpdateNotification.ps1')
 
-    function Read-NovaUpdateNotificationPreference {}
-    function Get-NovaInstalledModuleVersionInfo {}
-    function Invoke-NovaModuleUpdateLookup {param([switch]$AllowPrereleaseNotifications, [int]$TimeoutMilliseconds)}
-    function Get-NovaAvailableSemanticVersion {param($VersionInfo)}
-    function Test-NovaStableUpdateAvailable {param($StableVersion, $InstalledVersion)}
-    function Test-NovaPrereleaseUpdateAvailable {param($LookupResult, $InstalledVersion, $StableVersion, $PrereleaseNotificationsEnabled)}
-    function Write-NovaAvailableModuleUpdateWarning {param($CurrentVersion, $AvailableVersion, [switch]$Prerelease)}
+    . (Join-Path $PSScriptRoot 'InvokeNovaModuleUpdateNotification.TestSupport.ps1')
 }
 
 Describe 'Invoke-NovaModuleUpdateNotification' {

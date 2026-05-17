@@ -2,11 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/scaffold/AssertNovaModuleQuestionAnswerValid.ps1')
 
-    function Get-AwesomePromptValidationFailure {param($Ask, $Value)}
-    function Stop-NovaOperation {
-        param([string]$Message, [string]$ErrorId, $Category, $TargetObject)
-        throw $Message
-    }
+    . (Join-Path $PSScriptRoot 'AssertNovaModuleQuestionAnswerValid.TestSupport.ps1')
 }
 
 Describe 'Assert-NovaModuleQuestionAnswerValid' {

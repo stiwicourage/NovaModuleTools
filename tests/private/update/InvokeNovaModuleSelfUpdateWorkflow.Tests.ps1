@@ -1,9 +1,7 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/update/InvokeNovaModuleSelfUpdateWorkflow.ps1')
-    function Invoke-NovaModuleSelfUpdate {param([string]$ModuleName,[switch]$AllowPrerelease)}
-    function Get-NovaModuleReleaseNotesUri {'https://example.com/notes'}
-    function Stop-NovaOperation {param([string]$Message,[string]$ErrorId,$Category,$TargetObject) throw [System.Management.Automation.ErrorRecord]::new([System.Exception]::new($Message),$ErrorId,$Category,$TargetObject)}
+    . (Join-Path $PSScriptRoot 'InvokeNovaModuleSelfUpdateWorkflow.TestSupport.ps1')
 }
 
 Describe 'Complete-NovaModuleSelfUpdateResult' {

@@ -2,8 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/package/AssertNovaPackageOutputDirectoryCanBeCleared.ps1')
 
-    function Stop-NovaOperation {param($Message, $ErrorId, $Category, $TargetObject) throw $Message}
-    function Test-NovaPathContainsPath {param($ParentPath, $ChildPath) return $false}
+    . (Join-Path $PSScriptRoot 'AssertNovaPackageOutputDirectoryCanBeCleared.TestSupport.ps1')
 }
 
 Describe 'Assert-NovaPackageOutputDirectoryCanBeCleared' {

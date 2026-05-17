@@ -2,8 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/package/GetNovaPackageContentItemList.ps1')
 
-    function Stop-NovaOperation {param($Message, $ErrorId, $Category, $TargetObject) throw $Message}
-    function Get-NormalizedRelativePath {param($Root, $FullName) return [System.IO.Path]::GetFileName($FullName)}
+    . (Join-Path $PSScriptRoot 'GetNovaPackageContentItemList.TestSupport.ps1')
 }
 
 Describe 'Get-NovaPackageContentItemList' {

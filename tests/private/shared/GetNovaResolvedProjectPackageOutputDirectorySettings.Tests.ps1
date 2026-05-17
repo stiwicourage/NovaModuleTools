@@ -2,19 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/shared/GetNovaResolvedProjectPackageOutputDirectorySettings.ps1')
 
-    function Get-NovaProjectPackageOutputDirectorySettingsTable {param([System.Collections.IDictionary]$PackageSettings)}
-    function Set-NovaPackageSettingDefault {
-        param([System.Collections.IDictionary]$PackageSettings, [string]$Name, $Value, [switch]$TreatWhitespaceAsMissing)
-
-        $hasValue = $PackageSettings.Contains($Name)
-        if ($hasValue -and $TreatWhitespaceAsMissing) {
-            $hasValue = -not [string]::IsNullOrWhiteSpace("$( $PackageSettings[$Name] )")
-        }
-
-        if (-not $hasValue) {
-            $PackageSettings[$Name] = $Value
-        }
-    }
+    . (Join-Path $PSScriptRoot 'GetNovaResolvedProjectPackageOutputDirectorySettings.TestSupport.ps1')
 }
 
 Describe 'Get-NovaResolvedProjectPackageOutputDirectorySettings' {

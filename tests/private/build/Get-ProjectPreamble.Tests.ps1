@@ -2,11 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/build/Get-ProjectPreamble.ps1')
 
-    function Get-ProjectJsonValueTypeName {param($Value)}
-    function Format-ProjectJsonValue {param($Value)}
-    function Stop-NovaOperation {param([string]$Message, [string]$ErrorId, $Category, $TargetObject)
-        throw $Message
-    }
+    . (Join-Path $PSScriptRoot 'Get-ProjectPreamble.TestSupport.ps1')
 }
 
 Describe 'Get-ProjectPreamble' {

@@ -2,17 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/build/BuildHelp.ps1')
 
-    function Stop-NovaOperation {
-        param([string]$Message, [string]$ErrorId, [System.Management.Automation.ErrorCategory]$Category, $TargetObject)
-        $exception = [System.Exception]::new($Message)
-        $record = [System.Management.Automation.ErrorRecord]::new($exception, $ErrorId, $Category, $TargetObject)
-        throw $record
-    }
-    function Get-NovaBuildProjectInfo {param($ProjectInfo); return $ProjectInfo}
-    function Get-NovaHelpLocale {param($HelpMarkdownFiles); return 'en-US'}
-    function Measure-PlatyPSMarkdown {[CmdletBinding()] param([Parameter(ValueFromPipeline)]$Input) process {}}
-    function Import-MarkdownCommandHelp {[CmdletBinding()] param([Parameter(ValueFromPipeline)]$Input, $Path) process {}}
-    function Export-MamlCommandHelp {[CmdletBinding()] param([Parameter(ValueFromPipeline)]$Input, $OutputFolder) process {}}
+    . (Join-Path $PSScriptRoot 'BuildHelp.TestSupport.ps1')
 }
 
 Describe 'Get-NovaHelpDocsDir' {
@@ -141,7 +131,10 @@ Describe 'Build-Help' {
         Assert-MockCalled Assert-NovaPlatyPSAvailable -Times 0
     }
 
-    It 'returns when no PlatyPS context is found' {
+    It 'handles PlatyPS help export when context is <Name>' -ForEach @(
+        @{ Name = 'missing'; HelpContext = $null; ExpectedExportCalls = 0 }
+        @{ Name = 'available'; HelpContext = [pscustomobject]@{HelpMarkdownFiles=@(); CommandHelpFiles=@(); Locale='en-US'}; ExpectedExportCalls = 1 }
+    ) {
         $tmp = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid())
         New-Item -ItemType Directory -Path $tmp | Out-Null
         Set-Content -Path (Join-Path $tmp 'X.md') -Value 'help'
@@ -149,25 +142,11 @@ Describe 'Build-Help' {
             Mock Get-NovaBuildProjectInfo { [pscustomobject]@{DocsDir='/x'; ProjectName='Y'; OutputModuleDir='/o'} }
             Mock Get-NovaHelpMarkdownItem { @(Get-Item (Join-Path $tmp 'X.md')) }
             Mock Assert-NovaPlatyPSAvailable {}
-            Mock Get-NovaHelpBuildContext { $null }
+            $script:buildHelpContext = $HelpContext
+            Mock Get-NovaHelpBuildContext { $script:buildHelpContext }
             Mock Export-NovaGeneratedHelp {}
             Build-Help -ProjectInfo ([pscustomobject]@{})
-            Assert-MockCalled Export-NovaGeneratedHelp -Times 0
-        } finally { Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue }
-    }
-
-    It 'exports help when PlatyPS context is found' {
-        $tmp = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid())
-        New-Item -ItemType Directory -Path $tmp | Out-Null
-        Set-Content -Path (Join-Path $tmp 'X.md') -Value 'help'
-        try {
-            Mock Get-NovaBuildProjectInfo { [pscustomobject]@{DocsDir='/x'; ProjectName='Y'; OutputModuleDir='/o'} }
-            Mock Get-NovaHelpMarkdownItem { @(Get-Item (Join-Path $tmp 'X.md')) }
-            Mock Assert-NovaPlatyPSAvailable {}
-            Mock Get-NovaHelpBuildContext { [pscustomobject]@{HelpMarkdownFiles=@(); CommandHelpFiles=@(); Locale='en-US'} }
-            Mock Export-NovaGeneratedHelp {}
-            Build-Help -ProjectInfo ([pscustomobject]@{})
-            Assert-MockCalled Export-NovaGeneratedHelp -Times 1
+            Assert-MockCalled Export-NovaGeneratedHelp -Times $ExpectedExportCalls
         } finally { Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue }
     }
 }

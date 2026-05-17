@@ -1,11 +1,7 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/package/GetNovaPackageUploadWorkflowContext.ps1')
-    function Get-NovaProjectInfo {[pscustomobject]@{Name='X'}}
-    function New-NovaPackageUploadOption {param($BoundParameters) [pscustomobject]@{Repository='Nuget'}}
-    function Resolve-NovaPackageUploadInvocation {param($ProjectInfo,$UploadOption) @([pscustomobject]@{ArtifactPath='/a.nupkg'})}
-    function Get-NovaPackageUploadWorkflowTarget {param($UploadArtifactList) ($UploadArtifactList.ArtifactPath -join ', ')}
-    function Get-NovaPackageUploadWorkflowOperation {param($UploadArtifactList) "Upload $($UploadArtifactList.Count) artifact(s)"}
+    . (Join-Path $PSScriptRoot 'GetNovaPackageUploadWorkflowContext.TestSupport.ps1')
 }
 
 Describe 'Get-NovaPackageUploadWorkflowContext' {

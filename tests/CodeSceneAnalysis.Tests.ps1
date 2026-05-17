@@ -16,6 +16,34 @@ BeforeAll {
             Output = @($output)
         }
     }
+
+    function New-CodeSceneCoverageUploadRunnerContent {
+        [CmdletBinding()]
+        param(
+            [Parameter(Mandatory)][pscustomobject]$Config
+        )
+
+        $setLocationCommand = ''
+        if ($Config.WorkingDirectory) {
+            $setLocationCommand = "Set-Location '$($Config.WorkingDirectory)'"
+        }
+
+        return @"
+function cs-coverage {
+    param([Parameter(ValueFromRemainingArguments = `$true)][string[]]`$ArgumentList)
+
+    Add-Content -LiteralPath '$($Config.UploadLogPath)' -Value (`$ArgumentList -join ' ') -Encoding utf8
+    `$global:LASTEXITCODE = 0
+}
+
+[Environment]::SetEnvironmentVariable('CS_URL', 'https://codescene.example.test')
+[Environment]::SetEnvironmentVariable('CS_PROJECT_ID', '123')
+[Environment]::SetEnvironmentVariable('CS_ACCESS_TOKEN', 'token')
+$setLocationCommand
+
+& '$codeSceneAnalysisScriptPath' $($Config.Invocation)
+"@
+    }
 }
 
 Describe 'Invoke-CodeSceneAnalysis' {
@@ -81,57 +109,30 @@ function Invoke-WebRequest {
         $outputText | Should -Match '(?s)separate from.*CS_ACCESS_TOKEN'
     }
 
-    It 'still uploads coverage when CoveragePath is provided' {
-        $coveragePath = Join-Path $TestDrive 'coverage.xml'
-        $uploadLogPath = Join-Path $TestDrive 'cs-coverage-upload.txt'
-        Set-Content -LiteralPath $coveragePath -Value '<report><counter type="BRANCH" missed="1" covered="1" /></report>' -Encoding utf8
-
-        $runnerContent = @"
-function cs-coverage {
-    param([Parameter(ValueFromRemainingArguments = `$true)][string[]]`$ArgumentList)
-
-    Add-Content -LiteralPath '$uploadLogPath' -Value (`$ArgumentList -join ' ') -Encoding utf8
-    `$global:LASTEXITCODE = 0
-}
-
-[Environment]::SetEnvironmentVariable('CS_URL', 'https://codescene.example.test')
-[Environment]::SetEnvironmentVariable('CS_PROJECT_ID', '123')
-[Environment]::SetEnvironmentVariable('CS_ACCESS_TOKEN', 'token')
-
-& '$codeSceneAnalysisScriptPath' -CoveragePath '$coveragePath'
-"@
-
-        $result = Invoke-CodeSceneAnalysisTestScript -RunnerContent $runnerContent
-
-        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
-        $uploadLog = Get-Content -LiteralPath $uploadLogPath -Raw
-        $uploadLog | Should -BeLike "upload --format jacoco --metric line-coverage $coveragePath*"
-        $uploadLog | Should -Match 'upload --format jacoco --metric branch-coverage'
-    }
-
-    It 'uploads coverage from the artifacts folder when UploadCoverage is requested without CoveragePath' {
+    It 'uploads coverage for <Name>' -ForEach @(
+        @{ Name = 'an explicit coverage path'; Mode = 'Explicit'; UploadLogName = 'cs-coverage-upload.txt' }
+        @{ Name = 'the discovered artifacts coverage file'; Mode = 'Discovered'; UploadLogName = 'cs-coverage-upload-discovered.txt' }
+    ) {
         $artifactsDir = Join-Path $TestDrive 'artifacts'
-        $coveragePath = Join-Path $artifactsDir 'coverage.xml'
-        $uploadLogPath = Join-Path $TestDrive 'cs-coverage-upload-discovered.txt'
-        New-Item -ItemType Directory -Path $artifactsDir -Force | Out-Null
+        $coveragePath = Join-Path $TestDrive 'coverage.xml'
+        $workingDirectory = $null
+        $invocation = "-CoveragePath '$coveragePath'"
+        if ($Mode -eq 'Discovered') {
+            New-Item -ItemType Directory -Path $artifactsDir -Force | Out-Null
+            $coveragePath = Join-Path $artifactsDir 'coverage.xml'
+            $workingDirectory = $TestDrive
+            $invocation = '-UploadCoverage'
+        }
+
+        $uploadLogPath = Join-Path $TestDrive $UploadLogName
         Set-Content -LiteralPath $coveragePath -Value '<report><counter type="BRANCH" missed="1" covered="1" /></report>' -Encoding utf8
 
-        $runnerContent = @"
-function cs-coverage {
-    param([Parameter(ValueFromRemainingArguments = `$true)][string[]]`$ArgumentList)
-
-    Add-Content -LiteralPath '$uploadLogPath' -Value (`$ArgumentList -join ' ') -Encoding utf8
-    `$global:LASTEXITCODE = 0
-}
-
-[Environment]::SetEnvironmentVariable('CS_URL', 'https://codescene.example.test')
-[Environment]::SetEnvironmentVariable('CS_PROJECT_ID', '123')
-[Environment]::SetEnvironmentVariable('CS_ACCESS_TOKEN', 'token')
-Set-Location '$TestDrive'
-
-& '$codeSceneAnalysisScriptPath' -UploadCoverage
-"@
-
+        $runnerContent = New-CodeSceneCoverageUploadRunnerContent -Config ([pscustomobject]@{
+            CoveragePath = $coveragePath
+            Invocation = $invocation
+            UploadLogPath = $uploadLogPath
+            WorkingDirectory = $workingDirectory
+        })
         $result = Invoke-CodeSceneAnalysisTestScript -RunnerContent $runnerContent
 
         $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)

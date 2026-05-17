@@ -2,9 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/shared/GetNovaProjectInfoResult.ps1')
 
-    function Get-ProjectPreamble {param($ProjectData); return @('# preamble')}
-    function Get-NovaResolvedProjectManifestSettings {param($ProjectData); return @{Author='Me'}}
-    function Get-NovaResolvedProjectPackageSettings {param($ProjectData,$ManifestSettings,$ProjectRoot); return @{Id='Mod'}}
+    . (Join-Path $PSScriptRoot 'GetNovaProjectInfoResult.TestSupport.ps1')
 }
 
 Describe 'Get-NovaProjectInfoResult' {

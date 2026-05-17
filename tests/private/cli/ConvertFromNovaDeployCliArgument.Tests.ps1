@@ -5,8 +5,7 @@ BeforeAll {
     . (Join-Path $projectRoot 'src/private/cli/AddNovaCliHeaderOption.ps1')
     . (Join-Path $projectRoot 'src/private/cli/GetNovaCliRequiredArgumentValue.ps1')
 
-    function ConvertTo-NovaCliArgumentArray {param([hashtable]$BoundParameters, [string[]]$Arguments) return @($Arguments | Where-Object {$_})}
-    function Stop-NovaOperation {param([string]$Message, [string]$ErrorId, $Category, $TargetObject) throw $Message}
+    . (Join-Path $PSScriptRoot 'ConvertFromNovaDeployCliArgument.TestSupport.ps1')
 }
 
 Describe 'ConvertFrom-NovaDeployCliArgument' {

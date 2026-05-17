@@ -2,10 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/build/TestProjectSchema.ps1')
 
-    function Get-ResourceFilePath {param([string]$FileName)}
-    function Stop-NovaOperation {param([string]$Message, [string]$ErrorId, $Category, $TargetObject)
-        throw $Message
-    }
+    . (Join-Path $PSScriptRoot 'TestProjectSchema.TestSupport.ps1')
 }
 
 Describe 'Test-ProjectSchema' {

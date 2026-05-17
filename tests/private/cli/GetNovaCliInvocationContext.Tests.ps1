@@ -2,12 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/cli/GetNovaCliInvocationContext.ps1')
 
-    function Get-NovaCliForwardingParameterSet {param([hashtable]$BoundParameters, [switch]$IncludeShouldProcess)}
-    function ConvertTo-NovaCliArgumentArray {param([hashtable]$BoundParameters, $Arguments)}
-    function Assert-NovaCliArgumentSyntax {param($Arguments)}
-    function Get-NovaCliHelpRequest {param([string]$Command, $Arguments)}
-    function Get-NovaCliArgumentRoutingState {param([string]$Command, $Arguments)}
-    function Merge-NovaCliParameterSet {param([hashtable]$BaseParameters, [hashtable]$AdditionalParameters); return $BaseParameters}
+    . (Join-Path $PSScriptRoot 'GetNovaCliInvocationContext.TestSupport.ps1')
 }
 
 Describe 'Get-NovaCliResolvedInvocationContext' {
@@ -60,15 +55,7 @@ Describe 'Get-NovaCliInvocationConfirmState' {
 
 Describe 'Get-NovaCliInvocationContext' {
     BeforeEach {
-        function Get-NovaCliResolvedInvocationContext {
-            param($Command,$Arguments,$CommonParameters,$MutatingCommonParameters,$ModuleName,$WhatIfEnabled,$CliConfirmEnabled,$HelpRequest)
-            [pscustomobject]@{
-                Command=$Command; Arguments=@($Arguments)
-                CommonParameters=$CommonParameters; MutatingCommonParameters=$MutatingCommonParameters
-                IsHelpRequest=($null -ne $HelpRequest); HelpRequest=$HelpRequest
-                ModuleName=$ModuleName; WhatIfEnabled=[bool]$WhatIfEnabled; CliConfirmEnabled=[bool]$CliConfirmEnabled
-            }
-        }
+        . (Join-Path $PSScriptRoot 'GetNovaCliInvocationContext.Describe.TestSupport.ps1')
     }
 
     It 'returns a help-targeted context when a help request is detected' {

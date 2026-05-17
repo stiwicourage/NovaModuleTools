@@ -2,15 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     . (Join-Path $projectRoot 'src/public/NewNovaModulePackage.ps1')
 
-    function Get-NovaShouldProcessForwardingParameter {param([switch]$WhatIfEnabled) return @{WhatIf=[bool]$WhatIfEnabled}}
-    function Get-NovaPackageWorkflowContext {param($WorkflowParams, [switch]$SkipTestsRequested, [switch]$OverrideWarningRequested)
-        $script:ctxArgs = @{SkipTests=[bool]$SkipTestsRequested; Override=[bool]$OverrideWarningRequested}
-        return [pscustomobject]@{Target='/proj'; Operation='Package'}
-    }
-    function Invoke-NovaPackageWorkflow {param($WorkflowContext, [switch]$ShouldRun)
-        $script:shouldRun = [bool]$ShouldRun
-        return 'packaged'
-    }
+    . (Join-Path $PSScriptRoot 'NewNovaModulePackage.TestSupport.ps1')
 }
 
 Describe 'New-NovaModulePackage' {

@@ -2,10 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/release/InitiateGitRepo.ps1')
 
-    function Test-NovaGitCommandAvailable {return $true}
-    function Invoke-NovaGitCommand {param($ProjectRoot, $Arguments) return [pscustomobject]@{ExitCode=0; Output=@()}}
-    function Get-NovaGitCommandOutputText {param($Result) return ($Result.Output -join "`n")}
-    function Stop-NovaOperation {param($Message, $ErrorId, $Category, $TargetObject) throw $Message}
+    . (Join-Path $PSScriptRoot 'InitiateGitRepo.TestSupport.ps1')
 }
 
 Describe 'New-InitiateGitRepo' {

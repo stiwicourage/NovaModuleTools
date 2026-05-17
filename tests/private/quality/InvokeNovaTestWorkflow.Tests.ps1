@@ -2,18 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/quality/InvokeNovaTestWorkflow.ps1')
 
-    function Stop-NovaOperation {
-        param($Message, $ErrorId, $Category, $TargetObject)
-        $exception = switch ($Category) {
-            ([System.Management.Automation.ErrorCategory]::InvalidData) {[System.IO.InvalidDataException]::new($Message)}
-            default {[System.InvalidOperationException]::new($Message)}
-        }
-        $errorRecord = [System.Management.Automation.ErrorRecord]::new($exception, $ErrorId, $Category, $TargetObject)
-        throw $errorRecord
-    }
-    function Invoke-NovaBuild {}
-    function Invoke-NovaPester {param($Configuration)}
-    function Get-NovaBuildCommandParameterMap {param($WorkflowParams, [switch]$OverrideWarningRequested) return @{}}
+    . (Join-Path $PSScriptRoot 'InvokeNovaTestWorkflow.TestSupport.ps1')
 }
 
 Describe 'Invoke-NovaTestWorkflow' {
@@ -155,54 +144,75 @@ Describe 'Invoke-NovaTestWorkflow' {
         }
     }
 
-    It 'runs Invoke-NovaBuild when BuildRequested is set' {
-        $workflowContext = [pscustomobject]@{
+    It 'handles workflow execution control for <Name>' -ForEach @(
+        @{
+            Name = 'a requested build'
             BuildRequested = $true
             WorkflowParams = @{}
-            ProjectInfo = [pscustomobject]@{Pester = [ordered]@{}}
-            TestResultDirectory = '/tmp/nova-project/artifacts'
-            TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
-            PesterConfig = [pscustomobject]@{TestResult = [pscustomobject]@{OutputPath = $null}}
-            TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
-            TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
+            ShouldRun = $true
+            PesterResult = [pscustomobject]@{Result = 'Passed'}
+            ExpectedBuildCalls = 1
+            ExpectedPesterCalls = 1
+            ExpectedErrorId = $null
         }
+        @{
+            Name = 'an explicit ShouldRun=false'
+            BuildRequested = $false
+            WorkflowParams = @{}
+            ShouldRun = $false
+            PesterResult = [pscustomobject]@{Result = 'Passed'}
+            ExpectedBuildCalls = 0
+            ExpectedPesterCalls = 0
+            ExpectedErrorId = $null
+        }
+        @{
+            Name = 'a WhatIf workflow parameter'
+            BuildRequested = $false
+            WorkflowParams = @{WhatIf = $true}
+            ShouldRun = $true
+            PesterResult = [pscustomobject]@{Result = 'Passed'}
+            ExpectedBuildCalls = 0
+            ExpectedPesterCalls = 0
+            ExpectedErrorId = $null
+        }
+        @{
+            Name = 'a failed Pester result'
+            BuildRequested = $false
+            WorkflowParams = @{}
+            ShouldRun = $true
+            PesterResult = [pscustomobject]@{Result = 'Failed'}
+            ExpectedBuildCalls = 0
+            ExpectedPesterCalls = 1
+            ExpectedErrorId = 'Nova.Workflow.TestRunFailed'
+        }
+    ) {
+        $workflowContext = New-NovaInvokeNovaTestWorkflowContext -BuildRequested $BuildRequested -WorkflowParams $WorkflowParams
         Mock Invoke-NovaBuild {}
         Mock Test-Path {$true}
-        Mock Invoke-NovaPester {[pscustomobject]@{Result = 'Passed'}}
+        Mock Invoke-NovaPester {$PesterResult}
 
-        Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
-        Should -Invoke Invoke-NovaBuild -Times 1
-    }
-
-    It 'skips the run when ShouldRun is explicitly false' {
-        $workflowContext = [pscustomobject]@{
-            ProjectInfo = [pscustomobject]@{Pester = [ordered]@{}}
-            TestResultDirectory = '/tmp/nova-project/artifacts'
-            TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
-            PesterConfig = [pscustomobject]@{TestResult = [pscustomobject]@{OutputPath = $null}}
-            TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
-            TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
+        $thrown = $null
+        try {
+            if ($ShouldRun) {
+                Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
+            }
+            else {
+                Invoke-NovaTestWorkflow -WorkflowContext $workflowContext -ShouldRun:$false
+            }
+        } catch {
+            $thrown = $_
         }
-        Mock Invoke-NovaPester {[pscustomobject]@{Result = 'Passed'}}
 
-        Invoke-NovaTestWorkflow -WorkflowContext $workflowContext -ShouldRun:$false
-        Should -Invoke Invoke-NovaPester -Times 0
-    }
-
-    It 'skips the run when WhatIf is set in WorkflowParams' {
-        $workflowContext = [pscustomobject]@{
-            WorkflowParams = @{WhatIf = $true}
-            ProjectInfo = [pscustomobject]@{Pester = [ordered]@{}}
-            TestResultDirectory = '/tmp/nova-project/artifacts'
-            TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
-            PesterConfig = [pscustomobject]@{TestResult = [pscustomobject]@{OutputPath = $null}}
-            TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
-            TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
+        if ($ExpectedErrorId) {
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.FullyQualifiedErrorId | Should -Be $ExpectedErrorId
         }
-        Mock Invoke-NovaPester {[pscustomobject]@{Result = 'Passed'}}
+        else {
+            $thrown | Should -BeNullOrEmpty
+        }
 
-        Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
-        Should -Invoke Invoke-NovaPester -Times 0
+        Should -Invoke Invoke-NovaBuild -Times $ExpectedBuildCalls
+        Should -Invoke Invoke-NovaPester -Times $ExpectedPesterCalls
     }
 
     It 'creates the artifact directory when it does not exist' {
@@ -224,21 +234,4 @@ Describe 'Invoke-NovaTestWorkflow' {
         }
     }
 
-    It 'stops with Nova.Workflow.TestRunFailed when the Pester result is not Passed' {
-        $workflowContext = [pscustomobject]@{
-            ProjectInfo = [pscustomobject]@{Pester = [ordered]@{}}
-            TestResultDirectory = '/tmp/nova-project/artifacts'
-            TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
-            PesterConfig = [pscustomobject]@{TestResult = [pscustomobject]@{OutputPath = $null}}
-            TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
-            TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
-        }
-        Mock Test-Path {$true}
-        Mock Invoke-NovaPester {[pscustomobject]@{Result = 'Failed'}}
-
-        $thrown = $null
-        try {Invoke-NovaTestWorkflow -WorkflowContext $workflowContext} catch {$thrown = $_}
-        $thrown | Should -Not -BeNullOrEmpty
-        $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.TestRunFailed'
-    }
 }

@@ -2,8 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/cli/GetNovaCliCommandHelpDefinition.ps1')
 
-    function Get-ResourceFilePath {param([string]$FileName) return $FileName}
-    function Stop-NovaOperation {param([string]$Message, [string]$ErrorId, $Category, $TargetObject) throw $Message}
+    . (Join-Path $PSScriptRoot 'GetNovaCliCommandHelpDefinition.TestSupport.ps1')
 }
 
 Describe 'Get-NovaCliHelpCommandNameList' {

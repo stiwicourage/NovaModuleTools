@@ -2,9 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/package/ResolveNovaPackageUploadAuthHeaderEntry.ps1')
 
-    function Get-NovaPackageUploadToken {param($AuthSettings, $Token, $TokenEnvironmentVariable) return 'tok'}
-    function Get-NovaPackageUploadAuthHeaderName {param($AuthSettings) return 'Authorization'}
-    function Get-NovaPackageUploadAuthHeaderValue {param($AuthSettings, $AuthenticationScheme, $HeaderName, $Token) return "Bearer $Token"}
+    . (Join-Path $PSScriptRoot 'ResolveNovaPackageUploadAuthHeaderEntry.TestSupport.ps1')
 }
 
 Describe 'Resolve-NovaPackageUploadAuthHeaderEntry' {

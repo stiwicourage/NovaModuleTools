@@ -2,8 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/cli/GetNovaCliInstallDirectory.ps1')
 
-    function Get-NovaEnvironmentVariableValue {param([string]$Name) return $null}
-    function Stop-NovaOperation {param([string]$Message, [string]$ErrorId, $Category, $TargetObject) throw $Message}
+    . (Join-Path $PSScriptRoot 'GetNovaCliInstallDirectory.TestSupport.ps1')
 }
 
 Describe 'Get-NovaCliInstallDirectory' {

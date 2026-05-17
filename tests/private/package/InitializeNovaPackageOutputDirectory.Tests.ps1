@@ -2,8 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/package/InitializeNovaPackageOutputDirectory.ps1')
 
-    function Stop-NovaOperation {param($Message, $ErrorId, $Category, $TargetObject) throw $Message}
-    function Clear-NovaPackageOutputDirectory {param($ProjectInfo, $OutputDirectory)}
+    . (Join-Path $PSScriptRoot 'InitializeNovaPackageOutputDirectory.TestSupport.ps1')
 }
 
 Describe 'Initialize-NovaPackageOutputDirectory' {

@@ -107,30 +107,43 @@ function Repair-PesterJaCoCoCoveragePath {
     param([Parameter(Mandatory)][string]$Path)
 
     [xml]$document = Get-Content -LiteralPath $Path -Raw
-    $changed = $false
-
-    foreach ($class in $document.SelectNodes('//class[@sourcefilename]')) {
-        $original = $class.GetAttribute('sourcefilename')
-        $normalized = [System.IO.Path]::GetFileName($original)
-        if ($normalized -ne $original) {
-            $class.SetAttribute('sourcefilename', $normalized)
-            $changed = $true
-        }
-    }
-
-    foreach ($sourcefile in $document.SelectNodes('//sourcefile[@name]')) {
-        $original = $sourcefile.GetAttribute('name')
-        $normalized = [System.IO.Path]::GetFileName($original)
-        if ($normalized -ne $original) {
-            $sourcefile.SetAttribute('name', $normalized)
-            $changed = $true
-        }
-    }
+    $changed = Repair-CodeSceneJaCoCoNodePathAttribute -Nodes $document.SelectNodes('//class[@sourcefilename]') -AttributeName 'sourcefilename'
+    $changed = (Repair-CodeSceneJaCoCoNodePathAttribute -Nodes $document.SelectNodes('//sourcefile[@name]') -AttributeName 'name') -or $changed
 
     if ($changed) {
         $document.Save($Path)
         Write-Host "Normalized JaCoCo sourcefile paths in '$Path' so package + sourcefile resolve to repo files."
     }
+}
+
+function Repair-CodeSceneJaCoCoNodePathAttribute {
+    param(
+        [Parameter(Mandatory)]$Nodes,
+        [Parameter(Mandatory)][string]$AttributeName
+    )
+
+    $changed = $false
+    foreach ($node in $Nodes) {
+        $changed = (Repair-CodeSceneJaCoCoNodeFileName -Node $node -AttributeName $AttributeName) -or $changed
+    }
+
+    return $changed
+}
+
+function Repair-CodeSceneJaCoCoNodeFileName {
+    param(
+        [Parameter(Mandatory)]$Node,
+        [Parameter(Mandatory)][string]$AttributeName
+    )
+
+    $original = $Node.GetAttribute($AttributeName)
+    $normalized = [System.IO.Path]::GetFileName($original)
+    if ($normalized -eq $original) {
+        return $false
+    }
+
+    $Node.SetAttribute($AttributeName, $normalized)
+    return $true
 }
 
 function Test-JaCoCoBranchCoverageAvailable {

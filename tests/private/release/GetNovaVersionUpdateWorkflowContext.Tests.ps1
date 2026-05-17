@@ -2,7 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/release/GetNovaVersionUpdateWorkflowContext.ps1')
 
-    function Get-NovaCurrentVersionForUpdatePlan {param($ProjectInfo) return [semver]$ProjectInfo.Version}
+    . (Join-Path $PSScriptRoot 'GetNovaVersionUpdateWorkflowContext.TestSupport.ps1')
 }
 
 Describe 'Test-NovaVersionUpdateUsesPreviewPatchFallback' {
@@ -94,11 +94,6 @@ Describe 'Get-NovaVersionUpdateWorkflowContextObject' {
 }
 
 Describe 'Assert-NovaVersionBumpInferenceAvailability' {
-    BeforeAll {
-        function Test-GitRepositoryIsAvailable {param($ProjectRoot) $true}
-        function Stop-NovaOperation {param([string]$Message,[string]$ErrorId,$Category,$TargetObject) throw [System.Management.Automation.ErrorRecord]::new([System.Exception]::new($Message),$ErrorId,$Category,$TargetObject)}
-    }
-
     It 'returns silently when commit messages exist' {
         { Assert-NovaVersionBumpInferenceAvailability -ProjectRoot '/r' -CommitMessages @('m') } | Should -Not -Throw
     }
@@ -120,13 +115,6 @@ Describe 'Assert-NovaVersionBumpInferenceAvailability' {
 }
 
 Describe 'Get-NovaVersionUpdateWorkflowContext (entry point)' {
-    BeforeAll {
-        function Get-NovaProjectInfo {param($Path) [pscustomobject]@{ProjectJSON='/r/project.json'; Version='1.2.3'}}
-        function Get-GitCommitMessageForVersionBump {param($ProjectRoot) @('feat: x','fix: y')}
-        function Test-GitRepositoryIsAvailable {param($ProjectRoot) $true}
-        function Get-NovaVersionLabelForBump {param($ProjectRoot,$CommitMessages,[switch]$ContinuousIntegrationRequested) 'Minor'}
-        function Get-NovaVersionUpdatePlan {param($ProjectInfo,$Label,[switch]$PreviewRelease) [pscustomobject]@{NewVersion=[semver]'1.3.0'}}
-    }
     It 'composes the workflow context end to end with mocked collaborators' {
         Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectJSON='/r/project.json'; Version='1.2.3'}}
         Mock Get-GitCommitMessageForVersionBump {@('feat: x','fix: y')}

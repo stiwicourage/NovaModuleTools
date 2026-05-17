@@ -2,10 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/shared/GetNovaProjectInfoContext.ps1')
 
-    function Stop-NovaOperation {param([string]$Message, [string]$ErrorId, $Category, $TargetObject)
-        throw $Message
-    }
-    function Read-ProjectJsonData {param([string]$ProjectJsonPath)}
+    . (Join-Path $PSScriptRoot 'GetNovaProjectInfoContext.TestSupport.ps1')
 }
 
 Describe 'Get-NovaProjectInfoContext' {

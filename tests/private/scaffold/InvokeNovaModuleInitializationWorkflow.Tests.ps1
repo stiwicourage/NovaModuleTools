@@ -2,10 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/scaffold/InvokeNovaModuleInitializationWorkflow.ps1')
 
-    function Initialize-NovaModuleScaffold {param($Answer, $Paths, [switch]$Example)}
-    function Write-NovaModuleProjectJson {param($Answer, [string]$ProjectJsonFile, [switch]$Example)}
-    function Initialize-NovaModuleAgenticCopilotScaffold {param($Answer, [string]$ProjectRoot, [switch]$Example)}
-    function Write-Message {param([Parameter(ValueFromPipeline = $true)]$InputObject, [string]$color)}
+    . (Join-Path $PSScriptRoot 'InvokeNovaModuleInitializationWorkflow.TestSupport.ps1')
 }
 
 Describe 'Invoke-NovaModuleInitializationWorkflow' {

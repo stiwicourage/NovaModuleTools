@@ -4,10 +4,7 @@ BeforeAll {
     . (Join-Path $projectRoot 'src/private/scaffold/GetNovaModuleScaffoldPaths.ps1')
     . (Join-Path $projectRoot 'src/private/scaffold/UpdateNovaGitIgnore.ps1')
 
-    function Stop-NovaOperation {param($Message, $ErrorId, $Category, $TargetObject) throw $Message}
-    function Write-Message {param([string]$Message, [string]$color) }
-    function New-InitiateGitRepo {param($DirectoryPath)}
-    function Copy-NovaExampleProjectTemplate {param($DestinationPath)}
+    . (Join-Path $PSScriptRoot 'InitializeNovaModuleScaffold.TestSupport.ps1')
 }
 
 Describe 'Initialize-NovaModuleScaffold' {

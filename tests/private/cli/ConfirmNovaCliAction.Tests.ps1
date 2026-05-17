@@ -2,13 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/cli/ConfirmNovaCliAction.ps1')
 
-    function Stop-NovaOperation {
-        param([string]$Message, [string]$ErrorId, [System.Management.Automation.ErrorCategory]$Category, $TargetObject)
-        $exception = [System.Exception]::new($Message)
-        $record = [System.Management.Automation.ErrorRecord]::new($exception, $ErrorId, $Category, $TargetObject)
-        throw $record
-    }
-    function Get-NovaEnvironmentVariableValue {param([string]$Name) return $null}
+    . (Join-Path $PSScriptRoot 'ConfirmNovaCliAction.TestSupport.ps1')
 }
 
 Describe 'Get-NovaCliConfirmDecision' {

@@ -2,12 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/package/GetNovaPackageRepository.ps1')
 
-    function Stop-NovaOperation {param($Message, $ErrorId, $Category, $TargetObject) throw $Message}
-    function Get-NovaPackageSettingValue {param($InputObject, $Name)
-        if ($null -eq $InputObject) {return $null}
-        if ($InputObject -is [System.Collections.IDictionary]) {return $InputObject[$Name]}
-        return $InputObject.$Name
-    }
+    . (Join-Path $PSScriptRoot 'GetNovaPackageRepository.TestSupport.ps1')
 }
 
 Describe 'Get-NovaPackageRepository' {

@@ -2,8 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/package/GetNovaPackageUploadFileList.ps1')
 
-    function Resolve-NovaPackageUploadExplicitFileList {param($ProjectInfo, $PackagePath, $PackageType) return @('explicit')}
-    function Resolve-NovaPackageUploadOutputFileList {param($ProjectInfo, $PackageType) return @('output')}
+    . (Join-Path $PSScriptRoot 'GetNovaPackageUploadFileList.TestSupport.ps1')
 }
 
 Describe 'Get-NovaPackageUploadFileList' {

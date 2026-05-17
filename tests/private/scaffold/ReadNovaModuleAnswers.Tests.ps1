@@ -3,18 +3,7 @@ BeforeAll {
     . (Join-Path $projectRoot 'src/private/scaffold/GetNovaModuleQuestions.ps1')
     . (Join-Path $projectRoot 'src/private/scaffold/ReadNovaModuleAnswers.ps1')
 
-    function Get-AwesomePromptValue {
-        param($Ask, [string]$Name)
-        if ($null -eq $Ask) {return $null}
-        if ($Ask -is [System.Collections.IDictionary]) {
-            if ($Ask.Contains($Name)) {return $Ask[$Name]}
-            return $null
-        }
-        if ($Ask.PSObject.Properties[$Name]) {return $Ask.$Name}
-        return $null
-    }
-    function Read-AwesomeHost {param($Ask)}
-    function Assert-NovaModuleQuestionAnswerValid {param($Question, $Value)}
+    . (Join-Path $PSScriptRoot 'ReadNovaModuleAnswers.TestSupport.ps1')
 }
 
 Describe 'Read-NovaModuleAnswerSet' {

@@ -1,9 +1,7 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/package/NewNovaPackageArtifacts.ps1')
-    function Assert-NovaPackageMetadata {param($PackageMetadata)}
-    function Initialize-NovaPackageOutputDirectory {param($ProjectInfo,$PackageMetadataList)}
-    function New-NovaPackageArtifact {param($ProjectInfo,$PackageMetadata,[switch]$OutputDirectoryReady) [pscustomobject]@{PackagePath=$PackageMetadata.PackagePath}}
+    . (Join-Path $PSScriptRoot 'NewNovaPackageArtifacts.TestSupport.ps1')
 }
 
 Describe 'New-NovaPackageArtifacts' {

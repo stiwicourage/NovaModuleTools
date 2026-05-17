@@ -2,12 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/package/ResolveNovaPackageUploadOutputFileList.ps1')
 
-    function Stop-NovaOperation {param($Message, $ErrorId, $Category, $TargetObject) throw $Message}
-    function Resolve-NovaPackageUploadTypeList {param($ProjectInfo, $PackageType) return @('NuGet')}
-    function Get-NovaPackageOutputDirectory {param($ProjectInfo) return $script:outputDirectory}
-    function Resolve-NovaPackageUploadOutputFileSet {param($OutputDirectory, $ProjectInfo, $PackageType)
-        return @([pscustomobject]@{Type=$PackageType; PackagePath=Join-Path $OutputDirectory 'x.nupkg'})
-    }
+    . (Join-Path $PSScriptRoot 'ResolveNovaPackageUploadOutputFileList.TestSupport.ps1')
 }
 
 Describe 'Resolve-NovaPackageUploadOutputFileList' {

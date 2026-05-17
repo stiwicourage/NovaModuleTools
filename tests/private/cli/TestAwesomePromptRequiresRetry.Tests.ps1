@@ -2,9 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/cli/TestAwesomePromptRequiresRetry.ps1')
 
-    function Get-AwesomePromptValue {param($Ask, [string]$Name) return $null}
-    function Get-AwesomePromptResult {param($Ask, $Response) return 'value'}
-    function Get-AwesomePromptValidationFailure {param($Ask, $Value) return $null}
+    . (Join-Path $PSScriptRoot 'TestAwesomePromptRequiresRetry.TestSupport.ps1')
 }
 
 Describe 'Test-AwesomePromptRequiresRetry' {

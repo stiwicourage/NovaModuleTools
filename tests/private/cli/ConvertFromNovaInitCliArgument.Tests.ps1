@@ -3,8 +3,7 @@ BeforeAll {
     . (Join-Path $projectRoot 'src/private/cli/ConvertFromNovaInitCliArgument.ps1')
     . (Join-Path $projectRoot 'src/private/cli/GetNovaCliRequiredArgumentValue.ps1')
 
-    function ConvertTo-NovaCliArgumentArray {param([hashtable]$BoundParameters, [string[]]$Arguments) return @($Arguments | Where-Object {$_})}
-    function Stop-NovaOperation {param([string]$Message, [string]$ErrorId, $Category, $TargetObject) throw $Message}
+    . (Join-Path $PSScriptRoot 'ConvertFromNovaInitCliArgument.TestSupport.ps1')
 }
 
 Describe 'ConvertFrom-NovaInitCliArgument' {

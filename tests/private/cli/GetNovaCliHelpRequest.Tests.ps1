@@ -3,10 +3,7 @@ BeforeAll {
     . (Join-Path $projectRoot 'src/private/cli/GetNovaCliHelpRequest.ps1')
     . (Join-Path $projectRoot 'src/private/cli/GetNovaCliCommandHelp.ps1')
 
-    function Get-NovaCliNormalizedRootCommand {param([string]$Command) return $Command}
-    function Get-NovaCliCommandHelpDefinition {param([string]$Command) return @{}}
-    function Format-NovaCliCommandHelp {param($Definition, [string]$View) return $View}
-    function Stop-NovaOperation {param([string]$Message, [string]$ErrorId, $Category, $TargetObject) throw $Message}
+    . (Join-Path $PSScriptRoot 'GetNovaCliHelpRequest.TestSupport.ps1')
 }
 
 Describe 'Get-NovaCliHelpUsageText' {

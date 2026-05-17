@@ -2,11 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/release/PublishNovaBuiltModule.ps1')
 
-    function Get-NovaProjectInfo {return [pscustomobject]@{OutputModuleDir='/dist/X'; ProjectName='X'}}
-    function Publish-NovaBuiltModuleToRepository {param($ProjectInfo, $Repository, $ApiKey)}
-    function Publish-NovaBuiltModuleToDirectory {param($ProjectInfo, $ModuleDirectoryPath)}
-    function Resolve-NovaLocalPublishPath {param($ModuleDirectoryPath) return '/local/resolved'}
-    function Stop-NovaOperation {param($Message, $ErrorId, $Category, $TargetObject) throw $Message}
+    . (Join-Path $PSScriptRoot 'PublishNovaBuiltModule.TestSupport.ps1')
 }
 
 Describe 'Publish-NovaBuiltModule' {

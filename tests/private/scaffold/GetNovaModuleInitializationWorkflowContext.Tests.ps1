@@ -2,11 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/scaffold/GetNovaModuleInitializationWorkflowContext.ps1')
 
-    function Resolve-NovaModuleScaffoldBasePath {param($Path)}
-    function Get-NovaModuleQuestionSet {param([switch]$Example)}
-    function Invoke-NovaModuleUpdateNotificationSafely {}
-    function Read-NovaModuleAnswerSet {param($Questions)}
-    function Get-NovaModuleScaffoldLayout {param($Path, $ProjectName)}
+    . (Join-Path $PSScriptRoot 'GetNovaModuleInitializationWorkflowContext.TestSupport.ps1')
 }
 
 Describe 'Get-NovaModuleInitializationWorkflowContext' {

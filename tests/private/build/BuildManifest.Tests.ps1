@@ -2,16 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/build/BuildManifest.ps1')
 
-    function Stop-NovaOperation {
-        param([string]$Message, [string]$ErrorId, [System.Management.Automation.ErrorCategory]$Category, $TargetObject)
-        $exception = [System.Exception]::new($Message)
-        $record = [System.Management.Automation.ErrorRecord]::new($exception, $ErrorId, $Category, $TargetObject)
-        throw $record
-    }
-    function Get-NovaBuildProjectInfo {param($ProjectInfo); return $ProjectInfo}
-    function Get-FunctionNameFromFile {param($filePath); return @('Foo')}
-    function Get-AliasInFunctionFromFile {param($filePath); return @()}
-    function Assert-ManifestSchema {param($Manifest, $AllowedParameter)}
+    . (Join-Path $PSScriptRoot 'BuildManifest.TestSupport.ps1')
 }
 
 Describe 'Build-Manifest' {

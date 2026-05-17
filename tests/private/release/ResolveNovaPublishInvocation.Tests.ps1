@@ -2,9 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/release/ResolveNovaPublishInvocation.ps1')
 
-    function Resolve-NovaLocalPublishPath {param($ModuleDirectoryPath) return '/local-resolved'}
-    function Publish-NovaBuiltModuleToRepository {param($ProjectInfo, $Repository, $ApiKey)}
-    function Publish-NovaBuiltModuleToDirectory {param($ProjectInfo, $ModuleDirectoryPath)}
+    . (Join-Path $PSScriptRoot 'ResolveNovaPublishInvocation.TestSupport.ps1')
 }
 
 Describe 'Resolve-NovaPublishInvocation' {

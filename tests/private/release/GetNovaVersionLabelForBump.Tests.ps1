@@ -2,10 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/release/GetNovaVersionLabelForBump.ps1')
 
-    function Get-VersionLabelFromCommitSet {param($Messages) return 'Major'}
-    function Invoke-NovaGitCommand {param($ProjectRoot, $Arguments) return [pscustomobject]@{ExitCode=0; Output=@()}}
-    function Get-NovaGitCommandOutputText {param($Result) return ($Result.Output -join "`n")}
-    function Stop-NovaOperation {param($Message, $ErrorId, $Category, $TargetObject) throw $Message}
+    . (Join-Path $PSScriptRoot 'GetNovaVersionLabelForBump.TestSupport.ps1')
 }
 
 Describe 'Get-NovaVersionLabelForBump' {
@@ -28,46 +25,19 @@ Describe 'Get-NovaVersionLabelForBump' {
         { Get-NovaVersionLabelForBump -ProjectRoot '/p' } | Should -Throw '*has no commits yet*'
     }
 
-    It 'returns Patch in CI mode when no commits since latest tag' {
-        $script:i = 0
-        Mock Invoke-NovaGitCommand {
-            $script:i += 1
-            switch ($script:i) {
-                1 {[pscustomobject]@{ExitCode=0; Output=@('.git')}}
-                2 {[pscustomobject]@{ExitCode=0; Output=@('sha')}}
-                3 {[pscustomobject]@{ExitCode=0; Output=@('v1.0.0')}}
-                default {[pscustomobject]@{ExitCode=0; Output=@('0')}}
-            }
-        }
-        Get-NovaVersionLabelForBump -ProjectRoot '/p' -ContinuousIntegrationRequested | Should -Be 'Patch'
-    }
+    It 'handles latest-tag commit count resolution for <Name>' -ForEach @(
+        @{ Name = 'CI mode with no commits since the latest tag'; CommitCount = '0'; ContinuousIntegrationRequested = $true; ExpectedResult = 'Patch'; ExpectedThrow = $null }
+        @{ Name = 'non-CI mode with no commits since the latest tag'; CommitCount = '0'; ContinuousIntegrationRequested = $false; ExpectedThrow = '*no commits since the latest tag*' }
+        @{ Name = 'commits since the latest tag'; CommitCount = '3'; ContinuousIntegrationRequested = $false; ExpectedResult = 'Patch'; ExpectedThrow = $null }
+    ) {
+        Set-NovaVersionLabelGitSequenceMock -CommitCount $CommitCount
 
-    It 'throws outside CI when no commits since latest tag' {
-        $script:i = 0
-        Mock Invoke-NovaGitCommand {
-            $script:i += 1
-            switch ($script:i) {
-                1 {[pscustomobject]@{ExitCode=0; Output=@('.git')}}
-                2 {[pscustomobject]@{ExitCode=0; Output=@('sha')}}
-                3 {[pscustomobject]@{ExitCode=0; Output=@('v1.0.0')}}
-                default {[pscustomobject]@{ExitCode=0; Output=@('0')}}
-            }
+        if ($ExpectedThrow) {
+            { Get-NovaVersionLabelForBump -ProjectRoot '/p' } | Should -Throw $ExpectedThrow
         }
-        { Get-NovaVersionLabelForBump -ProjectRoot '/p' } | Should -Throw '*no commits since the latest tag*'
-    }
-
-    It 'returns Patch fallback when commits exist since the latest tag' {
-        $script:i = 0
-        Mock Invoke-NovaGitCommand {
-            $script:i += 1
-            switch ($script:i) {
-                1 {[pscustomobject]@{ExitCode=0; Output=@('.git')}}
-                2 {[pscustomobject]@{ExitCode=0; Output=@('sha')}}
-                3 {[pscustomobject]@{ExitCode=0; Output=@('v1.0.0')}}
-                default {[pscustomobject]@{ExitCode=0; Output=@('3')}}
-            }
+        else {
+            Get-NovaVersionLabelForBump -ProjectRoot '/p' -ContinuousIntegrationRequested:$ContinuousIntegrationRequested | Should -Be $ExpectedResult
         }
-        Get-NovaVersionLabelForBump -ProjectRoot '/p' | Should -Be 'Patch'
     }
 }
 

@@ -2,11 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/release/GetNovaInstalledProjectVersion.ps1')
 
-    function Get-NovaInstalledProjectManifestPath {param($ProjectInfo, $ModuleDirectoryPath) return '/nonexistent.psd1'}
-    function Format-NovaCliVersionString {param($Name, $Version) return "$Name $Version"}
-    function Get-NovaProjectInfo {return [pscustomobject]@{ProjectName='X'}}
-    function Stop-NovaOperation {param($Message, $ErrorId, $Category, $TargetObject) throw $Message}
-    function Test-ModuleManifest {param($Path, $ErrorAction) return [pscustomobject]@{Version=[version]'1.2.3'}}
+    . (Join-Path $PSScriptRoot 'GetNovaInstalledProjectVersion.TestSupport.ps1')
 }
 
 Describe 'Get-NovaInstalledProjectVersion' {

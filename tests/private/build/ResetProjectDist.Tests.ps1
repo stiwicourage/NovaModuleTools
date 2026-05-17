@@ -2,10 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/build/ResetProjectDist.ps1')
 
-    function Get-NovaBuildProjectInfo {param([pscustomobject]$ProjectInfo)}
-    function Stop-NovaOperation {param([string]$Message, [string]$ErrorId, $Category, $TargetObject)
-        throw $Message
-    }
+    . (Join-Path $PSScriptRoot 'ResetProjectDist.TestSupport.ps1')
 }
 
 Describe 'Reset-ProjectDist' {

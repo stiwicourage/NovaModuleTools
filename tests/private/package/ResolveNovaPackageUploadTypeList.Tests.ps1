@@ -2,10 +2,7 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/package/ResolveNovaPackageUploadTypeList.ps1')
 
-    function Stop-NovaOperation {param($Message, $ErrorId, $Category, $TargetObject) throw $Message}
-    function Get-NovaPackageArtifactPatternInfo {param($ProjectInfo) return [pscustomobject]@{Pattern='X*'; ExplicitPackageType=$null}}
-    function ConvertTo-NovaPackageType {param($Type) if ($Type -match '(?i)zip') {'Zip'} else {'NuGet'}}
-    function Get-NovaPackageMetadataList {param($ProjectInfo) return @([pscustomobject]@{Type='NuGet'}, [pscustomobject]@{Type='Zip'})}
+    . (Join-Path $PSScriptRoot 'ResolveNovaPackageUploadTypeList.TestSupport.ps1')
 }
 
 Describe 'Resolve-NovaRequestedPackageUploadTypeList' {
