@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - `Initialize-NovaModule` and `% nova init` now check for newer NovaModuleTools releases before the first interactive scaffold question and reuse the same non-blocking update warning behavior already used by build.
 - `Test-NovaBuild` and `% nova test` now enforce `Pester.CodeCoverage.CoveragePercentTarget` from `project.json` when `CodeCoverage.Enabled` is `true`, failing the test run when measured coverage drops below the configured target.
 - Added a non-blocking `scripts/build/Get-TestMirrorStatus.ps1` helper that reports `src/**/*.ps1` files without a matching mirrored test file under `tests/`, to support the migration to the source-mirrored, dot-source-first test layout.
+- Added mirrored, dot-source-first Pester test files for scaffold and update private helpers (`src/private/scaffold/*.ps1` and `src/private/update/*.ps1`), so each unit-level helper now has a focused test file under `tests/private/scaffold/` or `tests/private/update/` instead of being covered only through broad legacy coverage files.
 
 
 ### Changed
