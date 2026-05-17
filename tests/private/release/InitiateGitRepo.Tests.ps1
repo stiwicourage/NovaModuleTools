@@ -33,6 +33,11 @@ Describe 'New-InitiateGitRepo' {
         Mock Invoke-NovaGitCommand {return [pscustomobject]@{ExitCode=128; Output=@('boom')}}
         {New-InitiateGitRepo -DirectoryPath $script:dir} | Should -Throw '*Failed to initialize Git repo*'
     }
+
+    It 'wraps the exception when Invoke-NovaGitCommand throws' {
+        Mock Invoke-NovaGitCommand {throw 'kaboom'}
+        {New-InitiateGitRepo -DirectoryPath $script:dir} | Should -Throw '*kaboom*'
+    }
 }
 
 Describe 'Get-NovaGitInitializationFailureMessage' {

@@ -62,6 +62,11 @@ Describe 'Get-NovaCliSubcommandHelpRequest' {
         $request.TargetType | Should -Be 'Command'
     }
 
+    It 'returns $null when arguments are present but none are help tokens' {
+        function Test-NovaCliHelpToken {param($Argument) return $false}
+        Get-NovaCliSubcommandHelpRequest -Command 'build' -Arguments @('--verbose') | Should -BeNullOrEmpty
+    }
+
     It 'throws when help tokens are mixed with other arguments' {
         {Get-NovaCliSubcommandHelpRequest -Command 'build' -Arguments @('--help', '-x')} | Should -Throw '*Unsupported help usage*'
     }

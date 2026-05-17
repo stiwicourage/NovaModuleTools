@@ -15,4 +15,10 @@ Describe 'Get-NovaInstalledProjectManifestPath' {
         $invocation.Target | Should -Be '/m'
         $invocation.Parameters.ProjectInfo | Should -Be $project
     }
+
+    It 'falls back to Get-NovaProjectInfo when -ProjectInfo is omitted' {
+        Mock Get-NovaProjectInfo {return [pscustomobject]@{ProjectName='Defaulted'}}
+        $invocation = Get-NovaInstalledProjectManifestPath -ModuleDirectoryPath '/m'
+        $invocation.Parameters.ProjectInfo.ProjectName | Should -Be 'Defaulted'
+    }
 }

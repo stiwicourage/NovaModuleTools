@@ -45,4 +45,16 @@ Describe 'Get-NovaPackageMetadata' {
         $meta.Latest | Should -BeTrue
         $meta.PackageFileName | Should -Match '\.latest\.'
     }
+
+    It 'reads Types from a hashtable-style Package settings' {
+        $script:project.Package = @{Id='X'; Authors='alice'; Description='d'; Types=@('Zip'); OutputDirectory=@{Clean=$false}}
+        $meta = Get-NovaPackageMetadata -ProjectInfo $script:project
+        $meta.Type | Should -Be 'Zip'
+    }
+
+    It 'defaults to NuGet when no Types are configured and no explicit PackageType' {
+        $script:project.Package.Types = @()
+        $meta = Get-NovaPackageMetadata -ProjectInfo $script:project
+        $meta.Type | Should -Be 'NuGet'
+    }
 }

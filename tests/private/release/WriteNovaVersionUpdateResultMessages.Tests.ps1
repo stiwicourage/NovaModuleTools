@@ -48,4 +48,10 @@ Describe 'Write-NovaVersionUpdateResultOutput' {
         Write-NovaVersionUpdateResultOutput -Result $r -WarningVariable w -WarningAction SilentlyContinue 6> $null
         $w[0].Message | Should -Be 'watch out'
     }
+
+    It 'writes the bumped version host message when Applied is true' {
+        $r = [pscustomobject]@{AdvisoryMessage=''; Applied=$true; NewVersion='1.2.3'}
+        $output = Write-NovaVersionUpdateResultOutput -Result $r 6>&1 | Out-String
+        $output | Should -Match 'Version bumped to : 1.2.3'
+    }
 }

@@ -26,3 +26,13 @@ Describe 'Add-NovaLegacyWebRequestOption' {
         $result.Uri | Should -Be 'x'
     }
 }
+
+Describe 'Invoke-NovaPackageUploadRequest' {
+    It 'sends the resolved parameter map to Invoke-WebRequest' {
+        Mock Invoke-WebRequest {return [pscustomobject]@{StatusCode = 201; Args = $PSBoundParameters}}
+        $artifact = [pscustomobject]@{UploadUrl='https://x'; PackagePath='/o/x.nupkg'; Headers=@{A='1'}}
+        $result = Invoke-NovaPackageUploadRequest -UploadArtifact $artifact
+        $result.StatusCode | Should -Be 201
+        Should -Invoke Invoke-WebRequest -Times 1 -ParameterFilter {$Uri -eq 'https://x' -and $Method -eq 'Put' -and $InFile -eq '/o/x.nupkg'}
+    }
+}

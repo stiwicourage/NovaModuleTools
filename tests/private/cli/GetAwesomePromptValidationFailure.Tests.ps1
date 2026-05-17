@@ -9,6 +9,11 @@ Describe 'Get-AwesomePromptValidationFailure' {
         Get-AwesomePromptValidationFailure -Ask @{} -Value 'x' | Should -BeNullOrEmpty
     }
 
+    It 'returns $null when Validation entry has no Test' {
+        $ask = @{Validation = @{Message = 'bad'}}
+        Get-AwesomePromptValidationFailure -Ask $ask -Value 'x' | Should -BeNullOrEmpty
+    }
+
     It 'returns $null when validator returns true' {
         $ask = @{Validation = @{Test = {param($v) $true}; Message = 'bad'; ErrorId = 'e'; Category = 'c'}}
         Get-AwesomePromptValidationFailure -Ask $ask -Value 'x' | Should -BeNullOrEmpty

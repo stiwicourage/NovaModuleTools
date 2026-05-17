@@ -28,4 +28,24 @@ Describe 'Get-NovaCliLauncherPath' {
             Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
+
+    It 'throws when Install-NovaCli has no file backing' {
+        $fakeCommand = [pscustomobject]@{ScriptBlock = [pscustomobject]@{File=''}}
+        Mock Get-Command {return $fakeCommand}
+        {Get-NovaCliLauncherPath} | Should -Throw '*file-backed module*'
+    }
+
+    It 'throws when no launcher is found in any candidate path' {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([guid]::NewGuid())
+        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+        $commandFile = Join-Path $tempRoot 'Install-NovaCli.ps1'
+        Set-Content -LiteralPath $commandFile -Value 'x'
+        try {
+            $fakeCommand = [pscustomobject]@{ScriptBlock = [pscustomobject]@{File=$commandFile}}
+            Mock Get-Command {return $fakeCommand}
+            {Get-NovaCliLauncherPath} | Should -Throw '*Nova CLI launcher not found*'
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
 }

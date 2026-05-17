@@ -53,4 +53,9 @@ Describe 'Format-NovaCliCommandResult' {
     It 'passes through other results' {
         Format-NovaCliCommandResult -Command 'build' -Result 'raw' | Should -Be 'raw'
     }
+
+    It 'passes through a structured result that does not match update or bump shapes' {
+        $result = [pscustomobject]@{Custom = 'value'}
+        Format-NovaCliCommandResult -Command 'package' -Result $result | Should -Be $result
+    }
 }

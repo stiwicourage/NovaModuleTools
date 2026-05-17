@@ -34,4 +34,10 @@ Describe 'New-NovaPackageArtifact' {
         $script:meta.Type = 'Tar'
         {New-NovaPackageArtifact -ProjectInfo $script:project -PackageMetadata $script:meta -OutputDirectoryReady} | Should -Throw '*Unsupported package type*'
     }
+
+    It 'initializes the output directory when OutputDirectoryReady is not set' {
+        Mock Initialize-NovaPackageOutputDirectory {}
+        New-NovaPackageArtifact -ProjectInfo $script:project -PackageMetadata $script:meta | Out-Null
+        Should -Invoke Initialize-NovaPackageOutputDirectory -Times 1
+    }
 }

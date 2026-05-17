@@ -35,4 +35,11 @@ Describe 'Publish-NovaBuiltModule' {
         Publish-NovaBuiltModule -ModuleDirectoryPath '/local' -ProjectInfo $script:project
         Should -Invoke Publish-NovaBuiltModuleToDirectory -Times 1 -ParameterFilter {$ModuleDirectoryPath -eq '/local'}
     }
+
+    It 'resolves the local publish path when ModuleDirectoryPath is blank' {
+        Mock Publish-NovaBuiltModuleToDirectory {}
+        Mock Resolve-NovaLocalPublishPath {return '/local/resolved'}
+        Publish-NovaBuiltModule -ProjectInfo $script:project
+        Should -Invoke Publish-NovaBuiltModuleToDirectory -Times 1 -ParameterFilter {$ModuleDirectoryPath -eq '/local/resolved'}
+    }
 }

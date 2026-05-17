@@ -25,4 +25,16 @@ Describe 'Get-NovaInstalledProjectVersion' {
             Remove-Item -LiteralPath $tmp -ErrorAction SilentlyContinue
         }
     }
+
+    It 'falls back to Get-NovaProjectInfo when -ProjectInfo is omitted' {
+        $tmp = [System.IO.Path]::GetTempFileName()
+        try {
+            Mock Get-NovaInstalledProjectManifestPath {return $tmp}
+            Mock Test-ModuleManifest {return [pscustomobject]@{Version=[version]'3.0.0'}}
+            Mock Get-NovaProjectInfo {return [pscustomobject]@{ProjectName='Defaulted'}}
+            Get-NovaInstalledProjectVersion | Should -Be 'Defaulted 3.0.0'
+        } finally {
+            Remove-Item -LiteralPath $tmp -ErrorAction SilentlyContinue
+        }
+    }
 }

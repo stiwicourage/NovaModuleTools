@@ -150,4 +150,38 @@ Describe 'Initialize-NovaModuleAgenticCopilotScaffold' {
 
         $content | Should -Be 'Name: NovaAgentic'
     }
+
+    It 'merges existing README body into the start-here section when Example mode finds a secondary heading' {
+        $projectRoot = Join-Path $TestDrive 'merged-readme-project'
+        $null = New-Item -ItemType Directory -Path $projectRoot -Force
+        $readmePath = Join-Path $projectRoot 'README.md'
+        Set-Content -LiteralPath $readmePath -Value "# Example project`n## Usage`nDo things" -Encoding utf8 -NoNewline
+        $tokenMap = & $script:newReadmeFallbackTokenMap
+
+        $content = Get-NovaModuleAgenticCopilotReadmeContent -TemplateContent '{{StartHereBody}}' -TokenMap $tokenMap -ProjectRoot $projectRoot -Example
+
+        $content | Should -Match 'packaged example scaffold'
+        $content | Should -Match '## Usage'
+    }
+
+    It 'dispatches to the README-aware content builder for README.md and to the generic expander otherwise' {
+        $projectRoot = Join-Path $TestDrive 'destination-content'
+        $null = New-Item -ItemType Directory -Path $projectRoot -Force
+        $scaffoldContext = [ordered]@{
+            TokenMap = [ordered]@{'{{X}}' = 'expanded'}
+            ProjectRoot = $projectRoot
+            Example = $false
+        }
+
+        Get-NovaModuleAgenticCopilotDestinationContent -RelativePath 'README.md' -TemplateContent 'X={{X}}' -ScaffoldContext $scaffoldContext | Should -Be 'X=expanded'
+        Get-NovaModuleAgenticCopilotDestinationContent -RelativePath 'other.md' -TemplateContent 'Y={{X}}' -ScaffoldContext $scaffoldContext | Should -Be 'Y=expanded'
+    }
+
+    It 'normalizes file content trailing whitespace consistently' {
+        ConvertTo-NovaModuleAgenticCopilotNormalizedFileContent -Content '' | Should -Be ''
+        ConvertTo-NovaModuleAgenticCopilotNormalizedFileContent -Content "`r`n`r`n" | Should -Be "`r`n`r`n"
+        ConvertTo-NovaModuleAgenticCopilotNormalizedFileContent -Content "line1`r`nline2" | Should -Be "line1`r`nline2`r`n"
+        ConvertTo-NovaModuleAgenticCopilotNormalizedFileContent -Content "line1`nline2" | Should -Be "line1`nline2`n"
+        ConvertTo-NovaModuleAgenticCopilotNormalizedFileContent -Content "line1`r`nline2`r`n`r`n" | Should -Be "line1`r`nline2`r`n"
+    }
 }

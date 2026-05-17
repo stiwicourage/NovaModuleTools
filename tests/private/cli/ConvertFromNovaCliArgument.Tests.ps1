@@ -48,3 +48,28 @@ Describe 'ConvertFrom-NovaPackageCliArgument' {
         {ConvertFrom-NovaPackageCliArgument -Arguments @('--local')} | Should -Throw '*Unknown argument*'
     }
 }
+
+Describe 'ConvertFrom-NovaCliArgument additional coverage' {
+    It 'parses --path / -p, --continuous-integration / -i, --override-warning / -o' {
+        $options = ConvertFrom-NovaCliArgument -Arguments @('--path','/dir','--continuous-integration','--override-warning')
+        $options.ModuleDirectoryPath | Should -Be '/dir'
+        $options.ContinuousIntegration | Should -BeTrue
+        $options.OverrideWarning | Should -BeTrue
+    }
+
+    It 'parses short aliases -l, -r, -p, -k, -s, -i, -o' {
+        $options = ConvertFrom-NovaCliArgument -Arguments @('-l','-r','feed','-p','/d','-k','KEY','-s','-i','-o')
+        $options.Local | Should -BeTrue
+        $options.Repository | Should -Be 'feed'
+        $options.ModuleDirectoryPath | Should -Be '/d'
+        $options.ApiKey | Should -Be 'KEY'
+        $options.SkipTests | Should -BeTrue
+        $options.ContinuousIntegration | Should -BeTrue
+        $options.OverrideWarning | Should -BeTrue
+    }
+
+    It 'returns an empty hashtable when given no recognized arguments' {
+        $options = ConvertFrom-NovaCliArgument -Arguments @('--skip-tests') -AllowedOptionNameList @('SkipTests')
+        $options.Count | Should -Be 1
+    }
+}

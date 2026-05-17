@@ -17,6 +17,20 @@ Describe 'Test-NovaGitCommandAvailable' {
     }
 }
 
+Describe 'Invoke-NovaGitCommand' {
+    It 'runs git in the project root and captures exit code and output' {
+        $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) ([guid]::NewGuid())
+        New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+        try {
+            $result = Invoke-NovaGitCommand -ProjectRoot $tempDir -Arguments @('--version')
+            $result.ExitCode | Should -Be 0
+            ($result.Output -join ' ') | Should -Match 'git'
+        } finally {
+            Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
 Describe 'Get-NovaGitCommandOutputText' {
     It 'joins output lines with a newline and trims the result' {
         $result = Get-NovaGitCommandOutputText -Result ([pscustomobject]@{ExitCode = 0; Output = @('line1', 'line2', '')})

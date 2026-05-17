@@ -92,3 +92,51 @@ Describe 'Get-NovaVersionUpdateWorkflowContextObject' {
         $ctx.Target | Should -Be 'project.json'
     }
 }
+
+Describe 'Assert-NovaVersionBumpInferenceAvailability' {
+    BeforeAll {
+        function Test-GitRepositoryIsAvailable {param($ProjectRoot) $true}
+        function Stop-NovaOperation {param([string]$Message,[string]$ErrorId,$Category,$TargetObject) throw [System.Management.Automation.ErrorRecord]::new([System.Exception]::new($Message),$ErrorId,$Category,$TargetObject)}
+    }
+
+    It 'returns silently when commit messages exist' {
+        { Assert-NovaVersionBumpInferenceAvailability -ProjectRoot '/r' -CommitMessages @('m') } | Should -Not -Throw
+    }
+    It 'returns silently when no commits but git repo is available' {
+        Mock Test-GitRepositoryIsAvailable {$true}
+        { Assert-NovaVersionBumpInferenceAvailability -ProjectRoot '/r' } | Should -Not -Throw
+    }
+    It 'throws when no commits, no repo, and override not requested' {
+        Mock Test-GitRepositoryIsAvailable {$false}
+        Mock Write-Warning {}
+        { Assert-NovaVersionBumpInferenceAvailability -ProjectRoot '/r' } | Should -Throw -ErrorId 'Nova.Workflow.VersionBumpInferenceUnavailable'
+    }
+    It 'warns and continues when OverrideWarningRequested' {
+        Mock Test-GitRepositoryIsAvailable {$false}
+        Mock Write-Warning {}
+        Mock Write-Verbose {}
+        { Assert-NovaVersionBumpInferenceAvailability -ProjectRoot '/r' -OverrideWarningRequested } | Should -Not -Throw
+    }
+}
+
+Describe 'Get-NovaVersionUpdateWorkflowContext (entry point)' {
+    BeforeAll {
+        function Get-NovaProjectInfo {param($Path) [pscustomobject]@{ProjectJSON='/r/project.json'; Version='1.2.3'}}
+        function Get-GitCommitMessageForVersionBump {param($ProjectRoot) @('feat: x','fix: y')}
+        function Test-GitRepositoryIsAvailable {param($ProjectRoot) $true}
+        function Get-NovaVersionLabelForBump {param($ProjectRoot,$CommitMessages,[switch]$ContinuousIntegrationRequested) 'Minor'}
+        function Get-NovaVersionUpdatePlan {param($ProjectInfo,$Label,[switch]$PreviewRelease) [pscustomobject]@{NewVersion=[semver]'1.3.0'}}
+    }
+    It 'composes the workflow context end to end with mocked collaborators' {
+        Mock Get-NovaProjectInfo {[pscustomobject]@{ProjectJSON='/r/project.json'; Version='1.2.3'}}
+        Mock Get-GitCommitMessageForVersionBump {@('feat: x','fix: y')}
+        Mock Test-GitRepositoryIsAvailable {$true}
+        Mock Get-NovaVersionLabelForBump {'Minor'}
+        Mock Get-NovaVersionUpdatePlan {[pscustomobject]@{NewVersion=[semver]'1.3.0'}}
+        $ctx = Get-NovaVersionUpdateWorkflowContext -ProjectRoot '/r'
+        $ctx.Label | Should -Be 'Minor'
+        $ctx.EffectiveLabel | Should -Be 'Minor'
+        $ctx.CommitCount | Should -Be 2
+        $ctx.NewVersion | Should -Be '1.3.0'
+    }
+}

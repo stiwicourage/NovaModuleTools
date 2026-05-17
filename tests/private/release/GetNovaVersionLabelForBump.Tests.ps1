@@ -17,6 +17,58 @@ Describe 'Get-NovaVersionLabelForBump' {
         Mock Invoke-NovaGitCommand {return [pscustomobject]@{ExitCode=128; Output=@()}}
         Get-NovaVersionLabelForBump -ProjectRoot '/p' | Should -Be 'Patch'
     }
+
+    It 'throws when git repo exists but HEAD is uncommitted' {
+        $script:i = 0
+        Mock Invoke-NovaGitCommand {
+            $script:i += 1
+            if ($script:i -eq 1) {[pscustomobject]@{ExitCode=0; Output=@('.git')}}
+            else {[pscustomobject]@{ExitCode=128; Output=@()}}
+        }
+        { Get-NovaVersionLabelForBump -ProjectRoot '/p' } | Should -Throw '*has no commits yet*'
+    }
+
+    It 'returns Patch in CI mode when no commits since latest tag' {
+        $script:i = 0
+        Mock Invoke-NovaGitCommand {
+            $script:i += 1
+            switch ($script:i) {
+                1 {[pscustomobject]@{ExitCode=0; Output=@('.git')}}
+                2 {[pscustomobject]@{ExitCode=0; Output=@('sha')}}
+                3 {[pscustomobject]@{ExitCode=0; Output=@('v1.0.0')}}
+                default {[pscustomobject]@{ExitCode=0; Output=@('0')}}
+            }
+        }
+        Get-NovaVersionLabelForBump -ProjectRoot '/p' -ContinuousIntegrationRequested | Should -Be 'Patch'
+    }
+
+    It 'throws outside CI when no commits since latest tag' {
+        $script:i = 0
+        Mock Invoke-NovaGitCommand {
+            $script:i += 1
+            switch ($script:i) {
+                1 {[pscustomobject]@{ExitCode=0; Output=@('.git')}}
+                2 {[pscustomobject]@{ExitCode=0; Output=@('sha')}}
+                3 {[pscustomobject]@{ExitCode=0; Output=@('v1.0.0')}}
+                default {[pscustomobject]@{ExitCode=0; Output=@('0')}}
+            }
+        }
+        { Get-NovaVersionLabelForBump -ProjectRoot '/p' } | Should -Throw '*no commits since the latest tag*'
+    }
+
+    It 'returns Patch fallback when commits exist since the latest tag' {
+        $script:i = 0
+        Mock Invoke-NovaGitCommand {
+            $script:i += 1
+            switch ($script:i) {
+                1 {[pscustomobject]@{ExitCode=0; Output=@('.git')}}
+                2 {[pscustomobject]@{ExitCode=0; Output=@('sha')}}
+                3 {[pscustomobject]@{ExitCode=0; Output=@('v1.0.0')}}
+                default {[pscustomobject]@{ExitCode=0; Output=@('3')}}
+            }
+        }
+        Get-NovaVersionLabelForBump -ProjectRoot '/p' | Should -Be 'Patch'
+    }
 }
 
 Describe 'Test-GitRepositoryIsAvailable' {

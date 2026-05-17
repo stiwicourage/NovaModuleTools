@@ -19,4 +19,19 @@ Describe 'New-NovaNuGetPackageArtifact' {
         New-NovaNuGetPackageArtifact -ProjectInfo $project -PackageMetadata $meta
         $script:packagePath | Should -Be '/o/X.1.0.0.nupkg'
     }
+
+    It 'writes the expected zip entries when the writer is invoked' {
+        $project = [pscustomobject]@{OutputModuleDir='/dist/x'}
+        $meta = [pscustomobject]@{Id='X'; PackagePath='/o/X.1.0.0.nupkg'}
+        $script:textEntries = New-Object System.Collections.Generic.List[string]
+        $script:fileEntries = New-Object System.Collections.Generic.List[string]
+        Mock Add-NovaZipTextEntry {param($Archive,$EntryPath,$Content) $script:textEntries.Add($EntryPath)}
+        Mock Add-NovaZipFileEntry {param($Archive,$EntryPath,$SourcePath) $script:fileEntries.Add($EntryPath)}
+        Mock Invoke-NovaPackageArchiveCreation {param($PackagePath, $EntryWriter) & $EntryWriter 'archive-stub'}
+        New-NovaNuGetPackageArtifact -ProjectInfo $project -PackageMetadata $meta
+        $script:textEntries | Should -Contain '_rels/.rels'
+        $script:textEntries | Should -Contain 'X.nuspec'
+        $script:textEntries | Should -Contain '[Content_Types].xml'
+        $script:fileEntries | Should -Contain 'content/x/a.txt'
+    }
 }
