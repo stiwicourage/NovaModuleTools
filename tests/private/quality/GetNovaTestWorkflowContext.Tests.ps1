@@ -120,7 +120,7 @@ Describe 'Get-NovaTestWorkflowContext' {
 
             $result = Get-NovaTestWorkflowContext -TestOption @{} -BoundParameters @{}
 
-            $result.PesterConfig.CodeCoverage.CoveragePercentTarget | Should -Be 75
+            $result.PesterConfig.CodeCoverage.CoveragePercentTarget | Should -Be 80
         }
     }
 
