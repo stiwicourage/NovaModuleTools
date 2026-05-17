@@ -133,6 +133,13 @@ function Repair-PesterJaCoCoCoveragePath {
     }
 }
 
+function Test-JaCoCoBranchCoverageAvailable {
+    param([Parameter(Mandatory)][string]$Path)
+
+    [xml]$document = Get-Content -LiteralPath $Path -Raw
+    return $null -ne $document.SelectSingleNode('//counter[@type="BRANCH"]')
+}
+
 $shouldUploadCoverage = Test-CodeSceneCoverageUploadRequested -CoveragePath $CoveragePath -UploadCoverage:$UploadCoverage
 $shouldRunAnalysis = $TriggerAnalysis.IsPresent
 
@@ -158,9 +165,14 @@ if ($shouldUploadCoverage) {
         throw "CodeScene line-coverage upload failed with exit code $LASTEXITCODE."
     }
 
-    & cs-coverage upload --format 'jacoco' --metric 'branch-coverage' $resolvedCoveragePath
-    if ($LASTEXITCODE -ne 0) {
-        throw "CodeScene branch-coverage upload failed with exit code $LASTEXITCODE."
+    if (Test-JaCoCoBranchCoverageAvailable -Path $resolvedCoveragePath) {
+        & cs-coverage upload --format 'jacoco' --metric 'branch-coverage' $resolvedCoveragePath
+        if ($LASTEXITCODE -ne 0) {
+            throw "CodeScene branch-coverage upload failed with exit code $LASTEXITCODE."
+        }
+    }
+    else {
+        Write-Host "Skipping branch-coverage upload: '$resolvedCoveragePath' does not contain <counter type=`"BRANCH`"> entries."
     }
 }
 

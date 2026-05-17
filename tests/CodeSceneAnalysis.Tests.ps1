@@ -84,7 +84,7 @@ function Invoke-WebRequest {
     It 'still uploads coverage when CoveragePath is provided' {
         $coveragePath = Join-Path $TestDrive 'coverage.xml'
         $uploadLogPath = Join-Path $TestDrive 'cs-coverage-upload.txt'
-        Set-Content -LiteralPath $coveragePath -Value '<report />' -Encoding utf8
+        Set-Content -LiteralPath $coveragePath -Value '<report><counter type="BRANCH" missed="1" covered="1" /></report>' -Encoding utf8
 
         $runnerContent = @"
 function cs-coverage {
@@ -114,7 +114,7 @@ function cs-coverage {
         $coveragePath = Join-Path $artifactsDir 'coverage.xml'
         $uploadLogPath = Join-Path $TestDrive 'cs-coverage-upload-discovered.txt'
         New-Item -ItemType Directory -Path $artifactsDir -Force | Out-Null
-        Set-Content -LiteralPath $coveragePath -Value '<report />' -Encoding utf8
+        Set-Content -LiteralPath $coveragePath -Value '<report><counter type="BRANCH" missed="1" covered="1" /></report>' -Encoding utf8
 
         $runnerContent = @"
 function cs-coverage {
@@ -199,5 +199,34 @@ function cs-coverage {
         $class.GetAttribute('sourcefilename') | Should -Be 'Foo.ps1'
         $sourcefile = $rewritten.SelectSingleNode('//sourcefile[@name]')
         $sourcefile.GetAttribute('name') | Should -Be 'Foo.ps1'
+    }
+
+    It 'skips branch-coverage upload when the JaCoCo report has no BRANCH counters' {
+        $coveragePath = Join-Path $TestDrive 'coverage-no-branch.xml'
+        $uploadLogPath = Join-Path $TestDrive 'cs-coverage-upload-no-branch.txt'
+        Set-Content -LiteralPath $coveragePath -Value '<report><counter type="LINE" missed="0" covered="1" /></report>' -Encoding utf8
+
+        $runnerContent = @"
+function cs-coverage {
+    param([Parameter(ValueFromRemainingArguments = `$true)][string[]]`$ArgumentList)
+
+    Add-Content -LiteralPath '$uploadLogPath' -Value (`$ArgumentList -join ' ') -Encoding utf8
+    `$global:LASTEXITCODE = 0
+}
+
+[Environment]::SetEnvironmentVariable('CS_URL', 'https://codescene.example.test')
+[Environment]::SetEnvironmentVariable('CS_PROJECT_ID', '123')
+[Environment]::SetEnvironmentVariable('CS_ACCESS_TOKEN', 'token')
+
+& '$codeSceneAnalysisScriptPath' -CoveragePath '$coveragePath'
+"@
+
+        $result = Invoke-CodeSceneAnalysisTestScript -RunnerContent $runnerContent
+
+        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
+        $uploadLog = Get-Content -LiteralPath $uploadLogPath -Raw
+        $uploadLog | Should -Match 'upload --format jacoco --metric line-coverage'
+        $uploadLog | Should -Not -Match 'branch-coverage'
+        ($result.Output -join [Environment]::NewLine) | Should -Match 'Skipping branch-coverage upload'
     }
 }
