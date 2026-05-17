@@ -4,18 +4,45 @@ function Assert-NovaCliArgumentSyntax {param($Arguments)}
 function Get-NovaCliHelpRequest {param([string]$Command, $Arguments)}
 function Get-NovaCliArgumentRoutingState {param([string]$Command, $Arguments)}
 function Merge-NovaCliParameterSet {param([hashtable]$BaseParameters, [hashtable]$AdditionalParameters); return $BaseParameters}
+
+function ConvertFrom-TestInvocationArguments {
+    param([object[]]$ArgumentList)
+
+    $values = @{}
+    for ($index = 0; $index -lt $ArgumentList.Count; $index += 1) {
+        $name = "$($ArgumentList[$index])".TrimStart('-').TrimEnd(':')
+        $index += 1
+        $values[$name] = $ArgumentList[$index]
+    }
+
+    return $values
+}
+
+function Get-TestInvocationArgumentValue {
+    param(
+        [hashtable]$Values,
+        [string]$Name
+    )
+
+    if ($Values.ContainsKey($Name)) {
+        return $Values[$Name]
+    }
+
+    return $null
+}
+
 function Get-TestNovaCliResolvedInvocationContext {
-    param($Command, $Arguments, $CommonParameters, $MutatingCommonParameters, $ModuleName, $WhatIfEnabled, $CliConfirmEnabled, $HelpRequest)
+    $values = ConvertFrom-TestInvocationArguments -ArgumentList $args
 
     [pscustomobject]@{
-        Command = $Command
-        Arguments = @($Arguments)
-        CommonParameters = $CommonParameters
-        MutatingCommonParameters = $MutatingCommonParameters
-        IsHelpRequest = ($null -ne $HelpRequest)
-        HelpRequest = $HelpRequest
-        ModuleName = $ModuleName
-        WhatIfEnabled = [bool]$WhatIfEnabled
-        CliConfirmEnabled = [bool]$CliConfirmEnabled
+        Command = Get-TestInvocationArgumentValue -Values $values -Name 'Command'
+        Arguments = @(Get-TestInvocationArgumentValue -Values $values -Name 'Arguments')
+        CommonParameters = Get-TestInvocationArgumentValue -Values $values -Name 'CommonParameters'
+        MutatingCommonParameters = Get-TestInvocationArgumentValue -Values $values -Name 'MutatingCommonParameters'
+        IsHelpRequest = ($null -ne (Get-TestInvocationArgumentValue -Values $values -Name 'HelpRequest'))
+        HelpRequest = Get-TestInvocationArgumentValue -Values $values -Name 'HelpRequest'
+        ModuleName = Get-TestInvocationArgumentValue -Values $values -Name 'ModuleName'
+        WhatIfEnabled = [bool](Get-TestInvocationArgumentValue -Values $values -Name 'WhatIfEnabled')
+        CliConfirmEnabled = [bool](Get-TestInvocationArgumentValue -Values $values -Name 'CliConfirmEnabled')
     }
 }

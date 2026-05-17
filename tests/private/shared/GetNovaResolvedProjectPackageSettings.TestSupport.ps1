@@ -7,12 +7,30 @@ function Stop-NovaOperation {
 function Get-NovaProjectPackageSettingsTable {param([hashtable]$ProjectData)}
 function Get-NovaResolvedProjectPackageTypeList {param([hashtable]$PackageSettings)}
 function Get-NovaResolvedProjectPackageOutputDirectorySettings {param([hashtable]$PackageSettings, [string]$ProjectRoot)}
+
+function Test-NovaPackageSettingMissing {
+    param(
+        [hashtable]$PackageSettings,
+        [string]$Name,
+        [switch]$TreatWhitespaceAsMissing
+    )
+
+    $existing = $PackageSettings[$Name]
+    if ($null -eq $existing) {
+        return $true
+    }
+
+    if (-not $TreatWhitespaceAsMissing) {
+        return $false
+    }
+
+    return ($existing -is [string]) -and [string]::IsNullOrWhiteSpace($existing)
+}
+
 function Set-NovaPackageSettingDefault {
     param([hashtable]$PackageSettings, [string]$Name, $Value, [switch]$TreatWhitespaceAsMissing)
-    $existing = $PackageSettings[$Name]
-    $missing = $null -eq $existing
-    if (-not $missing -and $TreatWhitespaceAsMissing -and $existing -is [string]) {
-        $missing = [string]::IsNullOrWhiteSpace($existing)
+
+    if (Test-NovaPackageSettingMissing -PackageSettings $PackageSettings -Name $Name -TreatWhitespaceAsMissing:$TreatWhitespaceAsMissing) {
+        $PackageSettings[$Name] = $Value
     }
-    if ($missing) { $PackageSettings[$Name] = $Value }
 }
