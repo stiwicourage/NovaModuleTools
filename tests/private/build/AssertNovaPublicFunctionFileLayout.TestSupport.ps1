@@ -4,4 +4,3 @@ function Stop-NovaOperation {
     $record = [System.Management.Automation.ErrorRecord]::new($exception, $ErrorId, $Category, $TargetObject)
     throw $record
 }
-function Get-FunctionNameFromFile {param($filePath)}

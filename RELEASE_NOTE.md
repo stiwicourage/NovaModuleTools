@@ -1,7 +1,6 @@
 # Release notes
 
-This file summarizes public cmdlet, CLI, configuration, and migration changes for NovaModuleTools.
-`CHANGELOG.md` remains the exhaustive record of all changes in each release. **UNRELEASED** changes will be included in the next **stable** release!
+This file summarizes the release notes for NovaModuleTools. **UNRELEASED** changes will be included in the next **stable** release!
 
 ## [Unreleased]
 ### Added

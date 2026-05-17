@@ -44,7 +44,9 @@
       "Enabled": true,
       "Path": [
         "src/public/*.ps1",
-        "src/private/**/*.ps1"
+        "src/private/*.ps1",
+        "src/private/*/*.ps1",
+        "src/private/*/*/*.ps1"
       ],
       "CoveragePercentTarget": 99,
       "OutputPath": "artifacts/coverage.xml",

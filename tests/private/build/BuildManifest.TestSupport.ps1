@@ -5,6 +5,3 @@ function Stop-NovaOperation {
     throw $record
 }
 function Get-NovaBuildProjectInfo {param($ProjectInfo); return $ProjectInfo}
-function Get-FunctionNameFromFile {param($filePath); return @('Foo')}
-function Get-AliasInFunctionFromFile {param($filePath); return @()}
-function Assert-ManifestSchema {param($Manifest, $AllowedParameter)}

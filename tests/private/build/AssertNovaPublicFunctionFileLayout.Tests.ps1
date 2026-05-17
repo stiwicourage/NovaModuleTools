@@ -1,6 +1,7 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/build/AssertNovaPublicFunctionFileLayout.ps1')
+    . (Join-Path $projectRoot 'src/private/build/manifest/GetFunctionNameFromFile.ps1')
 
     . (Join-Path $PSScriptRoot 'AssertNovaPublicFunctionFileLayout.TestSupport.ps1')
 }

@@ -56,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Code coverage in `Test-NovaBuild` now runs against the source files, instead of the built `dist/<ModuleName>/<ModuleName>.psm1` file so measured coverage percentages and line numbers align with the deployed module.
 - `Invoke-CodeSceneAnalysis.ps1` now normalizes Pester's JaCoCo output before upload so the `<class sourcefilename>` and `<sourcefile name>` entries are bare filenames and `package + sourcefile` resolves to real repository paths. This fixes the CodeScene `cs-coverage upload` failure "The coverage data does not contains any records related to the current repo" that appeared after the source-mirrored coverage migration.
 - `Invoke-CodeSceneAnalysis.ps1` now only invokes the `cs-coverage upload … --metric branch-coverage` step when the JaCoCo report actually contains `<counter type="BRANCH">` entries, so Pester reports that only emit line counters no longer fail the CodeScene step with "Requested metric is not present in coverage data".
+- Pester coverage configuration now uses explicit private-folder depth globs instead of `src/private/**/*.ps1`, so nested helpers such as `src/private/build/manifest/` and `src/private/quality/duplicates/` are included in `artifacts/coverage.xml` during the full `Test-NovaBuild` run.
 
 
 ### Security

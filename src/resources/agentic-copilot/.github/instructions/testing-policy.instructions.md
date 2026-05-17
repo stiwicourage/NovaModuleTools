@@ -16,7 +16,7 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 - Tests do **not** `Import-Module $project.OutputModuleDir`.
 - Tests do **not** use `InModuleScope <ModuleName> { ... }`. Mocked functions live in the same scope as the test because they were dot-sourced into it.
 - Shared fixtures and dot-source helpers live in `tests/TestHelpers/`.
-- This makes `project.json` `Pester.CodeCoverage.Path = ["src/public/*.ps1", "src/private/**/*.ps1"]` produce real source-file coverage and means `Test-NovaBuild` does not require a `dist/` folder.
+- This makes `project.json` `Pester.CodeCoverage.Path = ["src/public/*.ps1", "src/private/*.ps1", "src/private/*/*.ps1", "src/private/*/*/*.ps1"]` produce real source-file coverage, including nested helper folders such as `src/private/build/manifest/` and `src/private/quality/duplicates/`, and means `Test-NovaBuild` does not require a `dist/` folder.
 
 Example:
 

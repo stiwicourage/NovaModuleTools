@@ -1,6 +1,9 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/build/BuildManifest.ps1')
+    . (Join-Path $projectRoot 'src/private/build/manifest/GetFunctionNameFromFile.ps1')
+    . (Join-Path $projectRoot 'src/private/build/manifest/GetAliasNameFromFunction.ps1')
+    . (Join-Path $projectRoot 'src/private/build/manifest/AssertManifestSchema.ps1')
 
     . (Join-Path $PSScriptRoot 'BuildManifest.TestSupport.ps1')
 }
