@@ -32,7 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `ProjectTemplate.json` and the packaged example `project.json` now include Nova's default Pester `CodeCoverage` block with `Enabled=false`, shared `src/` coverage paths, JaCoCo output, and a `90` percent target so new projects can opt into coverage without hand-authoring the configuration.
 - `Invoke-NovaModuleToolsCI.ps1` now delegates the full test run to a single `Test-NovaBuild` call; the previous second `Invoke-Pester` pass and post-run Cobertura source-path remapping step have been removed.
 - CodeScene coverage upload now uses JaCoCo format instead of Cobertura and uploads both `line-coverage` and `branch-coverage` metrics in a single CI run; the helper script auto-discovers `artifacts/coverage.xml` instead of scanning for `*.cobertura.xml` files.
-- `Tests.yml` coverage-gate step now matches `**/coverage.xml` instead of `**/pester-coverage.cobertura.xml` to align with the new JaCoCo artifact path.
+- `Tests.yml` coverage-gate step now matches `**/coverage.xml` instead of `**/pester-coverage.cobertura.xml` to align with the new JaCoCo artifact path. 
 
 
 ### Deprecated
