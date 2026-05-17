@@ -20,8 +20,6 @@ This file summarizes public cmdlet, CLI, configuration, and migration changes fo
 
 
 ### Fixed
-- Code coverage in `Test-NovaBuild` now runs against the built `dist/` module instead of source files, so reported coverage percentages and line numbers match the deployed module.
-- `Test-NovaBuild` and `% nova test` no longer emit `Remove-Item` progress bars during the Pester run.
 
 
 ### Security

@@ -8,6 +8,49 @@ applyTo: "tests/**/*.ps1,scripts/build/**/*.ps1"
 
 Use this file when changing production code, tests, coverage behavior, or CI test flows.
 
+## Test loading pattern (mirrored, dot-source-first)
+
+{{ProjectName}} is migrating tests to a 1:1 source-to-test layout per issue #208. New and migrated tests follow this loading pattern:
+
+- The test file's `BeforeAll` dot-sources **only** the `src/**/*.ps1` files it needs (the source under test plus its private collaborators that are not being mocked).
+- Tests do **not** `Import-Module $project.OutputModuleDir`.
+- Tests do **not** use `InModuleScope <ModuleName> { ... }`. Mocked functions live in the same scope as the test because they were dot-sourced into it.
+- Shared fixtures and dot-source helpers live in `tests/TestHelpers/`.
+- This makes `project.json` `Pester.CodeCoverage.Path = ["src/public/*.ps1", "src/private/**/*.ps1"]` produce real source-file coverage and means `Test-NovaBuild` does not require a `dist/` folder.
+
+Example:
+
+```powershell
+BeforeAll {
+    $projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+    . (Join-Path $projectRoot 'src/private/quality/Initialize-NovaPesterCoverageConfiguration.ps1')
+    . (Join-Path $projectRoot 'src/public/Test-NovaBuild.ps1')
+}
+```
+
+Legacy tests that still use `Import-Module $project.OutputModuleDir` + `InModuleScope` are being migrated in the issue series #200..#207. While migration is in progress, `project.json` `CodeCoverage.Enabled` is `false` so the percentage gate does not fail. The gate is re-enabled in issue #207 once enough tests use the mirrored pattern.
+
+## Cross-cutting tests are still allowed
+
+Use a cross-cutting test file (not a mirrored one) when the behavior under test truly spans multiple source files:
+
+- Architecture guardrails (layering, adapter boundaries, file ownership rules)
+- Public command surface tests that exercise the built module end-to-end
+- Workflow tests that intentionally validate multi-helper orchestration
+- CLI route/forwarding tests that prove the routing topology, not the helpers it routes to
+
+Cross-cutting files should be **named for the behavior** they validate (e.g., `*Architecture*.Tests.ps1`), not for "remaining coverage". A test belongs in a mirrored file when it covers a single source file's behavior.
+
+## Where new tests for a source file go
+
+| Source file                       | Mirrored test file                        |
+|-----------------------------------|-------------------------------------------|
+| `src/public/<Name>.ps1`           | `tests/public/<Name>.Tests.ps1`           |
+| `src/private/<domain>/<Name>.ps1` | `tests/private/<domain>/<Name>.Tests.ps1` |
+| `src/classes/<Name>.ps1`          | `tests/classes/<Name>.Tests.ps1`          |
+
+A non-blocking mirror status helper is available at `scripts/build/Get-TestMirrorStatus.ps1` to show which source files still lack a mirrored test.
+
 ## Test expectations
 
 - Behavior changes require Pester coverage.
@@ -27,11 +70,11 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 
 ## Repository test structure
 
-- `tests/*Command*.Tests.ps1` - public command, CLI, and workflow behavior
+- `tests/public/<Name>.Tests.ps1`, `tests/private/<domain>/<Name>.Tests.ps1`, `tests/classes/<Name>.Tests.ps1` - mirrored unit tests (preferred for new and migrated tests)
 - `tests/*Architecture*.Tests.ps1` - layering and adapter boundaries
-- `tests/*TestSupport.ps1` - shared helpers and reusable fixtures
-- Source-mirrored tests should use `tests/public/<Name>.Tests.ps1`, `tests/private/<domain>/<Name>.Tests.ps1`, and `tests/classes/<Name>.Tests.ps1` for matching `src/public/`, `src/private/`, and `src/classes/` files.
-- Repeated setup belongs in `tests/TestHelpers/` or `tests/*TestSupport.ps1`, not in duplicated blocks across mirrored tests.
+- `tests/*Command*.Tests.ps1` - public command, CLI, and workflow behavior (legacy bucket, being migrated)
+- `tests/*TestSupport.ps1`, `tests/TestHelpers/` - shared helpers, reusable fixtures, dot-source helpers
+- `tests/CoverageGaps*.Tests.ps1`, `tests/Remaining*Coverage*.Tests.ps1` - legacy coverage buckets being retired in issue #207
 
 ## Coverage and quality tooling
 
@@ -39,13 +82,16 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 - `Test-NovaBuild` runs once and produces a JaCoCo coverage report at `artifacts/coverage.xml`.
 - The JaCoCo artifact is reused by the quality tooling PR coverage gate and by the develop/manual quality tooling analysis flow.
 - The quality tooling analysis upload sends coverage twice: once for `line-coverage` and once for `branch-coverage`.
+- Coverage paths in `project.json` must point at `src/**/*.ps1`, not at the built `dist` psm1. Nova does not override `CodeCoverage.Path`.
+- During the test-layout migration, `CodeCoverage.Enabled` is temporarily `false` so the percentage gate does not block work. It is re-enabled in issue #207.
 - If quality tooling flags coverage or duplication, fix the underlying test design instead of suppressing the warning casually.
 
 ## Common pitfalls
 
-- Many tests expect the built module under `dist/{{ProjectName}}`; build first when needed.
+- Importing the built `dist/{{ProjectName}}` module from a new mirrored test - mirrored tests dot-source `src/**/*.ps1` files directly instead.
+- Using `InModuleScope {{ProjectName}} { ... }` in new tests - the function under test is already in scope after dot-sourcing.
 - Direct `Invoke-Pester` runs can hide Nova-specific build/import/StrictMode behavior and should not be used as the project test entrypoint.
-- Some support helpers must be dot-sourced and re-exported inside `BeforeAll`.
+- Some legacy support helpers must be dot-sourced and re-exported inside `BeforeAll`; new TestHelpers should expose dot-source helpers directly.
 - Duplicated test setup can lower maintainability even when tests pass.
 - Tests that only cover the happy path can miss the edge cases that caused the change in the first place.
 - Shared mutable state between tests makes failures order-dependent and unreliable.

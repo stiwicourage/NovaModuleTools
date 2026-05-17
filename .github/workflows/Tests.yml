@@ -30,7 +30,7 @@ jobs:
       - name: Install required CI PowerShell modules
         run: ./scripts/build/ci/Install-CiPowerShellModules.ps1
 
-      - name: Run NovaModuleTools CI test and coverage workflow
+      - name: Run NovaModuleTools CI test
         run: ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts
 
       - name: Validate release history files with Test-KeepAChangelogFile

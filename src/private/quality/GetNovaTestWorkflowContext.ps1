@@ -109,8 +109,6 @@ function Initialize-NovaPesterCoverageConfiguration {
     if ($null -ne $coveragePercentTarget) {
         $PesterConfig.CodeCoverage.CoveragePercentTarget = $coveragePercentTarget
     }
-
-    $PesterConfig.CodeCoverage.Path = $ProjectInfo.ModuleFilePSM1
 }
 
 function Get-NovaPesterSettingValue {

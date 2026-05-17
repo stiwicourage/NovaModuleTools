@@ -21,9 +21,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - When Git is enabled during either scaffold flow, Nova now creates or updates a default `.gitignore` in the generated project root and appends only the missing Nova-managed artifact entries instead of overwriting existing ignore rules.
     - `Initialize-NovaModule` and `% nova init` now check for newer NovaModuleTools releases before the first interactive scaffold question and reuse the same non-blocking update warning behavior already used by build.
 - `Test-NovaBuild` and `% nova test` now enforce `Pester.CodeCoverage.CoveragePercentTarget` from `project.json` when `CodeCoverage.Enabled` is `true`, failing the test run when measured coverage drops below the configured target.
+- Added a non-blocking `scripts/build/Get-TestMirrorStatus.ps1` helper that reports `src/**/*.ps1` files without a matching mirrored test file under `tests/`, to support the migration to the source-mirrored, dot-source-first test layout.
 
 
 ### Changed
+- Test-loading guidance for NovaModuleTools' own tests and for generated Agentic Copilot scaffolds now follows a source-mirrored, dot-source-first pattern: new mirrored tests dot-source the relevant `src/**/*.ps1` files directly in `BeforeAll` instead of importing the built `dist` module or wrapping assertions in `InModuleScope`, so tests run against source files and JaCoCo coverage references real source paths.
+- `project.json` `Pester.CodeCoverage.Enabled` is temporarily `false` while the existing test suite migrates to the new dot-source pattern; the configured `90` percent target stays in place and is re-enabled once migration completes.
 - The architect/design flow now surfaces settled vs unresolved design items before finalization, offers explicit choices for full finalization vs design-package-only handoff, clarifies how to use design notes versus the paste-ready GitHub issue draft, and requires finalization output to follow the project Markdown authoring guidance.
 - `ProjectTemplate.json` and the packaged example `project.json` now include Nova's default Pester `CodeCoverage` block with `Enabled=false`, shared `src/` coverage paths, JaCoCo output, and a `90` percent target so new projects can opt into coverage without hand-authoring the configuration.
 - `Invoke-NovaModuleToolsCI.ps1` now delegates the full test run to a single `Test-NovaBuild` call; the previous second `Invoke-Pester` pass and post-run Cobertura source-path remapping step have been removed.
@@ -39,7 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 - `Test-NovaBuild` and `% nova test` no longer emit `Remove-Item -Recurse` progress bars during the Pester run; `$global:ProgressPreference` is saved and restored around the test execution so CI logs stay clean.
-- Code coverage in `Test-NovaBuild` now runs against the built `dist/<ModuleName>/<ModuleName>.psm1` file instead of source files, so measured coverage percentages and line numbers align with the deployed module.
+- Code coverage in `Test-NovaBuild` now runs against the source files, instead of the built `dist/<ModuleName>/<ModuleName>.psm1` file so measured coverage percentages and line numbers align with the deployed module.
 
 
 ### Security

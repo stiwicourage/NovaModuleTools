@@ -124,7 +124,7 @@ Describe 'Get-NovaTestWorkflowContext' {
         }
     }
 
-    It 'sets CodeCoverage.Path to the built module psm1 when coverage is enabled' {
+It 'does not override CodeCoverage.Path when coverage is enabled (project.json owns Path)' {
         $pesterConfig = & $script:getTestQualityPesterConfig
         $projectInfo = & $script:getTestQualityProjectInfo -PesterSettings ([ordered]@{
             CodeCoverage = [ordered]@{
@@ -155,7 +155,7 @@ Describe 'Get-NovaTestWorkflowContext' {
 
             $result = Get-NovaTestWorkflowContext -TestOption @{} -BoundParameters @{}
 
-            $result.PesterConfig.CodeCoverage.Path | Should -Be '/tmp/nova-project/dist/TestProject/TestProject.psm1'
+$result.PesterConfig.CodeCoverage.Path | Should -BeNullOrEmpty
         }
     }
 

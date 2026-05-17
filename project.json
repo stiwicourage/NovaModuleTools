@@ -41,7 +41,11 @@
   },
   "Pester": {
     "CodeCoverage": {
-      "Enabled": true,
+      "Enabled": false,
+      "Path": [
+        "src/public/*.ps1",
+        "src/private/**/*.ps1"
+      ],
       "CoveragePercentTarget": 90,
       "OutputPath": "artifacts/coverage.xml",
       "OutputFormat": "JaCoCo"
