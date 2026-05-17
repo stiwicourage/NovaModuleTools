@@ -51,6 +51,8 @@ Describe 'Repair-CodeSceneJaCoCoCoverage' {
         [xml]$rewritten = Get-Content -LiteralPath $coveragePath -Raw
         $rewritten.SelectSingleNode('//class[@sourcefilename]').GetAttribute('sourcefilename') | Should -Be 'Foo.ps1'
         $rewritten.SelectSingleNode('//sourcefile[@name]').GetAttribute('name') | Should -Be 'Foo.ps1'
+        [byte[]]$bytes = [System.IO.File]::ReadAllBytes($coveragePath)
+        $bytes[0] | Should -Be 60
     }
 
     It 'leaves already normalized filenames unchanged' {

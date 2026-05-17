@@ -43,7 +43,17 @@ function Repair-CodeSceneJaCoCoCoverageFile {
     $changed = (Repair-CodeSceneJaCoCoNodePathAttribute -Nodes $document.SelectNodes('//sourcefile[@name]') -AttributeName 'name') -or $changed
 
     if ($changed) {
-        $document.Save($Path)
+        $settings = New-Object System.Xml.XmlWriterSettings
+        $settings.Encoding = New-Object System.Text.UTF8Encoding($false)
+        $settings.Indent = $false
+        $settings.NewLineHandling = [System.Xml.NewLineHandling]::None
+        $writer = [System.Xml.XmlWriter]::Create($Path, $settings)
+        try {
+            $document.Save($writer)
+        } finally {
+            $writer.Dispose()
+        }
+
         Write-Host "Normalized JaCoCo sourcefile paths in '$Path' so package + sourcefile resolve to repo files."
     }
 }
