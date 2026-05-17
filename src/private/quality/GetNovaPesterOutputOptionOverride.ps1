@@ -14,14 +14,12 @@ function Get-NovaPesterOutputOptionOverride {
     return [pscustomobject]@{
         Verbosity = if ( $BoundParameters.ContainsKey('OutputVerbosity')) {
             $OutputVerbosity
-        }
-        else {
+        } else {
             $null
         }
         RenderMode = if ( $BoundParameters.ContainsKey('OutputRenderMode')) {
             $OutputRenderMode
-        }
-        else {
+        } else {
             $null
         }
     }

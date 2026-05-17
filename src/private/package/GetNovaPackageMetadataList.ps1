@@ -26,8 +26,7 @@ function Get-NovaConfiguredPackageTypeList {
 
     $configuredPackageTypes = if ($PackageSettings -is [System.Collections.IDictionary]) {
         @($PackageSettings['Types'])
-    }
-    else {
+    } else {
         @($PackageSettings.Types)
     }
 

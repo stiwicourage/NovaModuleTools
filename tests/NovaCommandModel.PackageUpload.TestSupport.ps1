@@ -153,8 +153,7 @@ function Get-TestNovaPackageUploadRepositoryList {
 
     $traceHeaders = if ($null -ne $ExpectedTraceId) {
         [ordered]@{'X-Trace-Id' = 'repo-trace'}
-    }
-    else {
+    } else {
         [ordered]@{}
     }
 

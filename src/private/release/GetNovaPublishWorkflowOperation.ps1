@@ -8,22 +8,19 @@ function Get-NovaPublishWorkflowOperation {
 
     $validationText = if ($SkipTestsRequested) {
         'build and publish'
-    }
-    else {
+    } else {
         'build, test, and publish'
     }
 
     $workflowText = if ($Release) {
         "Run Nova release workflow ($validationText)"
-    }
-    else {
+    } else {
         "Build, $( $SkipTestsRequested ? 'skip tests, and publish' : 'test, and publish' ) Nova module"
     }
 
     $destinationText = if ($IsLocal) {
         'local directory'
-    }
-    else {
+    } else {
         'repository'
     }
 

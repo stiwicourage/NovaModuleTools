@@ -22,8 +22,7 @@ function Get-NovaInvalidPublicFunctionFileList {
         [pscustomobject]@{
             FilePath = if ($ProjectInfo.PSObject.Properties.Name -contains 'ProjectRoot') {
                 [System.IO.Path]::GetRelativePath($ProjectInfo.ProjectRoot, $publicFunctionFile.FullName)
-            }
-            else {
+            } else {
                 $publicFunctionFile.FullName
             }
             FunctionNameList = $functionNameList
@@ -48,8 +47,7 @@ function Format-NovaPublicFunctionFileValidationMessage {
     foreach ($invalidFile in $InvalidFileList) {
         $functionText = if (@($invalidFile.FunctionNameList).Count -eq 0) {
             '<none>'
-        }
-        else {
+        } else {
             @($invalidFile.FunctionNameList) -join ', '
         }
 

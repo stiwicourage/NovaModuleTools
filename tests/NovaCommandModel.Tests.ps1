@@ -160,8 +160,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $thrown = $null
             try {
                 Get-NovaProjectInfo -Path $projectRoot
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -181,8 +180,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $thrown = $null
             try {
                 Get-NovaProjectInfo -Path $projectRoot
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -200,7 +198,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $projectJson = ([ordered]@{
                 ProjectName = 'DefaultCopyResourcesProject'
                 Description = 'Defaulted option test'
-                Version = '0.0.1'
+                Version = '0.1.0-preview'
                 Manifest = [ordered]@{
                     Author = 'Test'
                     PowerShellHostVersion = '7.4'
@@ -224,7 +222,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $projectJson = ([ordered]@{
                 ProjectName = 'DefaultPackageProject'
                 Description = 'Default package option test'
-                Version = '0.0.1'
+                Version = '0.1.0-preview'
                 Manifest = [ordered]@{
                     Author = 'Test Author'
                     PowerShellHostVersion = '7.4'
@@ -241,7 +239,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $projectInfo.Package.OutputDirectory.Path | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts/packages'))
             $projectInfo.Package.OutputDirectory.Clean | Should -BeTrue
             $projectInfo.Package.FileNamePattern | Should -Be 'DefaultPackageProject*'
-            $projectInfo.Package.PackageFileName | Should -Be 'DefaultPackageProject.0.0.1.nupkg'
+            $projectInfo.Package.PackageFileName | Should -Be 'DefaultPackageProject.0.1.0-preview.nupkg'
             $projectInfo.Package.AddVersionToFileName | Should -BeFalse
             $projectInfo.Package.Latest | Should -Be 'never'
             $projectInfo.Package.Authors | Should -Be 'Test Author'
@@ -429,8 +427,7 @@ Describe 'Nova command model - project, help, and build behavior' {
                 $thrown = $null
                 try {
                     Get-NovaProjectInfo -Path $projectRoot
-                }
-                catch {
+                } catch {
                     $thrown = $_
                 }
 
@@ -477,8 +474,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             $(
             if ( [string]::IsNullOrWhiteSpace($help.Synopsis)) {
                 $null
-            }
-            else {
+            } else {
                 ($help.Synopsis -replace '\s+', ' ').Trim()
             }
             ) | Should -Be $testCase.ExpectedSynopsis -Because "$( $testCase.FileName ) synopsis should come from the generated help"
@@ -610,7 +606,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             Mock Build-Manifest {$script:steps += 'manifest'}
             Mock Build-Help {$script:steps += 'help'}
             Mock Copy-ProjectResource {$script:steps += 'resources'}
-            Mock Invoke-NovaBuildUpdateNotification {$script:steps += 'notification'}
+            Mock Invoke-NovaModuleUpdateNotificationSafely {$script:steps += 'notification'}
 
             Invoke-NovaBuildWorkflow -WorkflowContext $workflowContext
 
@@ -622,7 +618,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             Assert-MockCalled Build-Manifest -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
             Assert-MockCalled Build-Help -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
             Assert-MockCalled Copy-ProjectResource -Times 1 -ParameterFilter {$ProjectInfo.ProjectName -eq 'NovaModuleTools'}
-            Assert-MockCalled Invoke-NovaBuildUpdateNotification -Times 1
+            Assert-MockCalled Invoke-NovaModuleUpdateNotificationSafely -Times 1
         }
     }
 
@@ -646,7 +642,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             Mock Build-Manifest {$script:steps += 'manifest'}
             Mock Build-Help {$script:steps += 'help'}
             Mock Copy-ProjectResource {$script:steps += 'resources'}
-            Mock Invoke-NovaBuildUpdateNotification {$script:steps += 'notification'}
+            Mock Invoke-NovaModuleUpdateNotificationSafely {$script:steps += 'notification'}
             Mock Import-NovaBuiltModuleForCi {$script:steps += 'ci'}
 
             Invoke-NovaBuildWorkflow -WorkflowContext $workflowContext
@@ -722,7 +718,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             Mock Build-Manifest {throw 'should not build manifest'}
             Mock Build-Help {throw 'should not build help'}
             Mock Copy-ProjectResource {throw 'should not copy resources'}
-            Mock Invoke-NovaBuildUpdateNotification {throw 'should not check for updates'}
+            Mock Invoke-NovaModuleUpdateNotificationSafely {throw 'should not check for updates'}
             Mock Import-NovaBuiltModuleForCi {throw 'should not re-import'}
 
             $result = Invoke-NovaBuild -ContinuousIntegration -WhatIf
@@ -733,7 +729,7 @@ Describe 'Nova command model - project, help, and build behavior' {
             Assert-MockCalled Build-Manifest -Times 0
             Assert-MockCalled Build-Help -Times 0
             Assert-MockCalled Copy-ProjectResource -Times 0
-            Assert-MockCalled Invoke-NovaBuildUpdateNotification -Times 0
+            Assert-MockCalled Invoke-NovaModuleUpdateNotificationSafely -Times 0
             Assert-MockCalled Import-NovaBuiltModuleForCi -Times 0
         }
     }
@@ -755,8 +751,7 @@ title: Invoke-NovaBuild
                 $result = Get-NovaHelpLocale -HelpMarkdownFiles (Get-Item -LiteralPath $docPath)
 
                 $result | Should -Be 'da-DK'
-            }
-            finally {
+            } finally {
                 Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
             }
         }
@@ -809,8 +804,7 @@ title: Invoke-NovaBuild
             $projectRoot = '/tmp/nova-project'
             $cfg = if ($TestCase.IncludeOutput) {
                 New-TestPesterConfigStub -IncludeOutput
-            }
-            else {
+            } else {
                 New-TestPesterConfigStub
             }
 
@@ -857,6 +851,50 @@ title: Invoke-NovaBuild
                 $WorkflowContext.Target -eq '/tmp/nova-project/artifacts/TestResults.xml' -and
                         $WorkflowContext.Operation -eq 'Run Pester tests and write test results'
             }
+        }
+    }
+
+    It 'Test-NovaBuild runs the real workflow through the post-Pester coverage callback' {
+        $global:novaCoverageAssertionRan = $false
+
+        try {
+            InModuleScope $script:moduleName {
+                $workflowContext = [pscustomobject]@{
+                    BuildRequested = $false
+                    WorkflowParams = @{}
+                    ProjectInfo = [pscustomobject]@{
+                        Pester = @{}
+                    }
+                    TestResultDirectory = '/tmp/nova-project/artifacts'
+                    TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
+                    PesterConfig = New-TestPesterConfigStub -IncludeOutput
+                    TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
+                    TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
+                    CoverageTargetAssertion = [pscustomobject]@{
+                        ScriptBlock = {
+                            param($WorkflowContext, $TestResult)
+
+                            $global:novaCoverageAssertionRan = $true
+                        }
+                    }
+                    Target = '/tmp/nova-project/artifacts/TestResults.xml'
+                    Operation = 'Run Pester tests and write test results'
+                }
+
+                Mock Get-NovaTestWorkflowContext {$workflowContext}
+                Mock Test-Path {$true}
+                Mock Invoke-NovaPester {
+                    [pscustomobject]@{
+                        Result = 'Passed'
+                    }
+                }
+
+                {Test-NovaBuild -Confirm:$false} | Should -Not -Throw
+            }
+
+            $global:novaCoverageAssertionRan | Should -BeTrue
+        } finally {
+            Remove-Variable -Name novaCoverageAssertionRan -Scope Global -ErrorAction SilentlyContinue
         }
     }
 

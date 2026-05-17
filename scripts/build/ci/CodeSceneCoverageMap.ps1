@@ -91,8 +91,7 @@ function Get-CoberturaLineStat {
     $coveredLineCount = @($Bucket.Values | Where-Object {$_ -gt 0}).Count
     $lineRate = if ($validLineCount -eq 0) {
         0
-    }
-    else {
+    } else {
         $coveredLineCount / $validLineCount
     }
 

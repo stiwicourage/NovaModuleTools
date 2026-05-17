@@ -8,8 +8,7 @@ function Get-ExampleGreeting {
     $configuration = Get-ExampleConfiguration
     $audience = if ( [string]::IsNullOrWhiteSpace($Name)) {
         $configuration.DefaultAudience
-    }
-    else {
+    } else {
         $Name
     }
     $message = '{0}, {1}!' -f $configuration.GreetingPrefix, $audience

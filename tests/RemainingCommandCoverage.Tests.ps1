@@ -70,8 +70,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
             $thrown = $null
             try {
                 Reset-ProjectDist
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -115,8 +114,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
                 $thrown = $null
                 try {
                     New-InitiateGitRepo -DirectoryPath $RepoPath -Confirm:$false
-                }
-                catch {
+                } catch {
                     $thrown = $_
                 }
 
@@ -125,8 +123,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
                 $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::OpenError)
                 $thrown.TargetObject | Should -Be $RepoPath
             }
-        }
-        finally {
+        } finally {
             Remove-Item -Path function:global:git -Force -ErrorAction SilentlyContinue
         }
     }
@@ -149,8 +146,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
             $thrown = $null
             try {
                 New-InitiateGitRepo -DirectoryPath $RepoPath -Confirm:$false
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -227,8 +223,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
             $thrown = $null
             try {
                 Get-NovaTestWorkflowContext -TestOption @{} -BoundParameters @{}
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -276,8 +271,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
             $thrown = $null
             try {
                 Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -315,8 +309,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
                 $unsupportedPlatformError = $null
                 try {
                     Install-NovaCli
-                }
-                catch {
+                } catch {
                     $unsupportedPlatformError = $_
                 }
 
@@ -325,8 +318,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
                 $unsupportedPlatformError.FullyQualifiedErrorId | Should -Be 'Nova.Environment.UnsupportedCliInstallPlatform'
                 $unsupportedPlatformError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::NotImplemented)
                 $unsupportedPlatformError.TargetObject | Should -Be 'Windows'
-            }
-            finally {
+            } finally {
                 Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
             }
         }
@@ -347,8 +339,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
                 $result.TargetDirectory | Should -Be '/tmp/bin'
                 $result.Force | Should -BeTrue
                 $result.Action | Should -Be 'Install nova CLI launcher'
-            }
-            finally {
+            } finally {
                 Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
             }
         }
@@ -432,8 +423,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
                 $targetExistsError = $null
                 try {
                     Install-NovaCli
-                }
-                catch {
+                } catch {
                     $targetExistsError = $_
                 }
 
@@ -442,8 +432,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
                 $targetExistsError.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.CliInstallTargetExists'
                 $targetExistsError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ResourceExists)
                 $targetExistsError.TargetObject | Should -Be '/tmp/bin/nova'
-            }
-            finally {
+            } finally {
                 Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
             }
         }
@@ -462,8 +451,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
 
                 $result | Should -BeNullOrEmpty
                 Assert-MockCalled Copy-NovaCliLauncher -Times 0
-            }
-            finally {
+            } finally {
                 Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
             }
         }
@@ -487,8 +475,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
                 Assert-MockCalled Write-Warning -Times 1 -ParameterFilter {
                     $Message -like 'Installed nova to /tmp/bin, but that directory is not currently in PATH*'
                 }
-            }
-            finally {
+            } finally {
                 Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
             }
         }
@@ -513,8 +500,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
                 Assert-MockCalled Write-Host -Times 1 -ParameterFilter {
                     $Object -eq 'Release notes: https://www.novamoduletools.com/release-notes.html'
                 }
-            }
-            finally {
+            } finally {
                 Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
             }
         }
@@ -569,8 +555,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
             $thrown = $null
             try {
                 Invoke-NovaCli banana
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -615,8 +600,7 @@ Describe 'Coverage for remaining command and filesystem branches' {
             $thrown = $null
             try {
                 Invoke-NovaCli version --installed
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

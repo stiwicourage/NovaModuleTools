@@ -1,5 +1,7 @@
 # Fix NovaModuleTools CI failure
 
+> Invoke with `@.github/prompts/fix-ci-failure.prompt.md`. Delegates to the `powershell-developer` or `test-engineer` agent depending on the failing area.
+
 Investigate and fix a failing NovaModuleTools CI or workflow issue.
 
 ## Required inputs

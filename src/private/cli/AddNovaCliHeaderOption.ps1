@@ -8,8 +8,7 @@ function Add-NovaCliHeaderOption {
     $separatorIndex = $HeaderArgument.IndexOf('=')
     $headerName = if ($separatorIndex -ge 1) {
         $HeaderArgument.Substring(0, $separatorIndex).Trim()
-    }
-    else {
+    } else {
         $null
     }
     if ($separatorIndex -lt 1 -or [string]::IsNullOrWhiteSpace($headerName)) {

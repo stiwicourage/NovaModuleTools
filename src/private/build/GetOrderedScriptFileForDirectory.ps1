@@ -12,8 +12,7 @@ function Get-OrderedScriptFileForDirectory {
 
     $items = if ($Recurse) {
         Get-ChildItem -Path $Directory -Filter '*.ps1' -File -Recurse -ErrorAction SilentlyContinue
-    }
-    else {
+    } else {
         Get-ChildItem -Path $Directory -Filter '*.ps1' -File -ErrorAction SilentlyContinue
     }
 

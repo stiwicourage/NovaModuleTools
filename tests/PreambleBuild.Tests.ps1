@@ -46,8 +46,7 @@ Describe 'Invoke-NovaBuild Preamble setting' {
         It 'writes the expected module preamble and spacing' {
             $root = if ($null -eq $Preamble) {
                 New-TestProjectWithPreamble -TestDriveRoot $TestDrive -Name $ProjectName
-            }
-            else {
+            } else {
                 New-TestProjectWithPreamble -TestDriveRoot $TestDrive -Name $ProjectName -Options @{Preamble = $Preamble}
             }
 
@@ -123,12 +122,10 @@ Describe 'Invoke-NovaBuild Preamble setting' {
                 Push-Location -LiteralPath $root
                 try {
                     Invoke-NovaBuild
-                }
-                finally {
+                } finally {
                     Pop-Location
                 }
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

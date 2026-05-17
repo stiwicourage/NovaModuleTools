@@ -29,8 +29,7 @@ Use this file when changing versioning, changelog handling, package metadata, pu
 - `Publish.yml` owns the release/publish flow.
 - `main` handles stable release commit/tag flow and prepares `develop` for the next prerelease.
 - `develop` handles prerelease publish and next-prerelease bump flow.
-- Do not change branch mutation behavior, tag creation, or publish steps without reading `.github/workflows/Publish.yml`
-  and the related custom actions first.
+- Do not change branch mutation behavior, tag creation, or publish steps without reading `.github/workflows/Publish.yml` and the related custom actions first.
 
 ## Documentation rules
 

@@ -4,7 +4,7 @@
 ![WorkFlow Status][WorkFlowStatus]
 [![Keep a Changelog][changelog-badge]][changelog]
 
-NovaModuleTools is an enterprise-focused evolution of ModuleTools for structured PowerShell module development, repository automation, and maintainable Nova workflows.
+NovaModuleTools is an enterprise-focused build tool for Agentic Copilot PowerShell module development, repository automation, and maintainable Nova workflows.
 
 This README is the single developer-documentation entry point for the repository.
 
@@ -55,8 +55,9 @@ Repository-local Copilot/AI guidance now lives under:
 - `.github/instructions/` - path-specific Copilot instructions stored as `*.instructions.md`
 - `.github/agents/` - focused agent roles for architecture, implementation, testing, release, and review work
 - `.github/skills/` - repo-specific Copilot skills stored as `<skill-name>/SKILL.md`
-- `.github/prompts/` - reusable task prompts such as design framing, issue implementation, CI fixes, coverage work, and release prep; prompt files are referenced explicitly in chat, not auto-loaded like instructions or skills
+- `.github/prompts/` - reusable task prompts such as design framing, issue implementation, CI fixes, coverage work, and release prep; prompt files are referenced explicitly in chat as `@.github/prompts/<name>.prompt.md` rather than auto-loaded like instructions or skills
 - `CHANGELOG.md` and `RELEASE_NOTE.md` - exhaustive release history plus interface-focused release summaries
+- `AGENTS.md` - generated mirror of `.github/copilot-instructions.md` for tooling that reads `AGENTS.md` (Codex, Cursor); regenerate with `./scripts/build/Sync-AgenticCopilotScaffold.ps1` after touching the Copilot guidance
 
 The files under `.github/agents/` are valid Copilot custom agent profiles and should be available from `/agent` when Copilot is started from the NovaModuleTools repository root.
 
@@ -261,6 +262,8 @@ Notes:
 - `Test-NovaBuild` validates the built module output, not just loose source files
 - it writes NUnit XML to `artifacts/TestResults.xml`
 - it respects `BuildRecursiveFolders` when discovering tests
+- if `project.json` sets `Pester.CodeCoverage.CoveragePercentTarget`, `Test-NovaBuild` fails when the measured coverage percentage is lower than that configured target
+- new template and packaged example `project.json` files already include an opt-in `Pester.CodeCoverage` block with `Enabled=false`, JaCoCo output in `artifacts/coverage.xml`, and a `90` percent target so projects can enable coverage when they are ready
 - contributor and CI environments should still install `Pester 5.7.1` explicitly before running `Test-NovaBuild`
 - the published `NovaModuleTools` manifest also declares `Pester 5.7.1`, so installed end-user workflows can still resolve that dependency automatically
 
@@ -411,11 +414,9 @@ PS> ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1
 That flow builds the module, runs ScriptAnalyzer, executes one coverage-enabled Pester run using the same Nova test workflow configuration, and emits CI-friendly reports such as:
 
 - `artifacts/novamoduletools-nunit.xml`
-- `artifacts/pester-junit.xml`
-- `artifacts/pester-coverage.cobertura.xml`
-- `artifacts/coverage-low.txt`
+- `artifacts/coverage.xml`
 
-The `Tests.yml` workflow reuses that Cobertura artifact for the pull-request CodeScene coverage-gate check and for the develop/manual CodeScene upload-and-analysis flow. The CodeScene pull-request gate downloads the uploaded artifact and runs `cs-coverage check`, while the develop/manual CodeScene step uploads coverage through `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1` before it triggers a follow-up analysis run. If coverage upload succeeds but the trigger fails with an OAuth/project-owner error, fix the repository authorization in CodeScene for the project owner. That trigger-side repository authorization is separate from `CS_ACCESS_TOKEN`.
+The `Tests.yml` workflow reuses that JaCoCo artifact for the pull-request CodeScene coverage-gate check and for the develop/manual CodeScene upload-and-analysis flow. The CodeScene pull-request gate downloads the uploaded artifact and runs `cs-coverage check`, while the develop/manual CodeScene step uploads coverage through `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1` before it triggers a follow-up analysis run. If coverage upload succeeds but the trigger fails with an OAuth/project-owner error, fix the repository authorization in CodeScene for the project owner. That trigger-side repository authorization is separate from `CS_ACCESS_TOKEN`.
 
 ### Recommended local quality loop
 
@@ -504,8 +505,14 @@ Packaged resources that ship with the module, including:
 - schemas
 - the standalone `nova` launcher
 - the packaged example project under `src/resources/example/`
+- the Agentic Copilot starter package under `src/resources/agentic-copilot/`
 
-The example project is both a shipped resource and a maintained working reference.
+The example project is both a shipped resource and a maintained working reference. The Agentic Copilot starter package is generated from Nova's repository-local agentic guidance, including Nova build/test/package expectations, `project.json` `Manifest.PowerShellHostVersion` compatibility guidance, generated `dist` module files, command-help ownership, source-mirrored test guidance, Test-NovaBuild-only project test guidance that forbids direct `Invoke-Pester` so agent validation matches Nova's build/import/StrictMode flow, guidance that ScriptAnalyzer findings reported by `run.ps1` must be fixed before handoff, explicit PSScriptAnalyzer workflow guidance for `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`, `./run.ps1`, and focused `Invoke-ScriptAnalyzer` usage, explicit public/private PowerShell file ownership rules, best-effort source/helper-script maintainability guidance plus separate test-design guidance that live in Agentic Copilot files, a generated
+`scripts/build/Test-TextFileFormatting.ps1` helper and matching `tests/TextFileFormatting.Tests.ps1` guardrail when Pester is enabled so extra blank lines at EOF fail the project test flow, and explicit valid-PlatyPS help guidance for
+`docs/<ProjectName>/en-US/*.md` that uses the documented `New-MarkdownCommandHelp` / `Update-MarkdownCommandHelp` /
+`Test-MarkdownCommandHelp` workflow and requires a matching help file for every new public entry point in the same change, and a strict file-ending rule for changed or generated text files. When the init flow adds that starter package, it also asks for a short project name so scaffolded guidance can replace placeholders such as `Invoke-<ShortName>*`. Run
+`./scripts/build/Sync-AgenticCopilotScaffold.ps1` after changing `.github/agents/`, `.github/instructions/`,
+`.github/skills/`, `.github/prompts/`, or `.github/copilot-instructions.md` so future scaffolds and `dist` stay in sync.
 
 ### Test layout
 
@@ -563,8 +570,8 @@ At a minimum, contributor changes are expected to keep these workflows healthy:
 Repository scripts under `scripts/build/ci/` provide local parity for CI-oriented reporting.
 
 When CodeScene coverage upload is needed, run
-`scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`. That script auto-discovers a single `*.cobertura.xml` file under `artifacts/` unless you pass `-CoveragePath`
-explicitly. The repository `Tests.yml` workflow now also downloads that same Cobertura artifact during pull requests and runs the CodeScene coverage-gate check before merge. If `-TriggerAnalysis` fails after a successful upload, review the CodeScene response body: repository OAuth problems for the project owner must be fixed in CodeScene itself and are not solved by rotating `CS_ACCESS_TOKEN` alone.
+`scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`. That script auto-discovers `artifacts/coverage.xml` unless you pass `-CoveragePath`
+explicitly. The repository `Tests.yml` workflow also downloads that same JaCoCo artifact during pull requests and runs the CodeScene coverage-gate check before merge. If `-TriggerAnalysis` fails after a successful upload, review the CodeScene response body: repository OAuth problems for the project owner must be fixed in CodeScene itself and are not solved by rotating `CS_ACCESS_TOKEN` alone.
 
 ### Build and test automation
 
@@ -577,7 +584,7 @@ The normal repository workflow is:
 
 When you test local publish behavior during development, remember that `Publish-NovaModule -Local` reloads the published module from the local install directory into the current PowerShell session. Re-import `dist/` if your next step depends on the built-but-unpublished output instead.
 
-The CI helper flow also produces JUnit and Cobertura artifacts for external systems, including the coverage file that the CodeScene workflow gate and upload steps consume.
+The CI helper flow also produces a JaCoCo coverage artifact that the CodeScene workflow gate and upload steps consume.
 
 ### Release automation
 

@@ -13,7 +13,13 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 
 - Add missing Pester coverage for changed behavior.
 - Refactor brittle or duplicated tests into reusable support patterns.
+- Enforce a source-mirrored test layout for new projects and newly added or changed source files.
+- Keep test files and helpers compatible with the project's `project.json` `Manifest.PowerShellHostVersion` target.
+- Use `.github/instructions/testing-policy.instructions.md` as the test-design source of truth while shaping `tests/**/*.ps1`.
+- Use `.github/instructions/psscriptanalyzer.instructions.md` when changing tests, test helpers, or analyzer/CI helpers so the repo-standard analyzer workflow stays intact.
 - Keep CI coverage output compatible with the CodeScene workflow.
+- Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the bottom.
+
 
 ## Inputs to inspect
 
@@ -27,21 +33,29 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 
 - `/pester-testing`
 - `/codescene-quality`
+- `/building-maintainable-code`
 - `/github-actions`
 - `/guiding-refactoring-with-code-health`
 - `/safeguarding-ai-generated-code`
 
 ## Constraints
 
-- Prefer targeted tests first, then the full repo quality loop.
+- Prefer the smallest `Test-NovaBuild` scope the project already supports, then the full repo quality loop.
 - Keep test files maintainable; passing tests are not enough if Code Health degrades.
 - Reuse existing fixture and support patterns before adding new ones.
+- Do not group unrelated source files into one broad test file when mirrored `tests/public`, `tests/private`, or `tests/classes` ownership is possible.
+- Do not introduce PowerShell 7.x-only test syntax or APIs into a project that targets `5.1` unless compatibility coverage is explicitly part of the scope.
 - If CodeScene flags a regression, refactor the tests or helpers instead of suppressing the finding.
+- Keep new or heavily changed tests focused, isolated, and easy to scan; split setup or assertion helpers when a test stops being readable.
+- Use `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` as the normal analyzer entrypoint for changed test/helpers, and only fall back to direct `Invoke-ScriptAnalyzer` for focused local investigation with the repository-approved settings.
+- Use `Test-NovaBuild` as the test entrypoint for Nova-managed projects; do not validate with direct `Invoke-Pester`.
 
 ## Definition of done
 
 - The changed behavior is covered.
+- Each new or changed `src/**/*.ps1` file has a matching source-mirrored test, or the cross-cutting owner test is named explicitly.
 - The touched tests are readable and low-duplication.
+- Validation uses `Test-NovaBuild` for project test execution.
 - Validation and CodeScene implications are addressed.
 - The pre-commit CodeScene safeguard is clean before the work is treated as commit-ready when local CodeScene tooling is available.
 

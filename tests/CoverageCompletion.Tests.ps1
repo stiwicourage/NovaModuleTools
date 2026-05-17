@@ -66,8 +66,7 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             if ($IsWindows) {
                 $pattern | Should -Be '\\Documents\\PowerShell\\Modules'
                 $message | Should -Be "No windows module path matching $pattern found"
-            }
-            else {
+            } else {
                 $pattern | Should -Be '/\.local/share/powershell/Modules$'
                 $message | Should -Be "No macOS/Linux module path matching $pattern found in PSModulePath."
             }
@@ -89,13 +88,11 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
                 if ($TargetIsWindows) {
                     $pattern | Should -Be ([regex]::Escape('\Documents\PowerShell\Modules'))
                     $message | Should -Be "No windows module path matching $pattern found"
-                }
-                else {
+                } else {
                     $pattern | Should -Be '/\.local/share/powershell/Modules$'
                     $message | Should -Be "No macOS/Linux module path matching $pattern found in PSModulePath."
                 }
-            }
-            finally {
+            } finally {
                 Remove-Variable -Name IsWindows -Force -ErrorAction SilentlyContinue
             }
         }
@@ -144,9 +141,9 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             Caption = 'Semantic Version'
             Message = 'Starting version'
             Prompt = 'Version'
-            Default = '0.0.1'
+            Default = '0.1.0-preview'
             Responses = @('')
-            Expected = '0.0.1'
+            Expected = '0.1.0-preview'
             ExpectedPromptCalls = 1
             Validation = $null
             ExpectedValidationMessage = $null
@@ -210,8 +207,7 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
                 Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
                     $Text -eq $PromptCase.ExpectedValidationMessage -and $color -eq 'Yello'
                 }
-            }
-            else {
+            } else {
                 Assert-MockCalled Write-Message -Times 0
             }
         }
@@ -225,8 +221,7 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
 
         if ($Default -eq 'MANDATORY') {
             $hostUi.State.FieldDescriptions[0].DefaultValue | Should -BeNullOrEmpty
-        }
-        else {
+        } else {
             $hostUi.State.FieldDescriptions[0].DefaultValue | Should -Be $Default
         }
     }
@@ -370,8 +365,7 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             $thrown = $null
             try {
                 Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo ([pscustomobject]@{ModuleFilePSM1 = '/tmp/missing.psm1'})
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -396,8 +390,7 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             $thrown = $null
             try {
                 Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo ([pscustomobject]@{ModuleFilePSM1 = '/tmp/bad.psm1'})
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -427,8 +420,7 @@ Describe 'Coverage completion for remaining low-coverage helpers' {
             $thrown = $null
             try {
                 Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo ([pscustomobject]@{ModuleFilePSM1 = '/tmp/empty.psm1'})
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

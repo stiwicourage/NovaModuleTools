@@ -247,8 +247,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             $thrown = $null
             try {
                 Invoke-NovaCliCommandRoute -InvocationContext $invocationContext
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -369,8 +368,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                     $thrown = $null
                     try {
                         Get-NovaCliArgumentRoutingState -Command $command -Arguments @($option)
-                    }
-                    catch {
+                    } catch {
                         $thrown = $_
                     }
 
@@ -394,8 +392,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                     BoundParameters = @{Command = 'build'; Arguments = @('-Verbose')}
                     Arguments = @('-Verbose')
                 })
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -473,8 +470,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 $unknownArgumentError = $null
                 try {
                     & $TestCase.ParserCommand -Arguments @('--bogus')
-                }
-                catch {
+                } catch {
                     $unknownArgumentError = $_
                 }
 
@@ -584,8 +580,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                         ConvertFrom-NovaDeployCliArgument -Arguments $TestCase.Arguments
                     }
                 }
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -629,8 +624,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             $unsupportedUsageError = $null
             try {
                 ConvertFrom-NovaVersionCliArgument -Arguments @('--bogus')
-            }
-            catch {
+            } catch {
                 $unsupportedUsageError = $_
             }
 
@@ -647,8 +641,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             $unknownCommandError = $null
             try {
                 Get-NovaCliCommandHelp -Command 'banana'
-            }
-            catch {
+            } catch {
                 $unknownCommandError = $_
             }
 
@@ -666,8 +659,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
             $invalidHeaderError = $null
             try {
                 Add-NovaCliHeaderOption -Options @{} -HeaderArgument '=value'
-            }
-            catch {
+            } catch {
                 $invalidHeaderError = $_
             }
 
@@ -741,8 +733,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
 
                     [pscustomobject]@{Feature = $Build.IsPresent; WhatIf = $WhatIf.IsPresent}
                 }
-            }
-            else {
+            } else {
                 Mock $actionCommand {
                     param([switch]$SkipTests, [switch]$WhatIf)
 
@@ -867,8 +858,7 @@ Describe 'Coverage gaps for CLI and installed-version internals' {
                 $syntaxError = $null
                 try {
                     Assert-NovaCliArgumentSyntax -Arguments @($TestCase.Argument)
-                }
-                catch {
+                } catch {
                     $syntaxError = $_
                 }
 
@@ -929,8 +919,7 @@ try {
 
     Write-Output 'NO_THROW'
     exit 1
-}
-catch {
+} catch {
     Write-Output `$_.FullyQualifiedErrorId
     Write-Output `$_.Exception.Message
     exit 0
@@ -993,8 +982,7 @@ catch {
                 $thrown = $null
                 try {
                     ConvertFrom-NovaCliArgument -Arguments $testCase.Arguments
-                }
-                catch {
+                } catch {
                     $thrown = $_
                 }
 
@@ -1022,8 +1010,7 @@ catch {
                 $missingHomeError = $null
                 try {
                     Get-NovaCliInstallDirectory
-                }
-                catch {
+                } catch {
                     $missingHomeError = $_
                 }
 
@@ -1033,8 +1020,7 @@ catch {
                     Category = [System.Management.Automation.ErrorCategory]::ResourceUnavailable
                     TargetObject = 'HOME'
                 })
-            }
-            finally {
+            } finally {
                 $env:HOME = $originalHome
             }
         }
@@ -1054,8 +1040,7 @@ catch {
             $unsupportedWhatIfError = $null
             try {
                 Invoke-NovaCliInitCommand -Arguments @('--path', '/tmp/project') -ForwardedParameters @{} -WhatIfEnabled
-            }
-            catch {
+            } catch {
                 $unsupportedWhatIfError = $_
             }
 
@@ -1068,14 +1053,34 @@ catch {
         }
     }
 
+    It 'Invoke-NovaCliInitCommand delegates init execution through Initialize-NovaModule so shared init behavior stays aligned' {
+        InModuleScope $script:moduleName {
+            Mock ConvertFrom-NovaInitCliArgument {
+                @{
+                    Path = '/tmp/project'
+                    Example = $true
+                }
+            }
+            Mock Initialize-NovaModule {}
+
+            Invoke-NovaCliInitCommand -Arguments @('--example', '--path', '/tmp/project') -ForwardedParameters @{Confirm = $false}
+
+            Assert-MockCalled ConvertFrom-NovaInitCliArgument -Times 1 -ParameterFilter {
+                $Arguments.Count -eq 3 -and $Arguments[0] -eq '--example'
+            }
+            Assert-MockCalled Initialize-NovaModule -Times 1 -ParameterFilter {
+                $Path -eq '/tmp/project' -and $Example -and -not $Confirm
+            }
+        }
+    }
+
     It 'Get-NovaCliLauncherPath reports missing commands, missing file-backed commands, and missing launcher files' {
         InModuleScope $script:moduleName {
             Mock Get-Command {$null}
             $missingCommandError = $null
             try {
                 Get-NovaCliLauncherPath
-            }
-            catch {
+            } catch {
                 $missingCommandError = $_
             }
 
@@ -1094,8 +1099,7 @@ catch {
             $nonFileBackedCommandError = $null
             try {
                 Get-NovaCliLauncherPath
-            }
-            catch {
+            } catch {
                 $nonFileBackedCommandError = $_
             }
 
@@ -1115,8 +1119,7 @@ catch {
             $missingLauncherError = $null
             try {
                 Get-NovaCliLauncherPath
-            }
-            catch {
+            } catch {
                 $missingLauncherError = $_
             }
 
@@ -1135,11 +1138,9 @@ catch {
         $psData = $module.PrivateData.PSData
         $prereleaseLabel = if ($psData -is [hashtable]) {
             $psData['Prerelease']
-        }
-        elseif ($null -ne $psData -and $psData.PSObject.Properties.Name -contains 'Prerelease') {
+        } elseif ($null -ne $psData -and $psData.PSObject.Properties.Name -contains 'Prerelease') {
             $psData.Prerelease
-        }
-        else {
+        } else {
             $null
         }
 
@@ -1253,8 +1254,7 @@ catch {
             $thrown = $null
             try {
                 Get-NovaInstalledProjectVersion -ProjectInfo $projectInfo
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -1276,8 +1276,7 @@ catch {
             try {
                 $env:PATH = "/tmp/other${separator}$targetDirectory${separator}/tmp/else"
                 Test-NovaCliDirectoryOnPath -Directory $TestDrive | Should -BeTrue
-            }
-            finally {
+            } finally {
                 $env:PATH = $originalPath
             }
         }
@@ -1305,8 +1304,7 @@ catch {
             $thrown = $null
             try {
                 Set-NovaCliExecutablePermission -Path $path -Confirm:$false
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

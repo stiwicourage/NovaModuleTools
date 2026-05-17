@@ -130,8 +130,7 @@ Describe 'Nova command model - release and publish behavior' {
             $thrown = $null
             try {
                 Invoke-NovaRelease -Local -Path (Get-Location).Path
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -338,8 +337,7 @@ Describe 'Nova command model - release and publish behavior' {
             Mock Write-NovaPublishWorkflowContext {}
             if ($TestCase.WorkflowName -eq 'release') {
                 Mock Invoke-NovaReleaseWorkflow {}
-            }
-            else {
+            } else {
                 Mock Invoke-NovaPublishWorkflow {}
             }
 
@@ -459,8 +457,7 @@ Describe 'Nova command model - release and publish behavior' {
             Mock Write-NovaPublishWorkflowContext {}
             if ($TestCase.WorkflowName -eq 'release') {
                 Mock Invoke-NovaReleaseWorkflow {}
-            }
-            else {
+            } else {
                 Mock Invoke-NovaPublishWorkflow {}
             }
 
@@ -719,8 +716,7 @@ Describe 'Nova command model - release and publish behavior' {
                             $ApiKey -eq $TestCase.ExpectedApiKey
                 }
             }
-        }
-        finally {
+        } finally {
             [System.Environment]::SetEnvironmentVariable('PSGALLERY_API', $originalApiKey, 'Process')
         }
     }
@@ -742,8 +738,7 @@ Describe 'Nova command model - release and publish behavior' {
                             -not $PSBoundParameters.ContainsKey('ApiKey')
                 }
             }
-        }
-        finally {
+        } finally {
             [System.Environment]::SetEnvironmentVariable('PSGALLERY_API', $originalApiKey, 'Process')
         }
     }
@@ -1246,8 +1241,7 @@ Describe 'Nova command model - release and publish behavior' {
             $thrown = $null
             try {
                 New-NovaModulePackage
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -1291,15 +1285,13 @@ Describe 'Nova command model - release and publish behavior' {
             $originalModulePath = $env:PSModulePath
             $script:expectedModulePath = if ($IsWindows) {
                 'C:\Users\Stiwi\Documents\PowerShell\Modules'
-            }
-            else {
+            } else {
                 '/Users/stiwi.courage/.local/share/powershell/Modules'
             }
 
             $env:PSModulePath = if ($IsWindows) {
                 'C:\Program Files\PowerShell\Modules;C:\Users\Stiwi\Documents\PowerShell\Modules;C:\Temp\Modules'
-            }
-            else {
+            } else {
                 '/usr/local/share/powershell/Modules:/Users/stiwi.courage/.local/share/powershell/Modules:/tmp/modules'
             }
 
@@ -1310,8 +1302,7 @@ Describe 'Nova command model - release and publish behavior' {
 
             try {
                 Get-LocalModulePath | Should -Be $script:expectedModulePath
-            }
-            finally {
+            } finally {
                 $env:PSModulePath = $originalModulePath
             }
         }
@@ -1322,8 +1313,7 @@ Describe 'Nova command model - release and publish behavior' {
             $originalModulePath = $env:PSModulePath
             $env:PSModulePath = if ($IsWindows) {
                 'C:\Program Files\PowerShell\Modules;C:\Temp\Modules'
-            }
-            else {
+            } else {
                 '/usr/local/share/powershell/Modules:/tmp/modules'
             }
 
@@ -1331,8 +1321,7 @@ Describe 'Nova command model - release and publish behavior' {
 
             $expectedMessage = if ($IsWindows) {
                 'No windows module path matching*'
-            }
-            else {
+            } else {
                 'No macOS/Linux module path matching*'
             }
 
@@ -1340,8 +1329,7 @@ Describe 'Nova command model - release and publish behavior' {
                 $thrown = $null
                 try {
                     Get-LocalModulePath
-                }
-                catch {
+                } catch {
                     $thrown = $_
                 }
 
@@ -1351,13 +1339,11 @@ Describe 'Nova command model - release and publish behavior' {
                     Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                     TargetObject = if ($IsWindows) {
                         '\\Documents\\PowerShell\\Modules'
-                    }
-                    else {
+                    } else {
                         '/\.local/share/powershell/Modules$'
                     }
                 })
-            }
-            finally {
+            } finally {
                 $env:PSModulePath = $originalModulePath
             }
         }
@@ -1368,8 +1354,7 @@ Describe 'Nova command model - release and publish behavior' {
             $thrown = $null
             try {
                 Import-NovaPublishedLocalModule -ProjectName 'NovaModuleTools' -ManifestPath '/tmp/missing/NovaModuleTools.psd1'
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

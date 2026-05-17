@@ -45,8 +45,7 @@ Describe 'Targeted coverage for smaller CLI helper internals' {
             $directHelpUsageError = $null
             try {
                 Assert-NovaCliHelpUsageSupported -Tokens @('--help', 'build')
-            }
-            catch {
+            } catch {
                 $directHelpUsageError = $_
             }
 
@@ -60,8 +59,7 @@ Describe 'Targeted coverage for smaller CLI helper internals' {
             $rootHelpUsageError = $null
             try {
                 Get-NovaCliHelpRequest -Command '--help' -Arguments @('--help')
-            }
-            catch {
+            } catch {
                 $rootHelpUsageError = $_
             }
 
@@ -75,8 +73,7 @@ Describe 'Targeted coverage for smaller CLI helper internals' {
             $subcommandHelpUsageError = $null
             try {
                 Get-NovaCliHelpRequest -Command 'build' -Arguments @('--help', 'extra')
-            }
-            catch {
+            } catch {
                 $subcommandHelpUsageError = $_
             }
 
@@ -99,8 +96,7 @@ Describe 'Targeted coverage for smaller CLI helper internals' {
                 $result.Verbose | Should -BeTrue
                 $result.WhatIf | Should -BeTrue
                 $result.Confirm | Should -BeFalse
-            }
-            finally {
+            } finally {
                 $WhatIfPreference = $previousWhatIfPreference
             }
         }
@@ -133,6 +129,13 @@ Describe 'Targeted coverage for smaller CLI helper internals' {
             $result = Invoke-NovaCliNativeConsoleReadKey -Reader {
                 [pscustomobject]@{KeyChar = [char]'y'}
             }
+            $nativeReader = Get-NovaCliNativeConsoleReadKeyReader
+            Mock Get-NovaCliNativeConsoleReadKeyReader {
+                {
+                    [pscustomobject]@{KeyChar = [char]'n'}
+                }
+            }
+            $defaultResult = Invoke-NovaCliNativeConsoleReadKey
             Mock Invoke-NovaCliNativeConsoleReadKey {
                 [pscustomobject]@{KeyChar = [char]'y'}
             }
@@ -140,9 +143,13 @@ Describe 'Targeted coverage for smaller CLI helper internals' {
             $reader = Get-NovaCliConsoleReadKeyReader
 
             $result.KeyChar | Should -Be ([char]'y')
+            $nativeReader | Should -BeOfType 'scriptblock'
+            ($nativeReader.ToString()).Trim() | Should -Be '[Console]::ReadKey($true)'
+            $defaultResult.KeyChar | Should -Be ([char]'n')
             $reader | Should -BeOfType 'scriptblock'
             ($reader.ToString()).Trim() | Should -Be 'Invoke-NovaCliNativeConsoleReadKey'
             (& $reader).KeyChar | Should -Be ([char]'y')
+            Assert-MockCalled Get-NovaCliNativeConsoleReadKeyReader -Times 1
             Assert-MockCalled Invoke-NovaCliNativeConsoleReadKey -Times 1
         }
     }

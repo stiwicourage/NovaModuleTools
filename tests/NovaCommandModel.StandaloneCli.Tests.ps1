@@ -80,8 +80,7 @@ Describe 'Nova command model - standalone CLI behavior' {
             $result.DestinationDirectory | Should -Be $targetDirectory
             (Test-Path -LiteralPath $installedPath) | Should -BeTrue
             Assert-TestInstalledNovaCliSnapshot -Snapshot $snapshot -ModuleName $script:moduleName -InstalledModuleVersion $installedModuleVersion -ExpectedProjectVersionText $expectedProjectVersionText
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -105,7 +104,7 @@ Describe 'Nova command model - standalone CLI behavior' {
 {
   "ProjectName": "CliVerboseBuildProject",
   "Description": "CLI verbose forwarding test project",
-  "Version": "0.0.1",
+  "Version": "0.1.0-preview",
   "CopyResourcesToModuleRoot": false,
   "Manifest": {
     "Author": "Test",
@@ -143,8 +142,7 @@ function Invoke-TestCliVerbose {
                 $shortBuildOutput = & $installedPath build -v 2>&1
                 $shortBuildText = @($shortBuildOutput) -join [Environment]::NewLine
                 $shortBuildExitCode = $LASTEXITCODE
-            }
-            finally {
+            } finally {
                 Pop-Location
             }
 
@@ -155,8 +153,7 @@ function Invoke-TestCliVerbose {
             $shortBuildText | Should -Match 'VERBOSE: Running NovaModuleTools Version:'
             $shortBuildText | Should -Match 'VERBOSE: Buidling module psm1 file'
             (Test-Path -LiteralPath (Join-Path $projectRoot 'dist/CliVerboseBuildProject/CliVerboseBuildProject.psm1')) | Should -BeTrue
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -194,8 +191,7 @@ Describe 'CLI WhatIf test project' {
             $resultMap = Get-TestNovaCliWhatIfResultMap -InstalledPath $installedPath -ProjectRoot $projectRoot
 
             Assert-TestNovaCliWhatIfResultMap -ResultMap $resultMap -ProjectJsonPath $projectJsonPath -BuiltModulePath $builtModulePath -TestResultPath $testResultPath
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -225,8 +221,7 @@ Describe 'CLI WhatIf test project' {
 
             $result.ExitCode | Should -Not -Be 0
             $result.Text | Should -Match $expectedPattern
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -268,8 +263,7 @@ Describe '$projectName tests' {
 
             $result = Invoke-TestInstalledNovaCommand -InstalledPath $installedPath -WorkingDirectory $projectRoot -Arguments @('publish', '--local', '--path', $publishDir, $testCase.Option) -EnvironmentVariables @{NOVA_CLI_CONFIRM_RESPONSE = $testCase.Response}
             Assert-TestNovaCliPublishConfirmationResult -Result $result -PublishManifestPath $publishManifestPath -TestCase $testCase
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -280,12 +274,12 @@ Describe '$projectName tests' {
             ProjectName = 'CliPreviewBumpProject'
             ProjectGuid = '44444444-4444-4444-4444-444444444444'
             FunctionName = 'Invoke-TestCliPreviewBump'
-            CurrentVersion = '0.0.1-rc1'
+            CurrentVersion = '0.1.0-preview-rc1'
             CommitMessage = 'feat!: add prerelease cli bump coverage'
             Arguments = @('bump', '--preview', '--what-if')
             ExpectedPatterns = @(
                 'What if:'
-                'Version plan: 0\.0\.1-rc1 -> 0\.0\.1-rc2 \| Label: Major \| Commits: 1'
+                'Version plan: 0\.1\.0-preview-rc1 -> 0\.1\.0-preview-rc2 \| Label: Major \| Commits: 1'
             )
             UnexpectedPatterns = @(
                 'Unknown argument:'
@@ -293,7 +287,7 @@ Describe '$projectName tests' {
                 'Major version zero \(0\.y\.z\) is for initial development'
             )
             ExpectedWarningCount = 0
-            ExpectedVersionAfterBump = '0.0.1-rc1'
+            ExpectedVersionAfterBump = '0.1.0-preview-rc1'
         }
 
         Assert-TestInstalledNovaCliBumpBehavior -DistModuleDir $script:distModuleDir -TestDriveRoot $TestDrive -TestCase @{
@@ -322,13 +316,13 @@ Describe '$projectName tests' {
             ProjectName = 'CliMajorZeroMinorBumpProject'
             ProjectGuid = '56555555-5555-5555-5555-555555555555'
             FunctionName = 'Invoke-TestCliMajorZeroMinorBump'
-            CurrentVersion = '0.0.1'
+            CurrentVersion = '0.1.0-preview'
             CommitMessage = 'feat: add stable minor major zero bump coverage'
             Arguments = @('bump')
             ExpectedPatterns = @(
                 'WARNING: Major version zero \(0\.y\.z\) is for initial development'
                 'Version bumped to : 0\.1\.0'
-                'Version bump completed: 0\.0\.1 -> 0\.1\.0 \| Label: Minor \| Commits: 1'
+                'Version bump completed: 0\.1\.0-preview -> 0\.1\.0 \| Label: Minor \| Commits: 1'
             )
             UnexpectedPatterns = @(
                 'What if:'
@@ -372,8 +366,7 @@ Describe '$projectName tests' {
             $result.Text | Should -Match 'Version plan: 1\.5\.4-preview -> 2\.0\.0 \| Label: Major \| Commits: 1'
             $result.Text | Should -Not -Match 'Version plan: 1\.5\.4-preview -> 1\.5\.4 \| Label: Patch \| Commits: 0'
             $versionAfterBump | Should -Be '1.5.4-preview'
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -418,8 +411,7 @@ Describe '$projectName tests' {
             foreach ($pattern in $_.UnexpectedPatterns) {
                 $initResult.Text | Should -Not -Match $pattern
             }
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -463,8 +455,7 @@ Describe '$projectName tests' {
             $result.ExitCode | Should -Be 0 -Because $result.Text
             (Test-Path -LiteralPath $builtModulePath) | Should -BeTrue
             (Test-Path -LiteralPath $topMarker) | Should -BeTrue
-        }
-        finally {
+        } finally {
             $env:PSModulePath = $originalModulePath
         }
     }
@@ -585,6 +576,16 @@ Describe '$projectName tests' {
 
             $shortHelp | Should -Match '-s, --skip-tests'
             $longHelp | Should -Match '--skip-tests'
+        }
+    }
+
+    It 'Invoke-NovaCli help for init documents the optional Agentic Copilot starter prompt' {
+        InModuleScope $script:moduleName {
+            $longHelp = Invoke-NovaCli -Command '--help' -Arguments @('init')
+
+            $longHelp | Should -Match 'Agentic Copilot starter package'
+            $longHelp | Should -Match 'defaults to No'
+            $longHelp | Should -Match 'short name'
         }
     }
 
@@ -808,8 +809,7 @@ Describe '$projectName tests' {
             $thrown = $null
             try {
                 & $TestCase.Action
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

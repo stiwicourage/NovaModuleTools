@@ -38,6 +38,26 @@ Use this skill when producing Markdown files in the repository or Markdown outpu
 - For inner code examples, use triple backticks and include a language when helpful.
 - Never use triple backticks as the outer wrapper when the content itself may already contain fenced code blocks.
 
+## Copy-safe wrapper example
+
+Expected output shape when the entire response must be a single copy-ready Markdown block:
+
+~~~
+## Example
+
+Run the build with:
+
+```powershell
+PS> Invoke-NovaBuild
+```
+
+Or from the CLI:
+
+```zsh
+% nova build
+```
+~~~
+
 ## Common pitfalls
 
 - Breaking copy-paste output by mixing outer and inner triple-backtick fences

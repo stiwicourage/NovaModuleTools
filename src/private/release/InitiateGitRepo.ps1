@@ -21,8 +21,7 @@ function New-InitiateGitRepo {
 
     try {
         $result = Invoke-NovaGitCommand -ProjectRoot $DirectoryPath -Arguments @('init')
-    }
-    catch {
+    } catch {
         Stop-NovaOperation -Message "Failed to initialize Git repo: $( $_.Exception.Message )" -ErrorId 'Nova.Dependency.GitRepositoryInitializationFailed' -Category OpenError -TargetObject $DirectoryPath
     }
 

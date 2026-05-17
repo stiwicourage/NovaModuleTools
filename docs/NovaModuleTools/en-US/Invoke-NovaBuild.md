@@ -27,15 +27,12 @@ PS> Invoke-NovaBuild [-ContinuousIntegration] [-OverrideWarning] [-WhatIf] [-Con
 
 `Invoke-NovaBuild` runs the NovaModuleTools build pipeline for the current project.
 
-This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
-build target without clearing `dist/` or generating new build output.
+This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the build target without clearing `dist/` or generating new build output.
 
-Use `-ContinuousIntegration` when the same PowerShell session needs to keep using the freshly built `dist/` module after
-the build completes. In CI/self-hosting flows, that re-activates the built module before the command returns.
+Use `-ContinuousIntegration` when the same PowerShell session needs to keep using the freshly built `dist/` module after the build completes. In CI/self-hosting flows, that re-activates the built module before the command returns.
 
 Use `-OverrideWarning` only when you intentionally want to continue a build even though a file under `src/public`
-contains zero or multiple top-level functions. The normal build guard stops there because those layouts can leak helper
-functions into the public API surface.
+contains zero or multiple top-level functions. The normal build guard stops there because those layouts can leak helper functions into the public API surface.
 
 The command:
 
@@ -49,17 +46,13 @@ The command:
 To update the installed `NovaModuleTools` module itself, use `Update-NovaModuleTool` (alias:
 `Update-NovaModuleTools`).
 
-Use `Set-NovaUpdateNotificationPreference` or `Get-NovaUpdateNotificationPreference` when you want to control whether
-prerelease self-updates are eligible.
+Use `Set-NovaUpdateNotificationPreference` or `Get-NovaUpdateNotificationPreference` when you want to control whether prerelease self-updates are eligible.
 
-If `Invoke-NovaBuild` detects that a newer `NovaModuleTools` release or prerelease is available after the build, the
-warning includes the recommended update command together with the release notes link from the installed module
-manifest.
+If `Invoke-NovaBuild` detects that a newer `NovaModuleTools` release or prerelease is available after the build, the warning includes the recommended update command together with the release notes link from the installed module manifest.
 
 If `SetSourcePath` is enabled, the generated `.psm1` includes `# Source:` markers before each source block.
 
-If `Preamble` is configured, those lines are written at the very top of the generated `.psm1` before the rest of the
-module content.
+If `Preamble` is configured, those lines are written at the very top of the generated `.psm1` before the rest of the module content.
 
 ## EXAMPLES
 
@@ -101,8 +94,7 @@ Prompts before the build workflow runs when confirmation is required.
 PS> Invoke-NovaBuild -ContinuousIntegration
 ```
 
-Builds the project and then re-imports the freshly built `dist/<ProjectName>/<ProjectName>.psd1` so later CI steps in
-the same session use the updated build output.
+Builds the project and then re-imports the freshly built `dist/<ProjectName>/<ProjectName>.psd1` so later CI steps in the same session use the updated build output.
 
 ## PARAMETERS
 
@@ -110,8 +102,7 @@ the same session use the updated build output.
 
 Re-import the freshly built module from `dist/` before the command returns.
 
-Use this in CI/self-hosting flows when later commands in the same PowerShell session must run against the freshly built
-module state instead of the previously loaded copy.
+Use this in CI/self-hosting flows when later commands in the same PowerShell session must run against the freshly built module state instead of the previously loaded copy.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -132,8 +123,7 @@ HelpMessage: ''
 
 ### -OverrideWarning
 
-Continue the build when the `src/public` layout guard reports that a public file does not contain exactly one top-level
-function.
+Continue the build when the `src/public` layout guard reports that a public file does not contain exactly one top-level function.
 
 Use this only when you intentionally accept the warning and still want the current build to proceed.
 
@@ -156,9 +146,7 @@ HelpMessage: ''
 
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
--InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
@@ -180,11 +168,9 @@ Run this command from the project root so `project.json`, `src/`, `docs/<Project
 `Invoke-NovaBuild` uses `SupportsShouldProcess`, so `Get-Help Invoke-NovaBuild -Full` shows the native `-WhatIf` and
 `-Confirm` behavior.
 
-When `-ContinuousIntegration` is used together with a real build, the command re-imports the freshly built module after
-the build succeeds. `-WhatIf` previews remain side-effect free and do not change the loaded module state.
+When `-ContinuousIntegration` is used together with a real build, the command re-imports the freshly built module after the build succeeds. `-WhatIf` previews remain side-effect free and do not change the loaded module state.
 
-Files under `src/public` are expected to contain exactly one top-level function each. Use `-OverrideWarning` only when
-you intentionally want to bypass that guard for the current build.
+Files under `src/public` are expected to contain exactly one top-level function each. Use `-OverrideWarning` only when you intentionally want to bypass that guard for the current build.
 
 ## RELATED LINKS
 

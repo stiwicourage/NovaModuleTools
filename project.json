@@ -19,6 +19,10 @@
       {
         "ModuleName": "Microsoft.PowerShell.PlatyPS",
         "ModuleVersion": "1.0.1"
+      },
+      {
+        "ModuleName": "PSScriptAnalyzer",
+        "ModuleVersion": "1.25.0"
       }
     ],
     "Tags": [
@@ -36,12 +40,18 @@
     "LicenseUri": "https://www.novamoduletools.com/license.html"
   },
   "Pester": {
+    "CodeCoverage": {
+      "Enabled": true,
+      "CoveragePercentTarget": 90,
+      "OutputPath": "artifacts/coverage.xml",
+      "OutputFormat": "JaCoCo"
+    },
     "TestResult": {
       "Enabled": true,
       "OutputFormat": "NUnitXml"
     },
     "Output": {
-      "Verbosity": "Normal"
+      "Verbosity": "Detailed"
     }
   }
 }

@@ -11,8 +11,7 @@ function Invoke-NovaPackageArtifactUpload {
 
     try {
         $response = Invoke-NovaPackageUploadRequest -UploadArtifact $UploadArtifact
-    }
-    catch {
+    } catch {
         Stop-NovaOperation -Message "Package upload failed for $( $UploadArtifact.PackagePath ) -> $( $UploadArtifact.UploadUrl ). $( $_.Exception.Message )" -ErrorId 'Nova.Dependency.PackageUploadRequestFailed' -Category ConnectionError -TargetObject $UploadArtifact.UploadUrl
     }
 

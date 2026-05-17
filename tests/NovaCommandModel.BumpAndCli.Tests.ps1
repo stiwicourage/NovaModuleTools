@@ -129,7 +129,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
 
     It 'Get-NovaVersionUpdateWorkflowContext warns feature bumps that stable 0.y.z is still the initial-development line' {
         Assert-TestNovaVersionUpdateWorkflowContextMajorZeroAdvisory -ModuleName $script:moduleName -TestCase @{
-            CurrentVersion = '0.0.1'
+            CurrentVersion = '0.1.0-preview'
             CommitMessages = @('feat: add command')
             Label = 'Minor'
             PlannedVersion = '0.1.0'
@@ -381,7 +381,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
 
     It 'Update-NovaModuleVersion writes the initial-development warning for stable 0.y.z feature bumps' {
         Assert-TestUpdateNovaModuleVersionMajorZeroWarning -ModuleName $script:moduleName -TestCase @{
-            PreviousVersion = '0.0.1'
+            PreviousVersion = '0.1.0-preview'
             NewVersion = '0.1.0'
             Label = 'Minor'
             EffectiveLabel = 'Minor'
@@ -614,8 +614,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $thrown = $null
             try {
                 Update-NovaModuleVersion -Path $projectRoot -WhatIf -WarningVariable warningMessages
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 
@@ -680,8 +679,7 @@ Describe 'Nova command model - bump and CLI confirmation behavior' {
             $thrown = $null
             try {
                 Update-NovaModuleVersion -Path $projectRoot -WhatIf
-            }
-            catch {
+            } catch {
                 $thrown = $_
             }
 

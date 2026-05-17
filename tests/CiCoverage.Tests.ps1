@@ -143,8 +143,7 @@ Describe 'CodeScene Cobertura remapping helpers' {
         $thrown = $null
         try {
             Convert-CoberturaCoverageToSourcePath -CoveragePath $coveragePath -BuiltModulePath $builtModulePath -RepoRoot $repoRoot
-        }
-        catch {
+        } catch {
             $thrown = $_
         }
 

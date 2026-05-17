@@ -25,8 +25,7 @@ PS> Install-NovaCli [[-DestinationDirectory] <string>] [-Force] [-WhatIf] [-Conf
 
 ## DESCRIPTION
 
-`Install-NovaCli` copies the bundled `nova` launcher from the installed NovaModuleTools module into a user-facing
-command directory.
+`Install-NovaCli` copies the bundled `nova` launcher from the installed NovaModuleTools module into a user-facing command directory.
 
 By default, the launcher is installed to `~/.local/bin/nova` on macOS and Linux. If that directory is not on your
 `PATH`, the command warns so you can update your shell profile.
@@ -165,13 +164,11 @@ You can't pipe objects to this cmdlet.
 
 ### PSCustomObject
 
-Returns the installed command name, destination directory, installed path, and whether the destination directory is
-currently on `PATH`.
+Returns the installed command name, destination directory, installed path, and whether the destination directory is currently on `PATH`.
 
 ## NOTES
 
 After running `Install-NovaCli`, add the destination directory to your shell `PATH` if needed.
-
 
 ## RELATED LINKS
 

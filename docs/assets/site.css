@@ -35,10 +35,9 @@ body {
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     line-height: 1.68;
     color: var(--text);
-    background:
-        radial-gradient(circle at top left, #1d2a5b 0%, transparent 34%),
-        radial-gradient(circle at top right, #0f6d66 0%, transparent 25%),
-        linear-gradient(180deg, #0b1020 0%, #0f1731 48%, #0d1327 100%);
+    background: radial-gradient(circle at top left, #1d2a5b 0%, transparent 34%),
+    radial-gradient(circle at top right, #0f6d66 0%, transparent 25%),
+    linear-gradient(180deg, #0b1020 0%, #0f1731 48%, #0d1327 100%);
 }
 
 a {

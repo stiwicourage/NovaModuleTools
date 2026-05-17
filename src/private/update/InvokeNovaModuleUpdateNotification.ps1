@@ -1,4 +1,4 @@
-function Invoke-NovaBuildUpdateNotification {
+function Invoke-NovaModuleUpdateNotification {
     [CmdletBinding()]
     param(
         [int]$TimeoutMilliseconds = 3000
@@ -23,3 +23,4 @@ function Invoke-NovaBuildUpdateNotification {
 
     Write-NovaAvailableModuleUpdateWarning -CurrentVersion $installedModule.Version -AvailableVersion $lookupResult.Prerelease.Version -Prerelease
 }
+

@@ -6,8 +6,7 @@ function Get-NovaModuleProjectTemplatePath {
 
     $fileName = if ($Example) {
         [System.IO.Path]::Combine('example', 'project.json')
-    }
-    else {
+    } else {
         'ProjectTemplate.json'
     }
 

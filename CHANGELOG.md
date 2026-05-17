@@ -1,29 +1,52 @@
 # Changelog
 
-All notable changes to this project will be documented in this file and **PREVIEW / UNRELEASED** changes will be included in the next **stable** release!
-
+All notable changes to this project will be documented in this file and **UNRELEASED** changes will be included in the next **stable** release!
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ### Added
+- `Initialize-NovaModule` and `% nova init` now offer an optional interactive **Agentic Copilot** starter package for both the minimal and example scaffold flows.
+    - The new prompt appears after the Git question, defaults to `No`, and adds one shared Nova-maintained starter tree when enabled.
+    - Example scaffolds now merge the existing example README with the Agentic starter README instead of flattening the example guide into the generic starter file.
+    - The starter tree is now generated from a filtered mirror of Nova's own agentic `.github/` files, with a dedicated sync script and drift test so future scaffolds and `dist` stay aligned with the maintained source guidance.
+    - The generated architect/design prompt now requires final design packages and issue/work item drafts to be returned as copy-ready Markdown using the project Markdown authoring guidance.
+  - The generated guidance now explicitly keeps Agentic Copilot projects on the Nova build model, treats `.psm1` / `.psd1` files as generated `dist` output, requires project test validation to run through `Test-NovaBuild` instead of direct `Invoke-Pester`, requires PlatyPS-compatible help for public commands/classes, expects one focused source-mirrored test file for every new or changed `src/**/*.ps1` file, tells agents to honor `project.json` `Manifest.PowerShellHostVersion` when writing PowerShell code and tests, and now asks for a short project name so placeholders such as `Invoke-<ShortName>*` can be replaced in the generated starter files.
+      - The generated guidance now keeps local `run.ps1` quality loops ordered as ScriptAnalyzer, `Invoke-NovaBuild`, then `Test-NovaBuild`, and tells agents to fix ScriptAnalyzer findings reported by `run.ps1` instead of excluding, suppressing, or handing them off unresolved.
+      - The generated guidance now points agents to the documented PSScriptAnalyzer workflow, using `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1` as the normal entrypoints and reserving direct `Invoke-ScriptAnalyzer` for focused local checks that reuse repo-approved settings.
+    - The generated PowerShell guidance now requires public files to keep one top-level function per file, requires private files to keep at most one externally called function per file, keeps any extra private functions limited to related same-file top-level support helpers whose file names match the owning function, forbids nested function declarations inside PowerShell functions, limits the `Invoke-<ShortName>*` / `Get-<ShortName>*` / `Update-<ShortName>*` naming guidance to public commands, and tells private helpers to avoid those public-style names in favor of clear implementation-focused helper names.
+    - The generated guidance now expresses PowerShell source/helper-script maintainability rules through `code-quality-matrix.instructions.md` and keeps test-specific design guidance in the testing instruction/skill files.
+      - The generated guidance now requires `docs/<ProjectName>/en-US/*.md` to stay valid PlatyPS help with YAML metadata and build-compatible structure, tells agents to use the documented `New-MarkdownCommandHelp` / `Update-MarkdownCommandHelp` / `Test-MarkdownCommandHelp` workflow instead of replacing command help with plain Markdown that breaks `nova build`, and requires a matching help file for every new public entry point in the same change.
+      - The generated PowerShell guidance now requires agents to review every changed or generated text file before handoff and normalize the file ending to exactly one trailing newline with no extra blank lines at the bottom.
+      - The starter now also ships a generated `scripts/build/Test-TextFileFormatting.ps1` helper and, when project tests are enabled, a `tests/TextFileFormatting.Tests.ps1` guardrail so trailing blank-line violations fail `Test-NovaBuild` instead of relying on instructions alone.
+    - When Git is enabled during either scaffold flow, Nova now creates or updates a default `.gitignore` in the generated project root and appends only the missing Nova-managed artifact entries instead of overwriting existing ignore rules.
+    - `Initialize-NovaModule` and `% nova init` now check for newer NovaModuleTools releases before the first interactive scaffold question and reuse the same non-blocking update warning behavior already used by build.
+- `Test-NovaBuild` and `% nova test` now enforce `Pester.CodeCoverage.CoveragePercentTarget` from `project.json` when `CodeCoverage.Enabled` is `true`, failing the test run when measured coverage drops below the configured target.
+
 
 ### Changed
+- The architect/design flow now surfaces settled vs unresolved design items before finalization, offers explicit choices for full finalization vs design-package-only handoff, clarifies how to use design notes versus the paste-ready GitHub issue draft, and requires finalization output to follow the project Markdown authoring guidance.
+- `ProjectTemplate.json` and the packaged example `project.json` now include Nova's default Pester `CodeCoverage` block with `Enabled=false`, shared `src/` coverage paths, JaCoCo output, and a `90` percent target so new projects can opt into coverage without hand-authoring the configuration.
+- `Invoke-NovaModuleToolsCI.ps1` now delegates the full test run to a single `Test-NovaBuild` call; the previous second `Invoke-Pester` pass and post-run Cobertura source-path remapping step have been removed.
+- CodeScene coverage upload now uses JaCoCo format instead of Cobertura and uploads both `line-coverage` and `branch-coverage` metrics in a single CI run; the helper script auto-discovers `artifacts/coverage.xml` instead of scanning for `*.cobertura.xml` files.
+- `Tests.yml` coverage-gate step now matches `**/coverage.xml` instead of `**/pester-coverage.cobertura.xml` to align with the new JaCoCo artifact path.
 
-- The architect/design flow now surfaces settled vs unresolved design items before finalization, offers explicit choices for full finalization vs design-package-only handoff, and clarifies how to use design notes versus the paste-ready GitHub issue draft.
 
 ### Deprecated
 
+
 ### Removed
 
+
 ### Fixed
+- `Test-NovaBuild` and `% nova test` no longer emit `Remove-Item -Recurse` progress bars during the Pester run; `$global:ProgressPreference` is saved and restored around the test execution so CI logs stay clean.
+- Code coverage in `Test-NovaBuild` now runs against the built `dist/<ModuleName>/<ModuleName>.psm1` file instead of source files, so measured coverage percentages and line numbers align with the deployed module.
+
 
 ### Security
 
+
 ## [2.4.0] - 2026-05-10
-
 ### Added
-
 - Added a repository-local agentic coding setup under `.github/` for Copilot/AI-assisted repository work.
     - Includes repository instructions, focused agent role definitions, repo-specific skills, and reusable task prompts.
   - Aligns the agent guidance with Nova's existing PowerShell, Pester, CodeScene, GitHub Actions, and release conventions.
@@ -46,10 +69,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - `CHANGELOG.md` remains the exhaustive release history.
   - `RELEASE_NOTE.md` now captures only public cmdlet, CLI, configuration, and migration-impacting changes, including backfilled summaries for the existing released versions in `CHANGELOG.md`.
   - `Tests.yml` now validates both files, and `Publish.yml` now finalizes both files during stable release preparation.
-    - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
+      - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
+
 
 ### Changed
-
 - `Package.Latest` now supports policy values: `"never"`, `"stable"`, and `"always"`.
     - `"stable"` keeps the floating `latest` alias pinned to stable package versions.
     - Legacy boolean values still work for now and map to `"always"` / `"never"` for backward compatibility.
@@ -57,70 +80,63 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - `CHANGELOG.md` remains the exhaustive release history.
   - `RELEASE_NOTE.md` now captures only public cmdlet, CLI, configuration, and migration-impacting changes, including backfilled summaries for the existing released versions in `CHANGELOG.md`.
   - `Tests.yml` now validates both files, and `Publish.yml` now finalizes both files during stable release preparation.
-    - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
+      - The public release-notes page now renders `RELEASE_NOTE.md` instead of the full changelog feed.
+
 
 ### Deprecated
-
 - Boolean `Package.Latest` values are deprecated and will be removed in the next major version.
 
-### Removed
 
+### Removed
 - Removed the repository's Codecov integration in favor of CodeScene-only coverage reporting.
     - `Tests.yml` no longer uploads CI coverage results to Codecov.
     - The standalone `codecov.yml` configuration has been removed from the repository.
 
-### Fixed
 
+### Fixed
 - Clarified contributor release/test guidance in `README.md` so repository and CI test runs still install `Pester 5.7.1`
   explicitly, while the published `NovaModuleTools` manifest continues to declare that dependency for installed workflows.
 
+
 ## [2.3.1] - 2026-05-08
-
 ### Fixed
-
 - Fixed `nova bump` and `Update-NovaModuleVersion` so nested project folders now reuse parent Git repository history for bump inference instead of silently falling back to `Patch`.
 - Fixed `nova bump` and `Update-NovaModuleVersion` so non-git bump flows now stop with a clear override-warning requirement instead of silently presenting `Patch | Commits: 0` as if it were an inferred result.
 
+
 ## [2.3.0] - 2026-05-06
-
 ### Changed
-
 - Make prerelease self-update confirmation default to `No`.
     - `Update-NovaModuleTool`, `Update-NovaModuleTools`, and `% nova update` now require an explicit `Y` before a prerelease self-update continues, so pressing Enter cancels the update instead of accepting it.
 - Render bold text in white across the hosted HTML documentation.
     - Emphasized `<strong>` and `<b>` text now stands out more clearly when scanning docs pages.
 
-### Fixed
 
+### Fixed
 - Restore Nova-managed project test runs in CI/CD after `2.2.0` dropped the implicit `Pester` dependency.
     - CI/CD environments no longer need custom logic to install `Pester` themselves before running project tests.
   - Published `NovaModuleTools` manifests once again pull in `Pester 5.7.1` implicitly so existing CI/CD test flows keep working without extra installation logic.
-    - `Test-NovaBuild` fails with a clear dependency error when `Pester` is not installed.
+      - `Test-NovaBuild` fails with a clear dependency error when `Pester` is not installed.
+
 
 ## [2.2.0] - 2026-05-06 [YANKED]
-
 This release was yanked because it removed the implicit `Pester` dependency, before Nova's CI/CD test flow installed `Pester` explicitly. Projects using `NovaModuleTools 2.2.0` could fail to run tests in CI/CD unless maintainers added their own `Pester` installation step. The regression was fixed in `2.3.0`.
-
 ### Changed
-
 - Align `Invoke-NovaRelease` PowerShell parameters with `Publish-NovaModule` and `% nova release`.
     - PowerShell release scripts can now pass `-Local`, `-Repository`, `-ModuleDirectoryPath`, and `-ApiKey` directly.
-    - Deprecated `-PublishOption` usage should be changed in existing CI/CD automation as soon as possible.
-
-Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer major-zero development line. - When the current stable version is `0.y.z` and commit history implies a breaking change, Nova now plans the next minor version instead of auto-jumping to `1.0.0`.
-
+  - Deprecated `-PublishOption` usage should be changed in existing CI/CD automation as soon as possible. Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer major-zero development line. - When the current stable version is `0.y.z` and commit history implies a breaking change, Nova now plans the next minor version instead of auto-jumping to `1.0.0`.
 - Stable `0.y.z` bump results now print one warning about manually setting `1.0.0` once the software is stable, while breaking-change bumps still report the detected `Major` label.
 - Make `Update-NovaModuleVersion -Preview` / `% nova bump --preview` enter the preview track deterministically from stable versions.
     - Stable versions now always become the next patch preview, for example `0.2.0 -> 0.2.1-preview`, instead of reusing semantic history inference for the semantic core.
     - Existing prerelease versions still keep their current semantic core and continue the prerelease sequence.
     - Running the bump without `-Preview` still finalizes or advances prerelease versions by Nova's normal semantic rules.
 
-### Deprecated
 
+### Deprecated
 - `Invoke-NovaRelease` parameters that differ from `Publish-NovaModule` and `% nova release` such as `-Local`, `-Repository`, `-ModuleDirectoryPath`, and `-ApiKey` are now the primary PowerShell release parameters, while `-PublishOption` is deprecated and will be removed in the next major version.
 
-### Fixed
 
+### Fixed
 - Fix the release workflow so repository publish steps run against the freshly built `dist/` module in each CI PowerShell process.
     - `Publish.yml` now imports the built module before `Invoke-NovaRelease` and `Publish-NovaModule`, which avoids missing private helper failures when the runner also has an older installed `NovaModuleTools` version available for autoload.
 - Fix the command-line test workflow wording in `docs/core-workflows.html` so the CLI preview flag is shown as
@@ -144,10 +160,9 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
     - Invalid module names now show the validation message inline instead of failing after the full questionnaire.
   - Standard and example scaffold flows now share the same retry-first validation behavior through the common prompt path.
 
+
 ## [2.1.0] - 2026-04-29
-
 ### Added
-
 - Add `Install-NovaCli` and a packaged `nova` launcher so macOS and Linux users can install and run `nova` directly from zsh or bash.
     - `nova` now remains the launcher-facing CLI surface, while `Invoke-NovaCli` stays the explicit PowerShell cmdlet entrypoint instead of exporting a `nova` PowerShell alias.
 - Add optional `Preamble` support in `project.json` to write module-level setup lines at the top of generated `.psm1`
@@ -203,14 +218,14 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
   - The `nova` launcher now supports `--continuous-integration` / `-i` on `nova build`, `nova bump`, `nova publish`, and `nova release` while keeping `nova version -i` dedicated to the installed-version view.
   - Build re-activates the freshly built module after the build succeeds, bump re-activates it before the version update starts, and publish/release restore the built module again after publish completes.
   - Repository publish no longer forces verbose `Publish-PSResource` output unless verbose logging was explicitly requested.
-    - CI bump now reuses the already activated built-module command when the current session is already running from
-      `dist/`, so publish-then-bump prerelease automation can continue in the same session without losing private helper bindings.
+      - CI bump now reuses the already activated built-module command when the current session is already running from
+        `dist/`, so publish-then-bump prerelease automation can continue in the same session without losing private helper bindings.
   - `Update-NovaModuleVersion -ContinuousIntegration` now also falls back to a patch bump when `HEAD` already matches the latest tag, so release automation can prepare the next prerelease version without requiring an extra commit.
 - Keep standalone `nova bump` output stable by formatting version-update results in the CLI layer instead of relying on PowerShell's default object rendering.
     - `nova bump --what-if` and `% run.ps1` now surface a predictable summary for previous version, new version, label, and commit count.
 
-### Changed
 
+### Changed
 - Change the project to a Nova command model, replacing the previous mixed MT/Nova workflow.
     - All public commands are now Nova commands, and the `nova` CLI / `Invoke-NovaCli` command surface is the primary entry point for all operations.
 - Change `nova` help to a dedicated CLI-native help system with both short and long command help forms.
@@ -226,13 +241,13 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 - Change `CopyResourcesToModuleRoot` to the canonical project setting name while keeping the default value `false`.
 - Change `Publish-NovaModule -Local` and `% nova publish --local` so a successful local publish also reloads the published module from the local install path into the active PowerShell session.
 
-### Removed
 
+### Removed
 - **BREAKING CHANGE**: Remove the legacy `MT` commands and MT-branded command documentation in favor of the Nova command model.
     - All public commands are now Nova commands, and the `nova` CLI / `Invoke-NovaCli` command surface is the primary entry point for all operations.
 
-### Fixed
 
+### Fixed
 - Fix unsupported `nova` help invocations so they now return Nova's structured CLI validation error instead of a PowerShell parameter-binding failure.
 - Keep manifest/package helper edge cases aligned with their intended behavior.
     - Manifest settings resolution now accepts ordered dictionary metadata shapes in addition to plain hashtables.
@@ -241,10 +256,9 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 - Fix semantic-release PSGallery publishing on fresh CI runners by bootstrapping the PSResourceGet repository store before
   `Publish-PSResource` runs.
 
+
 ## [1.9.1] - 2026-04-10
-
 ### Added
-
 - Nova command model and CLI entrypoint:
     - New root command: `nova`
   - New public commands: `Get-NovaProjectInfo`, `Invoke-NovaBuild`, `Invoke-NovaCli`, `Invoke-NovaRelease`, `Initialize-NovaModule`, `Publish-NovaModule`, `Test-NovaBuild`, `Update-NovaModuleVersion`
@@ -253,121 +267,112 @@ Keep stable `Update-NovaModuleVersion` / `% nova bump` releases on the SemVer ma
 - New GitHub workflow: Dependency Review (`.github/workflows/dependency-review.yml`).
 - New GitHub workflow: PowerShell code quality (`.github/workflows/powershell.yml`).
 
-### Changed
 
+### Changed
 - Updated test workflow triggers in `.github/workflows/Tests.yml` to improve branch/PR coverage.
 - Updated README module naming references to `NovaModuleTools`.
 - Source alignment updates to match installed `NovaModuleTools` v`1.8.0` behavior for compatibility.
 
-### Deprecated
 
+### Deprecated
 - `MT` commands and MT-branded command documentation in favor of the Nova command model.
 
-### Fixed
 
+### Fixed
 - Resource lookup compatibility in `Get-ResourceFilePath` for source/dist execution contexts.
 
+
 ## [1.8.0] - 2026-04-08
-
 ### Added
-
 - Project settings:
     - `BuildRecursiveFolders` (default `true`): recursive discovery for `src/classes`, `src/private` and `tests`.
   - `SetSourcePath` (default `true`): include `# Source: <relative path>` before each concatenated source file in generated `dist/<Project>/<Project>.psm1`.
   - `FailOnDuplicateFunctionNames` (default `true`): fail build when duplicate top-level function names exist in generated `dist/<Project>/<Project>.psm1`.
-    - Missing values for these settings are now treated as `true`.
-    - The rebranded `NovaModuleTools` module now uses its own module `GUID`.
+      - Missing values for these settings are now treated as `true`.
+      - The rebranded `NovaModuleTools` module now uses its own module `GUID`.
+
 
 ### Changed
-
 - Build determinism: files are processed in a deterministic order by relative path (case-insensitive), and load order is always `classes → public → private`.
 
-## [1.3.0] - 2025-09-23
 
+## [1.3.0] - 2025-09-23
 - Added support for `ps1xml1` format data. Place it in resources folder with `Name.format.ps1xml` to be automatically added as format file and imported in module manifest
 
+
 ## [1.2.0] - 2025-09-17
-
 ### Added
-
 - Added support for classes directory inside src
 - Initialize-NovaModule generates classes directory during fresh project
 - `classes` directory should include `.ps1` files which contain enums and classes
 
-### Fixed
 
+### Fixed
 - Version upgrade using update-mtmoduleversion now support build tags. Improvements to semver versioning.
 
+
 ## [1.1.3] - 2025-09-14
-
 ### Added
-
 - Now supports preview tag in Update-NovaModuleVersion
 - Now supports semver naming in both project.json and modulemanifest
 - Module build supports `preview` or `prerelease` tag
 - Preview version looks like `1.2.3-preview`
 
+
 ## [1.1.0] - 2025-08-28
-
 ## Added
-
 - Now Module manifest includes `AliasesToExport`. This helps loading aliases without explicitly importing modules to session.
 - thanks to @djs-zmtc for suggesting the feature
 
+
 ## [1.0.0] - 2025-03-11
-
 ### Added
-
 - New optional project setting `CopyResourcesToModuleRoot`. Setting to true places resource files in the root directory of module. Default is `false` to provide backward compatibility. Thanks to @[BrooksV](https://github.com/BrooksV)
 
-### Fixed
 
+### Fixed
 - **BREAKING CHANGE**: Typo corrected: ProjecUri to ProjectUri. Existing projects require manual update.
 
+
 ## [0.0.9] - 2024-07-17
-
 ### Fixed
-
 - Fixed #7, Invoke build should not through for empty tags
 
+
 ## [0.0.7] - 2024-07-17
-
 ### Added
-
 - Now "Manifest" section of project JSON supports all Manifest parameters, use exact name of parameter (from New-ModuleManifest) as key in JSON
 
-## Fixed
 
+## Fixed
 - Fixed the example project README so it no longer suggests that `example/` includes a `run.ps1` helper script; it now points users to building `NovaModuleTools` from the repository root or using the Gallery workflow.
 - Corrected typo in ProjectUri from `ProjecUri` to correct spelling.
 
+
 ## [0.0.6] - 2024-07-08
-
 ### Added
-
 - `Test-NovaBuild` now supports including and excluding tags
 
-### Fixed
 
+### Fixed
 - Code cleanup
 
+
 ## [0.0.5] - 2024-07-05
-
 ### Added
-
 - More verbose info during MTModule creation
 
-### Fixed
 
+### Fixed
 - Issue #2 : Git initialization implemented
 - Issue #1 : Doesn't create empty `tests` folder when user chooses `no` to tests
 
+
 ## [0.0.4] - 2024-06-25
-
 ### Added
-
 - First release to `psgallery`
 - All basic functionality of Module is ready
+
 
 [Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/2.4.0...HEAD
 [2.4.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.1...2.4.0

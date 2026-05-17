@@ -10,15 +10,13 @@ function Write-NovaAvailableModuleUpdateWarning {
     $releaseNotesUri = Get-NovaModuleReleaseNotesUri
     $updateCommand = if ($Prerelease) {
         "PS> Update-Module $moduleName -AllowPrerelease"
-    }
-    else {
+    } else {
         "PS> Update-Module $moduleName"
     }
 
     $heading = if ($Prerelease) {
         "A newer $moduleName prerelease is available."
-    }
-    else {
+    } else {
         "A newer $moduleName release is available."
     }
 

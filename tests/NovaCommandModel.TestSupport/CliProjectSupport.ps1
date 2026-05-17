@@ -22,7 +22,7 @@ function Write-TestNovaCliProjectJson {
 {
   "ProjectName": "$ProjectName",
   "Description": "CLI test project",
-  "Version": "0.0.1",
+  "Version": "0.1.0-preview",
   "CopyResourcesToModuleRoot": false,
   "Manifest": {
     "Author": "Test",
@@ -111,8 +111,7 @@ function Invoke-TestInstalledNovaCommand {
             Text = (@($output) -join [Environment]::NewLine)
             ExitCode = $LASTEXITCODE
         }
-    }
-    finally {
+    } finally {
         Pop-Location
 
         foreach ($variableName in $EnvironmentVariables.Keys) {
@@ -187,8 +186,7 @@ function Assert-TestInstalledNovaCliBumpBehavior {
 
         ([regex]::Matches($bumpResult.Text, 'Major version zero \(0\.y\.z\) is for initial development')).Count | Should -Be $TestCase.ExpectedWarningCount
         $versionAfterBump | Should -Be $TestCase.ExpectedVersionAfterBump
-    }
-    finally {
+    } finally {
         $env:PSModulePath = $originalModulePath
     }
 }
@@ -214,12 +212,12 @@ function Assert-TestNovaCliWhatIfResultMap {
         $ResultMap[$resultName].Text | Should -Not -Match 'Unknown argument:'
     }
 
-    $ResultMap.Bump.Text | Should -Match 'Version plan: 0\.0\.1 -> 0\.1\.0 \| Label: Minor \| Commits: 1'
-    $ResultMap.BumpCi.Text | Should -Match 'Version plan: 0\.0\.1 -> 0\.1\.0 \| Label: Minor \| Commits: 1'
-    $ResultMap.PreviewBump.Text | Should -Match 'Version plan: 0\.0\.1 -> 0\.0\.2-preview \| Label: Minor \| Commits: 1'
+    $ResultMap.Bump.Text | Should -Match 'Version plan: 0\.1\.0-preview -> 0\.1\.0 \| Label: Minor \| Commits: 1'
+    $ResultMap.BumpCi.Text | Should -Match 'Version plan: 0\.1\.0-preview -> 0\.1\.0 \| Label: Minor \| Commits: 1'
+    $ResultMap.PreviewBump.Text | Should -Match 'Version plan: 0\.1\.0-preview -> 0\.1\.0-preview01 \| Label: Minor \| Commits: 1'
     $ResultMap.Bump.Text | Should -Not -Match 'Version bumped to :'
     $ResultMap.PreviewBump.Text | Should -Not -Match 'Version bumped to :'
-    ((Get-Content -LiteralPath $ProjectJsonPath -Raw | ConvertFrom-Json).Version) | Should -Be '0.0.1'
+    ((Get-Content -LiteralPath $ProjectJsonPath -Raw | ConvertFrom-Json).Version) | Should -Be '0.1.0-preview'
     (Test-Path -LiteralPath $BuiltModulePath) | Should -BeFalse
     (Test-Path -LiteralPath $TestResultPath) | Should -BeFalse
 }

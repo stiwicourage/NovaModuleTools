@@ -11,8 +11,7 @@ function Get-ResourceFilePath {
         if (-not [string]::IsNullOrWhiteSpace($projectInfo.ResourcesDir)) {
             $candidates.Add([System.IO.Path]::GetFullPath((Join-Path $projectInfo.ResourcesDir $FileName)))
         }
-    }
-    catch {
+    } catch {
         Write-Verbose "Project resource discovery unavailable, falling back to module-relative resources: $( $_.Exception.Message )"
     }
 

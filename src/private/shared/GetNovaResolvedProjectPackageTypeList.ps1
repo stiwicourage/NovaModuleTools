@@ -7,8 +7,7 @@ function Get-NovaResolvedProjectPackageTypeList {
 
     $typeValues = if ($PackageSettings.Contains('Types') -and $null -ne $PackageSettings['Types']) {
         @($PackageSettings['Types'])
-    }
-    else {
+    } else {
         @()
     }
 

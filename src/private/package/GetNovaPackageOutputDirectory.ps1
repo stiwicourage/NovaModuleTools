@@ -6,8 +6,7 @@ function Get-NovaPackageOutputDirectory {
 
     $outputDirectory = if ($ProjectInfo.Package.OutputDirectory -is [string]) {
         "$( $ProjectInfo.Package.OutputDirectory )".Trim()
-    }
-    else {
+    } else {
         "$( $ProjectInfo.Package.OutputDirectory.Path )".Trim()
     }
 

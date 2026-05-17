@@ -15,12 +15,12 @@ function Initialize-NovaModuleScaffold {
 
     if ($Example) {
         Initialize-NovaExampleModuleScaffold -Paths $Paths
-    }
-    else {
+    } else {
         Initialize-NovaDefaultModuleScaffold -Answer $Answer -Paths $Paths
     }
 
     if ($Answer.EnableGit -eq 'Yes') {
+        Update-NovaGitIgnore -ProjectRoot $Paths.Project -Confirm:$false
         Write-Message 'Initialize Git Repo'
         New-InitiateGitRepo -DirectoryPath $Paths.Project
     }

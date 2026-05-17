@@ -34,8 +34,7 @@ PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications [-WhatI
 `Set-NovaUpdateNotificationPreference` manages the user preference that controls whether
 `Update-NovaModuleTool` / `Update-NovaModuleTools` may select prerelease versions of `NovaModuleTools`.
 
-The same stored preference is also used by `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) when it decides
-whether a prerelease self-update can be selected.
+The same stored preference is also used by `Update-NovaModuleTool` (alias: `Update-NovaModuleTools`) when it decides whether a prerelease self-update can be selected.
 
 Stable self-updates remain available and do not require prerelease eligibility.
 
@@ -195,7 +194,6 @@ Returns the current prerelease self-update state, the always-available stable-up
 ## NOTES
 
 Use this command together with `Get-NovaUpdateNotificationPreference` when you want to confirm the stored setting.
-
 
 ## RELATED LINKS
 

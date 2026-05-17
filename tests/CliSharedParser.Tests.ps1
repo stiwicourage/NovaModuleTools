@@ -73,24 +73,21 @@ Describe 'CLI shared parser helpers' {
             $usageError = $null
             try {
                 Get-NovaCliModeArgumentValue -Arguments @('--enable', '--disable') -Definition $notificationDefinition
-            }
-            catch {
+            } catch {
                 $usageError = $_
             }
 
             $unknownArgumentError = $null
             try {
                 Get-NovaCliModeArgumentValue -Arguments @('--bogus') -Definition $notificationDefinition
-            }
-            catch {
+            } catch {
                 $unknownArgumentError = $_
             }
 
             $updateUsageError = $null
             try {
                 Get-NovaCliModeArgumentValue -Arguments @('--bogus') -Definition $updateDefinition
-            }
-            catch {
+            } catch {
                 $updateUsageError = $_
             }
 

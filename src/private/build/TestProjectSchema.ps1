@@ -20,8 +20,7 @@ function Test-ProjectSchema {
                 Test-Json -Path 'project.json' -Schema (Get-Content $SchemaPath.Pester -Raw)
             }
         }
-    }
-    catch {
+    } catch {
         Stop-NovaOperation -Message "Invalid project.json for the $Schema schema: $( $_.Exception.Message )" -ErrorId 'Nova.Configuration.ProjectSchemaValidationFailed' -Category InvalidData -TargetObject 'project.json'
     }
 
