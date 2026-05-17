@@ -14,8 +14,8 @@ Handle versioning, changelog shaping, release-flow documentation, and publish au
 - Verify how a change affects stable vs prerelease behavior.
 - Keep `CHANGELOG.md` accurate and release-ready.
 - Review workflow, docs, and versioning implications together.
-- Produce a release-ready summary that follows `.github/pull_request_template.md` when a release preparation summary is
-  requested.
+- Produce a release-ready summary that follows `.github/pull_request_template.md` when a release preparation summary is requested.
+- When the release scope is unclear (for example whether the change targets a stable bump, a prerelease, or both), ask one clarifying question before proceeding instead of guessing.
 
 ## Inputs to inspect
 
@@ -30,21 +30,18 @@ Handle versioning, changelog shaping, release-flow documentation, and publish au
 
 - `/release-and-changelog`
 - `/markdown-authoring`
-- `/github-actions`
 - `/pester-testing`
+- `/github-actions`
 
 ## Constraints
 
 - Treat release automation as high-risk.
 - Keep Keep a Changelog structure intact.
-- Use only the official Keep a Changelog section types in `CHANGELOG.md` and `RELEASE_NOTE.md`: `Added`, `Changed`,
-  `Deprecated`, `Removed`, `Fixed`, and `Security`.
-- Do not invent extra changelog section headings such as `Documentation`; place documentation-related release notes under
-  the official type that best matches the actual impact.
+- Use only the official Keep a Changelog section types in `CHANGELOG.md` and `RELEASE_NOTE.md`: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, and `Security`.
+- Do not invent extra changelog section headings such as `Documentation`; place documentation-related release notes under the official type that best matches the actual impact.
 - Distinguish contributor docs from end-user docs.
 - Treat `.github/pull_request_template.md` as the authoritative format for structured release summaries.
-- When the release summary is returned as Markdown or copy-ready UI output, it must follow the `markdown-authoring`
-  skill (`.github/skills/markdown-authoring/SKILL.md`).
+- When the release summary is returned as Markdown or copy-ready UI output, it must follow the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
 
 ## Definition of done
 

@@ -48,14 +48,12 @@ function Get-NovaModuleSelfUpdatePlanContext {
     $lookupCandidate = Get-NovaModuleSelfUpdateLookupCandidate -LookupResult $LookupResult -PrereleaseNotificationsEnabled:$PrereleaseNotificationsEnabled
     $lookupCandidateVersion = if ($null -ne $lookupCandidate -and $lookupCandidate.PSObject.Properties.Name -contains 'Version') {
         $lookupCandidate.Version
-    }
-    else {
+    } else {
         $null
     }
     $lookupCandidateChannel = if ($null -ne $lookupCandidate -and $lookupCandidate.PSObject.Properties.Name -contains 'Channel') {
         $lookupCandidate.Channel
-    }
-    else {
+    } else {
         $null
     }
 

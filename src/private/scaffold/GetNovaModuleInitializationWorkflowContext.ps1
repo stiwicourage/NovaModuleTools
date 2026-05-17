@@ -7,6 +7,7 @@ function Get-NovaModuleInitializationWorkflowContext {
 
     $basePath = Resolve-NovaModuleScaffoldBasePath -Path $Path
     $questionSet = Get-NovaModuleQuestionSet -Example:$Example
+    Invoke-NovaModuleUpdateNotificationSafely
     $answerSet = Read-NovaModuleAnswerSet -Questions $questionSet
     $layout = Get-NovaModuleScaffoldLayout -Path $basePath -ProjectName $answerSet.ProjectName
 

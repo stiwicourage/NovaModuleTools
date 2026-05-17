@@ -31,6 +31,7 @@ function Get-NovaTestWorkflowContext {
     Assert-NovaPesterAvailable
     $projectInfo = Get-NovaProjectInfo
     $pesterConfig = New-PesterConfiguration -Hashtable $projectInfo.Pester
+    Initialize-NovaPesterCoverageConfiguration -PesterConfig $pesterConfig -ProjectInfo $projectInfo
 
     $pesterConfig.Run.Path = Get-NovaPesterRunPath -ProjectInfo $projectInfo
     $pesterConfig.Run.PassThru = $true
@@ -67,6 +68,70 @@ function Get-NovaTestOptionValue {
 
     if ( $TestOption.ContainsKey($Name)) {
         return $TestOption[$Name]
+    }
+
+    return $null
+}
+
+function Get-NovaConfiguredPesterCoveragePercentTarget {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$ProjectPesterSettings
+    )
+
+    $codeCoverageSettings = Get-NovaPesterSettingValue -InputObject $ProjectPesterSettings -Name 'CodeCoverage'
+    if ($true -ne [bool](Get-NovaPesterSettingValue -InputObject $codeCoverageSettings -Name 'Enabled')) {
+        return $null
+    }
+
+    $coveragePercentTarget = Get-NovaPesterSettingValue -InputObject $codeCoverageSettings -Name 'CoveragePercentTarget'
+    if ($null -eq $coveragePercentTarget -or [string]::IsNullOrWhiteSpace([string]$coveragePercentTarget)) {
+        return $null
+    }
+
+    return [double]$coveragePercentTarget
+}
+
+function Initialize-NovaPesterCoverageConfiguration {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Mutates PesterConfiguration state, not user-facing resources. ShouldProcess is not appropriate here.')]
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$PesterConfig,
+        [Parameter(Mandatory)][pscustomobject]$ProjectInfo
+    )
+
+    $codeCoverageSettings = Get-NovaPesterSettingValue -InputObject $ProjectInfo.Pester -Name 'CodeCoverage'
+    if ($true -ne [bool](Get-NovaPesterSettingValue -InputObject $codeCoverageSettings -Name 'Enabled')) {
+        return
+    }
+
+    $coveragePercentTarget = Get-NovaConfiguredPesterCoveragePercentTarget -ProjectPesterSettings $ProjectInfo.Pester
+    if ($null -ne $coveragePercentTarget) {
+        $PesterConfig.CodeCoverage.CoveragePercentTarget = $coveragePercentTarget
+    }
+}
+
+function Get-NovaPesterSettingValue {
+    [CmdletBinding()]
+    param(
+        [AllowNull()][object]$InputObject,
+        [Parameter(Mandatory)][string]$Name
+    )
+
+    if ($null -eq $InputObject) {
+        return $null
+    }
+
+    if ($InputObject -is [System.Collections.IDictionary]) {
+        if ( $InputObject.Contains($Name)) {
+            return $InputObject[$Name]
+        }
+
+        return $null
+    }
+
+    if ($InputObject.PSObject.Properties.Name -contains $Name) {
+        return $InputObject.$Name
     }
 
     return $null

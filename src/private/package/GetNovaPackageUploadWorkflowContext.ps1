@@ -8,14 +8,12 @@ function Get-NovaPackageUploadWorkflowContext {
 
     $resolvedProjectInfo = if ($null -ne $ProjectInfo) {
         $ProjectInfo
-    }
-    else {
+    } else {
         Get-NovaProjectInfo
     }
     $resolvedUploadOption = if ($null -ne $UploadOption) {
         $UploadOption
-    }
-    else {
+    } else {
         New-NovaPackageUploadOption -BoundParameters $BoundParameters
     }
 

@@ -19,8 +19,7 @@ function Read-NovaUpdateNotificationPreference {
     return [pscustomobject]@{
         PrereleaseNotificationsEnabled = if ($null -eq $settings.PrereleaseNotificationsEnabled) {
             $true
-        }
-        else {
+        } else {
             [bool]$settings.PrereleaseNotificationsEnabled
         }
     }

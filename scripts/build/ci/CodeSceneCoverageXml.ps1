@@ -74,8 +74,7 @@ function Get-CoberturaPackageElement {
 
     $packageLineRate = if ($packageValidLineCount -eq 0) {
         0
-    }
-    else {
+    } else {
         $packageCoveredLineCount / $packageValidLineCount
     }
 
@@ -97,8 +96,7 @@ function Get-CoberturaCoverageAttributeMap {
 
     $lineRate = if ($ValidLineCount -eq 0) {
         0
-    }
-    else {
+    } else {
         $CoveredLineCount / $ValidLineCount
     }
 
@@ -176,8 +174,7 @@ function Convert-CoberturaCoverageToSourcePath {
     $xmlWriter = [System.Xml.XmlWriter]::Create($CoveragePath, $xmlWriterSettings)
     try {
         $newCoverageXml.Save($xmlWriter)
-    }
-    finally {
+    } finally {
         $xmlWriter.Dispose()
     }
 }

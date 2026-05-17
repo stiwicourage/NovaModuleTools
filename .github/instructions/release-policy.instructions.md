@@ -6,8 +6,7 @@ applyTo: "CHANGELOG.md,RELEASE_NOTE.md,project.json,.github/workflows/Publish.ym
 
 ## Scope
 
-Use this file when changing versioning, changelog handling, package metadata, publish workflows, or GitHub release
-automation.
+Use this file when changing versioning, changelog handling, package metadata, publish workflows, or GitHub release automation.
 
 ## Versioning rules
 
@@ -17,8 +16,7 @@ automation.
 - Keep `## [Unreleased]` valid and readable.
 - Use only the official Keep a Changelog section types in both files: `Added`, `Changed`, `Deprecated`, `Removed`,
   `Fixed`, and `Security`.
-- Do not add custom section headings such as `Documentation`; place documentation-related release notes under the
-  official type that best matches the real change.
+- Do not add custom section headings such as `Documentation`; place documentation-related release notes under the official type that best matches the real change.
 - If `RELEASE_NOTE.md` has no public API or workflow changes under `## [Unreleased]`, keep the exact placeholder under
   `### Added`: `No public API or workflow changes in this release. Internal maintenance only.`
 - If `RELEASE_NOTE.md` has real release-note entries, do not keep that placeholder.
@@ -31,8 +29,7 @@ automation.
 - `Publish.yml` owns the release/publish flow.
 - `main` handles stable release commit/tag flow and prepares `develop` for the next prerelease.
 - `develop` handles prerelease publish and next-prerelease bump flow.
-- Do not change branch mutation behavior, tag creation, or publish steps without reading `.github/workflows/Publish.yml`
-  and the related custom actions first.
+- Do not change branch mutation behavior, tag creation, or publish steps without reading `.github/workflows/Publish.yml` and the related custom actions first.
 
 ## Documentation rules
 

@@ -58,18 +58,12 @@ function Resolve-CodeSceneCoveragePath {
         return (Resolve-Path -LiteralPath $CoveragePath -ErrorAction Stop).Path
     }
 
-    $artifactsDir = Join-Path (Get-Location) 'artifacts'
-    $coverageCandidates = @(Get-ChildItem -LiteralPath $artifactsDir -Filter '*.cobertura.xml' -File -Recurse -ErrorAction SilentlyContinue | Sort-Object FullName)
-    if (-not $coverageCandidates) {
-        throw "No Cobertura coverage file was found under '$artifactsDir'. Provide -CoveragePath explicitly or run the CI coverage workflow first."
+    $defaultPath = Join-Path (Get-Location) 'artifacts' 'coverage.xml'
+    if (-not (Test-Path -LiteralPath $defaultPath)) {
+        throw "No JaCoCo coverage file was found at '$defaultPath'. Provide -CoveragePath explicitly or run the CI coverage workflow first."
     }
 
-    if ($coverageCandidates.Count -gt 1) {
-        $candidateList = ($coverageCandidates | ForEach-Object FullName) -join ', '
-        throw "Multiple Cobertura coverage files were found under '$artifactsDir'. Provide -CoveragePath explicitly. Candidates: $candidateList"
-    }
-
-    return $coverageCandidates[0].FullName
+    return $defaultPath
 }
 
 function Invoke-CodeSceneAnalysisTrigger {
@@ -109,6 +103,13 @@ function Invoke-CodeSceneAnalysisTrigger {
     }
 }
 
+function Test-JaCoCoBranchCoverageAvailable {
+    param([Parameter(Mandatory)][string]$Path)
+
+    [xml]$document = Get-Content -LiteralPath $Path -Raw
+    return $null -ne $document.SelectSingleNode('//counter[@type="BRANCH"]')
+}
+
 $shouldUploadCoverage = Test-CodeSceneCoverageUploadRequested -CoveragePath $CoveragePath -UploadCoverage:$UploadCoverage
 $shouldRunAnalysis = $TriggerAnalysis.IsPresent
 
@@ -123,14 +124,25 @@ $accessToken = Get-RequiredCodeSceneValue -Name 'CS_ACCESS_TOKEN'
 
 if ($shouldUploadCoverage) {
     $resolvedCoveragePath = Resolve-CodeSceneCoveragePath -CoveragePath $CoveragePath
+    & (Join-Path $PSScriptRoot 'Repair-CodeSceneJaCoCoCoverage.ps1') -Path $resolvedCoveragePath
 
     if (-not (Get-Command -Name 'cs-coverage' -ErrorAction SilentlyContinue)) {
         throw "The 'cs-coverage' CLI was not found on PATH. Install the CodeScene coverage upload tool before running this script."
     }
 
-    & cs-coverage upload --format 'cobertura' --metric 'line-coverage' $resolvedCoveragePath
+    & cs-coverage upload --format 'jacoco' --metric 'line-coverage' $resolvedCoveragePath
     if ($LASTEXITCODE -ne 0) {
-        throw "CodeScene coverage upload failed with exit code $LASTEXITCODE."
+        throw "CodeScene line-coverage upload failed with exit code $LASTEXITCODE."
+    }
+
+    if (Test-JaCoCoBranchCoverageAvailable -Path $resolvedCoveragePath) {
+        & cs-coverage upload --format 'jacoco' --metric 'branch-coverage' $resolvedCoveragePath
+        if ($LASTEXITCODE -ne 0) {
+            throw "CodeScene branch-coverage upload failed with exit code $LASTEXITCODE."
+        }
+    }
+    else {
+        Write-Host "Skipping branch-coverage upload: '$resolvedCoveragePath' does not contain <counter type=`"BRANCH`"> entries."
     }
 }
 

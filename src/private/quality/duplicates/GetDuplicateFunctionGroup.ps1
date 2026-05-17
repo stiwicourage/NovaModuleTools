@@ -5,8 +5,8 @@ function Get-DuplicateFunctionGroup {
     )
 
     return @(
-        $FunctionAst |
-            Group-Object -Property { ('' + $_.Name).ToLowerInvariant() } |
-            Where-Object { $_.Count -gt 1 }
+    $FunctionAst |
+            Group-Object -Property {('' + $_.Name).ToLowerInvariant()} |
+            Where-Object {$_.Count -gt 1}
     )
 }

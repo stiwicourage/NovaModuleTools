@@ -17,7 +17,7 @@ function requireMarked() {
 function createRenderer(marked) {
     const renderer = new marked.Renderer();
 
-    renderer.link = function ({ tokens }) {
+    renderer.link = function ({tokens}) {
         return this.parser.parseInline(tokens ?? []);
     };
 
@@ -96,7 +96,7 @@ async function initializeReleaseNotesPage() {
     }
 
     try {
-        const response = await fetch(releaseNotesSourceUrl, { cache: 'no-store' });
+        const response = await fetch(releaseNotesSourceUrl, {cache: 'no-store'});
 
         if (!response.ok) {
             throw new Error(`GitHub returned ${response.status}`);

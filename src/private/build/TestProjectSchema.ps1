@@ -8,7 +8,7 @@ function Test-ProjectSchema {
     )
     Write-Verbose "Running Schema test against using $Schema schema"
     $SchemaPath = @{
-        Build  = Get-ResourceFilePath -FileName 'Schema-Build.json'
+        Build = Get-ResourceFilePath -FileName 'Schema-Build.json'
         Pester = Get-ResourceFilePath -FileName 'Schema-Pester.json'
     }
     try {
@@ -20,8 +20,7 @@ function Test-ProjectSchema {
                 Test-Json -Path 'project.json' -Schema (Get-Content $SchemaPath.Pester -Raw)
             }
         }
-    }
-    catch {
+    } catch {
         Stop-NovaOperation -Message "Invalid project.json for the $Schema schema: $( $_.Exception.Message )" -ErrorId 'Nova.Configuration.ProjectSchemaValidationFailed' -Category InvalidData -TargetObject 'project.json'
     }
 

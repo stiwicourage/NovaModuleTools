@@ -11,8 +11,7 @@ function Read-ProjectJsonData {
 
     try {
         $jsonData = $projectJsonContent | ConvertFrom-Json -AsHashtable
-    }
-    catch {
+    } catch {
         Stop-NovaOperation -Message "project.json is not valid JSON: $ProjectJsonPath. $( $_.Exception.Message )" -ErrorId 'Nova.Configuration.ProjectJsonInvalidJson' -Category ParserError -TargetObject $ProjectJsonPath
     }
 

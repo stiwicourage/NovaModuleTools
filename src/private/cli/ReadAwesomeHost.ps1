@@ -1,4 +1,3 @@
-
 function Read-AwesomeHost {
     [CmdletBinding()]
     param (
@@ -11,8 +10,7 @@ function Read-AwesomeHost {
     $hasChoice = $false
     if ($Ask -is [System.Collections.IDictionary]) {
         $hasChoice = $Ask.Contains('Choice') -and $null -ne $Ask['Choice']
-    }
-    else {
+    } else {
         $choiceProperty = $Ask.PSObject.Properties['Choice']
         $hasChoice = $null -ne $choiceProperty -and $null -ne $choiceProperty.Value
     }

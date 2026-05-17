@@ -11,7 +11,7 @@ function Assert-BuiltModuleHasNoDuplicateFunctionName {
 
     $parsed = Get-PowerShellAstFromFile -Path $psm1Path
     if ($parsed.Errors -and $parsed.Errors.Count -gt 0) {
-        $messages = @($parsed.Errors | ForEach-Object { $_.Message }) -join '; '
+        $messages = @($parsed.Errors | ForEach-Object {$_.Message}) -join '; '
         Stop-NovaOperation -Message "Built module contains parse errors and cannot be validated for duplicates. File: $psm1Path. Errors: $messages" -ErrorId 'Nova.Configuration.BuiltModuleDuplicateValidationParseFailed' -Category ParserError -TargetObject $psm1Path
     }
 

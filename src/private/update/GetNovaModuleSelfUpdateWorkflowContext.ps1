@@ -9,20 +9,17 @@ function Get-NovaModuleSelfUpdateWorkflowContext {
 
     $resolvedPreference = if ($null -ne $Preference) {
         $Preference
-    }
-    else {
+    } else {
         Read-NovaUpdateNotificationPreference
     }
     $resolvedInstalledModule = if ($null -ne $InstalledModule) {
         $InstalledModule
-    }
-    else {
+    } else {
         Get-NovaInstalledModuleVersionInfo
     }
     $resolvedLookupResult = if ($null -ne $LookupResult) {
         $LookupResult
-    }
-    else {
+    } else {
         Invoke-NovaModuleUpdateLookup -AllowPrereleaseNotifications:$resolvedPreference.PrereleaseNotificationsEnabled -TimeoutMilliseconds $TimeoutMilliseconds
     }
 
@@ -33,8 +30,7 @@ function Get-NovaModuleSelfUpdateWorkflowContext {
     $plan = Get-NovaModuleSelfUpdatePlan -InstalledModule $resolvedInstalledModule -LookupResult $resolvedLookupResult -PrereleaseNotificationsEnabled $resolvedPreference.PrereleaseNotificationsEnabled
     $action = if ($plan.IsPrereleaseTarget) {
         "Update NovaModuleTools to prerelease version $( $plan.TargetVersion )"
-    }
-    else {
+    } else {
         "Update NovaModuleTools to version $( $plan.TargetVersion )"
     }
 

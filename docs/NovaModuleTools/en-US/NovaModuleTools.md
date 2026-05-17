@@ -14,18 +14,15 @@ title: NovaModuleTools Module
 
 ## Description
 
-NovaModuleTools helps you scaffold, build, test, package, version, and publish PowerShell modules with a consistent
-project layout and a repeatable workflow.
+NovaModuleTools helps you scaffold, build, test, package, version, and publish PowerShell modules with a consistent project layout and a repeatable workflow.
 
-Use the module when you want a structured path from source files under `src/` to a built module under `dist/`, including
-manifest generation, external help generation, resource copying, and Pester-based validation.
+Use the module when you want a structured path from source files under `src/` to a built module under `dist/`, including manifest generation, external help generation, resource copying, and Pester-based validation.
 
 ## NovaModuleTools Cmdlets
 
 ### `PS> Get-NovaProjectInfo`
 
-Reads `project.json` and returns resolved project metadata and paths, or returns the project/install version views when
-requested.
+Reads `project.json` and returns resolved project metadata and paths, or returns the project/install version views when requested.
 
 ### `PS> Get-NovaUpdateNotificationPreference`
 
@@ -57,9 +54,7 @@ Runs the project's Pester test workflow using settings from `project.json`.
 
 ### `PS> Update-NovaModuleTool`
 
-Updates the installed `NovaModuleTools` module by using the stored prerelease preference that also controls whether
-prerelease self-updates are eligible. Prerelease confirmations default to `No`, so pressing Enter cancels the
-update. The compatibility alias `Update-NovaModuleTools` is also available.
+Updates the installed `NovaModuleTools` module by using the stored prerelease preference that also controls whether prerelease self-updates are eligible. Prerelease confirmations default to `No`, so pressing Enter cancels the update. The compatibility alias `Update-NovaModuleTools` is also available.
 
 ### `PS> Initialize-NovaModule`
 

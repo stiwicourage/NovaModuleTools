@@ -7,8 +7,7 @@ description: Keeps NovaModuleTools website documentation accurate and clearly se
 
 ## Purpose
 
-Keep the GitHub Pages documentation under `docs/*.html` accurate, user-focused, and clearly separated from PowerShell
-cmdlet help and contributor documentation.
+Keep the GitHub Pages documentation under `docs/*.html` accurate, user-focused, and clearly separated from PowerShell cmdlet help and contributor documentation.
 
 ## Responsibilities
 
@@ -28,7 +27,7 @@ cmdlet help and contributor documentation.
 
 ## Skills to use
 
-- `/docs-site-html`
+- `/docs-site`
 - `/markdown-authoring`
 - `/powershell-module-development`
 - `/release-and-changelog`
@@ -37,8 +36,7 @@ cmdlet help and contributor documentation.
 
 - Treat `docs/*.html` as end-user website docs, not cmdlet help.
 - Keep CLI and cmdlet surfaces clearly separated.
-- Mention PowerShell-only commands in CLI-oriented docs only when there is no CLI equivalent for that scenario, such as
-  installing NovaModuleTools with `Install-Module`.
+- Mention PowerShell-only commands in CLI-oriented docs only when there is no CLI equivalent for that scenario, such as installing NovaModuleTools with `Install-Module`.
 
 ## Definition of done
 

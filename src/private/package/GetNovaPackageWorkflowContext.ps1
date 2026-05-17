@@ -63,8 +63,7 @@ function Get-NovaPackageWorkflowOperation {
 
     $validationText = if ($SkipTestsRequested) {
         'built module output with tests skipped'
-    }
-    else {
+    } else {
         'built and tested module output'
     }
 

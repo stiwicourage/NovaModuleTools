@@ -16,7 +16,7 @@ function Format-DuplicateFunctionErrorMessage {
         $lines.Add('')
         $lines.Add("- $displayName")
 
-        foreach ($occurrence in ($dup.Group | Sort-Object { $_.Extent.StartLineNumber })) {
+        foreach ($occurrence in ($dup.Group | Sort-Object {$_.Extent.StartLineNumber})) {
             $lines.Add(("  - dist line {0}" -f $occurrence.Extent.StartLineNumber))
         }
 

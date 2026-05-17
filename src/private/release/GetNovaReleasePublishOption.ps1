@@ -21,8 +21,7 @@ function Get-NovaReleasePublishOption {
     # TODO: Remove the PublishOption parameter-set branch after 2026-07-01.
     $releasePublishOption = if ($ReleaseParameters.ParameterSetName -eq 'PublishOption') {
         Copy-NovaPublishOption -PublishOption $ReleaseParameters.PublishOption
-    }
-    else {
+    } else {
         @{
             Local = $ReleaseParameters.LocalRequested
             Repository = $ReleaseParameters.Repository

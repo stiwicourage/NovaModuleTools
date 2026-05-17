@@ -6,8 +6,7 @@ function Invoke-NovaModuleSelfUpdateOrStop {
 
     try {
         $null = Invoke-NovaModuleSelfUpdate -ModuleName $Plan.ModuleName -AllowPrerelease:$Plan.UsedAllowPrerelease
-    }
-    catch {
+    } catch {
         Stop-NovaOperation -Message $_.Exception.Message -ErrorId 'Nova.Dependency.ModuleSelfUpdateFailed' -Category InvalidOperation -TargetObject $Plan.ModuleName
     }
 }

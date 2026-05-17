@@ -10,8 +10,7 @@ function Add-NovaZipTextEntry {
     $streamWriter = [System.IO.StreamWriter]::new($entry.Open(),[System.Text.UTF8Encoding]::new($false))
     try {
         $streamWriter.Write($Content)
-    }
-    finally {
+    } finally {
         $streamWriter.Dispose()
     }
 }

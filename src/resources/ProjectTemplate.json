@@ -1,15 +1,18 @@
 {
-    "ProjectName": "",
-    "Description": "",
-    "Version": "",
-  "Preamble": [],
-    "Manifest": {
-        "Author": "",
-        "PowerShellHostVersion": "",
-        "GUID": "",
-        "Tags": [],
-        "ProjectUri": ""
-    },
+  "ProjectName": "",
+  "Description": "",
+  "Version": "",
+  "Preamble": [
+    "Set-StrictMode -Version Latest",
+    "$ErrorActionPreference = 'Stop'"
+  ],
+  "Manifest": {
+    "Author": "",
+    "PowerShellHostVersion": "",
+    "GUID": "",
+    "Tags": [],
+    "ProjectUri": ""
+  },
   "Package": {
     "Types": [
       "NuGet"
@@ -19,13 +22,26 @@
       "Clean": true
     }
   },
-    "Pester": {
-        "TestResult": {
-            "Enabled": true,
-            "OutputFormat": "NUnitXml"
-        },
-        "Output": {
-            "Verbosity": "Detailed"
-        }
+  "Pester": {
+    "CodeCoverage": {
+      "Enabled": false,
+      "Path": [
+        "src/public/*.ps1",
+        "src/private/*.ps1",
+        "src/private/*/*.ps1",
+        "src/private/*/*/*.ps1",
+        "src/classes/*.ps1"
+      ],
+      "CoveragePercentTarget": 90,
+      "OutputPath": "artifacts/coverage.xml",
+      "OutputFormat": "JaCoCo"
+    },
+    "TestResult": {
+      "Enabled": true,
+      "OutputFormat": "NUnitXml"
+    },
+    "Output": {
+      "Verbosity": "Detailed"
     }
+  }
 }

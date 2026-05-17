@@ -2,14 +2,11 @@
 
 ## Our Commitment
 
-Terra Nova is an open, community-driven initiative focused on building high-quality software through shared ownership,
-strong collaboration, and modern development practices.
+Terra Nova is an open, community-driven initiative focused on building high-quality software through shared ownership, strong collaboration, and modern development practices.
 
-We are committed to creating a community that is welcoming, respectful, constructive, and open to everyone, regardless
-of background, identity, experience level, or preferred technology stack.
+We are committed to creating a community that is welcoming, respectful, constructive, and open to everyone, regardless of background, identity, experience level, or preferred technology stack.
 
-Terra Nova is not defined by a specific language, platform, or framework. It is defined by how we build software
-together.
+Terra Nova is not defined by a specific language, platform, or framework. It is defined by how we build software together.
 
 We want this community to be a place where people can:
 
@@ -64,11 +61,40 @@ The following behavior is not acceptable in the Terra Nova community:
 
 Terra Nova is guided by these principles:
 
-- **Clarity over cleverness**
-- **Automation over manual processes**
-- **Consistency over fragmentation**
-- **Quality and pragmatism in balance**
-- **Open by default**
+-
+
+*
+
+*Clarity over cleverness
+**
+
+-
+
+*
+
+*Automation over manual processes
+**
+
+-
+
+*
+
+*Consistency over fragmentation
+**
+
+-
+
+*
+
+*Quality and pragmatism in balance
+**
+
+-
+
+*
+
+*Open by default
+**
 
 We encourage contributions that align with these principles and improve the ecosystem as a whole.
 
@@ -76,8 +102,7 @@ We encourage contributions that align with these principles and improve the ecos
 
 Terra Nova is designed to support both speed and freedom without sacrificing responsibility.
 
-We welcome new ideas, including ideas that introduce new directions. When a contribution expands the project in a way
-that current maintainers are unsure about or do not wish to own directly, it may still be accepted — with ownership.
+We welcome new ideas, including ideas that introduce new directions. When a contribution expands the project in a way that current maintainers are unsure about or do not wish to own directly, it may still be accepted — with ownership.
 
 This means:
 
@@ -131,13 +156,11 @@ They may take any action they believe is appropriate in response to unacceptable
 - temporary restriction from participation
 - permanent ban from some or all community spaces
 
-Enforcement decisions will be made with the goal of protecting the health, safety, and long-term sustainability of the
-community.
+Enforcement decisions will be made with the goal of protecting the health, safety, and long-term sustainability of the community.
 
 ## Our Standards for Collaboration
 
-Because Terra Nova is built around maintainable, collaborative software development, we expect contributors to support
-healthy engineering practices, including when relevant:
+Because Terra Nova is built around maintainable, collaborative software development, we expect contributors to support healthy engineering practices, including when relevant:
 
 - open discussion of trade-offs
 - clear, reviewable changes

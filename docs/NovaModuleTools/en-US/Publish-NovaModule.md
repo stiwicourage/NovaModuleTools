@@ -33,25 +33,19 @@ PS> Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] 
 
 `Publish-NovaModule` runs the normal NovaModuleTools build and test flow, then publishes the built module.
 
-Use `-SkipTests` when tests already ran earlier in your pipeline and you only want to skip `Test-NovaBuild` for this
-publish run. `Invoke-NovaBuild` still runs before the publish step.
+Use `-SkipTests` when tests already ran earlier in your pipeline and you only want to skip `Test-NovaBuild` for this publish run. `Invoke-NovaBuild` still runs before the publish step.
 
-Use local mode when you want to copy the built module into a module directory on the current machine.
-After a successful local publish, the command reloads the published module from that local install path into the active
-PowerShell session so the newly published module is ready to use immediately.
+Use local mode when you want to copy the built module into a module directory on the current machine. After a successful local publish, the command reloads the published module from that local install path into the active PowerShell session so the newly published module is ready to use immediately.
 
 Use repository mode when you want to publish the built module to a registered PowerShell repository such as
 `PSGallery`.
 
-Use `-ContinuousIntegration` when the same CI/self-hosting session should switch back to the built `dist/` module after
-publish completes. This keeps later commands aligned with the built module state instead of whatever publish imported or
-left loaded.
+Use `-ContinuousIntegration` when the same CI/self-hosting session should switch back to the built `dist/` module after publish completes. This keeps later commands aligned with the built module state instead of whatever publish imported or left loaded.
 
 Use `-OverrideWarning` only when you intentionally want the nested build to continue even though a file under
 `src/public` contains zero or multiple top-level functions.
 
-This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the
-resolved publish target and workflow without building, testing, or publishing.
+This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the resolved publish target and workflow without building, testing, or publishing.
 
 Use `-Confirm` when you want PowerShell to prompt before the publish workflow starts.
 
@@ -63,8 +57,7 @@ Use `-Confirm` when you want PowerShell to prompt before the publish workflow st
 PS> Publish-NovaModule -Local
 ```
 
-Builds, tests, and copies the module to the default local module path.
-When the copy succeeds, the published module is also imported from that local path.
+Builds, tests, and copies the module to the default local module path. When the copy succeeds, the published module is also imported from that local path.
 
 ### EXAMPLE 2
 
@@ -72,8 +65,7 @@ When the copy succeeds, the published module is also imported from that local pa
 PS> Publish-NovaModule -Local -ModuleDirectoryPath ~/Modules
 ```
 
-Builds, tests, and copies the module to a custom local directory.
-When the copy succeeds, the published module is imported from `~/Modules/<ProjectName>/<ProjectName>.psd1`.
+Builds, tests, and copies the module to a custom local directory. When the copy succeeds, the published module is imported from `~/Modules/<ProjectName>/<ProjectName>.psd1`.
 
 ### EXAMPLE 3
 
@@ -97,8 +89,7 @@ Prompts before the repository publish workflow starts.
 PS> Publish-NovaModule -Local -WhatIf
 ```
 
-Previews the local publish workflow and target directory without making changes.
-No module copy or import happens when `-WhatIf` is used.
+Previews the local publish workflow and target directory without making changes. No module copy or import happens when `-WhatIf` is used.
 
 ### EXAMPLE 6
 
@@ -114,8 +105,7 @@ Builds and publishes the module to `PSGallery` without re-running `Test-NovaBuil
 PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -ContinuousIntegration
 ```
 
-Publishes the module and then re-imports the built `dist/<ProjectName>/<ProjectName>.psd1` so later CI steps in the
-same session continue from the built module state.
+Publishes the module and then re-imports the built `dist/<ProjectName>/<ProjectName>.psd1` so later CI steps in the same session continue from the built module state.
 
 ## PARAMETERS
 
@@ -236,8 +226,7 @@ HelpMessage: ''
 
 Re-import the built module from `dist/` after publish completes.
 
-Use this when your CI/self-hosting workflow continues in the same session after publish and must keep using the built
-module state for later commands.
+Use this when your CI/self-hosting workflow continues in the same session after publish and must keep using the built module state for later commands.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -260,8 +249,7 @@ HelpMessage: ''
 
 ### -OverrideWarning
 
-Continue the nested build even if the `src/public` layout guard reports that a public file does not contain exactly one
-top-level function.
+Continue the nested build even if the `src/public` layout guard reports that a public file does not contain exactly one top-level function.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -284,9 +272,7 @@ HelpMessage: ''
 
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
--InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
@@ -299,26 +285,20 @@ You can't pipe objects to this cmdlet.
 
 ### None
 
-This cmdlet does not emit an output object. In local mode it updates the active PowerShell session by importing the
-published module from the local install path.
+This cmdlet does not emit an output object. In local mode it updates the active PowerShell session by importing the published module from the local install path.
 
 ## NOTES
 
 The command always builds before publishing.
 
-When `-SkipTests` is omitted, `Publish-NovaModule` also runs `Test-NovaBuild`. When `-SkipTests` is used, only the test
-step is skipped.
+When `-SkipTests` is omitted, `Publish-NovaModule` also runs `Test-NovaBuild`. When `-SkipTests` is used, only the test step is skipped.
 
-Local publish imports the published module from the resolved local install directory. It does not import directly from
-the
-source project or from `dist/`.
+Local publish imports the published module from the resolved local install directory. It does not import directly from the source project or from `dist/`.
 
-When `-ContinuousIntegration` is used, Nova restores the built `dist/` module after publish so later commands in the
-same session keep using the built module state.
+When `-ContinuousIntegration` is used, Nova restores the built `dist/` module after publish so later commands in the same session keep using the built module state.
 
 `Publish-NovaModule` uses `SupportsShouldProcess`, so `Get-Help Publish-NovaModule -Full` should surface native
 `-WhatIf` and `-Confirm` support.
-
 
 ## RELATED LINKS
 

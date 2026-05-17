@@ -176,6 +176,19 @@
     ]
   },
   "Pester": {
+    "CodeCoverage": {
+      "Enabled": false,
+      "Path": [
+        "src/public/*.ps1",
+        "src/private/*.ps1",
+        "src/private/*/*.ps1",
+        "src/private/*/*/*.ps1",
+        "src/classes/*.ps1"
+      ],
+      "CoveragePercentTarget": 90,
+      "OutputPath": "artifacts/coverage.xml",
+      "OutputFormat": "JaCoCo"
+    },
     "TestResult": {
       "Enabled": true,
       "OutputFormat": "NUnitXml"
@@ -616,6 +629,42 @@
                             <td>Determines the result format written to <code>artifacts/TestResults.xml</code>.</td>
                         </tr>
                         <tr>
+                            <td><code>Pester.CodeCoverage.Enabled</code></td>
+                            <td>Turns the standard Nova coverage pass on or off.</td>
+                            <td><code>false</code> in the project template and packaged example</td>
+                            <td>When enabled, the test workflow also writes the configured coverage report and enforces
+                                the configured target.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>Pester.CodeCoverage.Path</code></td>
+                            <td>Declares which source files the coverage run analyzes.</td>
+                            <td><code>src/public/*.ps1</code><br><code>src/private/*.ps1</code><br><code>src/private/*/*.ps1</code><br><code>src/private/*/*/*.ps1</code><br><code>src/classes/*.ps1</code>
+                            </td>
+                            <td>These defaults ship in new starter projects so coverage can be enabled without
+                                hand-authoring the file list, including nested helper folders such as
+                                <code>src/private/build/manifest/</code> and <code>src/private/quality/duplicates/</code>.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>Pester.CodeCoverage.CoveragePercentTarget</code></td>
+                            <td>Sets the minimum coverage percentage the test workflow must meet.</td>
+                            <td><code>90</code> in the project template and packaged example</td>
+                            <td>Shown in Pester's coverage summary and enforced by Nova when coverage is enabled.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Pester.CodeCoverage.OutputPath</code></td>
+                            <td>Sets where the coverage report is written.</td>
+                            <td><code>artifacts/coverage.xml</code></td>
+                            <td>The JaCoCo report file emitted when coverage is enabled.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Pester.CodeCoverage.OutputFormat</code></td>
+                            <td>Controls the coverage report format.</td>
+                            <td><code>JaCoCo</code></td>
+                            <td>Keeps the coverage artifact ready for tools that expect JaCoCo XML.</td>
+                        </tr>
+                        <tr>
                             <td><code>Pester.Output.Verbosity</code></td>
                             <td>Controls Pester console verbosity.</td>
                             <td><code>Detailed</code> in the current project template</td>
@@ -625,8 +674,14 @@
                         </tbody>
                     </table>
                 </div>
-                <p class="tiny-note">At runtime, <code>Test-NovaBuild</code> also lets you override verbosity and render
-                    mode temporarily with <code>-OutputVerbosity</code> and <code>-OutputRenderMode</code>.</p>
+                <p class="tiny-note">Starter projects now include the full <code>Pester.CodeCoverage</code> block with
+                    <code>Enabled=false</code> and the explicit default source globs shown above, so turning coverage on
+                    usually means changing only that switch. At runtime, <code>Test-NovaBuild</code> also lets you
+                    override verbosity and render mode temporarily with <code>-OutputVerbosity</code> and
+                    <code>-OutputRenderMode</code>.</p>
+                <p>When you enable coverage, Nova writes JaCoCo output to <code>artifacts/coverage.xml</code> and fails
+                    the test workflow if the measured percentage is lower than
+                    <code>Pester.CodeCoverage.CoveragePercentTarget</code>.</p>
             </section>
 
             <section class="content-section" id="recipes">
@@ -642,8 +697,9 @@
     "GUID": "00000000-0000-0000-0000-000000000000"
   }
 }</code></pre>
-                <p>Use this when you want the smallest workable Nova project with default build, test, and packaging
-                    behavior.</p>
+                <p>Use this when you want the smallest hand-authored Nova project. Scaffolded projects start with
+                    additional <code>Pester</code> defaults, including a disabled <code>CodeCoverage</code> block, but
+                    Nova can still resolve its normal defaults when those sections are omitted.</p>
 
                 <h3>Create both NuGet and Zip artifacts, plus latest aliases</h3>
                 <pre><code>{
@@ -702,10 +758,8 @@
             <a class="button button--secondary" href="./packaging-and-delivery.html">Open packaging and delivery
                 workflows</a>
         </div>
-        <p class="footer__legal">Also available: <a class="legal-link" href="./commands.html">Command Reference</a>, <a
-                class="legal-link" href="./release-notes.html">Release Notes</a>, and the <a class="legal-link"
-                                                                                             href="./license.html">MIT
-            License</a>.</p>
+        <p class="footer__legal">Also available: <a class="legal-link" href="./commands.html">Command Reference</a>
+            and <a class="legal-link" href="./release-notes.html">Release Notes</a>.</p>
     </div>
 </footer>
 </body>

@@ -7,8 +7,7 @@ description: Guidance for changing NovaModuleTools GitHub Actions workflows, CI 
 
 ## When to use
 
-Use this skill when changing CI workflows, artifact handling, CodeScene coverage flow, publish automation, or reusable
-actions under `.github/actions/`.
+Use this skill when changing CI workflows, artifact handling, CodeScene coverage flow, publish automation, or reusable actions under `.github/actions/`.
 
 ## Relevant files
 

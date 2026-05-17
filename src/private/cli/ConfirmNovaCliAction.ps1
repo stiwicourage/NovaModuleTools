@@ -43,16 +43,27 @@ function Invoke-NovaCliConsoleReadKey {
 
 function Invoke-NovaCliNativeConsoleReadKey {
     [CmdletBinding()]
-    param([scriptblock]$Reader = {[Console]::ReadKey($true)})
+    param([scriptblock]$Reader)
+
+    if ($null -eq $Reader) {
+        $Reader = Get-NovaCliNativeConsoleReadKeyReader
+    }
 
     return & $Reader
+}
+
+function Get-NovaCliNativeConsoleReadKeyReader {
+    [CmdletBinding()]
+    param()
+
+    return [scriptblock]::Create('[Console]::ReadKey($true)')
 }
 
 function Get-NovaCliConsoleReadKeyReader {
     [CmdletBinding()]
     param()
 
-    return {Invoke-NovaCliNativeConsoleReadKey}
+    return [scriptblock]::Create('Invoke-NovaCliNativeConsoleReadKey')
 }
 
 function Read-NovaCliPromptKey {
@@ -61,8 +72,7 @@ function Read-NovaCliPromptKey {
 
     try {
         return Read-NovaCliConsoleKeyChar
-    }
-    catch {
+    } catch {
         return [char]0
     }
 }
@@ -105,15 +115,13 @@ function Get-NovaCliCommandCancellationInfo {
 
     $message = if (($KeyChar.ToString()).ToUpperInvariant() -eq 'S') {
         'Suspend is not supported in nova CLI mode. Operation cancelled.'
-    }
-    else {
+    } else {
         'Operation cancelled.'
     }
 
     $errorId = if (($KeyChar.ToString()).ToUpperInvariant() -eq 'S') {
         'Nova.Workflow.CliSuspendNotSupported'
-    }
-    else {
+    } else {
         'Nova.Workflow.CliOperationCancelled'
     }
 
