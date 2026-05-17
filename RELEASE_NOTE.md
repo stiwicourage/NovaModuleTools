@@ -6,6 +6,8 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 ### Added
 - `Initialize-NovaModule` and `% nova init` now offer an optional **Agentic Copilot** starter package in both the minimal and example interactive scaffold flows.
     - The starter package follows a filtered mirror of Nova's maintained agentic guidance so newly scaffolded projects receive a broader Nova-style agentic baseline without Nova-specific surfaces.
+    - When Git is enabled in either scaffold flow, Nova now creates or updates a default `.gitignore` in the generated project root and only appends the missing Nova-managed artifact entries instead of overwriting existing ignore rules.
+    - Before the first interactive scaffold question, Nova now checks for newer NovaModuleTools releases and reuses the same non-blocking update warning behavior already used by build.
 - `Test-NovaBuild` and `% nova test` now enforce `Pester.CodeCoverage.CoveragePercentTarget` from `project.json` when `CodeCoverage.Enabled` is `true`, so coverage gates work without extra external tooling.
 
 ### Changed

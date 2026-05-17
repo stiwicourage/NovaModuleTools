@@ -46,7 +46,9 @@ function Get-SourceMirrorStatus {
 
     $sourcePatterns = @(
         'src/public/*.ps1'
-        'src/private/**/*.ps1'
+        'src/private/*.ps1'
+        'src/private/*/*.ps1'
+        'src/private/*/*/*.ps1'
         'src/classes/*.ps1'
     )
 

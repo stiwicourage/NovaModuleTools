@@ -28,7 +28,7 @@ BeforeAll {
 }
 ```
 
-Legacy tests that still use `Import-Module $project.OutputModuleDir` + `InModuleScope` are being migrated in the issue series #200..#207. While migration is in progress, `project.json` `CodeCoverage.Enabled` is `false` so the percentage gate does not fail. The gate is re-enabled in issue #207 once enough tests use the mirrored pattern.
+Legacy tests that still use `Import-Module $project.OutputModuleDir` + `InModuleScope` can still exist while maintainers finish migrations, but the mirrored pattern itself now supports enabled repository coverage gates. Generated project templates still ship `CodeCoverage.Enabled = false` until maintainers opt into the coverage gate for their own project.
 
 ## Cross-cutting tests are still allowed
 
@@ -83,7 +83,7 @@ A non-blocking mirror status helper is available at `scripts/build/Get-TestMirro
 - The JaCoCo artifact is reused by the CodeScene PR coverage gate and by the develop/manual CodeScene analysis flow.
 - The CodeScene analysis upload sends coverage twice: once for `line-coverage` and once for `branch-coverage`.
 - Coverage paths in `project.json` must point at `src/**/*.ps1`, not at the built `dist` psm1. Nova does not override `CodeCoverage.Path`.
-- During the test-layout migration, `CodeCoverage.Enabled` is temporarily `false` so the percentage gate does not block work. It is re-enabled in issue #207.
+- Generated project templates still ship `CodeCoverage.Enabled = false` with a `90` percent target until maintainers opt in. Repositories that enable coverage should keep the configured target accurate and use the explicit `src/private/*.ps1`, `src/private/*/*.ps1`, and `src/private/*/*/*.ps1` path globs so nested private helper folders stay measurable.
 - If CodeScene flags coverage or duplication, fix the underlying test design instead of suppressing the warning casually.
 
 ## Common pitfalls

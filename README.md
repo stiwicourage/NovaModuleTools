@@ -259,12 +259,15 @@ PS> Test-NovaBuild
 
 Notes:
 
-- `Test-NovaBuild` validates the built module output, not just loose source files
+- `Test-NovaBuild` runs Nova's managed test workflow; this repo's mirrored unit tests dot-source `src/**/*.ps1`
+  directly, while cross-cutting tests still cover built-module behavior where that is the point of the test
 - it writes NUnit XML to `artifacts/TestResults.xml`
+- when `Pester.CodeCoverage.Enabled` is `true`, it also writes JaCoCo XML to `artifacts/coverage.xml`
 - it respects `BuildRecursiveFolders` when discovering tests
 - if `project.json` sets `Pester.CodeCoverage.CoveragePercentTarget`, `Test-NovaBuild` fails when the measured coverage percentage is lower than that configured target
-- new template and packaged example `project.json` files already include an opt-in `Pester.CodeCoverage` block with `Enabled=false`, JaCoCo output in `artifacts/coverage.xml`, and a `90` percent target so projects can enable coverage when they are ready
-- contributor and CI environments should still install `Pester 5.7.1` explicitly before running `Test-NovaBuild`
+- this repository currently enables coverage with a `99` percent target; the template and packaged example
+  `project.json` files ship the same JaCoCo configuration shape with `Enabled=false` and a `90` percent opt-in target
+- make sure `Pester 5.7.1` is available before running `Test-NovaBuild`
 - the published `NovaModuleTools` manifest also declares `Pester 5.7.1`, so installed end-user workflows can still resolve that dependency automatically
 
 ### Create a package artifact
@@ -420,19 +423,14 @@ The `Tests.yml` workflow reuses that JaCoCo artifact for the pull-request CodeSc
 
 ### Recommended local quality loop
 
+Run the repository wrapper from the repo root:
+
 ```powershell
-# run.ps1
-Set-Location $PSScriptRoot
-
-$projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
-$distModuleDir = Join-Path $PSScriptRoot "dist/$projectName"
-
-Invoke-NovaBuild
-& (Join-Path $PSScriptRoot 'scripts/build/Invoke-ScriptAnalyzerCI.ps1')
-Remove-Module $projectName -ErrorAction SilentlyContinue
-Import-Module $distModuleDir -Force
-Test-NovaBuild
+PS> pwsh -NoLogo -NoProfile -File ./run.ps1
 ```
+
+`run.ps1` is the repository quality wrapper. It runs ScriptAnalyzer first, validates `CHANGELOG.md` and
+`RELEASE_NOTE.md`, refreshes the Agentic Copilot scaffold mirror, and then runs `Test-NovaBuild`.
 
 ### Working on help and docs
 
@@ -577,9 +575,9 @@ explicitly. The repository `Tests.yml` workflow also downloads that same JaCoCo 
 
 The normal repository workflow is:
 
-1. `Invoke-NovaBuild`
-2. `Test-NovaBuild`
-3. ScriptAnalyzer via `scripts/build/Invoke-ScriptAnalyzerCI.ps1`
+1. `pwsh -NoLogo -NoProfile -File ./run.ps1` for the full repository quality loop
+2. `Test-NovaBuild` when you only need focused test validation
+3. `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` when you only need the analyzer pass
 4. Optional CI helper flow via `scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
 
 When you test local publish behavior during development, remember that `Publish-NovaModule -Local` reloads the published module from the local install directory into the current PowerShell session. Re-import `dist/` if your next step depends on the built-but-unpublished output instead.

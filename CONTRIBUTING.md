@@ -50,19 +50,12 @@ Pull requests against `main` and `develop` also run a CodeScene coverage-gate ch
 **Before opening a pull request, please run the local quality flow from the repository root:**
 
 ```powershell title="run.ps1"
-#run.ps1
-Set-Location $PSScriptRoot
-
-$projectName = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
-$distModuleDir = Join-Path $PSScriptRoot "dist/$projectName"
-
-Invoke-NovaBuild
-& (Join-Path $PSScriptRoot 'scripts/build/Invoke-ScriptAnalyzerCI.ps1')
-Remove-Module $projectName -ErrorAction SilentlyContinue
-Import-Module $distModuleDir -Force
-
-Test-NovaBuild
+pwsh -NoLogo -NoProfile -File ./run.ps1
 ```
+
+`run.ps1` is the authoritative repository quality wrapper. It runs ScriptAnalyzer first, validates
+`CHANGELOG.md` and `RELEASE_NOTE.md`, refreshes the Agentic Copilot scaffold mirror, and then runs
+`Test-NovaBuild`.
 
 If you are working on the CodeScene integration, the CI coverage helper writes the JaCoCo artifact that the CodeScene upload step consumes:
 
