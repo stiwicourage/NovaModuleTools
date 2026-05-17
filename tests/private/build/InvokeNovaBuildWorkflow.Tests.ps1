@@ -1,20 +1,22 @@
 BeforeAll {
-    $script:repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
-    $script:moduleName = (Get-Content -LiteralPath (Join-Path $script:repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
-    $script:distModuleDir = Join-Path $script:repoRoot "dist/$script:moduleName"
+    $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
+    . (Join-Path $projectRoot 'src/private/build/InvokeNovaBuildWorkflow.ps1')
 
-    if (-not (Test-Path -LiteralPath $script:distModuleDir)) {
-        throw "Expected built $script:moduleName module at: $script:distModuleDir. Run Invoke-NovaBuild in the repo root first."
-    }
-
-    Remove-Module $script:moduleName -ErrorAction SilentlyContinue
-    Import-Module $script:distModuleDir -Force
+    function Assert-NovaPublicFunctionFileLayout {param($ProjectInfo, [switch]$OverrideWarningRequested)}
+    function Reset-ProjectDist {param($ProjectInfo)}
+    function Build-Module {param($ProjectInfo)}
+    function Assert-BuiltModuleHasNoDuplicateFunctionName {param($ProjectInfo)}
+    function Build-Manifest {param($ProjectInfo)}
+    function Build-Help {param($ProjectInfo)}
+    function Copy-ProjectResource {param($ProjectInfo)}
+    function Invoke-NovaModuleUpdateNotificationSafely {}
+    function Import-NovaBuiltModuleForCi {param($ProjectInfo)}
 }
 
 Describe 'Invoke-NovaBuildWorkflow' {
     It 'uses the shared module update notification before the optional CI import step' {
-        InModuleScope $script:moduleName {
-            $script:steps = @()
+        $global:steps = @()
+        try {
             $workflowContext = [pscustomobject]@{
                 ProjectInfo = [pscustomobject]@{
                     ProjectName = 'NovaModuleTools'
@@ -24,22 +26,23 @@ Describe 'Invoke-NovaBuildWorkflow' {
                 ContinuousIntegrationRequested = $true
             }
 
-            Mock Assert-NovaPublicFunctionFileLayout {$script:steps += 'public-layout'}
-            Mock Reset-ProjectDist {$script:steps += 'reset'}
-            Mock Build-Module {$script:steps += 'module'}
-            Mock Assert-BuiltModuleHasNoDuplicateFunctionName {$script:steps += 'duplicates'}
-            Mock Build-Manifest {$script:steps += 'manifest'}
-            Mock Build-Help {$script:steps += 'help'}
-            Mock Copy-ProjectResource {$script:steps += 'resources'}
-            Mock Invoke-NovaModuleUpdateNotificationSafely {$script:steps += 'notification'}
-            Mock Import-NovaBuiltModuleForCi {$script:steps += 'ci'}
+            Mock Assert-NovaPublicFunctionFileLayout {$global:steps += 'public-layout'}
+            Mock Reset-ProjectDist {$global:steps += 'reset'}
+            Mock Build-Module {$global:steps += 'module'}
+            Mock Assert-BuiltModuleHasNoDuplicateFunctionName {$global:steps += 'duplicates'}
+            Mock Build-Manifest {$global:steps += 'manifest'}
+            Mock Build-Help {$global:steps += 'help'}
+            Mock Copy-ProjectResource {$global:steps += 'resources'}
+            Mock Invoke-NovaModuleUpdateNotificationSafely {$global:steps += 'notification'}
+            Mock Import-NovaBuiltModuleForCi {$global:steps += 'ci'}
 
             Invoke-NovaBuildWorkflow -WorkflowContext $workflowContext
 
-            $script:steps -join ',' | Should -Be 'public-layout,reset,module,duplicates,manifest,help,resources,notification,ci'
+            $global:steps -join ',' | Should -Be 'public-layout,reset,module,duplicates,manifest,help,resources,notification,ci'
             Assert-MockCalled Invoke-NovaModuleUpdateNotificationSafely -Times 1
             Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1
+        } finally {
+            Remove-Variable -Name steps -Scope Global -ErrorAction SilentlyContinue
         }
     }
 }
-
