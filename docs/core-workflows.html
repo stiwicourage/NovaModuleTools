@@ -124,7 +124,9 @@ PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
                         path syntax such as <code>% nova init ~/Work</code>.</p>
                 </div>
                 <p>Both scaffold styles ask the same core project questions, and both now offer an optional Agentic
-                    Copilot starter package after the Git prompt. Before the first question, Nova also checks whether a
+                    Copilot starter package after the Git prompt. The starting version prompt now defaults to
+                    <code>0.1.0-preview</code>, so new projects begin on Nova's prerelease-friendly starter line unless
+                    you choose a different version. Before the first question, Nova also checks whether a
                     newer NovaModuleTools release is available and warns without blocking the scaffold flow. When you
                     enable Git in either scaffold style, Nova also creates or updates a default <code>.gitignore</code>
                     in the generated project root so common local and CI artifact paths are ignored without
@@ -147,8 +149,9 @@ PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
                     entry point, and a strict file-ending rule for changed or generated text
                     files.</p>
                 <p>The generated <code>project.json</code> also starts with Nova's standard <code>Pester</code>
-                    defaults, including a disabled <code>CodeCoverage</code> block you can enable later without
-                    hand-authoring the structure.</p>
+                    defaults, including a disabled <code>CodeCoverage</code> block with explicit source coverage paths
+                    for <code>src/public/</code>, nested <code>src/private/</code> helper folders, and
+                    <code>src/classes/</code>, so you can enable coverage later without hand-authoring the structure.</p>
                 <p>When you answer <code>Yes</code>, Nova also asks for a short project name used in generated guidance
                     placeholders such as <code>Invoke-&lt;ShortName&gt;*</code>. For NovaModuleTools the short name is
                     <code>Nova</code>, but it could also have been <code>NMT</code>.</p>

@@ -176,6 +176,19 @@
     ]
   },
   "Pester": {
+    "CodeCoverage": {
+      "Enabled": false,
+      "Path": [
+        "src/public/*.ps1",
+        "src/private/*.ps1",
+        "src/private/*/*.ps1",
+        "src/private/*/*/*.ps1",
+        "src/classes/*.ps1"
+      ],
+      "CoveragePercentTarget": 90,
+      "OutputPath": "artifacts/coverage.xml",
+      "OutputFormat": "JaCoCo"
+    },
     "TestResult": {
       "Enabled": true,
       "OutputFormat": "NUnitXml"
@@ -626,10 +639,11 @@
                         <tr>
                             <td><code>Pester.CodeCoverage.Path</code></td>
                             <td>Declares which source files the coverage run analyzes.</td>
-                            <td><code>src/public/*.ps1</code><br><code>src/private/**/*.ps1</code><br><code>src/classes/*.ps1</code>
+                            <td><code>src/public/*.ps1</code><br><code>src/private/*.ps1</code><br><code>src/private/*/*.ps1</code><br><code>src/private/*/*/*.ps1</code><br><code>src/classes/*.ps1</code>
                             </td>
                             <td>These defaults ship in new starter projects so coverage can be enabled without
-                                hand-authoring the file list.
+                                hand-authoring the file list, including nested helper folders such as
+                                <code>src/private/build/manifest/</code> and <code>src/private/quality/duplicates/</code>.
                             </td>
                         </tr>
                         <tr>
@@ -661,9 +675,10 @@
                     </table>
                 </div>
                 <p class="tiny-note">Starter projects now include the full <code>Pester.CodeCoverage</code> block with
-                    <code>Enabled=false</code>, so turning coverage on usually means changing only that switch. At
-                    runtime, <code>Test-NovaBuild</code> also lets you override verbosity and render mode temporarily
-                    with <code>-OutputVerbosity</code> and <code>-OutputRenderMode</code>.</p>
+                    <code>Enabled=false</code> and the explicit default source globs shown above, so turning coverage on
+                    usually means changing only that switch. At runtime, <code>Test-NovaBuild</code> also lets you
+                    override verbosity and render mode temporarily with <code>-OutputVerbosity</code> and
+                    <code>-OutputRenderMode</code>.</p>
                 <p>When you enable coverage, Nova writes JaCoCo output to <code>artifacts/coverage.xml</code> and fails
                     the test workflow if the measured percentage is lower than
                     <code>Pester.CodeCoverage.CoveragePercentTarget</code>.</p>

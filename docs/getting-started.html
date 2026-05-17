@@ -195,6 +195,8 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                 </div>
                 <p>Nova asks for the project name, description, version, author, minimum PowerShell version, whether
                     Git should be initialized, and whether Nova should add the optional Agentic Copilot starter package.
+                    The starting version prompt now defaults to <code>0.1.0-preview</code>, so new projects begin on
+                    Nova's prerelease-friendly starter line unless you choose a different version.
                     Before the first question, Nova also checks whether a newer NovaModuleTools release is available and
                     warns without blocking the scaffold flow.
                     When you enable Git, Nova also creates or updates a default <code>.gitignore</code> in the new
@@ -219,8 +221,9 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                     Nova then creates a project folder under the path you selected.</p>
                 <p>The generated <code>project.json</code> also starts with Nova's standard <code>Pester</code>
                     defaults, including an opt-in <code>CodeCoverage</code> block with <code>Enabled=false</code>,
-                    shared <code>src/</code> coverage paths, JaCoCo output in <code>artifacts/coverage.xml</code>, and
-                    a <code>90</code> percent target you can enable later.</p>
+                    explicit source coverage paths for <code>src/public/</code>, nested <code>src/private/</code>
+                    helper folders, and <code>src/classes/</code>, JaCoCo output in <code>artifacts/coverage.xml</code>,
+                    and a <code>90</code> percent target you can enable later.</p>
                 <p>If you enable the Agentic package, Nova also asks for a short project name used in generated guidance
                     placeholders such as <code>Invoke-&lt;ShortName&gt;*</code>. For NovaModuleTools the short name is
                     <code>Nova</code>, but it could also have been <code>NMT</code>.</p>
