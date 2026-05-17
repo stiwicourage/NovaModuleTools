@@ -4,7 +4,7 @@
 ![WorkFlow Status][WorkFlowStatus]
 [![Keep a Changelog][changelog-badge]][changelog]
 
-NovaModuleTools is an enterprise-focused evolution of ModuleTools for structured PowerShell module development, repository automation, and maintainable Nova workflows.
+NovaModuleTools is an enterprise-focused build tool for Agentic Copilot PowerShell module development, repository automation, and maintainable Nova workflows.
 
 This README is the single developer-documentation entry point for the repository.
 

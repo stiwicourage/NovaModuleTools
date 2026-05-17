@@ -175,23 +175,45 @@ function ConvertTo-AgenticScaffoldContent {
     $segments = Split-AgenticContentByCodeFence -Content $Content
     $rebuilt = [System.Text.StringBuilder]::new()
     foreach ($segment in $segments) {
-        $segmentText = $segment.Text
-        if ($segment.Kind -ne 'Fenced') {
-            foreach ($replacement in $ReplacementList) {
-                $segmentText = $segmentText.Replace([string]$replacement.Old, [string]$replacement.New)
-            }
-        }
-
-        if ($IdentifierReplacementList) {
-            foreach ($identifier in $IdentifierReplacementList) {
-                $segmentText = $segmentText.Replace([string]$identifier.Old, [string]$identifier.New)
-            }
-        }
-
-        [void]$rebuilt.Append($segmentText)
+        [void]$rebuilt.Append((Get-AgenticScaffoldSegmentContent -Segment $segment -ReplacementList $ReplacementList -IdentifierReplacementList $IdentifierReplacementList))
     }
 
-    $updatedContent = $rebuilt.ToString()
+    return Compress-AgenticScaffoldSpacing -Content $rebuilt.ToString()
+}
+
+function Get-AgenticScaffoldSegmentContent {
+    param(
+        [Parameter(Mandatory)][object]$Segment,
+        [Parameter(Mandatory)][object[]]$ReplacementList,
+        [AllowNull()][AllowEmptyCollection()][object[]]$IdentifierReplacementList
+    )
+
+    $segmentText = $Segment.Text
+    if ($Segment.Kind -ne 'Fenced') {
+        $segmentText = Invoke-AgenticTextReplacementList -Content $segmentText -ReplacementList $ReplacementList
+    }
+
+    return Invoke-AgenticTextReplacementList -Content $segmentText -ReplacementList $IdentifierReplacementList
+}
+
+function Invoke-AgenticTextReplacementList {
+    param(
+        [Parameter(Mandatory)][string]$Content,
+        [AllowNull()][AllowEmptyCollection()][object[]]$ReplacementList
+    )
+
+    $updatedContent = $Content
+    foreach ($replacement in @($ReplacementList)) {
+        $updatedContent = $updatedContent.Replace([string]$replacement.Old, [string]$replacement.New)
+    }
+
+    return $updatedContent
+}
+
+function Compress-AgenticScaffoldSpacing {
+    param([Parameter(Mandatory)][string]$Content)
+
+    $updatedContent = $Content
     while ($updatedContent.Contains("`n`n`n")) {
         $updatedContent = $updatedContent.Replace("`n`n`n", "`n`n")
     }
@@ -286,24 +308,37 @@ function Get-AgenticGeneratedMirrorContent {
     return $banner + $body
 }
 
-function Invoke-AgenticGeneratedMirrorPlan {
+function Get-AgenticGeneratedMirrorContext {
     param(
         [Parameter(Mandatory)][string]$RootPath,
         [Parameter(Mandatory)][string]$ScaffoldStagingRoot,
-        [Parameter(Mandatory)][object[]]$GeneratedMirrorList,
         [object[]]$ReplacementList,
         [AllowNull()][AllowEmptyCollection()][object[]]$IdentifierReplacementList
     )
 
+    return [pscustomobject]@{
+        RootPath = $RootPath
+        ScaffoldStagingRoot = $ScaffoldStagingRoot
+        ReplacementList = @($ReplacementList)
+        IdentifierReplacementList = @($IdentifierReplacementList)
+    }
+}
+
+function Invoke-AgenticGeneratedMirrorPlan {
+    param(
+        [Parameter(Mandatory)][object]$Context,
+        [Parameter(Mandatory)][object[]]$GeneratedMirrorList
+    )
+
     foreach ($mirror in $GeneratedMirrorList) {
         if ($mirror.RepositoryTarget) {
-            $repositoryContent = Get-AgenticGeneratedMirrorContent -RootPath $RootPath -SourceRelativePath $mirror.Source
-            Write-AgenticGeneratedMirrorPath -TargetRoot $RootPath -RelativeTarget $mirror.RepositoryTarget -Content $repositoryContent
+            $repositoryContent = Get-AgenticGeneratedMirrorContent -RootPath $Context.RootPath -SourceRelativePath $mirror.Source
+            Write-AgenticGeneratedMirrorPath -TargetRoot $Context.RootPath -RelativeTarget $mirror.RepositoryTarget -Content $repositoryContent
         }
 
         if ($mirror.ScaffoldTarget) {
-            $scaffoldContent = Get-AgenticGeneratedMirrorContent -RootPath $RootPath -SourceRelativePath $mirror.Source -ReplacementList $ReplacementList -IdentifierReplacementList $IdentifierReplacementList
-            Write-AgenticGeneratedMirrorPath -TargetRoot $ScaffoldStagingRoot -RelativeTarget $mirror.ScaffoldTarget -Content $scaffoldContent
+            $scaffoldContent = Get-AgenticGeneratedMirrorContent -RootPath $Context.RootPath -SourceRelativePath $mirror.Source -ReplacementList $Context.ReplacementList -IdentifierReplacementList $Context.IdentifierReplacementList
+            Write-AgenticGeneratedMirrorPath -TargetRoot $Context.ScaffoldStagingRoot -RelativeTarget $mirror.ScaffoldTarget -Content $scaffoldContent
         }
     }
 }
@@ -345,7 +380,8 @@ function Invoke-AgenticCopilotScaffoldSync {
         }
 
         if ($manifest.ContainsKey('GeneratedMirrors') -and $manifest.GeneratedMirrors) {
-            Invoke-AgenticGeneratedMirrorPlan -RootPath $RootPath -ScaffoldStagingRoot $stagingRoot -GeneratedMirrorList $manifest.GeneratedMirrors -ReplacementList $manifest.TextReplacements -IdentifierReplacementList $manifest.IdentifierReplacements
+            $mirrorContext = Get-AgenticGeneratedMirrorContext -RootPath $RootPath -ScaffoldStagingRoot $stagingRoot -ReplacementList $manifest.TextReplacements -IdentifierReplacementList $manifest.IdentifierReplacements
+            Invoke-AgenticGeneratedMirrorPlan -Context $mirrorContext -GeneratedMirrorList $manifest.GeneratedMirrors
         }
 
         if (Test-Path -LiteralPath $TargetRoot) {

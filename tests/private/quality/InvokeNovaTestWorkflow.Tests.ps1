@@ -1,58 +1,43 @@
-BeforeAll {
-    $script:repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../../..')).Path
-    $script:moduleName = (Get-Content -LiteralPath (Join-Path $script:repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
-    $script:distModuleDir = Join-Path $script:repoRoot "dist/$script:moduleName"
-
-    if (-not (Test-Path -LiteralPath $script:distModuleDir)) {
-        throw "Expected built $script:moduleName module at: $script:distModuleDir. Run Invoke-NovaBuild in the repo root first."
-    }
-
-    Remove-Module $script:moduleName -ErrorAction SilentlyContinue
-    Import-Module $script:distModuleDir -Force
-    $script:getTestInvokeNovaPesterConfig = {
-        return [pscustomobject]@{
-            TestResult = [pscustomobject]@{
-                OutputPath = $null
-            }
-        }
-    }
-    $script:getTestInvokeNovaTestWorkflowContext = {
-        param(
-            [Parameter(Mandatory)][object]$PesterConfig,
-            [Parameter(Mandatory)][object]$ProjectInfo,
-            [scriptblock]$CoverageTargetAssertion
-        )
-
-        $workflowContext = [pscustomobject]@{
-            ProjectInfo = $ProjectInfo
-            TestResultDirectory = '/tmp/nova-project/artifacts'
-            TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
-            PesterConfig = $PesterConfig
-            TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
-            TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
-        }
-
-        if ($null -ne $CoverageTargetAssertion) {
-            $workflowContext | Add-Member -MemberType NoteProperty -Name CoverageTargetAssertion -Value ([pscustomobject]@{ScriptBlock = $CoverageTargetAssertion})
-        }
-
-        return $workflowContext
-    }
-}
-
 Describe 'Invoke-NovaTestWorkflow' {
+    BeforeAll {
+        $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../../..')).Path
+        $moduleName = (Get-Content -LiteralPath (Join-Path $repoRoot 'project.json') -Raw | ConvertFrom-Json).ProjectName
+        $distModuleDir = Join-Path $repoRoot "dist/$moduleName"
+
+        if (-not (Test-Path -LiteralPath $distModuleDir)) {
+            throw "Expected built $moduleName module at: $distModuleDir. Run Invoke-NovaBuild in the repo root first."
+        }
+
+        Remove-Module $moduleName -ErrorAction SilentlyContinue
+        Import-Module $distModuleDir -Force
+    }
+
     It 'uses the pre-resolved coverage assertion after the Pester run' {
         $global:coverageAssertionRan = $false
-        $workflowContext = & $script:getTestInvokeNovaTestWorkflowContext -PesterConfig (& $script:getTestInvokeNovaPesterConfig) -ProjectInfo ([pscustomobject]@{
-            Pester = [ordered]@{}
-        }) -CoverageTargetAssertion {
-            param($WorkflowContext, $TestResult)
+        $workflowContext = [pscustomobject]@{
+            ProjectInfo = [pscustomobject]@{
+                Pester = [ordered]@{}
+            }
+            TestResultDirectory = '/tmp/nova-project/artifacts'
+            TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
+            PesterConfig = [pscustomobject]@{
+                TestResult = [pscustomobject]@{
+                    OutputPath = $null
+                }
+            }
+            TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
+            TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
+            CoverageTargetAssertion = [pscustomobject]@{
+                ScriptBlock = {
+                    param($WorkflowContext, $TestResult)
 
-            $global:coverageAssertionRan = $true
+                    $global:coverageAssertionRan = $true
+                }
+            }
         }
 
         try {
-            InModuleScope $script:moduleName -Parameters @{WorkflowContext = $workflowContext} {
+            InModuleScope $moduleName -Parameters @{WorkflowContext = $workflowContext} {
                 param($WorkflowContext)
 
                 Mock Test-Path {$true}
@@ -62,7 +47,7 @@ Describe 'Invoke-NovaTestWorkflow' {
                     }
                 }
 
-                {Invoke-NovaTestWorkflow -WorkflowContext $workflowContext} | Should -Not -Throw
+                {Invoke-NovaTestWorkflow -WorkflowContext $WorkflowContext} | Should -Not -Throw
             }
 
             $global:coverageAssertionRan | Should -BeTrue
@@ -71,85 +56,93 @@ Describe 'Invoke-NovaTestWorkflow' {
         }
     }
 
-    It 'throws when the configured coverage target is not met' {
-        $workflowContext = & $script:getTestInvokeNovaTestWorkflowContext -PesterConfig (& $script:getTestInvokeNovaPesterConfig) -ProjectInfo ([pscustomobject]@{
-            Pester = [ordered]@{
-                CodeCoverage = [ordered]@{
-                    Enabled = $true
-                    CoveragePercentTarget = 90
+    It 'reports coverage target failures clearly for <Name>' -ForEach @(
+        @{
+            Name = 'coverage below target'
+            PesterResult = [pscustomobject]@{
+                Result = 'Passed'
+                CodeCoverage = [pscustomobject]@{
+                    CoveragePercent = 66.67
                 }
             }
-        })
-
-        InModuleScope $script:moduleName -Parameters @{WorkflowContext = $workflowContext} {
-            param($WorkflowContext)
-
-            Mock Test-Path {$true}
-            Mock Invoke-NovaPester {
-                [pscustomobject]@{
-                    Result = 'Passed'
-                    CodeCoverage = [pscustomobject]@{
-                        CoveragePercent = 66.67
+            ExpectedMessage = 'Code coverage 66.67% did not meet the configured target 90%.'
+            ExpectedErrorId = 'Nova.Workflow.CodeCoverageTargetNotMet'
+            ExpectedCategory = [System.Management.Automation.ErrorCategory]::InvalidOperation
+        }
+        @{
+            Name = 'missing measured coverage'
+            PesterResult = [pscustomobject]@{
+                Result = 'Passed'
+            }
+            ExpectedMessage = 'Code coverage target 90% is configured, but the Pester result did not include a coverage percentage.'
+            ExpectedErrorId = 'Nova.Workflow.CodeCoveragePercentMissing'
+            ExpectedCategory = [System.Management.Automation.ErrorCategory]::InvalidData
+        }
+    ) {
+        $workflowContext = [pscustomobject]@{
+            ProjectInfo = [pscustomobject]@{
+                Pester = [ordered]@{
+                    CodeCoverage = [ordered]@{
+                        Enabled = $true
+                        CoveragePercentTarget = 90
                     }
                 }
             }
-
-            $thrown = $null
-            try {
-                Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
-            } catch {
-                $thrown = $_
-            }
-
-            $thrown | Should -Not -BeNullOrEmpty
-            $thrown.Exception.Message | Should -Be 'Code coverage 66.67% did not meet the configured target 90%.'
-            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.CodeCoverageTargetNotMet'
-            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidOperation)
-            $thrown.TargetObject | Should -Be '/tmp/nova-project/artifacts/TestResults.xml'
-        }
-    }
-
-    It 'throws clearly when a configured coverage target has no measured coverage percent' {
-        $workflowContext = & $script:getTestInvokeNovaTestWorkflowContext -PesterConfig (& $script:getTestInvokeNovaPesterConfig) -ProjectInfo ([pscustomobject]@{
-            Pester = [ordered]@{
-                CodeCoverage = [ordered]@{
-                    Enabled = $true
-                    CoveragePercentTarget = 90
+            TestResultDirectory = '/tmp/nova-project/artifacts'
+            TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
+            PesterConfig = [pscustomobject]@{
+                TestResult = [pscustomobject]@{
+                    OutputPath = $null
                 }
             }
-        })
+            TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
+            TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
+        }
 
-        InModuleScope $script:moduleName -Parameters @{WorkflowContext = $workflowContext} {
-            param($WorkflowContext)
+        InModuleScope $moduleName -Parameters @{
+            WorkflowContext = $workflowContext
+            PesterResult = $PesterResult
+            ExpectedMessage = $ExpectedMessage
+            ExpectedErrorId = $ExpectedErrorId
+            ExpectedCategory = $ExpectedCategory
+        } {
+            param($WorkflowContext, $PesterResult, $ExpectedMessage, $ExpectedErrorId, $ExpectedCategory)
 
             Mock Test-Path {$true}
-            Mock Invoke-NovaPester {
-                [pscustomobject]@{
-                    Result = 'Passed'
-                }
-            }
+            Mock Invoke-NovaPester {$PesterResult}
 
             $thrown = $null
             try {
-                Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
+                Invoke-NovaTestWorkflow -WorkflowContext $WorkflowContext
             } catch {
                 $thrown = $_
             }
 
             $thrown | Should -Not -BeNullOrEmpty
-            $thrown.Exception.Message | Should -Be 'Code coverage target 90% is configured, but the Pester result did not include a coverage percentage.'
-            $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.CodeCoveragePercentMissing'
-            $thrown.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::InvalidData)
+            $thrown.Exception.Message | Should -Be $ExpectedMessage
+            $thrown.FullyQualifiedErrorId | Should -Be $ExpectedErrorId
+            $thrown.CategoryInfo.Category | Should -Be $ExpectedCategory
             $thrown.TargetObject | Should -Be '/tmp/nova-project/artifacts/TestResults.xml'
         }
     }
 
     It 'does not enforce a coverage threshold when project.json does not configure one' {
-        $workflowContext = & $script:getTestInvokeNovaTestWorkflowContext -PesterConfig (& $script:getTestInvokeNovaPesterConfig) -ProjectInfo ([pscustomobject]@{
-            Pester = [ordered]@{}
-        })
+        $workflowContext = [pscustomobject]@{
+            ProjectInfo = [pscustomobject]@{
+                Pester = [ordered]@{}
+            }
+            TestResultDirectory = '/tmp/nova-project/artifacts'
+            TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
+            PesterConfig = [pscustomobject]@{
+                TestResult = [pscustomobject]@{
+                    OutputPath = $null
+                }
+            }
+            TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
+            TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
+        }
 
-        InModuleScope $script:moduleName -Parameters @{WorkflowContext = $workflowContext} {
+        InModuleScope $moduleName -Parameters @{WorkflowContext = $workflowContext} {
             param($WorkflowContext)
 
             Mock Test-Path {$true}
@@ -162,21 +155,32 @@ Describe 'Invoke-NovaTestWorkflow' {
                 }
             }
 
-            {Invoke-NovaTestWorkflow -WorkflowContext $workflowContext} | Should -Not -Throw
-            $workflowContext.PesterConfig.TestResult.OutputPath | Should -Be '/tmp/nova-project/artifacts/TestResults.xml'
+            {Invoke-NovaTestWorkflow -WorkflowContext $WorkflowContext} | Should -Not -Throw
+            $WorkflowContext.PesterConfig.TestResult.OutputPath | Should -Be '/tmp/nova-project/artifacts/TestResults.xml'
         }
     }
 
     It 'suppresses global progress output around the Pester run and restores the previous preference' {
-        $workflowContext = & $script:getTestInvokeNovaTestWorkflowContext -PesterConfig (& $script:getTestInvokeNovaPesterConfig) -ProjectInfo ([pscustomobject]@{
-            Pester = [ordered]@{}
-        })
+        $workflowContext = [pscustomobject]@{
+            ProjectInfo = [pscustomobject]@{
+                Pester = [ordered]@{}
+            }
+            TestResultDirectory = '/tmp/nova-project/artifacts'
+            TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
+            PesterConfig = [pscustomobject]@{
+                TestResult = [pscustomobject]@{
+                    OutputPath = $null
+                }
+            }
+            TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
+            TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
+        }
 
         $previous = $global:ProgressPreference
         $global:ProgressPreference = 'Continue'
         $global:observedProgressPreferenceDuringPester = $null
         try {
-            InModuleScope $script:moduleName -Parameters @{WorkflowContext = $workflowContext} {
+            InModuleScope $moduleName -Parameters @{WorkflowContext = $workflowContext} {
                 param($WorkflowContext)
 
                 Mock Test-Path {$true}
@@ -185,7 +189,7 @@ Describe 'Invoke-NovaTestWorkflow' {
                     [pscustomobject]@{Result = 'Passed'}
                 }
 
-                Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
+                Invoke-NovaTestWorkflow -WorkflowContext $WorkflowContext
             }
 
             $global:observedProgressPreferenceDuringPester | Should -Be 'SilentlyContinue'
@@ -197,20 +201,31 @@ Describe 'Invoke-NovaTestWorkflow' {
     }
 
     It 'restores the previous progress preference even when Pester throws' {
-        $workflowContext = & $script:getTestInvokeNovaTestWorkflowContext -PesterConfig (& $script:getTestInvokeNovaPesterConfig) -ProjectInfo ([pscustomobject]@{
-            Pester = [ordered]@{}
-        })
+        $workflowContext = [pscustomobject]@{
+            ProjectInfo = [pscustomobject]@{
+                Pester = [ordered]@{}
+            }
+            TestResultDirectory = '/tmp/nova-project/artifacts'
+            TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
+            PesterConfig = [pscustomobject]@{
+                TestResult = [pscustomobject]@{
+                    OutputPath = $null
+                }
+            }
+            TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
+            TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
+        }
 
         $previous = $global:ProgressPreference
         $global:ProgressPreference = 'Continue'
         try {
-            InModuleScope $script:moduleName -Parameters @{WorkflowContext = $workflowContext} {
+            InModuleScope $moduleName -Parameters @{WorkflowContext = $workflowContext} {
                 param($WorkflowContext)
 
                 Mock Test-Path {$true}
                 Mock Invoke-NovaPester {throw 'boom'}
 
-                {Invoke-NovaTestWorkflow -WorkflowContext $workflowContext} | Should -Throw
+                {Invoke-NovaTestWorkflow -WorkflowContext $WorkflowContext} | Should -Throw
             }
 
             $global:ProgressPreference | Should -Be 'Continue'
