@@ -7,6 +7,7 @@ This file summarizes public cmdlet, CLI, configuration, and migration changes fo
 ### Added
 - `Initialize-NovaModule` and `% nova init` now offer an optional **Agentic Copilot** starter package in both the minimal and example interactive scaffold flows.
     - The starter package follows a filtered mirror of Nova's maintained agentic guidance so newly scaffolded projects receive a broader Nova-style agentic baseline without Nova-specific surfaces.
+- `Test-NovaBuild` and `% nova test` now enforce `Pester.CodeCoverage.CoveragePercentTarget` from `project.json` when `CodeCoverage.Enabled` is `true`, so coverage gates work without extra external tooling.
 
 ### Changed
 - New projects now start with Nova's default Pester `CodeCoverage` block in both the minimal template and packaged example `project.json`, with `Enabled=false`, shared `src/` coverage paths, JaCoCo output, and a `90` percent target ready to opt into.
@@ -19,6 +20,8 @@ This file summarizes public cmdlet, CLI, configuration, and migration changes fo
 
 
 ### Fixed
+- Code coverage in `Test-NovaBuild` now runs against the built `dist/` module instead of source files, so reported coverage percentages and line numbers match the deployed module.
+- `Test-NovaBuild` and `% nova test` no longer emit `Remove-Item` progress bars during the Pester run.
 
 
 ### Security

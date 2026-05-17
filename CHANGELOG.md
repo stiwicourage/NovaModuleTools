@@ -20,11 +20,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
       - The starter now also ships a generated `scripts/build/Test-TextFileFormatting.ps1` helper and, when project tests are enabled, a `tests/TextFileFormatting.Tests.ps1` guardrail so trailing blank-line violations fail `Test-NovaBuild` instead of relying on instructions alone.
     - When Git is enabled during either scaffold flow, Nova now creates or updates a default `.gitignore` in the generated project root and appends only the missing Nova-managed artifact entries instead of overwriting existing ignore rules.
     - `Initialize-NovaModule` and `% nova init` now check for newer NovaModuleTools releases before the first interactive scaffold question and reuse the same non-blocking update warning behavior already used by build.
+- `Test-NovaBuild` and `% nova test` now enforce `Pester.CodeCoverage.CoveragePercentTarget` from `project.json` when `CodeCoverage.Enabled` is `true`, failing the test run when measured coverage drops below the configured target.
 
 
 ### Changed
 - The architect/design flow now surfaces settled vs unresolved design items before finalization, offers explicit choices for full finalization vs design-package-only handoff, clarifies how to use design notes versus the paste-ready GitHub issue draft, and requires finalization output to follow the project Markdown authoring guidance.
 - `ProjectTemplate.json` and the packaged example `project.json` now include Nova's default Pester `CodeCoverage` block with `Enabled=false`, shared `src/` coverage paths, JaCoCo output, and a `90` percent target so new projects can opt into coverage without hand-authoring the configuration.
+- `Invoke-NovaModuleToolsCI.ps1` now delegates the full test run to a single `Test-NovaBuild` call; the previous second `Invoke-Pester` pass and post-run Cobertura source-path remapping step have been removed.
+- CodeScene coverage upload now uses JaCoCo format instead of Cobertura and uploads both `line-coverage` and `branch-coverage` metrics in a single CI run; the helper script auto-discovers `artifacts/coverage.xml` instead of scanning for `*.cobertura.xml` files.
+- `Tests.yml` coverage-gate step now matches `**/coverage.xml` instead of `**/pester-coverage.cobertura.xml` to align with the new JaCoCo artifact path.
 
 
 ### Deprecated
@@ -34,6 +38,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 
 ### Fixed
+- `Test-NovaBuild` and `% nova test` no longer emit `Remove-Item -Recurse` progress bars during the Pester run; `$global:ProgressPreference` is saved and restored around the test execution so CI logs stay clean.
+- Code coverage in `Test-NovaBuild` now runs against the built `dist/<ModuleName>/<ModuleName>.psm1` file instead of source files, so measured coverage percentages and line numbers align with the deployed module.
 
 
 ### Security

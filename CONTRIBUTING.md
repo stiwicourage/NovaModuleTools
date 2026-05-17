@@ -45,7 +45,7 @@ when your Copilot session starts from the NovaModuleTools repository root.
 
 When you are shaping a new change, start with `architect.agent.md` and `design-change.prompt.md` so the first phase is a design conversation: analysis, clarifying questions, and solution options before any final scoped proposal or GitHub issue draft is produced. Proposed out-of-scope boundaries should be confirmed by the user before they become part of the final scope. When unresolved design questions still remain, architect should summarize what is settled vs unresolved before asking whether to finalize, and it should support either a full issue-ready handoff or a resumable design-package-only handoff. Use `implement-issue.prompt.md` after the change is already scoped.
 
-Pull requests against `main` and `develop` also run a CodeScene coverage-gate check when CI has produced the Cobertura coverage artifact, so PRs can be blocked when changed code falls below the configured coverage threshold.
+Pull requests against `main` and `develop` also run a CodeScene coverage-gate check when CI has produced the JaCoCo coverage artifact, so PRs can be blocked when changed code falls below the configured coverage threshold.
 
 **Before opening a pull request, please run the local quality flow from the repository root:**
 
@@ -64,12 +64,12 @@ Import-Module $distModuleDir -Force
 Test-NovaBuild
 ```
 
-If you are working on the CodeScene integration, the CI coverage helper writes the Cobertura artifact that the CodeScene upload step consumes:
+If you are working on the CodeScene integration, the CI coverage helper writes the JaCoCo artifact that the CodeScene upload step consumes:
 
 - generate coverage with `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
 - pull requests then download that uploaded artifact and run the CodeScene coverage-gate check through `.github/actions/check-coverage`
 - then upload/trigger with `./scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`
-- the upload helper auto-discovers a single `artifacts/*.cobertura.xml` file unless you pass `-CoveragePath`
+- the upload helper auto-discovers `artifacts/coverage.xml` unless you pass `-CoveragePath`
 - if upload succeeds but `-TriggerAnalysis` fails with a project-owner OAuth error, re-authorize the repository in CodeScene for the project owner; that failure is separate from `CS_ACCESS_TOKEN`
 
 Please also make sure your contribution includes the right kind of follow-up work:

@@ -414,11 +414,9 @@ PS> ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1
 That flow builds the module, runs ScriptAnalyzer, executes one coverage-enabled Pester run using the same Nova test workflow configuration, and emits CI-friendly reports such as:
 
 - `artifacts/novamoduletools-nunit.xml`
-- `artifacts/pester-junit.xml`
-- `artifacts/pester-coverage.cobertura.xml`
-- `artifacts/coverage-low.txt`
+- `artifacts/coverage.xml`
 
-The `Tests.yml` workflow reuses that Cobertura artifact for the pull-request CodeScene coverage-gate check and for the develop/manual CodeScene upload-and-analysis flow. The CodeScene pull-request gate downloads the uploaded artifact and runs `cs-coverage check`, while the develop/manual CodeScene step uploads coverage through `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1` before it triggers a follow-up analysis run. If coverage upload succeeds but the trigger fails with an OAuth/project-owner error, fix the repository authorization in CodeScene for the project owner. That trigger-side repository authorization is separate from `CS_ACCESS_TOKEN`.
+The `Tests.yml` workflow reuses that JaCoCo artifact for the pull-request CodeScene coverage-gate check and for the develop/manual CodeScene upload-and-analysis flow. The CodeScene pull-request gate downloads the uploaded artifact and runs `cs-coverage check`, while the develop/manual CodeScene step uploads coverage through `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1` before it triggers a follow-up analysis run. If coverage upload succeeds but the trigger fails with an OAuth/project-owner error, fix the repository authorization in CodeScene for the project owner. That trigger-side repository authorization is separate from `CS_ACCESS_TOKEN`.
 
 ### Recommended local quality loop
 
@@ -572,8 +570,8 @@ At a minimum, contributor changes are expected to keep these workflows healthy:
 Repository scripts under `scripts/build/ci/` provide local parity for CI-oriented reporting.
 
 When CodeScene coverage upload is needed, run
-`scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`. That script auto-discovers a single `*.cobertura.xml` file under `artifacts/` unless you pass `-CoveragePath`
-explicitly. The repository `Tests.yml` workflow now also downloads that same Cobertura artifact during pull requests and runs the CodeScene coverage-gate check before merge. If `-TriggerAnalysis` fails after a successful upload, review the CodeScene response body: repository OAuth problems for the project owner must be fixed in CodeScene itself and are not solved by rotating `CS_ACCESS_TOKEN` alone.
+`scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`. That script auto-discovers `artifacts/coverage.xml` unless you pass `-CoveragePath`
+explicitly. The repository `Tests.yml` workflow also downloads that same JaCoCo artifact during pull requests and runs the CodeScene coverage-gate check before merge. If `-TriggerAnalysis` fails after a successful upload, review the CodeScene response body: repository OAuth problems for the project owner must be fixed in CodeScene itself and are not solved by rotating `CS_ACCESS_TOKEN` alone.
 
 ### Build and test automation
 
@@ -586,7 +584,7 @@ The normal repository workflow is:
 
 When you test local publish behavior during development, remember that `Publish-NovaModule -Local` reloads the published module from the local install directory into the current PowerShell session. Re-import `dist/` if your next step depends on the built-but-unpublished output instead.
 
-The CI helper flow also produces JUnit and Cobertura artifacts for external systems, including the coverage file that the CodeScene workflow gate and upload steps consume.
+The CI helper flow also produces a JaCoCo coverage artifact that the CodeScene workflow gate and upload steps consume.
 
 ### Release automation
 
