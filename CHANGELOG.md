@@ -4,7 +4,23 @@ All notable changes to this project will be documented in this file and **UNRELE
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [3.0.0] - 2026-05-17
+
+### Added
+
 - `Initialize-NovaModule` and `% nova init` now offer an optional interactive **Agentic Copilot** starter package for both the minimal and example scaffold flows.
     - The new prompt appears after the Git question, defaults to `No`, and adds one shared Nova-maintained starter tree when enabled.
     - Example scaffolds now merge the existing example README with the Agentic starter README instead of flattening the example guide into the generic starter file.
@@ -30,8 +46,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Added mirrored, dot-source-first Pester test files for every public command (`src/public/*.ps1`), so each command (`Invoke-NovaBuild`, `Test-NovaBuild`, `New-NovaModulePackage`, `Initialize-NovaModule`, `Get-NovaProjectInfo`, `Get-/Set-NovaUpdateNotificationPreference`, `Install-NovaCli`, `Invoke-NovaCli`, `Update-NovaModuleTool`, `Update-NovaModuleVersion`, `Deploy-NovaPackage`, `Publish-NovaModule`, `Invoke-NovaRelease`) now has a focused command-surface test under `tests/public/` covering parameter forwarding, delegation to its workflow context/workflow helpers, and `ShouldProcess` / `-WhatIf` behavior without duplicating private helper coverage.
 - Restored measured code coverage to the configured 99% target after the test-layout migration by adding mirrored, dot-source-first tests and branch coverage extensions across the remaining gap files in `src/private/quality/`, `src/private/package/`, `src/private/release/`, `src/private/scaffold/`, `src/private/build/`, and `src/private/shared/`. The full suite now reports 99% line coverage against `src/**/*.ps1` with no dist-folder dependency in any test file.
 
-
 ### Changed
+
 - Removed the pre-migration broad coverage-bucket suites (`CoverageGaps*`, `CoverageCompletion*`, `Remaining*Coverage*`, broad `NovaCommandModel*`). The mirrored `tests/public/` and `tests/private/<domain>/` suites added in now own that coverage, and the restored 99% measured coverage confirms no regression, so the parked `tests/_legacy/` reference copies are no longer needed.
 - Migrated the remaining mirrored private-helper tests (`tests/private/update/`, `tests/private/quality/`, `tests/private/build/InvokeNovaBuildWorkflow.Tests.ps1`, and `tests/private/scaffold/`) off the legacy `Import-Module dist + InModuleScope` pattern to the dot-source-first model, so the full mirrored test suite runs against `src/**/*.ps1` directly and does not require a prior `Invoke-NovaBuild`.
 - Removed the dist-requiring integration and guardrail tests (`Module`, `OutputFiles`, `BuildOptions`, `CiCoverage`, `CliHelperCoverage`, `CliSharedParser`, `PackageLatestPolicy`, `PreambleBuild`, `UpdateNotification`) and their `*TestSupport.ps1` sidecars now that the mirrored suites cover the same behavior and `nova test` no longer depends on `dist/NovaModuleTools` being built first.
@@ -42,26 +58,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `ProjectTemplate.json` and the packaged example `project.json` now include Nova's default Pester `CodeCoverage` block with `Enabled=false`, shared `src/` coverage paths, JaCoCo output, and a `90` percent target so new projects can opt into coverage without hand-authoring the configuration.
 - `Invoke-NovaModuleToolsCI.ps1` now delegates the full test run to a single `Test-NovaBuild` call; the previous second `Invoke-Pester` pass and post-run Cobertura source-path remapping step have been removed.
 - CodeScene coverage upload now uses JaCoCo format instead of Cobertura and uploads both `line-coverage` and `branch-coverage` metrics in a single CI run; the helper script auto-discovers `artifacts/coverage.xml` instead of scanning for `*.cobertura.xml` files.
-- `Tests.yml` coverage-gate step now matches `**/coverage.xml` instead of `**/pester-coverage.cobertura.xml` to align with the new JaCoCo artifact path. 
-
-
-### Deprecated
-
-
-### Removed
-
+- `Tests.yml` coverage-gate step now matches `**/coverage.xml` instead of `**/pester-coverage.cobertura.xml` to align with the new JaCoCo artifact path.
 
 ### Fixed
+
 - `Test-NovaBuild` and `% nova test` no longer emit `Remove-Item -Recurse` progress bars during the Pester run; `$global:ProgressPreference` is saved and restored around the test execution so CI logs stay clean.
 - Code coverage in `Test-NovaBuild` now runs against the source files, instead of the built `dist/<ModuleName>/<ModuleName>.psm1` file so measured coverage percentages and line numbers align with the deployed module.
 - `Invoke-CodeSceneAnalysis.ps1` now normalizes Pester's JaCoCo output before upload so the `<class sourcefilename>` and `<sourcefile name>` entries are bare filenames and `package + sourcefile` resolves to real repository paths. This fixes the CodeScene `cs-coverage upload` failure "The coverage data does not contains any records related to the current repo" that appeared after the source-mirrored coverage migration.
 - The pull-request CodeScene coverage gate now normalizes downloaded JaCoCo coverage artifacts before running `cs-coverage check`, so PRs no longer report `0.0%` coverage across the board because of unnormalized `package + sourcefile` paths.
 - `Invoke-CodeSceneAnalysis.ps1` now only invokes the `cs-coverage upload … --metric branch-coverage` step when the JaCoCo report actually contains `<counter type="BRANCH">` entries, so Pester reports that only emit line counters no longer fail the CodeScene step with "Requested metric is not present in coverage data".
 - Pester coverage configuration now uses explicit private-folder depth globs instead of `src/private/**/*.ps1`, so nested helpers such as `src/private/build/manifest/` and `src/private/quality/duplicates/` are included in `artifacts/coverage.xml` during the full `Test-NovaBuild` run.
-
-
-### Security
-
 
 ## [2.4.0] - 2026-05-10
 ### Added
@@ -391,8 +397,8 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 - First release to `psgallery`
 - All basic functionality of Module is ready
 
-
-[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/2.4.0...HEAD
+[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/3.0.0...HEAD
+[3.0.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.4.0...3.0.0
 [2.4.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.1...2.4.0
 [2.3.1]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.0...2.3.1
 [2.3.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.2.0...2.3.0
@@ -411,3 +417,4 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
+

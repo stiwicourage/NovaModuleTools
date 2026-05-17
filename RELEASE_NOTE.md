@@ -3,7 +3,23 @@
 This file summarizes the release notes for NovaModuleTools. **UNRELEASED** changes will be included in the next **stable** release!
 
 ## [Unreleased]
+
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [3.0.0] - 2026-05-17
+
+### Added
+
 - `Initialize-NovaModule` and `% nova init` now offer an optional **Agentic Copilot** starter package in both the minimal and example interactive scaffold flows.
     - The starter package follows a filtered mirror of Nova's maintained agentic guidance so newly scaffolded projects receive a broader Nova-style agentic baseline without Nova-specific surfaces.
     - When Git is enabled in either scaffold flow, Nova now creates or updates a default `.gitignore` in the generated project root and only appends the missing Nova-managed artifact entries instead of overwriting existing ignore rules.
@@ -11,20 +27,8 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 - `Test-NovaBuild` and `% nova test` now enforce `Pester.CodeCoverage.CoveragePercentTarget` from `project.json` when `CodeCoverage.Enabled` is `true`, so coverage gates work without extra external tooling.
 
 ### Changed
+
 - New projects now start with Nova's default Pester `CodeCoverage` block in both the minimal template and packaged example `project.json`, with `Enabled=false`, shared `src/` coverage paths, JaCoCo output, and a `90` percent target ready to opt into.
-
-
-### Deprecated
-
-
-### Removed
-
-
-### Fixed
-
-
-### Security
-
 
 ## [2.4.0] - 2026-05-10
 ### Changed
@@ -184,3 +188,4 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ## [0.0.4] - 2024-06-25
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
+
