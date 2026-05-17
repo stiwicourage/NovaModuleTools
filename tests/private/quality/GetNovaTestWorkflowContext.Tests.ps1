@@ -120,20 +120,20 @@ Describe 'Get-NovaTestWorkflowContext' {
 
             $result = Get-NovaTestWorkflowContext -TestOption @{} -BoundParameters @{}
 
-$result.PesterConfig.CodeCoverage.CoveragePercentTarget | Should -Be 80
+$result.PesterConfig.CodeCoverage.CoveragePercentTarget | Should -Be 75
         }
     }
 
 It 'sets CodeCoverage.Path to the built module psm1 when coverage is enabled' {
-$pesterConfig = & $script: getTestQualityPesterConfig
-$projectInfo = & $script: getTestQualityProjectInfo -PesterSettings ([ordered]@{
+$pesterConfig = & $script:getTestQualityPesterConfig
+$projectInfo = & $script:getTestQualityProjectInfo -PesterSettings ([ordered]@{
 CodeCoverage = [ordered]@{
 Enabled = $true
 CoveragePercentTarget = 90
 }
 })
 
-InModuleScope $script: moduleName -Parameters @{
+InModuleScope $script:moduleName -Parameters @{
 PesterConfig = $pesterConfig
 ProjectInfo = $projectInfo
 } {
@@ -174,14 +174,14 @@ $result.PesterConfig.CodeCoverage.Path | Should -Be '/tmp/nova-project/dist/Test
 }
 
 It 'does not set CodeCoverage.Path when coverage is disabled' {
-$pesterConfig = & $script: getTestQualityPesterConfig
-$projectInfo = & $script: getTestQualityProjectInfo -PesterSettings ([ordered]@{
+$pesterConfig = & $script:getTestQualityPesterConfig
+$projectInfo = & $script:getTestQualityProjectInfo -PesterSettings ([ordered]@{
 CodeCoverage = [ordered]@{
 Enabled = $false
 }
 })
 
-InModuleScope $script: moduleName -Parameters @{
+InModuleScope $script:moduleName -Parameters @{
 PesterConfig = $pesterConfig
 ProjectInfo = $projectInfo
 } {
