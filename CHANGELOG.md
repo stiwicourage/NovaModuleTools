@@ -53,6 +53,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 - `Test-NovaBuild` and `% nova test` no longer emit `Remove-Item -Recurse` progress bars during the Pester run; `$global:ProgressPreference` is saved and restored around the test execution so CI logs stay clean.
 - Code coverage in `Test-NovaBuild` now runs against the source files, instead of the built `dist/<ModuleName>/<ModuleName>.psm1` file so measured coverage percentages and line numbers align with the deployed module.
+- `Invoke-CodeSceneAnalysis.ps1` now normalizes Pester's JaCoCo output before upload so the `<class sourcefilename>` and `<sourcefile name>` entries are bare filenames and `package + sourcefile` resolves to real repository paths. This fixes the CodeScene `cs-coverage upload` failure "The coverage data does not contains any records related to the current repo" that appeared after the source-mirrored coverage migration.
 
 
 ### Security

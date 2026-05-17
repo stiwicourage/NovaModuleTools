@@ -103,6 +103,36 @@ function Invoke-CodeSceneAnalysisTrigger {
     }
 }
 
+function Repair-PesterJaCoCoCoveragePath {
+    param([Parameter(Mandatory)][string]$Path)
+
+    [xml]$document = Get-Content -LiteralPath $Path -Raw
+    $changed = $false
+
+    foreach ($class in $document.SelectNodes('//class[@sourcefilename]')) {
+        $original = $class.GetAttribute('sourcefilename')
+        $normalized = [System.IO.Path]::GetFileName($original)
+        if ($normalized -ne $original) {
+            $class.SetAttribute('sourcefilename', $normalized)
+            $changed = $true
+        }
+    }
+
+    foreach ($sourcefile in $document.SelectNodes('//sourcefile[@name]')) {
+        $original = $sourcefile.GetAttribute('name')
+        $normalized = [System.IO.Path]::GetFileName($original)
+        if ($normalized -ne $original) {
+            $sourcefile.SetAttribute('name', $normalized)
+            $changed = $true
+        }
+    }
+
+    if ($changed) {
+        $document.Save($Path)
+        Write-Host "Normalized JaCoCo sourcefile paths in '$Path' so package + sourcefile resolve to repo files."
+    }
+}
+
 $shouldUploadCoverage = Test-CodeSceneCoverageUploadRequested -CoveragePath $CoveragePath -UploadCoverage:$UploadCoverage
 $shouldRunAnalysis = $TriggerAnalysis.IsPresent
 
@@ -117,6 +147,7 @@ $accessToken = Get-RequiredCodeSceneValue -Name 'CS_ACCESS_TOKEN'
 
 if ($shouldUploadCoverage) {
     $resolvedCoveragePath = Resolve-CodeSceneCoveragePath -CoveragePath $CoveragePath
+    Repair-PesterJaCoCoCoveragePath -Path $resolvedCoveragePath
 
     if (-not (Get-Command -Name 'cs-coverage' -ErrorAction SilentlyContinue)) {
         throw "The 'cs-coverage' CLI was not found on PATH. Install the CodeScene coverage upload tool before running this script."

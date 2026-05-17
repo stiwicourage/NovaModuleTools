@@ -162,4 +162,42 @@ Set-Location '$emptyWorkingDir'
         $result.ExitCode | Should -Not -Be 0
         ($result.Output -join [Environment]::NewLine) | Should -Match 'No JaCoCo coverage file was found at'
     }
+
+    It 'normalizes Pester JaCoCo sourcefile paths so package + sourcefile resolves to repo files' {
+        $coverageDir = Join-Path $TestDrive 'pester-jacoco'
+        New-Item -ItemType Directory -Path $coverageDir -Force | Out-Null
+        $coveragePath = Join-Path $coverageDir 'coverage.xml'
+        Set-Content -LiteralPath $coveragePath -Encoding utf8 -Value @'
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<report name="Pester">
+  <package name="src/private/build">
+    <class name="src/private/build/Foo" sourcefilename="private/build/Foo.ps1" />
+    <sourcefile name="private/build/Foo.ps1" />
+  </package>
+</report>
+'@
+
+        $runnerContent = @"
+function cs-coverage {
+    `$global:LASTEXITCODE = 0
+    return
+}
+
+[Environment]::SetEnvironmentVariable('CS_URL', 'https://codescene.example.test')
+[Environment]::SetEnvironmentVariable('CS_PROJECT_ID', '123')
+[Environment]::SetEnvironmentVariable('CS_ACCESS_TOKEN', 'token')
+
+& '$codeSceneAnalysisScriptPath' -CoveragePath '$coveragePath'
+"@
+
+        $result = Invoke-CodeSceneAnalysisTestScript -RunnerContent $runnerContent
+
+        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
+
+        [xml]$rewritten = Get-Content -LiteralPath $coveragePath -Raw
+        $class = $rewritten.SelectSingleNode('//class[@sourcefilename]')
+        $class.GetAttribute('sourcefilename') | Should -Be 'Foo.ps1'
+        $sourcefile = $rewritten.SelectSingleNode('//sourcefile[@name]')
+        $sourcefile.GetAttribute('name') | Should -Be 'Foo.ps1'
+    }
 }
