@@ -70,4 +70,21 @@ function Get-Alpha {
             $_.Exception.Message | Should -Match 'src/private/GetAlphaOverride\.ps1'
         }
     }
+
+    It 'throws a parse-specific error when the built module cannot be parsed' {
+        $projectInfo = New-DuplicateValidationProjectInfo -ProjectRoot $script:projectRoot -ModuleContent @'
+function Get-Alpha {
+'@ -SourceFileMap @{
+            'src/public/GetAlpha.ps1' = 'function Get-Alpha {}'
+        }
+
+        try {
+            Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo $projectInfo
+            throw 'Expected parse validation to fail.'
+        } catch {
+            $_.FullyQualifiedErrorId | Should -Be 'Nova.Configuration.BuiltModuleDuplicateValidationParseFailed'
+            $_.Exception.Message | Should -Match 'contains parse errors'
+            $_.Exception.Message | Should -Match 'NovaModuleTools\.psm1'
+        }
+    }
 }

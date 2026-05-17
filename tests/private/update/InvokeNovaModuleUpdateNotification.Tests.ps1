@@ -50,4 +50,32 @@ Describe 'Invoke-NovaModuleUpdateNotification' {
         {Invoke-NovaModuleUpdateNotification} | Should -Not -Throw
         Assert-MockCalled Write-NovaAvailableModuleUpdateWarning -Times 0
     }
+
+    It 'warns about a newer prerelease when prerelease notifications are enabled and a prerelease update is available' {
+        Mock Read-NovaUpdateNotificationPreference {[pscustomobject]@{PrereleaseNotificationsEnabled = $true}}
+        Mock Get-NovaInstalledModuleVersionInfo {
+            [pscustomobject]@{
+                ModuleName = 'NovaModuleTools'
+                Version = '1.0.0'
+                SemanticVersion = [semver]'1.0.0'
+                IsPrerelease = $false
+            }
+        }
+        Mock Invoke-NovaModuleUpdateLookup {
+            [pscustomobject]@{
+                Stable = [pscustomobject]@{Version = '1.1.0'}
+                Prerelease = [pscustomobject]@{Version = '1.2.0-preview'}
+            }
+        }
+        Mock Get-NovaAvailableSemanticVersion {[semver]'1.1.0'}
+        Mock Test-NovaStableUpdateAvailable {$false}
+        Mock Test-NovaPrereleaseUpdateAvailable {$true}
+        Mock Write-NovaAvailableModuleUpdateWarning {}
+
+        Invoke-NovaModuleUpdateNotification
+
+        Assert-MockCalled Write-NovaAvailableModuleUpdateWarning -Times 1 -Exactly -ParameterFilter {
+            $CurrentVersion -eq '1.0.0' -and $AvailableVersion -eq '1.2.0-preview' -and $Prerelease
+        }
+    }
 }

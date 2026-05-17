@@ -90,6 +90,37 @@ Describe 'Invoke-NovaTestWorkflow' {
         $workflowContext.PesterConfig.TestResult.OutputPath | Should -Be '/tmp/nova-project/artifacts/TestResults.xml'
     }
 
+    It 'falls back to CodeCoverage as the target object when the workflow context has no test result path' {
+        $workflowContext = [pscustomobject]@{
+            ProjectInfo = [pscustomobject]@{
+                Pester = [ordered]@{CodeCoverage = [ordered]@{Enabled = $true; CoveragePercentTarget = 90}}
+            }
+        }
+
+        $assertion = Get-NovaCoverageTargetAssertionScriptBlock -WorkflowContext $workflowContext
+
+        $thrown = $null
+        try {
+            & $assertion -WorkflowContext $workflowContext -TestResult ([pscustomobject]@{Result = 'Passed'})
+        } catch {
+            $thrown = $_
+        }
+
+        $thrown | Should -Not -BeNullOrEmpty
+        $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Workflow.CodeCoveragePercentMissing'
+        $thrown.TargetObject | Should -Be 'CodeCoverage'
+    }
+
+    It 'treats a blank configured coverage target as not configured' {
+        $workflowContext = [pscustomobject]@{
+            ProjectInfo = [pscustomobject]@{
+                Pester = [ordered]@{CodeCoverage = [ordered]@{Enabled = $true; CoveragePercentTarget = ''}}
+            }
+        }
+
+        Get-NovaConfiguredCoveragePercentTarget -WorkflowContext $workflowContext | Should -BeNullOrEmpty
+    }
+
     It 'suppresses global progress output around the Pester run and restores the previous preference' {
         $workflowContext = [pscustomobject]@{
             ProjectInfo = [pscustomobject]@{Pester = [ordered]@{}}

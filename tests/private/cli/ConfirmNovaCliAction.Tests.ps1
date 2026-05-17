@@ -43,6 +43,14 @@ Describe 'Invoke-NovaCliNativeConsoleReadKey' {
         $result = Invoke-NovaCliNativeConsoleReadKey -Reader $reader
         $result.KeyChar | Should -Be 'Q'
     }
+    It 'uses the default reader when one is not provided' {
+        Mock Get-NovaCliNativeConsoleReadKeyReader { { [pscustomobject]@{KeyChar = [char]'R'} } }
+
+        $result = Invoke-NovaCliNativeConsoleReadKey
+
+        $result.KeyChar | Should -Be 'R'
+        Assert-MockCalled Get-NovaCliNativeConsoleReadKeyReader -Times 1 -Exactly
+    }
 }
 
 Describe 'Invoke-NovaCliConsoleReadKey' {
