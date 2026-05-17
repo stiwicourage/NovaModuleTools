@@ -30,5 +30,5 @@ runs:
         CS_ACCESS_TOKEN: ${{ inputs.access-token }}
       run: |
         set -euo pipefail
-        find "$(pwd)" -name '*.cobertura.xml' -print
+        find "$(pwd)" -name 'coverage.xml' -print
         "$(pwd)/cs-coverage" check --verbose --coverage-files "${{ inputs.coverage-files }}"

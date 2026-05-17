@@ -82,15 +82,15 @@ function Invoke-WebRequest {
     }
 
     It 'still uploads coverage when CoveragePath is provided' {
-        $coveragePath = Join-Path $TestDrive 'pester-coverage.cobertura.xml'
+        $coveragePath = Join-Path $TestDrive 'coverage.xml'
         $uploadLogPath = Join-Path $TestDrive 'cs-coverage-upload.txt'
-        Set-Content -LiteralPath $coveragePath -Value '<coverage />' -Encoding utf8
+        Set-Content -LiteralPath $coveragePath -Value '<report />' -Encoding utf8
 
         $runnerContent = @"
 function cs-coverage {
     param([Parameter(ValueFromRemainingArguments = `$true)][string[]]`$ArgumentList)
 
-    Set-Content -LiteralPath '$uploadLogPath' -Value (`$ArgumentList -join ' ') -Encoding utf8
+    Add-Content -LiteralPath '$uploadLogPath' -Value (`$ArgumentList -join ' ') -Encoding utf8
     `$global:LASTEXITCODE = 0
 }
 
@@ -104,21 +104,23 @@ function cs-coverage {
         $result = Invoke-CodeSceneAnalysisTestScript -RunnerContent $runnerContent
 
         $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
-        (Get-Content -LiteralPath $uploadLogPath -Raw) | Should -BeLike "upload --format cobertura --metric line-coverage $coveragePath*"
+        $uploadLog = Get-Content -LiteralPath $uploadLogPath -Raw
+        $uploadLog | Should -BeLike "upload --format jacoco --metric line-coverage $coveragePath*"
+        $uploadLog | Should -Match 'upload --format jacoco --metric branch-coverage'
     }
 
     It 'uploads coverage from the artifacts folder when UploadCoverage is requested without CoveragePath' {
         $artifactsDir = Join-Path $TestDrive 'artifacts'
-        $coveragePath = Join-Path $artifactsDir 'ci-generated.cobertura.xml'
+        $coveragePath = Join-Path $artifactsDir 'coverage.xml'
         $uploadLogPath = Join-Path $TestDrive 'cs-coverage-upload-discovered.txt'
         New-Item -ItemType Directory -Path $artifactsDir -Force | Out-Null
-        Set-Content -LiteralPath $coveragePath -Value '<coverage />' -Encoding utf8
+        Set-Content -LiteralPath $coveragePath -Value '<report />' -Encoding utf8
 
         $runnerContent = @"
 function cs-coverage {
     param([Parameter(ValueFromRemainingArguments = `$true)][string[]]`$ArgumentList)
 
-    Set-Content -LiteralPath '$uploadLogPath' -Value (`$ArgumentList -join ' ') -Encoding utf8
+    Add-Content -LiteralPath '$uploadLogPath' -Value (`$ArgumentList -join ' ') -Encoding utf8
     `$global:LASTEXITCODE = 0
 }
 
@@ -133,10 +135,12 @@ Set-Location '$TestDrive'
         $result = Invoke-CodeSceneAnalysisTestScript -RunnerContent $runnerContent
 
         $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
-        (Get-Content -LiteralPath $uploadLogPath -Raw) | Should -BeLike "upload --format cobertura --metric line-coverage $coveragePath*"
+        $uploadLog = Get-Content -LiteralPath $uploadLogPath -Raw
+        $uploadLog | Should -BeLike "upload --format jacoco --metric line-coverage $coveragePath*"
+        $uploadLog | Should -Match 'upload --format jacoco --metric branch-coverage'
     }
 
-    It 'fails clearly when UploadCoverage is requested but no Cobertura artifact exists' {
+    It 'fails clearly when UploadCoverage is requested but no JaCoCo artifact exists' {
         $emptyWorkingDir = Join-Path $TestDrive 'no-coverage-artifacts'
         New-Item -ItemType Directory -Path $emptyWorkingDir -Force | Out-Null
 
@@ -156,6 +160,6 @@ Set-Location '$emptyWorkingDir'
         $result = Invoke-CodeSceneAnalysisTestScript -RunnerContent $runnerContent
 
         $result.ExitCode | Should -Not -Be 0
-        ($result.Output -join [Environment]::NewLine) | Should -Match 'No Cobertura coverage file was found under'
+        ($result.Output -join [Environment]::NewLine) | Should -Match 'No JaCoCo coverage file was found at'
     }
 }

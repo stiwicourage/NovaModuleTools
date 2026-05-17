@@ -119,7 +119,7 @@ jobs:
         with:
           access-token: ${{ secrets.CS_ACCESS_TOKEN }}
           project-url: ${{ format('{0}/v2/projects/{1}', vars.CS_URL, vars.CS_PROJECT_ID) }}
-          coverage-files: '**/pester-coverage.cobertura.xml'
+          coverage-files: '**/coverage.xml'
 
   codescene-analysis:
     runs-on: ubuntu-latest
