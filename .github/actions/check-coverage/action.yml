@@ -23,6 +23,21 @@ runs:
         unzip -oq "$(pwd)/cs-coverage.zip"
         chmod +x "$(pwd)/cs-coverage"
 
+    - name: Normalize JaCoCo coverage paths
+      shell: bash
+      run: |
+        set -euo pipefail
+        shopt -s globstar nullglob
+        files=( ${{ inputs.coverage-files }} )
+        if [ ${#files[@]} -eq 0 ]; then
+          echo "No coverage files matched '${{ inputs.coverage-files }}' for normalization."
+          exit 0
+        fi
+
+        for file in "${files[@]}"; do
+          pwsh -NoLogo -NoProfile -File ./scripts/build/ci/Repair-CodeSceneJaCoCoCoverage.ps1 -Path "$file"
+        done
+
     - name: Run CodeScene coverage gate check
       shell: bash
       env:

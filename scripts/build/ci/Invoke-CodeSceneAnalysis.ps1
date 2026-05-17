@@ -103,49 +103,6 @@ function Invoke-CodeSceneAnalysisTrigger {
     }
 }
 
-function Repair-PesterJaCoCoCoveragePath {
-    param([Parameter(Mandatory)][string]$Path)
-
-    [xml]$document = Get-Content -LiteralPath $Path -Raw
-    $changed = Repair-CodeSceneJaCoCoNodePathAttribute -Nodes $document.SelectNodes('//class[@sourcefilename]') -AttributeName 'sourcefilename'
-    $changed = (Repair-CodeSceneJaCoCoNodePathAttribute -Nodes $document.SelectNodes('//sourcefile[@name]') -AttributeName 'name') -or $changed
-
-    if ($changed) {
-        $document.Save($Path)
-        Write-Host "Normalized JaCoCo sourcefile paths in '$Path' so package + sourcefile resolve to repo files."
-    }
-}
-
-function Repair-CodeSceneJaCoCoNodePathAttribute {
-    param(
-        [Parameter(Mandatory)]$Nodes,
-        [Parameter(Mandatory)][string]$AttributeName
-    )
-
-    $changed = $false
-    foreach ($node in $Nodes) {
-        $changed = (Repair-CodeSceneJaCoCoNodeFileName -Node $node -AttributeName $AttributeName) -or $changed
-    }
-
-    return $changed
-}
-
-function Repair-CodeSceneJaCoCoNodeFileName {
-    param(
-        [Parameter(Mandatory)]$Node,
-        [Parameter(Mandatory)][string]$AttributeName
-    )
-
-    $original = $Node.GetAttribute($AttributeName)
-    $normalized = [System.IO.Path]::GetFileName($original)
-    if ($normalized -eq $original) {
-        return $false
-    }
-
-    $Node.SetAttribute($AttributeName, $normalized)
-    return $true
-}
-
 function Test-JaCoCoBranchCoverageAvailable {
     param([Parameter(Mandatory)][string]$Path)
 
@@ -167,7 +124,7 @@ $accessToken = Get-RequiredCodeSceneValue -Name 'CS_ACCESS_TOKEN'
 
 if ($shouldUploadCoverage) {
     $resolvedCoveragePath = Resolve-CodeSceneCoveragePath -CoveragePath $CoveragePath
-    Repair-PesterJaCoCoCoveragePath -Path $resolvedCoveragePath
+    & (Join-Path $PSScriptRoot 'Repair-CodeSceneJaCoCoCoverage.ps1') -Path $resolvedCoveragePath
 
     if (-not (Get-Command -Name 'cs-coverage' -ErrorAction SilentlyContinue)) {
         throw "The 'cs-coverage' CLI was not found on PATH. Install the CodeScene coverage upload tool before running this script."
