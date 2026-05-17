@@ -17,7 +17,15 @@ function Invoke-NovaTestWorkflow {
     Initialize-NovaPesterArtifactDirectory -WorkflowContext $WorkflowContext
     $WorkflowContext.PesterConfig.TestResult.OutputPath = $WorkflowContext.TestResultPath
     $coverageTargetAssertion = Get-NovaCoverageTargetAssertionScriptBlock -WorkflowContext $WorkflowContext
-    $testResult = Invoke-NovaPester -Configuration $WorkflowContext.PesterConfig
+
+    $previousProgressPreference = $global:ProgressPreference
+    $global:ProgressPreference = 'SilentlyContinue'
+    try {
+        $testResult = Invoke-NovaPester -Configuration $WorkflowContext.PesterConfig
+    } finally {
+        $global:ProgressPreference = $previousProgressPreference
+    }
+
     & $WorkflowContext.TestResultArtifactWriter.ScriptBlock -TestResult $testResult -OutputPath $WorkflowContext.TestResultPath -ReportWriter $WorkflowContext.TestResultReportWriter.ScriptBlock
 
     if ($testResult.Result -ne 'Passed') {

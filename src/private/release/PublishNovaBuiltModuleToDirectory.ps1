@@ -18,7 +18,10 @@ function Publish-NovaBuiltModuleToDirectory {
 
     $oldModule = Join-Path -Path $ModuleDirectoryPath -ChildPath $ProjectInfo.ProjectName
     if (Test-Path -LiteralPath $oldModule) {
+        $savedProgressPreference = $ProgressPreference
+        $ProgressPreference = 'SilentlyContinue'
         Remove-Item -LiteralPath $oldModule -Recurse -Force
+        $ProgressPreference = $savedProgressPreference
     }
 
     Copy-Item -Path $ProjectInfo.OutputModuleDir -Destination $ModuleDirectoryPath -Recurse -ErrorAction Stop

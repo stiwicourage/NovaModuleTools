@@ -349,7 +349,10 @@ function Invoke-AgenticCopilotScaffoldSync {
         }
 
         if (Test-Path -LiteralPath $TargetRoot) {
+            $savedProgressPreference = $ProgressPreference
+            $ProgressPreference = 'SilentlyContinue'
             Remove-Item -LiteralPath $TargetRoot -Recurse -Force
+            $ProgressPreference = $savedProgressPreference
         }
 
         $targetParent = Split-Path -Parent $TargetRoot
@@ -366,7 +369,10 @@ function Invoke-AgenticCopilotScaffoldSync {
         }
     } finally {
         if (Test-Path -LiteralPath $stagingParent) {
+            $savedProgressPreference = $ProgressPreference
+            $ProgressPreference = 'SilentlyContinue'
             Remove-Item -LiteralPath $stagingParent -Recurse -Force
+            $ProgressPreference = $savedProgressPreference
         }
     }
 }

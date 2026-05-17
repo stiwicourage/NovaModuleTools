@@ -8,6 +8,9 @@ function Clear-NovaPackageOutputDirectory {
 
     Assert-NovaPackageOutputDirectoryCanBeCleared -ProjectInfo $ProjectInfo -OutputDirectory $OutputDirectory
     if (Test-Path -LiteralPath $OutputDirectory) {
+        $savedProgressPreference = $ProgressPreference
+        $ProgressPreference = 'SilentlyContinue'
         Remove-Item -LiteralPath $OutputDirectory -Recurse -Force
+        $ProgressPreference = $savedProgressPreference
     }
 }

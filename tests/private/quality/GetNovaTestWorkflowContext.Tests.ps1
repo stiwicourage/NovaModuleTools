@@ -32,7 +32,8 @@ BeforeAll {
             }
             CodeCoverage = [pscustomobject]@{
                 Enabled = $true
-                CoveragePercentTarget = 75
+                CoveragePercentTarget = 80
+Path = $null
             }
         }
     }
@@ -48,6 +49,7 @@ BeforeAll {
             BuildRecursiveFolders = $false
             TestsDir = 'tests'
             ProjectRoot = '/tmp/nova-project'
+            ModuleFilePSM1 = '/tmp/nova-project/dist/TestProject/TestProject.psm1'
         }
     }
 }
@@ -121,4 +123,101 @@ Describe 'Get-NovaTestWorkflowContext' {
             $result.PesterConfig.CodeCoverage.CoveragePercentTarget | Should -Be 75
         }
     }
+
+It 'sets CodeCoverage.Path to the built module psm1 when coverage is enabled' {
+$pesterConfig = & $script: getTestQualityPesterConfig
+$projectInfo = & $script: getTestQualityProjectInfo -PesterSettings ([ordered]@{
+CodeCoverage = [ordered]@{
+Enabled = $true
+CoveragePercentTarget = 90
+}
+})
+
+InModuleScope $script: moduleName -Parameters @{
+PesterConfig = $pesterConfig
+ProjectInfo = $projectInfo
+} {
+param($PesterConfig, $ProjectInfo)
+
+$writer = [pscustomobject]@{
+ScriptBlock = {
+}
+}
+
+Mock Test-ProjectSchema {
+}
+Mock Get-Module {
+[pscustomobject]@{
+Name = 'Pester'
+}
+} -ParameterFilter {
+$Name -eq 'Pester' -and $ListAvailable
+}
+Mock Get-NovaProjectInfo {
+$ProjectInfo
+}
+Mock New-PesterConfiguration {
+$PesterConfig
+}
+Mock Get-Command {
+$writer
+} -ParameterFilter {
+$CommandType -eq 'Function'
+}
+
+$result = Get-NovaTestWorkflowContext -TestOption @{
+} -BoundParameters @{
+}
+
+$result.PesterConfig.CodeCoverage.Path | Should -Be '/tmp/nova-project/dist/TestProject/TestProject.psm1'
+}
+}
+
+It 'does not set CodeCoverage.Path when coverage is disabled' {
+$pesterConfig = & $script: getTestQualityPesterConfig
+$projectInfo = & $script: getTestQualityProjectInfo -PesterSettings ([ordered]@{
+CodeCoverage = [ordered]@{
+Enabled = $false
+}
+})
+
+InModuleScope $script: moduleName -Parameters @{
+PesterConfig = $pesterConfig
+ProjectInfo = $projectInfo
+} {
+param($PesterConfig, $ProjectInfo)
+
+$writer = [pscustomobject]@{
+ScriptBlock = {
+}
+}
+
+Mock Test-ProjectSchema {
+}
+Mock Get-Module {
+[pscustomobject]@{
+Name = 'Pester'
+}
+} -ParameterFilter {
+$Name -eq 'Pester' -and $ListAvailable
+}
+Mock Get-NovaProjectInfo {
+$ProjectInfo
+}
+Mock New-PesterConfiguration {
+$PesterConfig
+}
+Mock Get-Command {
+$writer
+} -ParameterFilter {
+$CommandType -eq 'Function'
+}
+
+$result = Get-NovaTestWorkflowContext -TestOption @{
+} -BoundParameters @{
+}
+
+$result.PesterConfig.CodeCoverage.Path | Should -BeNullOrEmpty
+}
+}
 }

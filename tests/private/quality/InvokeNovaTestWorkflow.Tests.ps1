@@ -166,4 +166,56 @@ Describe 'Invoke-NovaTestWorkflow' {
             $workflowContext.PesterConfig.TestResult.OutputPath | Should -Be '/tmp/nova-project/artifacts/TestResults.xml'
         }
     }
+
+    It 'suppresses global progress output around the Pester run and restores the previous preference' {
+        $workflowContext = & $script:getTestInvokeNovaTestWorkflowContext -PesterConfig (& $script:getTestInvokeNovaPesterConfig) -ProjectInfo ([pscustomobject]@{
+            Pester = [ordered]@{}
+        })
+
+        $previous = $global:ProgressPreference
+        $global:ProgressPreference = 'Continue'
+        $global:observedProgressPreferenceDuringPester = $null
+        try {
+            InModuleScope $script:moduleName -Parameters @{WorkflowContext = $workflowContext} {
+                param($WorkflowContext)
+
+                Mock Test-Path {$true}
+                Mock Invoke-NovaPester {
+                    $global:observedProgressPreferenceDuringPester = $global:ProgressPreference
+                    [pscustomobject]@{Result = 'Passed'}
+                }
+
+                Invoke-NovaTestWorkflow -WorkflowContext $workflowContext
+            }
+
+            $global:observedProgressPreferenceDuringPester | Should -Be 'SilentlyContinue'
+            $global:ProgressPreference | Should -Be 'Continue'
+        } finally {
+            $global:ProgressPreference = $previous
+            Remove-Variable -Name observedProgressPreferenceDuringPester -Scope Global -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'restores the previous progress preference even when Pester throws' {
+        $workflowContext = & $script:getTestInvokeNovaTestWorkflowContext -PesterConfig (& $script:getTestInvokeNovaPesterConfig) -ProjectInfo ([pscustomobject]@{
+            Pester = [ordered]@{}
+        })
+
+        $previous = $global:ProgressPreference
+        $global:ProgressPreference = 'Continue'
+        try {
+            InModuleScope $script:moduleName -Parameters @{WorkflowContext = $workflowContext} {
+                param($WorkflowContext)
+
+                Mock Test-Path {$true}
+                Mock Invoke-NovaPester {throw 'boom'}
+
+                {Invoke-NovaTestWorkflow -WorkflowContext $workflowContext} | Should -Throw
+            }
+
+            $global:ProgressPreference | Should -Be 'Continue'
+        } finally {
+            $global:ProgressPreference = $previous
+        }
+    }
 }
