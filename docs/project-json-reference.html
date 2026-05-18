@@ -675,10 +675,11 @@
                     </table>
                 </div>
                 <p class="tiny-note">Starter projects now include the full <code>Pester.CodeCoverage</code> block with
-                    <code>Enabled=false</code> and the explicit default source globs shown above, so turning coverage on
-                    usually means changing only that switch. At runtime, <code>Test-NovaBuild</code> also lets you
-                    override verbosity and render mode temporarily with <code>-OutputVerbosity</code> and
-                    <code>-OutputRenderMode</code>.</p>
+                    the explicit default source globs shown above. The minimal scaffold keeps
+                    <code>Enabled=false</code>, while the packaged example scaffold sets <code>Enabled=true</code> so
+                    coverage works against <code>src/**/*.ps1</code> immediately. At runtime,
+                    <code>Test-NovaBuild</code> also lets you override verbosity and render mode temporarily with
+                    <code>-OutputVerbosity</code> and <code>-OutputRenderMode</code>.</p>
                 <p>When you enable coverage, Nova writes JaCoCo output to <code>artifacts/coverage.xml</code> and fails
                     the test workflow if the measured percentage is lower than
                     <code>Pester.CodeCoverage.CoveragePercentTarget</code>.</p>
@@ -698,8 +699,9 @@
   }
 }</code></pre>
                 <p>Use this when you want the smallest hand-authored Nova project. Scaffolded projects start with
-                    additional <code>Pester</code> defaults, including a disabled <code>CodeCoverage</code> block, but
-                    Nova can still resolve its normal defaults when those sections are omitted.</p>
+                    additional <code>Pester</code> defaults; the minimal scaffold keeps <code>CodeCoverage</code>
+                    disabled until you opt in, while the packaged example scaffold enables it by default. Nova can
+                    still resolve its normal defaults when those sections are omitted.</p>
 
                 <h3>Create both NuGet and Zip artifacts, plus latest aliases</h3>
                 <pre><code>{

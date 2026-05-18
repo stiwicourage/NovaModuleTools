@@ -1,5 +1,5 @@
 ---
-applyTo: "src/**/*.ps1,tests/**/*.ps1,scripts/**/*.ps1,run.ps1,reload.ps1"
+applyTo: "src/**/*.ps1,tests/**/*.ps1,scripts/**/*.ps1,reload.ps1"
 ---
 
 # PSScriptAnalyzer workflow rules
@@ -17,7 +17,7 @@ Use this file when changing PowerShell code, tests, build helpers, or analyzer w
 
 1. Use the repository wrappers as the authoritative entrypoints:
     - analyzer only: `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
-    - full local loop: `./run.ps1`
+    - full local loop: the repository quality wrapper, when present
 2. Use raw `Invoke-ScriptAnalyzer` only for focused local investigation or when you are deliberately changing analyzer tooling.
 3. When you call `Invoke-ScriptAnalyzer` directly, point it at real `.ps1`, `.psm1`, or `.psd1` paths, use `-Recurse` when analyzing a directory, and reuse the repository-approved analyzer settings through `-Settings` instead of inventing a new rule selection.
 4. Treat `Error`, `Warning`, and `ParseError` diagnostics as findings to fix before handoff. Parser errors are analyzer diagnostics too and are not something to suppress away.
@@ -27,7 +27,7 @@ Use this file when changing PowerShell code, tests, build helpers, or analyzer w
 
 ## Authoring guidance
 
-- Prefer one focused analyzer run on the changed files while iterating, then rerun `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`, then `./run.ps1` before handoff.
+- Prefer one focused analyzer run on the changed files while iterating, then rerun `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`, then the repository quality loop before handoff when the project defines one.
 - Keep analyzer wrappers focused on source files and helper scripts, not generated output such as `dist/` or `artifacts/`.
 - If the repository has a `PSScriptAnalyzerSettings.psd1` file or a wrapper-owned settings hashtable, treat that configuration as authoritative for direct `Invoke-ScriptAnalyzer` runs.
 - Built-in presets such as `PSGallery` or `CodeFormatting` exist, but do not switch to them unless the repository explicitly adopts them.

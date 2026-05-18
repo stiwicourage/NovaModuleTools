@@ -194,36 +194,36 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                     </div>
                 </div>
                 <p>Nova asks for the project name, description, version, author, minimum PowerShell version, whether
-                    Git should be initialized, and whether Nova should add the optional Agentic Copilot starter package.
-                    The starting version prompt now defaults to <code>0.1.0-preview</code>, so new projects begin on
-                    Nova's prerelease-friendly starter line unless you choose a different version.
-                    Before the first question, Nova also checks whether a newer NovaModuleTools release is available and
-                    warns without blocking the scaffold flow.
-                    When you enable Git, Nova also creates or updates a default <code>.gitignore</code> in the new
-                    project root so common local and CI artifact paths start ignored without overwriting existing ignore
-                    rules.
-                    The Agentic package follows Nova's maintained agentic guidance through a filtered starter mirror,
+                    Git should be initialized, and whether Nova should add the optional <strong>Agentic Copilot</strong> starter package.</p>
+                <p>The starting version prompt now defaults to <code>0.1.0-preview</code>, so new projects begin on
+                    Nova's prerelease-friendly starter line unless you choose a different version. Before the first
+                    question, Nova also checks whether a newer NovaModuleTools release is available and warns without
+                    blocking the scaffold flow. When you enable Git, Nova also creates or updates a default
+                    <code>.gitignore</code> in the new project root so common local and CI artifact paths start ignored
+                    without overwriting existing ignore rules.</p>
+                <p>The Agentic package follows Nova's maintained agentic guidance through a filtered starter mirror,
                     including Nova build/test/package expectations, <code>project.json</code>
                     <code>Manifest.PowerShellHostVersion</code> compatibility guidance, strict ScriptAnalyzer guidance
                     without excluded rules, generated <code>dist</code> module files, command-help ownership,
                     source-mirrored test guidance, instructions to fix ScriptAnalyzer findings reported by
                     <code>run.ps1</code> before handoff, explicit public/private PowerShell file ownership guidance, a
                     best-effort source/helper-script maintainability guidance plus separate test-design guidance
-                    delivered through Agentic Copilot guidance files, explicit PSScriptAnalyzer workflow
+                    delivered through <strong>Agentic Copilot</strong> guidance files, explicit PSScriptAnalyzer workflow
                     guidance for <code>./scripts/build/Invoke-ScriptAnalyzerCI.ps1</code>, <code>./run.ps1</code>, and
                     focused <code>Invoke-ScriptAnalyzer</code> usage, Test-NovaBuild-only project test guidance that
                     forbids direct <code>Invoke-Pester</code>, explicit valid-PlatyPS help guidance for
                     <code>docs/&lt;ProjectName&gt;/en-US/*.md</code> using
                     <code>New-MarkdownCommandHelp</code>, <code>Update-MarkdownCommandHelp</code>, and
                     <code>Test-MarkdownCommandHelp</code>, with a matching help file required for every new public
-                    entry point, and a strict file-ending rule for changed or generated text
-                    files.
-                    Nova then creates a project folder under the path you selected.</p>
+                    entry point, and a strict file-ending rule for changed or generated text files.</p>
+                <p>Nova then creates a project folder under the path you selected.</p>
                 <p>The generated <code>project.json</code> also starts with Nova's standard <code>Pester</code>
-                    defaults, including an opt-in <code>CodeCoverage</code> block with <code>Enabled=false</code>,
-                    explicit source coverage paths for <code>src/public/</code>, nested <code>src/private/</code>
-                    helper folders, and <code>src/classes/</code>, JaCoCo output in <code>artifacts/coverage.xml</code>,
-                    and a <code>90</code> percent target you can enable later.</p>
+                    defaults, including explicit source coverage paths for <code>src/public/</code>, nested
+                    <code>src/private/</code> helper folders, and <code>src/classes/</code>, JaCoCo output in
+                    <code>artifacts/coverage.xml</code>, and a <code>90</code> percent target. The minimal scaffold
+                    keeps that <code>CodeCoverage</code> block opt-in with <code>Enabled=false</code>, while the
+                    packaged example scaffold enables coverage by default so <code>Test-NovaBuild</code> measures
+                    <code>src/**/*.ps1</code> before any build step.</p>
                 <p>If you enable the Agentic package, Nova also asks for a short project name used in generated guidance
                     placeholders such as <code>Invoke-&lt;ShortName&gt;*</code>. For NovaModuleTools the short name is
                     <code>Nova</code>, but it could also have been <code>NMT</code>.</p>

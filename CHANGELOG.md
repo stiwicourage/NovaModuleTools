@@ -15,6 +15,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Website layout and copy now keep expanding with the browser width instead of stopping at fixed max-width caps on wide windows; the shared site stylesheet no longer limits the outer page shell, guide intros, leads, section headings, or guide body text to narrow fixed widths.
+- The command cheat sheet now keeps the "Set up a project" section balanced by summarizing scaffold extras instead of repeating the full internal Agentic guidance list.
+- The getting-started guide now splits the Agentic quickstart explanation into shorter paragraphs so the scaffold flow stays readable on the site.
+- The core workflows guide now splits the scaffold and Agentic starter explanation into shorter paragraphs so the page stays readable on the site.
+- The command cheat sheet now stacks the three "Set up a project" cards vertically so the section reads top-to-bottom without a missing grid slot.
+- The Agentic Copilot starter shipped by `nova init` no longer tells generated projects to use a `run.ps1` quality wrapper that the template does not include.
+    - The scaffold now points generated documentation and agent guidance to the repository quality loop wording plus the existing analyzer and `Test-NovaBuild` entrypoints instead.
+- `nova init --example` now ships the packaged example with source-mirrored tests and `Pester.CodeCoverage.Enabled = true` by default.
+    - The example scaffold now runs `Test-NovaBuild` against `src/**/*.ps1` without requiring a prior build, and the bundled docs describe that source-first coverage flow.
+
 ### Security
 
 ## [3.0.0] - 2026-05-17
@@ -417,4 +427,3 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-

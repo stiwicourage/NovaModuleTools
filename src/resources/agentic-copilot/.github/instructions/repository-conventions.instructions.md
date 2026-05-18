@@ -27,12 +27,12 @@ Canonical rule source for cross-cutting {{ProjectName}} conventions that apply t
 
 Use the smallest validation set that proves the change, then run the repository quality loop before finishing code work:
 
-- local quality loop: `pwsh -NoLogo -NoProfile -File ./run.ps1`
+- local quality loop: use the repository quality wrapper when one exists; otherwise run ScriptAnalyzer, build, and `Test-NovaBuild` in the documented project order
 - test validation: `Test-NovaBuild`
 - analyzer only: `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
 - CI-parity coverage flow: use the repository-specific CI helper when one exists
 
-If `run.ps1` or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports findings, fix them before review, handoff, or commit. Do not treat a failing local quality loop as an acceptable stopping point.
+If the repository quality loop or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports findings, fix them before review, handoff, or commit. Do not treat a failing validation run as an acceptable stopping point.
 
 When project-specific quality tooling is available:
 

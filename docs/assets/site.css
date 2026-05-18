@@ -11,7 +11,7 @@
     --outline: rgba(255, 255, 255, 0.12);
     --shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
     --radius: 22px;
-    --max-width: 1600px;
+    --max-width: none;
     --anchor-offset: 2.90rem;
 }
 
@@ -254,7 +254,7 @@ pre code {
 
 .guide-hero {
     margin-bottom: 3rem;
-    max-width: 880px;
+    max-width: none;
 }
 
 
@@ -331,7 +331,7 @@ pre code {
 .guide-content .content-section > p,
 .guide-content .content-section > ul,
 .guide-content .content-section > ol {
-    max-width: 72ch;
+    max-width: none;
 }
 
 .guide-grid {
@@ -380,7 +380,7 @@ h3 {
 
 h1 {
     font-size: clamp(2.6rem, 5vw, 4.6rem);
-    max-width: 12ch;
+    max-width: none;
 }
 
 h2 {
@@ -398,7 +398,7 @@ p {
 
 .lead {
     font-size: 1.1rem;
-    max-width: 68ch;
+    max-width: none;
 }
 
 .hero__actions {
@@ -517,11 +517,11 @@ p {
 }
 
 .narrow {
-    max-width: 760px;
+    max-width: none;
 }
 
 .section-heading {
-    max-width: 760px;
+    max-width: none;
     margin-bottom: 2.5rem;
 }
 
@@ -770,6 +770,10 @@ td {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem;
+}
+
+.command-card-grid--stacked {
+    grid-template-columns: 1fr;
 }
 
 .command-card h3 {

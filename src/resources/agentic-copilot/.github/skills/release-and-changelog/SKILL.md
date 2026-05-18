@@ -48,4 +48,4 @@ Use this skill when working on semantic versioning, release automation, package 
 
 - Review `CHANGELOG.md`, `RELEASE_NOTE.md`, workflow docs, and affected tests together
 - Run targeted versioning/package tests when behavior changed
-- Run full regression tests for code changes
+- Run the repository quality loop when one exists for code changes

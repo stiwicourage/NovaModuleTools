@@ -5,7 +5,14 @@ BeforeAll {
     function Read-ProjectJsonData {param($ProjectJsonPath) @{
         ProjectName='X'; Description='X desc'; Version='0.0.1'
         Manifest = @{Author='?'; PowerShellHostVersion='5.1'; GUID='00000000-0000-0000-0000-000000000000'}
-        Pester = @{Enabled=$true}
+        Pester = @{
+            Enabled = $true
+            CodeCoverage = @{
+                Enabled = $true
+                Path = @('src/public/*.ps1')
+                CoveragePercentTarget = 90
+            }
+        }
     }}
     function Write-ProjectJsonData {param($ProjectJsonPath,$Data) $script:writtenPath=$ProjectJsonPath; $script:writtenData=$Data}
 }
@@ -39,5 +46,6 @@ Describe 'Write-NovaModuleProjectJson' {
         Write-NovaModuleProjectJson -Answer $answer -ProjectJsonFile '/out/project.json' -Example
         $script:writtenData.Manifest.GUID | Should -Be '00000000-0000-0000-0000-000000000000'
         $script:writtenData.ContainsKey('Pester') | Should -BeTrue
+        $script:writtenData.Pester.CodeCoverage.Enabled | Should -BeTrue
     }
 }

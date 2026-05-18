@@ -101,4 +101,4 @@ A non-blocking mirror status helper is available at `scripts/build/Get-TestMirro
 
 - `Test-NovaBuild`
 - `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` when PowerShell code changed
-
+- the repository quality loop before completion

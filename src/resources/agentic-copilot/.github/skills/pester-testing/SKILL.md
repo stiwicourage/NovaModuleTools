@@ -14,7 +14,7 @@ Use this skill when adding tests, closing coverage gaps, fixing regressions, or 
 - `tests/*.Tests.ps1`
 - `tests/*TestSupport.ps1`
 - `Test-NovaBuild`
-
+- the repository quality loop, when present
 - `./scripts/build/ci/Invoke-{{ProjectName}}CI.ps1 -OutputDirectory ./artifacts`
 
 ## Expected practices
@@ -60,5 +60,5 @@ Describe 'Initialize-NovaPesterCoverageConfiguration' {
 ## Verification
 
 - Run `Test-NovaBuild`
-- Run full regression tests before finishing code changes
+- Run the repository quality loop when one exists before finishing code changes
 - If coverage is the goal, inspect `artifacts/coverage.xml` produced by the CI helper flow. Coverage is JaCoCo and references source files under `src/**/*.ps1` directly.
