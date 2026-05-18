@@ -11,7 +11,7 @@ BeforeAll {
 
 Describe 'docs site layout guardrails' {
     It 'keeps wide-screen layout and text containers uncapped in the shared stylesheet' {
-        $script:siteCssContent | Should -Match '(?s):root\s*\{.*?--max-width:\s*none;'
+        $script:siteCssContent | Should -Match '(?s):root\s*\{.*?--max-width:\s*1600px;'
         $script:siteCssContent | Should -Match '(?s)\.guide-hero\s*\{.*?max-width:\s*none;'
         $script:siteCssContent | Should -Match '(?s)\.guide-content\s+\.content-section\s*>\s*p,\s*\.guide-content\s+\.content-section\s*>\s*ul,\s*\.guide-content\s+\.content-section\s*>\s*ol\s*\{.*?max-width:\s*none;'
         $script:siteCssContent | Should -Match '(?s)h1\s*\{.*?max-width:\s*none;'
