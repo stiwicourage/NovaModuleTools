@@ -147,9 +147,11 @@ PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
                     <code>Test-MarkdownCommandHelp</code>, with a matching help file required for every new public
                     entry point, and a strict file-ending rule for changed or generated text files.</p>
                 <p>The generated <code>project.json</code> also starts with Nova's standard <code>Pester</code>
-                    defaults, including a disabled <code>CodeCoverage</code> block with explicit source coverage paths
-                    for <code>src/public/</code>, nested <code>src/private/</code> helper folders, and
-                    <code>src/classes/</code>, so you can enable coverage later without hand-authoring the structure.</p>
+                    defaults, including explicit source coverage paths for <code>src/public/</code>, nested
+                    <code>src/private/</code> helper folders, and <code>src/classes/</code>. The minimal scaffold keeps
+                    <code>CodeCoverage</code> disabled until you opt in, while the packaged example scaffold enables it
+                    by default so <code>Test-NovaBuild</code> can measure <code>src/**/*.ps1</code> without requiring a
+                    prior build.</p>
                 <p>When you answer <code>Yes</code>, Nova also asks for a short project name used in generated guidance
                     placeholders such as <code>Invoke-&lt;ShortName&gt;*</code>. For NovaModuleTools the short name is
                     <code>Nova</code>, but it could also have been <code>NMT</code>.</p>

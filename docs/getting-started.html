@@ -218,10 +218,12 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                     entry point, and a strict file-ending rule for changed or generated text files.</p>
                 <p>Nova then creates a project folder under the path you selected.</p>
                 <p>The generated <code>project.json</code> also starts with Nova's standard <code>Pester</code>
-                    defaults, including an opt-in <code>CodeCoverage</code> block with <code>Enabled=false</code>,
-                    explicit source coverage paths for <code>src/public/</code>, nested <code>src/private/</code>
-                    helper folders, and <code>src/classes/</code>, JaCoCo output in <code>artifacts/coverage.xml</code>,
-                    and a <code>90</code> percent target you can enable later.</p>
+                    defaults, including explicit source coverage paths for <code>src/public/</code>, nested
+                    <code>src/private/</code> helper folders, and <code>src/classes/</code>, JaCoCo output in
+                    <code>artifacts/coverage.xml</code>, and a <code>90</code> percent target. The minimal scaffold
+                    keeps that <code>CodeCoverage</code> block opt-in with <code>Enabled=false</code>, while the
+                    packaged example scaffold enables coverage by default so <code>Test-NovaBuild</code> measures
+                    <code>src/**/*.ps1</code> before any build step.</p>
                 <p>If you enable the Agentic package, Nova also asks for a short project name used in generated guidance
                     placeholders such as <code>Invoke-&lt;ShortName&gt;*</code>. For NovaModuleTools the short name is
                     <code>Nova</code>, but it could also have been <code>NMT</code>.</p>

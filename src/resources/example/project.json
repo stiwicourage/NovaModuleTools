@@ -83,7 +83,7 @@
   },
   "Pester": {
     "CodeCoverage": {
-      "Enabled": false,
+      "Enabled": true,
       "Path": [
         "src/public/*.ps1",
         "src/private/*.ps1",

@@ -179,8 +179,9 @@ PS&gt; Install-NovaCli -DestinationDirectory ~/bin -Force</code></pre>
                             <li><strong>Use when:</strong> you are creating a fresh NovaModuleTools project</li>
                             <li><strong>Includes:</strong> a pre-question Nova release warning, best-effort
                                 <code>.gitignore</code> creation or update when Git is enabled, and Nova's default
-                                <code>Pester.CodeCoverage</code> block in <code>project.json</code> with coverage still
-                                disabled until you choose to turn it on</li>
+                                <code>Pester.CodeCoverage</code> block in <code>project.json</code>; the minimal
+                                scaffold keeps coverage opt-in, while the packaged example scaffold starts with coverage
+                                enabled against <code>src/**/*.ps1</code></li>
                             <li><strong>Optional:</strong> add the <strong>Agentic Copilot</strong> starter package for Nova-maintained
                                 build, test, analyzer, help, and guidance files; if you enable it, Nova also asks for a
                                 short project name for placeholders such as <code>Invoke-&lt;ShortName&gt;*</code></li>
