@@ -20,9 +20,9 @@ Implement the issue in the {{ProjectName}} repository using the repository-local
 6. Inspect `project.json` `Manifest.PowerShellHostVersion` before changing PowerShell code, tests, or examples, and keep the implementation compatible with that target.
 7. Implement the smallest maintainable fix.
 8. Use `.github/instructions/code-quality-matrix.instructions.md` for changed source/helper scripts and `.github/instructions/testing-policy.instructions.md` for changed tests; keep new or heavily changed code short, single-purpose, low-duplication, and easy to scan unless the scope explicitly justifies otherwise.
-9. Follow `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth. Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1`, and use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repository-approved settings.
+9. Follow `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth. Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and the repository quality loop, when present, and use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repository-approved settings.
 10. Do not add PSScriptAnalyzer excluded rules, suppressions, or ad hoc analyzer settings that hide findings; fix analyzer findings in the code.
-11. If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before handoff instead of only reporting the failure.
+11. If the repository quality loop or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before handoff instead of only reporting the failure.
 12. Keep file/function ownership explicit: one externally called function per file, with private-file extras limited to related same-file top-level support helpers, keep the file name aligned to the entry function, and do not declare functions inside functions.
 13. Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the bottom.
 14. Add or update the matching source-mirrored Pester file for every changed `src/**/*.ps1` file; if the behavior is genuinely cross-cutting, document which integration/guardrail test owns it and why a mirrored unit test is not practical.

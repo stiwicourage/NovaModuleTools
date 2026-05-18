@@ -255,6 +255,18 @@
             New = 'applyTo: "tests/**/*.ps1,scripts/build/**/*.ps1"'
         }
         @{
+            Old = 'applyTo: "src/**/*.ps1,tests/**/*.ps1,scripts/**/*.ps1,run.ps1,reload.ps1"'
+            New = 'applyTo: "src/**/*.ps1,tests/**/*.ps1,scripts/**/*.ps1,reload.ps1"'
+        }
+        @{
+            Old = 'applyTo: "src/**/*.ps1,scripts/**/*.ps1,run.ps1,reload.ps1"'
+            New = 'applyTo: "src/**/*.ps1,scripts/**/*.ps1,reload.ps1"'
+        }
+        @{
+            Old = '- Use these rules when writing or reviewing `src/**/*.ps1`, `scripts/**/*.ps1`, `run.ps1`, and `reload.ps1`.'
+            New = '- Use these rules when writing or reviewing `src/**/*.ps1`, `scripts/**/*.ps1`, and `reload.ps1`.'
+        }
+        @{
             Old = 'quality tooling tooling'
             New = 'quality tooling'
         }
@@ -268,7 +280,55 @@
         }
         @{
             Old = '- Run `./run.ps1`'
-            New = '- Run full regression tests'
+            New = '- Run the repository quality loop when one exists'
+        }
+        @{
+            Old = '- local quality loop: `pwsh -NoLogo -NoProfile -File ./run.ps1`'
+            New = '- local quality loop: use the repository quality wrapper when one exists; otherwise run ScriptAnalyzer, build, and `Test-NovaBuild` in the documented project order'
+        }
+        @{
+            Old = 'If `run.ps1` or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports findings, fix them before review, handoff, or commit. Do not treat a failing local quality loop as an acceptable stopping point.'
+            New = 'If the repository quality loop or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports findings, fix them before review, handoff, or commit. Do not treat a failing validation run as an acceptable stopping point.'
+        }
+        @{
+            Old = '    - full local loop: `./run.ps1`'
+            New = '    - full local loop: the repository quality wrapper, when present'
+        }
+        @{
+            Old = '- Prefer one focused analyzer run on the changed files while iterating, then rerun `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`, then `./run.ps1` before handoff.'
+            New = '- Prefer one focused analyzer run on the changed files while iterating, then rerun `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`, then the repository quality loop before handoff when the project defines one.'
+        }
+        @{
+            Old = 'Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1`'
+            New = 'Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and the repository quality loop, when present'
+        }
+        @{
+            Old = 'Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and the repository quality loop, when present for normal analyzer loops; use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repository-approved settings.'
+            New = 'Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and the repository quality loop, when present, for normal analyzer loops; use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repository-approved settings.'
+        }
+        @{
+            Old = 'If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings'
+            New = 'If the repository quality loop or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings'
+        }
+        @{
+            Old = 'reported by `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1`'
+            New = 'reported by the repository quality loop or `Invoke-ScriptAnalyzerCI.ps1`'
+        }
+        @{
+            Old = 'from `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1`'
+            New = 'from the repository quality loop or `Invoke-ScriptAnalyzerCI.ps1`'
+        }
+        @{
+            Old = '`run.ps1`-style local checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.'
+            New = 'local quality checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild` when the project defines a combined wrapper.'
+        }
+        @{
+            Old = 'Resolve any ScriptAnalyzer findings that `./run.ps1` reports before handoff.'
+            New = 'Resolve any ScriptAnalyzer findings reported by the repository quality loop before handoff.'
+        }
+        @{
+            Old = '4. After meaningful steps, run `./run.ps1` (analyzer → build → `Test-NovaBuild`).'
+            New = '4. After meaningful steps, run the repository quality loop when present (typically analyzer → build → `Test-NovaBuild`).'
         }
         @{
             Old = 'or GitHub release automation.'
@@ -316,11 +376,11 @@
         }
         @{
             Old = '- `pwsh -NoLogo -NoProfile -File ./run.ps1` before completion'
-            New = ''
+            New = '- the repository quality loop before completion'
         }
         @{
             Old = '- `pwsh -NoLogo -NoProfile -File ./run.ps1`'
-            New = ''
+            New = '- the repository quality loop, when present'
         }
         @{
             Old = '- `./scripts/build/ci/Invoke-{{ProjectName}}CI.ps1 -OutputDirectory ./artifacts`'
@@ -360,7 +420,7 @@
         }
         @{
             Old = '- a `code_health_review`, reviewer, or `./run.ps1` run flags maintainability problems'
-            New = '- a reviewer or `./run.ps1` run flags maintainability problems'
+            New = '- a reviewer or the repository quality loop flags maintainability problems'
         }
         @{
             Old = '- measuring or driving a single file''s score across steps — use `guiding-refactoring-with-code-health` for that'

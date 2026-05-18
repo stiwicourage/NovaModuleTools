@@ -11,7 +11,7 @@ Use this skill when:
 
 - adding a new public command or private helper to {{ProjectName}}
 - refactoring a function, file, or domain folder that has grown over time
-- a reviewer or `./run.ps1` run flags maintainability problems
+- a reviewer or the repository quality loop flags maintainability problems
 - you want a concrete, PowerShell-aware playbook for the guidelines
 
 Do not use this skill for:
@@ -26,7 +26,7 @@ The companion instruction file is `.github/instructions/code-quality-matrix.inst
 
 - `src/public/*.ps1` and `src/private/<domain>/*.ps1`
 - `tests/*Architecture*.Tests.ps1`
-
+- the repository quality loop, when present
 - `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
 - `Test-NovaBuild`
 
@@ -67,7 +67,7 @@ Follow these steps for any non-trivial PowerShell change.
 1. Read the changed function and surrounding file. Note where it sits in `src/public/`, `src/private/<domain>/`, or `scripts/`.
 2. For each new or heavily changed function, walk the checklist below in order.
 3. If a step requires a refactor, make it the smallest structural step that fixes the specific finding. Do not bundle unrelated cleanup.
-4. After meaningful steps, run `./run.ps1` (analyzer → build → `Test-NovaBuild`).
+4. After meaningful steps, run the repository quality loop when present (typically analyzer → build → `Test-NovaBuild`).
 5. Before handoff, normalize every changed text file to exactly one trailing newline.
 
 ### Step 1 — Short units (≤ 15 lines)
@@ -227,6 +227,7 @@ Run this short pass before handoff on every changed source file:
 
 ## Verification
 
+- the repository quality loop, when present
 - `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` when iterating quickly on PowerShell changes
 - `Test-NovaBuild` for behavior validation
 

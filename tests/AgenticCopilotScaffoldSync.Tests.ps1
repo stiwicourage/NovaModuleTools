@@ -208,11 +208,19 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.TestingPolicy | Should -Match 'Invoke-ScriptAnalyzerCI\.ps1'
         $content.ReviewerAgent | Should -Match 'psscriptanalyzer\.instructions\.md'
         $content.ReviewerAgent | Should -Match 'bypasses repository-approved settings'
-        $content.ImplementPrompt | Should -Match 'Prefer `\./scripts/build/Invoke-ScriptAnalyzerCI\.ps1` and `\./run\.ps1`'
+        $content.ImplementPrompt | Should -Match 'Prefer `\./scripts/build/Invoke-ScriptAnalyzerCI\.ps1` and the repository quality loop, when present'
         $content.ReviewPrompt | Should -Match 'psscriptanalyzer\.instructions\.md'
 
         $content.Contributing | Should -Match 'psscriptanalyzer\.instructions\.md'
         $content.Readme | Should -Match 'psscriptanalyzer\.instructions\.md'
+    }
+
+    It 'removes run.ps1 references from generated starter guidance' {
+        $content = & $script:getAgenticScaffoldGuidanceContent
+
+        foreach ($value in $content.PSObject.Properties.Value) {
+            $value | Should -Not -Match 'run\.ps1'
+        }
     }
 
     It 'documents agent and starter expectations consistently' {
@@ -236,7 +244,7 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.Contributing | Should -Match 'make every changed or generated text file end immediately after exactly one newline terminator with no blank spacer line at the bottom'
 
         $content.Readme | Should -Match 'ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`'
-        $content.Readme | Should -Match 'If `run\.ps1` or `Invoke-ScriptAnalyzerCI\.ps1` reports ScriptAnalyzer findings, fix them before review or handoff'
+        $content.Readme | Should -Match 'If the repository quality loop or `Invoke-ScriptAnalyzerCI\.ps1` reports ScriptAnalyzer findings, fix them before review or handoff'
         $content.Readme | Should -Match 'Keep one externally called function per file and match the file name to that function'
         $content.Readme | Should -Match 'must not declare nested functions inside their bodies'
         $content.Readme | Should -Match 'Test-TextFileFormatting\.ps1'

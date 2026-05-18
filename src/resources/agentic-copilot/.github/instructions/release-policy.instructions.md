@@ -47,5 +47,5 @@ Use this file when changing versioning, changelog handling, package metadata, pu
 ## Verification
 
 - Validate the touched release or versioning path with targeted tests.
-- Run full regression tests after code changes.
+- Run the repository quality loop when one exists after code changes.
 - Re-read `.github/pull_request_template.md` before preparing release-related summaries.

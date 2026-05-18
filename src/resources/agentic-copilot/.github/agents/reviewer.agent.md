@@ -29,7 +29,7 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 - Flag broad catch-all test files when focused source-mirrored tests would make ownership clearer.
 - Flag Nova-managed validation that bypasses `Test-NovaBuild` with direct `Invoke-Pester`.
 - Flag any PSScriptAnalyzer rule excludes or suppressions; the code should be fixed instead.
-- Flag unresolved ScriptAnalyzer findings from `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1`; they should be fixed instead of deferred.
+- Flag unresolved ScriptAnalyzer findings from the repository quality loop or `Invoke-ScriptAnalyzerCI.ps1`; they should be fixed instead of deferred.
 - Flag every changed or generated text file if they do not exactly have one trailing newline with no extra blank lines at the bottom.
 
 ## Inputs to inspect

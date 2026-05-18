@@ -1,5 +1,5 @@
 ---
-applyTo: "src/**/*.ps1,tests/**/*.ps1,scripts/**/*.ps1,run.ps1,reload.ps1"
+applyTo: "src/**/*.ps1,tests/**/*.ps1,scripts/**/*.ps1,reload.ps1"
 ---
 
 # {{ProjectName}} PowerShell coding standards
@@ -39,7 +39,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - When public command help changes, follow `.github/instructions/platyps-help.instructions.md` and use `New-MarkdownCommandHelp`, `Update-MarkdownCommandHelp`, and `Test-MarkdownCommandHelp` instead of hand-authoring the help structure.
 - Do not add PSScriptAnalyzer `ExcludeRule`, `ExcludeRules`, suppression attributes, or generated settings that hide analyzer findings. Fix the rule violation instead.
 - Keep local quality wrappers ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
-- If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before treating the change as complete.
+- If the repository quality loop or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before treating the change as complete.
 
 ## Formatting rules
 
@@ -93,6 +93,6 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 
 - Update or add Pester coverage for behavior changes.
 - Recheck `tests/*Architecture*.Tests.ps1` when changing layering or helper placement.
-- Run full regression tests before considering a code change complete.
-- Resolve any ScriptAnalyzer findings that `./run.ps1` reports before handoff.
+- Run the repository quality loop when one exists before considering a code change complete.
+- Resolve any ScriptAnalyzer findings reported by the repository quality loop before handoff.
 - Before handoff, review the changed/generated text files and normalize any file endings that violate the single-trailing-newline rule.

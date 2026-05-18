@@ -1,5 +1,5 @@
 ---
-applyTo: "src/**/*.ps1,scripts/**/*.ps1,run.ps1,reload.ps1"
+applyTo: "src/**/*.ps1,scripts/**/*.ps1,reload.ps1"
 ---
 
 # Code quality matrix
@@ -14,7 +14,7 @@ This file tells Agentic Copilot how to shape source code from the start. Test-sp
 
 ## How to apply this guidance
 
-- Use these rules when writing or reviewing `src/**/*.ps1`, `scripts/**/*.ps1`, `run.ps1`, and `reload.ps1`.
+- Use these rules when writing or reviewing `src/**/*.ps1`, `scripts/**/*.ps1`, and `reload.ps1`.
 - Prefer these patterns in new or heavily changed code instead of leaving cleanup for later.
 - Treat the thresholds as default goals, not as opinions. Use them to decide whether a function or file should be split.
 - If a change must violate one of these rules, keep the exception narrow and explain the trade-off clearly in the handoff.

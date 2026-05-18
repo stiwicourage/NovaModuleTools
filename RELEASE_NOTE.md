@@ -14,6 +14,8 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Fixed
 
+- The Agentic Copilot starter shipped by `nova init` no longer tells generated projects to use a `run.ps1` quality wrapper that the template does not include.
+
 ### Security
 
 ## [3.0.0] - 2026-05-17
@@ -188,4 +190,3 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ## [0.0.4] - 2024-06-25
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
-
