@@ -500,6 +500,8 @@ p {
     background: rgba(255, 255, 255, 0.03);
     border-top: 1px solid rgba(255, 255, 255, 0.04);
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    max-width: var(--max-width);
+    margin-inline: auto;
 }
 
 .section--accent {
