@@ -160,4 +160,60 @@ Describe 'Initialize-NovaModuleAgenticCopilotScaffold' {
         ConvertTo-NovaModuleAgenticCopilotNormalizedFileContent -Content "line1`nline2" | Should -Be "line1`nline2`n"
         ConvertTo-NovaModuleAgenticCopilotNormalizedFileContent -Content "line1`r`nline2`r`n`r`n" | Should -Be "line1`r`nline2`r`n"
     }
+
+    It 'matches directory policy entries as case-insensitive prefixes' {
+        Test-NovaModuleAgenticCopilotPathMatchesPolicyEntry -RelativePath 'tests/private/My.Tests.ps1' -Entry 'tests/' | Should -BeTrue
+        Test-NovaModuleAgenticCopilotPathMatchesPolicyEntry -RelativePath 'Tests/private/My.Tests.ps1' -Entry 'tests/' | Should -BeTrue
+        Test-NovaModuleAgenticCopilotPathMatchesPolicyEntry -RelativePath 'docs/README.md' -Entry 'tests/' | Should -BeFalse
+    }
+
+    It 'overwrites managed files and preserves add-only files when a scaffold policy is supplied' {
+        $templateRoot = Join-Path $TestDrive 'policy-template'
+        $projectRoot = Join-Path $TestDrive 'policy-project'
+        $managedTemplatePath = Join-Path $templateRoot 'CONTRIBUTING.md'
+        $addOnlyTemplatePath = Join-Path $templateRoot 'README.md'
+        $managedDestinationPath = Join-Path $projectRoot 'CONTRIBUTING.md'
+        $addOnlyDestinationPath = Join-Path $projectRoot 'README.md'
+        $null = New-Item -ItemType Directory -Path $templateRoot -Force
+        $null = New-Item -ItemType Directory -Path $projectRoot -Force
+        Set-Content -LiteralPath $managedTemplatePath -Value 'managed-template' -Encoding utf8 -NoNewline
+        Set-Content -LiteralPath $addOnlyTemplatePath -Value 'add-only-template' -Encoding utf8 -NoNewline
+        Set-Content -LiteralPath $managedDestinationPath -Value 'managed-existing' -Encoding utf8 -NoNewline
+        Set-Content -LiteralPath $addOnlyDestinationPath -Value 'add-only-existing' -Encoding utf8 -NoNewline
+        Mock Get-NovaModuleAgenticCopilotTemplateRoot {$templateRoot}
+
+        Initialize-NovaModuleAgenticCopilotScaffold -Answer @{
+            ProjectName = 'NovaAgentic'
+            ProjectShortName = 'NMT'
+            Description = 'Agentic scaffold'
+            EnablePester = 'No'
+        } -ProjectRoot $projectRoot -ScaffoldPolicy ([pscustomobject]@{
+            ManagedOverwritePathList = @('CONTRIBUTING.md')
+            AddOnlyPathList = @('README.md')
+        })
+
+        (Get-Content -LiteralPath $managedDestinationPath -Raw) | Should -Be "managed-template`n"
+        (Get-Content -LiteralPath $addOnlyDestinationPath -Raw) | Should -Be 'add-only-existing'
+    }
+
+    It 'skips template files outside the supplied scaffold policy' {
+        $templateRoot = Join-Path $TestDrive 'skip-template'
+        $projectRoot = Join-Path $TestDrive 'skip-project'
+        $ignoredTemplatePath = Join-Path $templateRoot 'ignored.md'
+        $null = New-Item -ItemType Directory -Path $templateRoot -Force
+        Set-Content -LiteralPath $ignoredTemplatePath -Value 'ignored-template' -Encoding utf8 -NoNewline
+        Mock Get-NovaModuleAgenticCopilotTemplateRoot {$templateRoot}
+
+        Initialize-NovaModuleAgenticCopilotScaffold -Answer @{
+            ProjectName = 'NovaAgentic'
+            ProjectShortName = 'NMT'
+            Description = 'Agentic scaffold'
+            EnablePester = 'No'
+        } -ProjectRoot $projectRoot -ScaffoldPolicy ([pscustomobject]@{
+            ManagedOverwritePathList = @('CONTRIBUTING.md')
+            AddOnlyPathList = @('README.md')
+        })
+
+        (Test-Path -LiteralPath (Join-Path $projectRoot 'ignored.md')) | Should -BeFalse
+    }
 }

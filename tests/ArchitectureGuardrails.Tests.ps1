@@ -88,6 +88,7 @@ Describe 'Architecture guardrails' {
             [pscustomobject]@{Path = 'src/public/InitializeNovaModule.ps1'; ExpectedHelpers = @('Get-NovaModuleInitializationWorkflowContext', 'Invoke-NovaModuleInitializationWorkflow')}
             [pscustomobject]@{Path = 'src/public/InstallNovaCli.ps1'; ExpectedHelpers = @('Get-NovaCliInstallWorkflowContext', 'Invoke-NovaCliInstallWorkflow', 'Write-NovaModuleReleaseNotesLink')}
             [pscustomobject]@{Path = 'src/public/InvokeNovaBuild.ps1'; ExpectedHelpers = @('Get-NovaBuildWorkflowContext', 'Invoke-NovaBuildWorkflow')}
+            [pscustomobject]@{Path = 'src/public/InvokeNovaAgenticCopilotScaffold.ps1'; ExpectedHelpers = @('Get-NovaAgenticCopilotScaffoldWorkflowContext', 'Invoke-NovaAgenticCopilotScaffoldWorkflow')}
             [pscustomobject]@{Path = 'src/public/InvokeNovaCli.ps1'; ExpectedHelpers = @('Get-NovaCliInvocationContext', 'Invoke-NovaCliCommandRoute')}
             [pscustomobject]@{Path = 'src/public/InvokeNovaRelease.ps1'; ExpectedHelpers = @('Get-NovaDynamicReleaseParameterDictionary', 'Get-NovaProjectInfo', 'Get-NovaPublishWorkflowContext', 'Get-NovaReleasePublishOption', 'Get-NovaReleaseRequest', 'Get-NovaReleaseRequestedPath', 'Get-NovaShouldProcessForwardingParameter', 'Invoke-NovaReleaseWorkflow', 'Write-NovaPublishWorkflowContext')}
             [pscustomobject]@{Path = 'src/public/NewNovaModulePackage.ps1'; ExpectedHelpers = @('Get-NovaPackageWorkflowContext', 'Get-NovaShouldProcessForwardingParameter', 'Invoke-NovaPackageWorkflow')}

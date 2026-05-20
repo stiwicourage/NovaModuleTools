@@ -1,7 +1,7 @@
 ---
 document type: cmdlet
 external help file: NovaModuleTools-Help.xml
-HelpUri: ''
+HelpUri: 'https://www.novamoduletools.com/project-json-reference.html'
 Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 05/06/2026

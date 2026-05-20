@@ -6,6 +6,7 @@ start a new module project
    init       Create a new Nova module scaffold
 
 work with the current project
+   copilot    Apply or refresh the Nova Agentic Copilot scaffold in the current project
    info       Show project information
    version    Show the current project version, or use --installed/-i for the locally installed project module version
    build      Build the module into the dist folder
@@ -25,8 +26,8 @@ global options
    --version, -v  Show the installed NovaModuleTools module name and version, including prerelease label when present
 
 routed command options
-   --verbose, -v  Show verbose output for build, test, package, deploy, bump, update, notification, publish, and release
-   --what-if, -w  Preview build, test, deploy, bump, update, notification, publish, and release without changing files
+   --verbose, -v  Show verbose output for copilot, build, test, package, deploy, bump, update, notification, publish, and release
+   --what-if, -w  Preview copilot, build, test, deploy, bump, update, notification, publish, and release without changing files
    --confirm, -c  Request confirmation before mutating routed commands; nova bump keeps its CLI-friendly confirmation prompt
 
 Examples:
@@ -37,6 +38,9 @@ Examples:
    nova init -p ~/Work
    nova init --example
    nova init -e --path ~/Work
+   nova copilot --short-name NMT
+   nova copilot --path ~/Work/MyModule --short-name NMT
+   nova copilot -n NMT -o
    nova info
    nova version
    nova version --installed

@@ -176,6 +176,19 @@ Direct PowerShell cmdlets such as `Publish-NovaModule`, `Deploy-NovaPackage`, an
 
 The module does not export a PowerShell alias named `nova`. Install the bundled launcher with `Install-NovaCli` when you want `% nova ...` available directly from your shell.
 
+### Apply or refresh the Agentic Copilot scaffold
+
+Use the dedicated scaffold command when you want to add Nova's maintained Agentic Copilot workflow to an existing project, or refresh an older scaffold to Nova's latest managed version:
+
+```powershell
+PS> Invoke-NovaAgenticCopilotScaffold -ShortName NMT
+% nova copilot --short-name NMT
+```
+
+The target directory must contain a valid `project.json`. Nova reads `ProjectName` and `Description` from that file, requires `ShortName` on every run for token replacement, and refreshes only the Nova-managed Agentic Copilot paths under `.github/` plus `AGENTS.md` and `CONTRIBUTING.md`. Existing `README.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` are preserved and are created only when they are missing.
+
+By default the scaffold flow prompts before it overwrites the managed paths. Use `-OverrideWarning` or `--override-warning` only when you intentionally want a non-interactive apply. The CLI also supports the short form `% nova copilot -n NMT -o`. Use `-WhatIf` or `--what-if` when you want to preview the operation without changing files.
+
 ### Reload the built module while iterating
 
 Use the built output during development so you validate the same shape CI uses:

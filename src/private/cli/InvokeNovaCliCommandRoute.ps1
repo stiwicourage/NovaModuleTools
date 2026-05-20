@@ -191,6 +191,9 @@ function Invoke-NovaCliCommandRoute {
         'init' {
             return Invoke-NovaCliInitCommand -Arguments $InvocationContext.Arguments -ForwardedParameters $mutatingCommonParameters -WhatIfEnabled:$InvocationContext.WhatIfEnabled
         }
+        'copilot' {
+            return Invoke-NovaCliCopilotCommand -Arguments $InvocationContext.Arguments -CommonParameters $InvocationContext.CommonParameters -MutatingCommonParameters $InvocationContext.MutatingCommonParameters
+        }
         'bump' {
             return Invoke-NovaCliBumpRouteCommand -InvocationContext $InvocationContext
         }

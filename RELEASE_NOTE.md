@@ -6,6 +6,11 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Added
 
+- Added `Invoke-NovaAgenticCopilotScaffold` and `% nova copilot` for adding or refreshing Nova's managed Agentic Copilot workflow in an existing project.
+    - The workflow reads `ProjectName` and `Description` from `project.json`, requires an explicit `ShortName` on every run, and stops with a clear validation error when the target project metadata is missing or invalid.
+    - Nova refreshes only its managed Agentic Copilot files and folders, while `README.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` are created only when they are missing.
+    - The command prompts before overwrite by default and supports non-interactive execution only through `-OverrideWarning` / `--override-warning` / `-o`.
+
 ### Changed
 
 ### Deprecated
@@ -195,4 +200,3 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ## [0.0.4] - 2024-06-25
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
-

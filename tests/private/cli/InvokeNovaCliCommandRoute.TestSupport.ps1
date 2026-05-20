@@ -36,6 +36,10 @@ function Invoke-NovaCliInitCommand {
     param($Arguments, $ForwardedParameters, [switch]$WhatIfEnabled)
 }
 
+function Invoke-NovaCliCopilotCommand {
+    param($Arguments, $CommonParameters, $MutatingCommonParameters)
+}
+
 function Invoke-NovaCliUpdateCommand {
     param($Arguments, $ForwardedParameters)
 }

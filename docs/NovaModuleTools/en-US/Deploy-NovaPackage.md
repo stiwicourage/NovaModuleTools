@@ -1,7 +1,7 @@
 ---
 document type: cmdlet
 external help file: NovaModuleTools-Help.xml
-HelpUri: ''
+HelpUri: 'https://www.novamoduletools.com/packaging-and-delivery.html#upload'
 Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 04/25/2026

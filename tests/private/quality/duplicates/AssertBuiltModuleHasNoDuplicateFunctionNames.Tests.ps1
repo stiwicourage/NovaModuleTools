@@ -41,6 +41,25 @@ function Get-Beta {}
         { Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo $projectInfo } | Should -Not -Throw
     }
 
+    It 'throws when the built module file does not exist' {
+        $missingPath = Join-Path $script:projectRoot 'dist/NovaModuleTools/NovaModuleTools.psm1'
+        $projectInfo = [pscustomobject]@{
+            ModuleFilePSM1 = $missingPath
+        }
+
+        {Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo $projectInfo} |
+                Should -Throw -ErrorId 'Nova.Environment.BuiltModuleFileNotFound'
+    }
+
+    It 'throws when the built module does not define any functions' {
+        $projectInfo = New-DuplicateValidationProjectInfo -ProjectRoot $script:projectRoot -ModuleContent '$value = 1' -SourceFileMap @{
+            'src/public/GetAlpha.ps1' = 'function Get-Alpha {}'
+        }
+
+        {Assert-BuiltModuleHasNoDuplicateFunctionName -ProjectInfo $projectInfo} |
+                Should -Throw -ErrorId 'Nova.Workflow.BuiltModuleFunctionListEmpty'
+    }
+
     It 'throws a source-mapped error when the built module contains duplicate top-level function names' {
         $projectInfo = New-DuplicateValidationProjectInfo -ProjectRoot $script:projectRoot -ModuleContent @'
 function Get-Alpha {}

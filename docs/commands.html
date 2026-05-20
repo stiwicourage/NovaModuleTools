@@ -209,6 +209,52 @@ PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
                     </article>
 
                     <article class="command-card">
+                        <h3>Apply or refresh the copilot workflow</h3>
+                        <div class="surface-note" data-command-visibility="command-line" hidden>
+                            <p><strong>Launcher route:</strong> <code>nova copilot</code></p>
+                        </div>
+                        <div class="surface-note" data-command-visibility="powershell">
+                            <p><strong>Cmdlet:</strong> <code>Invoke-NovaAgenticCopilotScaffold</code></p>
+                        </div>
+                        <p>Add Nova's maintained <strong>Agentic Copilot</strong> workflow to an existing project, or
+                            refresh an older Nova-managed scaffold to the current version.</p>
+                        <ul class="plain-list">
+                            <li><strong>Use when:</strong> the project already exists and you want Nova to add or refresh
+                                the managed Agentic guidance files without recreating the scaffold
+                            </li>
+                            <li><strong>Requires:</strong> a valid <code>project.json</code> and an explicit short name
+                                on every run for placeholders such as <code>Invoke-&lt;ShortName&gt;*</code></li>
+                            <li data-command-visibility="command-line" hidden><strong>Common options:</strong>
+                                <code>--short-name</code>, <code>--path</code>, <code>--what-if</code>, and
+                                <code>--override-warning</code> / <code>-o</code></li>
+                            <li data-command-visibility="powershell"><strong>Common parameters:</strong>
+                                <code>-ShortName</code>, <code>-Path</code>, <code>-WhatIf</code>, and
+                                <code>-OverrideWarning</code></li>
+                            <li><strong>Default safety:</strong> Nova prompts before overwriting the managed scaffold
+                                paths and only creates <code>README.md</code>, <code>CHANGELOG.md</code>, and
+                                <code>RELEASE_NOTE.md</code> when they are missing
+                            </li>
+                        </ul>
+                        <div class="surface-example" data-command-example>
+                            <div class="surface-example__meta">
+                                <p class="surface-example__title">Apply the managed scaffold</p>
+                                <p class="surface-example__status">Showing: <span
+                                        data-command-surface-label>PowerShell</span></p>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                                <pre><code>% nova copilot --short-name NMT
+% nova copilot --path ~/Work/MyModule --short-name NMT -o</code></pre>
+                            </div>
+                            <div class="surface-example__surface" data-command-surface="powershell">
+                                <pre><code>PS&gt; Invoke-NovaAgenticCopilotScaffold -ShortName NMT
+PS&gt; Invoke-NovaAgenticCopilotScaffold -Path ~/Work/MyModule -ShortName NMT -OverrideWarning</code></pre>
+                            </div>
+                        </div>
+                        <p><a class="text-link" href="./core-workflows.html#agentic-copilot">See the copilot apply
+                            guide</a></p>
+                    </article>
+
+                    <article class="command-card">
                         <h3>Inspect the current project</h3>
                         <div class="surface-note" data-command-visibility="command-line" hidden>
                             <p><strong>Launcher route:</strong> <code>nova info</code></p>
