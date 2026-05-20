@@ -1,6 +1,6 @@
 {
   "ProjectName": "NovaModuleTools",
-  "Description": "NovaModuleTools is an enterprise-focused evolution of ModuleTools, designed for large-scale PowerShell projects with a strong emphasis on structure, maintainability, and automated CI/CD pipelines.",
+  "Description": "NovaModuleTools is an enterprise-focused build tool for Agentic Copilot PowerShell module development, with a strong emphasis on structure, maintainability, and automated CI/CD pipelines.",
   "Version": "3.0.2-preview",
   "Preamble": [
     "Set-StrictMode -Version Latest",
