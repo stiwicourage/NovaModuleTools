@@ -1,22 +1,7 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/scaffold/InvokeNovaAgenticCopilotScaffoldWorkflow.ps1')
-
-    function Initialize-NovaModuleAgenticCopilotScaffold {
-        param(
-            [hashtable]$Answer,
-            [string]$ProjectRoot,
-            [switch]$Example,
-            [AllowNull()][pscustomobject]$ScaffoldPolicy
-        )
-    }
-
-    function Stop-NovaOperation {
-        param([string]$Message, [string]$ErrorId, [System.Management.Automation.ErrorCategory]$Category, $TargetObject)
-        $exception = [System.Exception]::new($Message)
-        $record = [System.Management.Automation.ErrorRecord]::new($exception, $ErrorId, $Category, $TargetObject)
-        throw $record
-    }
+    . (Join-Path $PSScriptRoot 'InvokeNovaAgenticCopilotScaffoldWorkflow.TestSupport.ps1')
 }
 
 Describe 'Get-NovaAgenticCopilotScaffoldWarningMessage' {
@@ -30,6 +15,35 @@ Describe 'Get-NovaAgenticCopilotScaffoldWarningMessage' {
         $message | Should -Match '\.github/agents/'
         $message | Should -Match 'AGENTS\.md'
         $message | Should -Match 'README\.md'
+    }
+}
+
+Describe 'Read-NovaAgenticCopilotScaffoldWarningChoice' {
+    It 'prompts with yes-no options and defaults to No' {
+        $script:promptCall = $null
+        $hostUi = [pscustomobject]@{}
+        $hostUi | Add-Member -MemberType ScriptMethod -Name PromptForChoice -Value {
+            param($caption, $message, $choices, $defaultChoice)
+
+            $script:promptCall = [pscustomobject]@{
+                Caption = $caption
+                Message = $message
+                Labels = @($choices | ForEach-Object Label)
+                HelpMessages = @($choices | ForEach-Object HelpMessage)
+                DefaultChoice = $defaultChoice
+            }
+
+            return 0
+        }
+
+        $selection = Read-NovaAgenticCopilotScaffoldWarningChoice -Message 'apply scaffold' -HostUi $hostUi
+
+        $selection | Should -Be 0
+        $script:promptCall.Caption | Should -Be 'Confirm'
+        $script:promptCall.Message | Should -Be 'apply scaffold'
+        $script:promptCall.Labels | Should -Be @('&Yes', '&No')
+        $script:promptCall.HelpMessages | Should -Be @('Apply the scaffold.', 'Cancel the operation.')
+        $script:promptCall.DefaultChoice | Should -Be 1
     }
 }
 

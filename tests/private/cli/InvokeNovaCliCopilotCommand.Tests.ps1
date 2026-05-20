@@ -1,26 +1,8 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
+    . (Join-Path $projectRoot 'src/private/cli/GetNovaCliArgumentRoutingState.ps1')
     . (Join-Path $projectRoot 'src/private/cli/InvokeNovaCliCopilotCommand.ps1')
-
-    function ConvertFrom-NovaCopilotCliArgument {
-        param([string[]]$Arguments) return @{Path = '/tmp/repo'; ShortName = 'NMT'}
-    }
-    function Merge-NovaCliParameterSet {
-        param([hashtable]$BaseParameters, [hashtable]$AdditionalParameters)
-        foreach ($name in $AdditionalParameters.Keys) {
-            $BaseParameters[$name] = $AdditionalParameters[$name]
-        }
-        return $BaseParameters
-    }
-    function Invoke-NovaAgenticCopilotScaffold {
-        param($Path, $ShortName, $Verbose, $WhatIf)
-        return [pscustomobject]@{
-            Path = $Path
-            ShortName = $ShortName
-            Verbose = [bool]$Verbose
-            WhatIf = [bool]$WhatIf
-        }
-    }
+    . (Join-Path $PSScriptRoot 'InvokeNovaCliCopilotCommand.TestSupport.ps1')
 }
 
 Describe 'Invoke-NovaCliCopilotCommand' {

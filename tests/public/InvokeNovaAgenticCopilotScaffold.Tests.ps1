@@ -1,30 +1,20 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     . (Join-Path $projectRoot 'src/public/InvokeNovaAgenticCopilotScaffold.ps1')
-
-    function Get-NovaAgenticCopilotScaffoldWorkflowContext {
-        param($Path, $ShortName, [switch]$OverrideWarningRequested)
-        $script:ctxArgs = @{
-            Path = $Path
-            ShortName = $ShortName
-            OverrideWarningRequested = [bool]$OverrideWarningRequested
-        }
-        return [pscustomobject]@{Target = $Path; Action = 'Apply'}
-    }
-
-    function Invoke-NovaAgenticCopilotScaffoldWorkflow {
-        param($WorkflowContext, [switch]$ShouldRun)
-        $script:workflowArgs = @{
-            WorkflowContext = $WorkflowContext
-            ShouldRun = [bool]$ShouldRun
-        }
-    }
+    . (Join-Path $PSScriptRoot 'InvokeNovaAgenticCopilotScaffold.TestSupport.ps1')
 }
 
 Describe 'Invoke-NovaAgenticCopilotScaffold' {
     BeforeEach {
         $script:ctxArgs = $null
         $script:workflowArgs = $null
+    }
+
+    It 'defaults Path to the current location when Path is omitted' {
+        Invoke-NovaAgenticCopilotScaffold -ShortName 'NMT'
+
+        $script:ctxArgs.Path | Should -Be (Get-Location).Path
+        $script:workflowArgs.ShouldRun | Should -BeTrue
     }
 
     It 'forwards Path, ShortName, and OverrideWarning to the workflow context' {

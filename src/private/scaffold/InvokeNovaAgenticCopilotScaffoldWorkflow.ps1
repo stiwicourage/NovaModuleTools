@@ -21,7 +21,8 @@ function Get-NovaAgenticCopilotScaffoldWarningMessage {
 function Read-NovaAgenticCopilotScaffoldWarningChoice {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][string]$Message
+        [Parameter(Mandatory)][string]$Message,
+        [Parameter()][object]$HostUi = $Host.UI
     )
 
     $choices = [System.Management.Automation.Host.ChoiceDescription[]]@(
@@ -29,7 +30,7 @@ function Read-NovaAgenticCopilotScaffoldWarningChoice {
         [System.Management.Automation.Host.ChoiceDescription]::new('&No', 'Cancel the operation.')
     )
 
-    return $Host.UI.PromptForChoice('Confirm', $Message, $choices, 1)
+    return $HostUi.PromptForChoice('Confirm', $Message, $choices, 1)
 }
 
 function Confirm-NovaAgenticCopilotScaffoldWarning {

@@ -161,6 +161,12 @@ Describe 'Initialize-NovaModuleAgenticCopilotScaffold' {
         ConvertTo-NovaModuleAgenticCopilotNormalizedFileContent -Content "line1`r`nline2`r`n`r`n" | Should -Be "line1`r`nline2`r`n"
     }
 
+    It 'matches directory policy entries as case-insensitive prefixes' {
+        Test-NovaModuleAgenticCopilotPathMatchesPolicyEntry -RelativePath 'tests/private/My.Tests.ps1' -Entry 'tests/' | Should -BeTrue
+        Test-NovaModuleAgenticCopilotPathMatchesPolicyEntry -RelativePath 'Tests/private/My.Tests.ps1' -Entry 'tests/' | Should -BeTrue
+        Test-NovaModuleAgenticCopilotPathMatchesPolicyEntry -RelativePath 'docs/README.md' -Entry 'tests/' | Should -BeFalse
+    }
+
     It 'overwrites managed files and preserves add-only files when a scaffold policy is supplied' {
         $templateRoot = Join-Path $TestDrive 'policy-template'
         $projectRoot = Join-Path $TestDrive 'policy-project'
