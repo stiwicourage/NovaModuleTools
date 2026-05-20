@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Added `Invoke-NovaAgenticCopilotScaffold` and `% nova copilot` for applying or refreshing Nova's managed Agentic Copilot scaffold in an existing project root.
+    - The workflow reads `ProjectName` and `Description` from `project.json`, requires a `ShortName` on every run for token replacement, and fails clearly when the project metadata or short name is invalid.
+    - Nova refreshes only the approved managed Agentic Copilot paths under `.github/` plus `AGENTS.md` and `CONTRIBUTING.md`, while `README.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` are created only when they are missing.
+    - The new cmdlet and CLI route prompt before overwriting managed scaffold content by default, and support non-interactive execution only through `-OverrideWarning` / `--override-warning` / `-o`.
+
 ### Changed
 
 ### Deprecated
@@ -433,4 +438,3 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-

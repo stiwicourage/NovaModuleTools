@@ -9,6 +9,7 @@ Describe 'Get-NovaCliHelpCommandNameList' {
     It 'returns the known CLI command names' {
         $names = Get-NovaCliHelpCommandNameList
         $names | Should -Contain 'init'
+        $names | Should -Contain 'copilot'
         $names | Should -Contain 'release'
         $names | Should -Contain 'notification'
     }

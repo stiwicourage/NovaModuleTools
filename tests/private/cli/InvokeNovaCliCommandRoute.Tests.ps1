@@ -186,6 +186,12 @@ Describe 'Invoke-NovaCliCommandRoute' {
         Invoke-NovaCliCommandRoute -InvocationContext (New-TestContext -Command 'init') | Should -Be 'init'
     }
 
+    It 'dispatches copilot' {
+        Mock Invoke-NovaCliCopilotCommand {'copilot'}
+        Mock Confirm-NovaCliRoutedCommand {}
+        Invoke-NovaCliCommandRoute -InvocationContext (New-TestContext -Command 'copilot') | Should -Be 'copilot'
+    }
+
     It 'dispatches bump' {
         Mock Invoke-NovaCliBumpRouteCommand { 'bumped' }
         Mock Confirm-NovaCliRoutedCommand {}
