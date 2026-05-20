@@ -30,7 +30,7 @@ Describe 'docs site layout guardrails' {
 
         $indexPage | Should -Match '<header class="hero">'
         $indexPage | Should -Match '<p class="lead">'
-        $indexPage | Should -Match 'class="section__inner narrow"'
+        $indexPage | Should -Match 'class="section__inner"'
         $indexPage | Should -Match 'class="section-heading"'
     }
 
