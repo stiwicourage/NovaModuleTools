@@ -31,7 +31,6 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 ## Skills to use
 
 - `/pester-testing`
-
 - `/building-maintainable-code`
 
 ## Constraints

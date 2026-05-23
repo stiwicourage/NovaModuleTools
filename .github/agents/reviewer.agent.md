@@ -41,6 +41,7 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 
 ## Skills to use
 
+- `/terminal-ux-design`
 - `/codescene-quality`
 - `/safeguarding-ai-generated-code`
 - `/building-maintainable-code`

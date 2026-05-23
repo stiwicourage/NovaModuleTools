@@ -17,14 +17,17 @@ BeforeAll {
         return [pscustomobject]@{
             Instruction = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/copilot-instructions.md') -Raw
             RepositoryConventions = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/repository-conventions.instructions.md') -Raw
+            TerminalUxInstruction = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/terminal-ux-design.instructions.md') -Raw
             QualityMatrix = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/code-quality-matrix.instructions.md') -Raw
             PlatyPsHelp = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/platyps-help.instructions.md') -Raw
             ScriptAnalyzer = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/psscriptanalyzer.instructions.md') -Raw
             CodingStandards = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/powershell-coding-standards.instructions.md') -Raw
             TestingPolicy = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/instructions/testing-policy.instructions.md') -Raw
+            ArchitectAgent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/agents/architect.agent.md') -Raw
             DeveloperAgent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/agents/powershell-developer.agent.md') -Raw
             ReviewerAgent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/agents/reviewer.agent.md') -Raw
             TestEngineerAgent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/agents/test-engineer.agent.md') -Raw
+            TerminalUxSkill = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/skills/terminal-ux-design/SKILL.md') -Raw
             DeveloperSkill = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/skills/powershell-module-development/SKILL.md') -Raw
             PesterSkill = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/skills/pester-testing/SKILL.md') -Raw
             ImplementPrompt = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/prompts/implement-issue.prompt.md') -Raw
@@ -121,6 +124,28 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.DeveloperSkill | Should -Match 'Grouping two externally called private helpers in one file'
         $content.DeveloperSkill | Should -Match 'Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline'
         $content.DeveloperSkill | Should -Match 'PowerShell 7\.x-only'
+    }
+
+    It 'documents terminal UX guidance in mirrored instructions, skills, and agent entry points' {
+        $content = & $script:getAgenticScaffoldGuidanceContent
+
+        $content.TerminalUxInstruction | Should -Match 'Use the `terminal-ux-design` skill'
+        $content.TerminalUxInstruction | Should -Match 'Jakob Nielsen'
+        $content.TerminalUxInstruction | Should -Match 'Atlassian'
+
+        $content.TerminalUxSkill | Should -Match 'Atlassian''s 10 design principles for delightful CLIs'
+        $content.TerminalUxSkill | Should -Match 'Jakob Nielsen''s 10 usability heuristics for user interface design'
+        $content.TerminalUxSkill | Should -Match 'This skill applies even when the surface is not named "CLI"'
+        $content.TerminalUxSkill | Should -Match 'Combined mapping table'
+        $content.TerminalUxSkill | Should -Match 'Two surfaces, two conventions'
+        $content.TerminalUxSkill | Should -Match 'Keep PowerShell cmdlet UX and CLI UX distinct'
+
+        $content.Instruction | Should -Match 'terminal-ux-design'
+        $content.Instruction | Should -Match 'Terminal UX: `\.github/instructions/terminal-ux-design\.instructions\.md` \+ `terminal-ux-design` skill'
+        $content.ArchitectAgent | Should -Match '/terminal-ux-design'
+        $content.DeveloperAgent | Should -Match '/terminal-ux-design'
+        $content.ReviewerAgent | Should -Match '/terminal-ux-design'
+        $content.Agents | Should -Match 'terminal-ux-design'
     }
 
     It 'documents valid PlatyPS help generation guidance' {
