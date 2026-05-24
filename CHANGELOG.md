@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `Get-NovaProjectInfo` now fails with clearer recovery guidance when `-Path` does not exist, points to a file, or the target folder is missing `project.json`.
 - `Get-NovaUpdateNotificationPreference -Verbose` now explains whether Nova is reading a stored preference or the built-in default, and the command help now points read-only PowerShell users to the matching `% nova notification` workflow.
 - `Initialize-NovaModule` now shows scaffold progress, ends with the created project root plus the next suggested cmdlet, and fails with clearer guidance when the target project folder already exists.
+- `Install-NovaCli` now prints the installed launcher path, suggests the next command to run, and gives a clearer `PATH` warning when the destination directory is not yet available from the shell.
 
 ### Deprecated
 

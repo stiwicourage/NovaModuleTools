@@ -17,6 +17,7 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 - `Get-NovaProjectInfo` now explains how to recover when `-Path` is invalid or the target folder is not a Nova project root.
 - `Get-NovaUpdateNotificationPreference -Verbose` now tells you whether Nova is using a stored update-notification preference or the built-in default, and the help now points to the matching `% nova notification` workflow.
 - `Initialize-NovaModule` now shows scaffold progress, ends with the project root and the next suggested cmdlet, and gives clearer recovery guidance when the target project folder already exists.
+- `Install-NovaCli` now prints the installed launcher path, suggests the next command to run, and gives a clearer `PATH` warning when the launcher directory is not yet available from the shell.
 
 ### Deprecated
 
