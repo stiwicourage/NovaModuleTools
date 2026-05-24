@@ -15,6 +15,7 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 - `Deploy-NovaPackage` now shows clearer terminal feedback during raw package uploads, including a concise pre-flight summary, progress across multiple artifacts, and a short verification hint after success.
 - `Get-NovaProjectInfo` now explains how to recover when `-Path` is invalid or the target folder is not a Nova project root.
+- `Get-NovaUpdateNotificationPreference -Verbose` now tells you whether Nova is using a stored update-notification preference or the built-in default, and the help now points to the matching `% nova notification` workflow.
 
 ### Deprecated
 

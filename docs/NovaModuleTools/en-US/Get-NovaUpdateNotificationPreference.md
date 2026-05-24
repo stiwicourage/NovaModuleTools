@@ -32,6 +32,11 @@ The same stored preference is also used by `Update-NovaModuleTool` (alias: `Upda
 
 Stable self-updates remain available and do not require prerelease eligibility.
 
+If no settings file exists yet, the command reports the default behavior: prerelease self-updates are enabled and
+stable self-updates remain available.
+
+Use `% nova notification` when you want the CLI-oriented view of the same preference.
+
 ## EXAMPLES
 
 ### EXAMPLE 1
@@ -43,6 +48,15 @@ PS> Get-NovaUpdateNotificationPreference
 Shows whether prerelease self-updates are currently enabled, whether stable self-updates remain available, and where the preference is stored.
 
 ### EXAMPLE 2
+
+```text
+PS> Get-NovaUpdateNotificationPreference -Verbose
+```
+
+Shows the current status and writes a short explanation that tells you whether Nova is using a stored settings file
+or the built-in default.
+
+### EXAMPLE 3
 
 ```text
 PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
@@ -77,10 +91,14 @@ Use `Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications` to st
 
 Use `Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications` to allow prerelease self-updates again.
 
+Use `-Verbose` when you want a short explanation of whether Nova is reading a stored preference or falling back to
+the default.
+
 When prerelease notifications are enabled again, `Update-NovaModuleTool` / `Update-NovaModuleTools` may again select a prerelease target. Prerelease self-updates still require explicit confirmation before the update proceeds, and that confirmation defaults to `No` so pressing Enter cancels the update.
 
 ## RELATED LINKS
 
 - [Invoke-NovaBuild](./Invoke-NovaBuild.md)
 - [Set-NovaUpdateNotificationPreference](./Set-NovaUpdateNotificationPreference.md)
+- [Install-NovaCli](./Install-NovaCli.md)
 - [Update-NovaModuleTool](./Update-NovaModuleTools.md)
