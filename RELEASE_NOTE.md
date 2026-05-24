@@ -14,6 +14,7 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 ### Changed
 
 - `Deploy-NovaPackage` now shows clearer terminal feedback during raw package uploads, including a concise pre-flight summary, progress across multiple artifacts, and a short verification hint after success.
+- `Get-NovaProjectInfo` now explains how to recover when `-Path` is invalid or the target folder is not a Nova project root.
 
 ### Deprecated
 
@@ -21,7 +22,7 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Fixed
 
-- PowerShell command help `RELATED LINKS` now use valid help-topic links instead of GitHub blob pages.
+- PowerShell command help `RELATED LINKS` now use valid help-topic.
 
 ### Security
 
