@@ -43,6 +43,25 @@ Describe 'Invoke-NovaModuleSelfUpdateOrStop' {
     }
 }
 
+Describe 'Get-NovaModuleSelfUpdateWorkflowUpdateStatus' {
+    It 'describes prerelease installs explicitly' {
+        $workflowContext = [pscustomobject]@{
+            Plan = [pscustomobject]@{
+                IsPrereleaseTarget = $true
+                TargetVersion = '1.2.0-preview1'
+            }
+        }
+
+        Get-NovaModuleSelfUpdateWorkflowUpdateStatus -WorkflowContext $workflowContext | Should -Be 'Installing prerelease version 1.2.0-preview1'
+    }
+}
+
+Describe 'Get-NovaModuleSelfUpdateWorkflowRepositoryLine' {
+    It 'returns null when the repository name is blank' {
+        Get-NovaModuleSelfUpdateWorkflowRepositoryLine -Result ([pscustomobject]@{LookupRepository = ''}) | Should -BeNullOrEmpty
+    }
+}
+
 Describe 'Invoke-NovaModuleSelfUpdateWorkflow' {
     BeforeEach {
         Mock Write-Message {}

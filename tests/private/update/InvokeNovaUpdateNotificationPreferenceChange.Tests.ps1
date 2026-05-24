@@ -19,6 +19,13 @@ Describe 'Test-NovaUpdateNotificationPreferenceChangeWhatIfEnabled' {
     }
 }
 
+Describe 'Get-NovaUpdateNotificationPreferenceChangeCommandLine' {
+    It 'returns the disable command line when prerelease notifications are being turned off' {
+        $workflowContext = [pscustomobject]@{PrereleaseNotificationsEnabled = $false}
+        Get-NovaUpdateNotificationPreferenceChangeCommandLine -WorkflowContext $workflowContext | Should -Be 'Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications'
+    }
+}
+
 Describe 'Invoke-NovaUpdateNotificationPreferenceChange' {
     BeforeEach {
         Mock Write-Message {}

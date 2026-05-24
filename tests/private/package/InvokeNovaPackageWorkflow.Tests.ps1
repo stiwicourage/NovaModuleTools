@@ -65,3 +65,26 @@ Describe 'Invoke-NovaPackageWorkflow' {
         $result | Should -BeNullOrEmpty
     }
 }
+
+Describe 'Get-NovaPackageWorkflowStatusMessage' {
+    It 'reports the created artifact count when more than one artifact was produced' {
+        $workflowContext = [pscustomobject]@{
+            ProjectInfo = [pscustomobject]@{
+                ProjectName = 'Demo'
+            }
+        }
+
+        Get-NovaPackageWorkflowStatusMessage -WorkflowContext $workflowContext -ArtifactCount 2 | Should -Be 'Created 2 package artifacts for Demo'
+    }
+}
+
+Describe 'Get-NovaPackageWorkflowResultTarget' {
+    It 'falls back to the workflow target when artifacts do not expose output directories' {
+        $workflowContext = [pscustomobject]@{
+            Target = '/p/Demo.1.0.0.nupkg'
+        }
+
+        $artifacts = @([pscustomobject]@{PackagePath = '/p/Demo.1.0.0.nupkg'; OutputDirectory = $null})
+        Get-NovaPackageWorkflowResultTarget -WorkflowContext $workflowContext -Artifacts $artifacts | Should -Be '/p/Demo.1.0.0.nupkg'
+    }
+}

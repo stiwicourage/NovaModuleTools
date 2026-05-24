@@ -23,6 +23,34 @@ Describe 'Get-NovaReleaseBuildWorkflowParameterMap' {
     }
 }
 
+Describe 'Get-NovaReleaseWorkflowResultVersion' {
+    It 'returns null when no version result is available' {
+        Get-NovaReleaseWorkflowResultVersion -VersionResult $null | Should -BeNullOrEmpty
+    }
+
+    It 'prefers NewVersion when the version result exposes it' {
+        Get-NovaReleaseWorkflowResultVersion -VersionResult ([pscustomobject]@{NewVersion = '1.2.3'; Version = '1.2.2'}) | Should -Be '1.2.3'
+    }
+
+    It 'falls back to Version when NewVersion is not present' {
+        Get-NovaReleaseWorkflowResultVersion -VersionResult ([pscustomobject]@{Version = '1.2.3'}) | Should -Be '1.2.3'
+    }
+
+    It 'returns null when the version result has no version-like properties' {
+        Get-NovaReleaseWorkflowResultVersion -VersionResult ([pscustomobject]@{Other = 'x'}) | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Get-NovaReleaseWorkflowStatusMessage' {
+    It 'returns a plan-ready message without a version in WhatIf mode' {
+        Get-NovaReleaseWorkflowStatusMessage -ProjectInfo ([pscustomobject]@{ProjectName = 'NovaModuleTools'}) -WhatIfEnabled | Should -Be 'Release plan ready for NovaModuleTools'
+    }
+
+    It 'returns a released message without a version when no version was resolved' {
+        Get-NovaReleaseWorkflowStatusMessage -ProjectInfo ([pscustomobject]@{ProjectName = 'NovaModuleTools'}) | Should -Be 'Released Nova module: NovaModuleTools'
+    }
+}
+
 Describe 'Test-NovaReleaseWorkflowShouldRestoreBuiltModule' {
     It 'returns true when CI is on and WhatIf is not set' {
         Test-NovaReleaseWorkflowShouldRestoreBuiltModule -WorkflowParams @{} -ContinuousIntegrationRequested | Should -BeTrue

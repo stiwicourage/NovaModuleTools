@@ -322,3 +322,26 @@ Describe 'Invoke-NovaTestWorkflow' {
     }
 
 }
+
+Describe 'Get-NovaTestWorkflowCoverageMessage' {
+    It 'includes the measured and configured coverage values when both are available' {
+        $workflowContext = [pscustomobject]@{
+            ProjectInfo = [pscustomobject]@{
+                Pester = [ordered]@{
+                    CodeCoverage = [ordered]@{
+                        Enabled = $true
+                        CoveragePercentTarget = 90
+                    }
+                }
+            }
+        }
+
+        $testResult = [pscustomobject]@{
+            CodeCoverage = [pscustomobject]@{
+                CoveragePercent = 66.67
+            }
+        }
+
+        Get-NovaTestWorkflowCoverageMessage -WorkflowContext $workflowContext -TestResult $testResult | Should -Be 'Measured code coverage: 66.67% (target: 90%)'
+    }
+}
