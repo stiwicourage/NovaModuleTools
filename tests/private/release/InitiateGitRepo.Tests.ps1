@@ -35,6 +35,12 @@ Describe 'New-InitiateGitRepo' {
         Mock Invoke-NovaGitCommand {throw 'kaboom'}
         {New-InitiateGitRepo -DirectoryPath $script:dir} | Should -Throw '*kaboom*'
     }
+
+    It 'writes a success verbose message when git init succeeds' {
+        Mock Invoke-NovaGitCommand {return [pscustomobject]@{ExitCode=0; Output=@()}}
+        $verbose = New-InitiateGitRepo -DirectoryPath $script:dir -Confirm:$false -Verbose 4>&1
+        @($verbose | Where-Object Message -EQ 'Git repository initialized successfully').Count | Should -Be 1
+    }
 }
 
 Describe 'Get-NovaGitInitializationFailureMessage' {

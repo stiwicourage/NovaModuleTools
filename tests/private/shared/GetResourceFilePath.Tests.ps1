@@ -30,4 +30,13 @@ Describe 'Get-ResourceFilePath' {
 
         {Get-ResourceFilePath -FileName 'Missing.json'} | Should -Throw
     }
+
+    It 'writes a verbose fallback message when project resource discovery throws' {
+        Mock Get-NovaProjectInfo { throw 'no project context' }
+        Mock Test-Path { return $true }
+
+        $output = Get-ResourceFilePath -FileName 'Schema.json' -Verbose 4>&1
+        ($output | Out-String) | Should -Match 'Project resource discovery unavailable'
+        ($output | Out-String) | Should -Match 'Schema.json'
+    }
 }

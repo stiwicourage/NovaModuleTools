@@ -2,7 +2,7 @@ function Invoke-NovaVersionUpdateCiActivation {param($ProjectRoot, $Parameters, 
     return $script:ciActivation
 }
 function Get-NovaVersionUpdateWorkflowContext {param($ProjectRoot, [switch]$PreviewRelease, [switch]$ContinuousIntegrationRequested, [switch]$OverrideWarningRequested)
-    $script:ctxArgs = @{Preview=[bool]$PreviewRelease; CI=[bool]$ContinuousIntegrationRequested; Override=[bool]$OverrideWarningRequested}
+    $script:ctxArgs = @{ProjectRoot=$ProjectRoot; Preview=[bool]$PreviewRelease; CI=[bool]$ContinuousIntegrationRequested; Override=[bool]$OverrideWarningRequested}
     return [pscustomobject]@{Target=$ProjectRoot; Action='Bump'}
 }
 function Invoke-NovaVersionUpdateWorkflow {param($WorkflowContext, [switch]$ShouldRun, [switch]$WhatIfEnabled)

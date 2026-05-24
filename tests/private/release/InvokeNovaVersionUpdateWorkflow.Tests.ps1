@@ -34,6 +34,12 @@ Describe 'Get-NovaVersionUpdateAdvisoryMessage' {
     }
 }
 
+Describe 'Get-NovaVersionUpdateProjectFile' {
+    It 'returns null when the workflow context has no ProjectInfo' {
+        Get-NovaVersionUpdateProjectFile -WorkflowContext ([pscustomobject]@{Other = 1}) | Should -BeNullOrEmpty
+    }
+}
+
 Describe 'Get-NovaVersionUpdateResult' {
     It 'assembles a structured result' {
         $ctx = [pscustomobject]@{

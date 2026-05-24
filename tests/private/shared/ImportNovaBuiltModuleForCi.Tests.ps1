@@ -36,4 +36,20 @@ Describe 'Import-NovaBuiltModuleForCi' {
 
         {Import-NovaBuiltModuleForCi -ProjectRoot '/p'} | Should -Throw
     }
+
+    It 'refreshes the imported module when the built manifest exists' {
+        $projectInfo = [pscustomobject]@{ProjectName = 'Demo'; OutputModuleDir = '/dist/Demo'}
+        Mock Get-NovaBuiltModuleManifestPathForCi { return '/dist/Demo/Demo.psd1' }
+        Mock Test-Path { return $true }
+        Mock Get-Module { return @([pscustomobject]@{Name = 'Demo'}) }
+        Mock Remove-Module {}
+        Mock Import-Module { return 'imported-module' }
+
+        $result = Import-NovaBuiltModuleForCi -ProjectInfo $projectInfo
+
+        $result | Should -Be 'imported-module'
+        Should -Invoke Get-Module -Times 1 -ParameterFilter { $Name -eq 'Demo' -and $All }
+        Should -Invoke Remove-Module -Times 1
+        Should -Invoke Import-Module -Times 1 -ParameterFilter { $Name -eq '/dist/Demo/Demo.psd1' -and $Force -and $Global -and $PassThru }
+    }
 }

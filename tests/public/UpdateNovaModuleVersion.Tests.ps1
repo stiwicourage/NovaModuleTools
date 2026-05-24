@@ -39,4 +39,9 @@ Describe 'Update-NovaModuleVersion' {
         Update-NovaModuleVersion -Path . | Should -BeNullOrEmpty
         $script:outputResult | Should -BeNullOrEmpty
     }
+
+    It 'defaults Path from the current location when Path is omitted' {
+        Update-NovaModuleVersion | Out-Null
+        $script:ctxArgs.ProjectRoot | Should -Be (Get-Location).Path
+    }
 }

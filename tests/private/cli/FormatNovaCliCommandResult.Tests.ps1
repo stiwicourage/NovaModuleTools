@@ -54,6 +54,11 @@ Describe 'Format-NovaCliCommandResult' {
         Format-NovaCliCommandResult -Command 'build' -Result 'raw' | Should -Be 'raw'
     }
 
+    It 'formats version update results for the bump command' {
+        $result = [pscustomobject]@{Applied=$true;PreviousVersion='1.0.0';NewVersion='1.1.0';Label='minor';CommitCount=4}
+        Format-NovaCliCommandResult -Command 'bump' -Result $result | Should -Be (Format-NovaCliVersionUpdateResult -Result $result)
+    }
+
     It 'passes through a structured result that does not match update or bump shapes' {
         $result = [pscustomobject]@{Custom = 'value'}
         Format-NovaCliCommandResult -Command 'package' -Result $result | Should -Be $result

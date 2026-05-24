@@ -23,4 +23,9 @@ Describe 'Initialize-NovaModule' {
         Initialize-NovaModule -Path '/tmp/x' -WhatIf
         $script:workflowCalled | Should -BeFalse
     }
+
+    It 'defaults Path from the current location when Path is omitted' {
+        Initialize-NovaModule
+        $script:ctxArgs.Path | Should -Be (Get-Location).Path
+    }
 }
