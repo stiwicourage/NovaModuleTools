@@ -3,6 +3,7 @@ BeforeAll {
     . (Join-Path $projectRoot 'src/private/release/WriteNovaVersionUpdateResultMessages.ps1')
 
     function Get-NovaVersionUpdateCiActivatedCommand {param($ProjectRoot) return $null}
+    function Write-Message {param($Message, $color) $script:messages += [pscustomobject]@{Text=$Message; Color=$color}}
 }
 
 Describe 'Invoke-NovaVersionUpdateCiActivation' {
@@ -43,15 +44,76 @@ Describe 'Get-NovaVersionUpdateResultAdvisoryMessage' {
 }
 
 Describe 'Write-NovaVersionUpdateResultOutput' {
+    BeforeEach {
+        $script:messages = @()
+    }
+
     It 'writes a warning when an advisory message is present' {
-        $r = [pscustomobject]@{AdvisoryMessage='watch out'; Applied=$false}
+        $r = [pscustomobject]@{AdvisoryMessage='watch out'; Applied=$false; Previewed=$true; NewVersion='1.2.3'; PreviousVersion='1.2.2'; Label='Patch'; EffectiveLabel='Patch'; CommitCount=2}
         Write-NovaVersionUpdateResultOutput -Result $r -WarningVariable w -WarningAction SilentlyContinue 6> $null
         $w[0].Message | Should -Be 'watch out'
     }
 
-    It 'writes the bumped version host message when Applied is true' {
-        $r = [pscustomobject]@{AdvisoryMessage=''; Applied=$true; NewVersion='1.2.3'}
-        $output = Write-NovaVersionUpdateResultOutput -Result $r 6>&1 | Out-String
-        $output | Should -Match 'Version bumped to : 1.2.3'
+    It 'writes a completion summary, details, and next step when Applied is true' {
+        $r = [pscustomobject]@{
+            AdvisoryMessage = ''
+            Applied = $true
+            Previewed = $false
+            Cancelled = $false
+            NewVersion = '1.2.3'
+            PreviousVersion = '1.2.2'
+            Label = 'Patch'
+            EffectiveLabel = 'Patch'
+            CommitCount = 2
+            ProjectFile = '/p/project.json'
+        }
+        Write-NovaVersionUpdateResultOutput -Result $r
+        $script:messages[0].Text | Should -Be 'Updated project version to 1.2.3'
+        $script:messages[0].Color | Should -Be 'Green'
+        $script:messages.Text | Should -Contain 'Version file: /p/project.json'
+        $script:messages.Text | Should -Contain 'Previous version: 1.2.2'
+        $script:messages.Text | Should -Contain 'New version: 1.2.3'
+        $script:messages.Text | Should -Contain 'Release label: Patch'
+        $script:messages.Text | Should -Contain 'Commits considered: 2'
+        $script:messages.Text | Should -Contain 'Invoke-NovaBuild'
+    }
+
+    It 'writes a preview summary and next step when WhatIf created the result' {
+        $r = [pscustomobject]@{
+            AdvisoryMessage = ''
+            Applied = $false
+            Previewed = $true
+            Cancelled = $false
+            NewVersion = '0.2.0'
+            PreviousVersion = '0.1.0'
+            Label = 'Major'
+            EffectiveLabel = 'Minor'
+            CommitCount = 34
+            Target = 'project.json'
+        }
+        Write-NovaVersionUpdateResultOutput -Result $r
+        $script:messages[0].Text | Should -Be 'Version update plan ready -> 0.2.0'
+        $script:messages.Text | Should -Contain 'Version file: project.json'
+        $script:messages.Text | Should -Contain 'Detected release label: Major'
+        $script:messages.Text | Should -Contain 'Applied release label: Minor'
+        $script:messages.Text | Should -Contain 'Run Update-NovaModuleVersion without -WhatIf when you are ready to apply the version change.'
+    }
+
+    It 'writes a cancellation summary when the command does not proceed past confirmation' {
+        $r = [pscustomobject]@{
+            AdvisoryMessage = ''
+            Applied = $false
+            Previewed = $false
+            Cancelled = $true
+            NewVersion = '1.2.3'
+            PreviousVersion = '1.2.2'
+            Label = 'Patch'
+            EffectiveLabel = 'Patch'
+            CommitCount = 2
+        }
+        Write-NovaVersionUpdateResultOutput -Result $r
+        $script:messages[0].Text | Should -Be 'Version update cancelled before changing project.json.'
+        $script:messages[0].Color | Should -Be 'Blue'
+        $script:messages.Text | Should -Contain 'Run Update-NovaModuleVersion again when you are ready to write the new version to project.json.'
     }
 }

@@ -27,6 +27,7 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 - `Set-NovaUpdateNotificationPreference` now ends with a clear success or preview summary, prints the settings file path, suggests `Get-NovaUpdateNotificationPreference` as the next verification step, and gives a more actionable validation error when no enable/disable switch is supplied.
 - `Test-NovaBuild` now shows progress across the main test phases, ends with the result file path plus a coverage summary and next-step hint when tests pass, uses a test-plan summary in `-WhatIf` mode, and fails with more actionable guidance when Pester or coverage checks fail.
 - `Update-NovaModuleTool` now ends with a visible up-to-date, preview, cancelled, or updated summary, skips prerelease confirmation during `-WhatIf`, shows progress for the actual self-update step, and suggests `Get-NovaProjectInfo -Installed` after a successful update.
+- `Update-NovaModuleVersion` now ends with a visible preview, cancelled, or updated summary, prints the resolved version file plus the detected/applied release label, shows progress while writing `project.json`, and suggests the next command to run after the bump.
 
 ### Deprecated
 

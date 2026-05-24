@@ -7,6 +7,7 @@ function Get-NovaVersionUpdateWorkflowContext {param($ProjectRoot, [switch]$Prev
 }
 function Invoke-NovaVersionUpdateWorkflow {param($WorkflowContext, [switch]$ShouldRun, [switch]$WhatIfEnabled)
     $script:invoked = $true
+    $script:workflowArgs = @{ShouldRun=[bool]$ShouldRun; WhatIfEnabled=[bool]$WhatIfEnabled}
     return $script:workflowResult
 }
 function Write-NovaVersionUpdateResultOutput {param($Result) $script:outputResult = $Result}
