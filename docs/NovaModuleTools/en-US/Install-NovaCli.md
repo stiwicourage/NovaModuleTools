@@ -172,4 +172,4 @@ After running `Install-NovaCli`, add the destination directory to your shell `PA
 
 ## RELATED LINKS
 
-- `Publish-NovaModule`
+- [Publish-NovaModule](./Publish-NovaModule.md)

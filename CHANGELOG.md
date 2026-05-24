@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - `Test-NovaBuild` now expands configured Pester coverage globs into concrete source files before invoking Pester, so nested helpers remain measurable in `artifacts/coverage.xml` while repository and scaffolded `project.json` defaults can stay on the simpler `src/private/**/*.ps1` entry.
+- PowerShell command help `RELATED LINKS` now use valid PlatyPS Markdown links and point to shipped help topics instead of GitHub blob pages.
 
 ### Security
 

@@ -302,6 +302,6 @@ When `-ContinuousIntegration` is used, Nova restores the built `dist/` module af
 
 ## RELATED LINKS
 
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Test-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaRelease.md
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)
+- [Test-NovaBuild](./Test-NovaBuild.md)
+- [Invoke-NovaRelease](./Invoke-NovaRelease.md)

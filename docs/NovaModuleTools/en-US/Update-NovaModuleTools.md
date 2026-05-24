@@ -149,6 +149,6 @@ Use `Get-NovaUpdateNotificationPreference` and `Set-NovaUpdateNotificationPrefer
 
 ## RELATED LINKS
 
-- `Get-NovaUpdateNotificationPreference`
-- `Set-NovaUpdateNotificationPreference`
-- `Invoke-NovaBuild`
+- [Get-NovaUpdateNotificationPreference](./Get-NovaUpdateNotificationPreference.md)
+- [Set-NovaUpdateNotificationPreference](./Set-NovaUpdateNotificationPreference.md)
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)

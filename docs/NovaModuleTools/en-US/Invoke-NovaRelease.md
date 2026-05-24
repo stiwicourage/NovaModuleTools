@@ -325,7 +325,7 @@ and `-Confirm` support.
 
 ## RELATED LINKS
 
-- `Invoke-NovaBuild`
-- `Test-NovaBuild`
-- `Update-NovaModuleVersion`
-- `Publish-NovaModule`
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)
+- [Test-NovaBuild](./Test-NovaBuild.md)
+- [Update-NovaModuleVersion](./Update-NovaModuleVersion.md)
+- [Publish-NovaModule](./Publish-NovaModule.md)

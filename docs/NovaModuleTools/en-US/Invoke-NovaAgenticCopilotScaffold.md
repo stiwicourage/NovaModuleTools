@@ -203,5 +203,5 @@ This workflow does not persist `ShortName` to `project.json` and does not infer 
 
 ## RELATED LINKS
 
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Initialize-NovaModule.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Get-NovaProjectInfo.md
+- [Initialize-NovaModule](./Initialize-NovaModule.md)
+- [Get-NovaProjectInfo](./Get-NovaProjectInfo.md)
