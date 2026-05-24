@@ -20,6 +20,7 @@
 - [ ] Dependency or manifest changes (`project.json`, workflow dependencies, release tooling)
 - [ ] Security-sensitive change
 - [ ] Documentation-only change
+- [ ] Agentic Copilot Workflow + scaffold mirror + scaffold-sync guardrail test.
 - [ ] Other
 
 ## Review guidance

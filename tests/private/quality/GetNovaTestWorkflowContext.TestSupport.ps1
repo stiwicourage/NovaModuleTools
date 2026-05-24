@@ -20,12 +20,16 @@ $script:getPesterConfig = {
 }
 
 $script:getProjectInfo = {
-    param([Parameter(Mandatory)][object]$PesterSettings)
+    param(
+        [Parameter(Mandatory)][object]$PesterSettings,
+        [string]$ProjectRoot = '/tmp/nova-project'
+    )
+
     [pscustomobject]@{
         Pester = $PesterSettings
         BuildRecursiveFolders = $false
         TestsDir = 'tests'
-        ProjectRoot = '/tmp/nova-project'
-        ModuleFilePSM1 = '/tmp/nova-project/dist/TestProject/TestProject.psm1'
+        ProjectRoot = $ProjectRoot
+        ModuleFilePSM1 = (Join-Path $ProjectRoot 'dist/TestProject/TestProject.psm1')
     }
 }

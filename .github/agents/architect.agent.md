@@ -37,6 +37,7 @@ Design or reshape changes that cross public commands, private helper boundaries,
 ## Skills to use
 
 - `/powershell-module-development`
+- `/terminal-ux-design`
 - `/release-and-changelog`
 - `/markdown-authoring`
 - `/building-maintainable-code`

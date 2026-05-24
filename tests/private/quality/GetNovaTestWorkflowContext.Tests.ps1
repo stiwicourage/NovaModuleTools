@@ -55,6 +55,46 @@ Describe 'Get-NovaTestWorkflowContext' {
         $result = Get-NovaTestWorkflowContext -TestOption @{} -BoundParameters @{}
         & $AssertResult $result
     }
+
+    It 'expands configured coverage paths into concrete project-relative source files' {
+        $projectRoot = Join-Path $TestDrive 'coverage-project'
+        foreach ($relativePath in @(
+            'src/public/GetAlpha.ps1'
+            'src/private/GetBeta.ps1'
+            'src/private/quality/GetGamma.ps1'
+            'src/private/quality/duplicates/GetDelta.ps1'
+            'src/classes/NovaThing.ps1'
+        )) {
+            $filePath = Join-Path $projectRoot $relativePath
+            New-Item -ItemType Directory -Path (Split-Path -Parent $filePath) -Force | Out-Null
+            Set-Content -LiteralPath $filePath -Value '# test'
+        }
+
+        $pesterConfig = & $script:getPesterConfig
+        $projectInfo = & $script:getProjectInfo -ProjectRoot $projectRoot -PesterSettings ([ordered]@{
+            CodeCoverage = [ordered]@{
+                Enabled = $true
+                Path = @(
+                    'src/public/*.ps1'
+                    'src/private/**/*.ps1'
+                    'src/classes/*.ps1'
+                )
+            }
+        })
+
+        Mock Get-NovaProjectInfo {$projectInfo}
+        Mock New-PesterConfiguration {$pesterConfig}
+
+        $result = Get-NovaTestWorkflowContext -TestOption @{} -BoundParameters @{}
+
+        $result.PesterConfig.CodeCoverage.Path | Should -Be @(
+            'src/public/GetAlpha.ps1'
+            'src/private/GetBeta.ps1'
+            'src/private/quality/duplicates/GetDelta.ps1'
+            'src/private/quality/GetGamma.ps1'
+            'src/classes/NovaThing.ps1'
+        )
+    }
 }
 
 Describe 'Get-NovaTestWorkflowOperation' {
@@ -95,6 +135,16 @@ Describe 'Get-NovaConfiguredPesterCoveragePercentTarget' {
     }
     It 'returns the configured value as double when set' {
         Get-NovaConfiguredPesterCoveragePercentTarget -ProjectPesterSettings ([ordered]@{CodeCoverage = [ordered]@{Enabled = $true; CoveragePercentTarget = 99}}) | Should -Be 99.0
+    }
+}
+
+Describe 'Get-NovaConfiguredPesterCoveragePath' {
+    It 'returns an empty array when CodeCoverage is disabled' {
+        @(Get-NovaConfiguredPesterCoveragePath -ProjectPesterSettings ([ordered]@{CodeCoverage = [ordered]@{Enabled = $false; Path = @('src/private/**/*.ps1')}})).Count | Should -Be 0
+    }
+
+    It 'returns configured coverage paths when coverage is enabled' {
+        Get-NovaConfiguredPesterCoveragePath -ProjectPesterSettings ([ordered]@{CodeCoverage = [ordered]@{Enabled = $true; Path = @('src/public/*.ps1', 'src/private/**/*.ps1')}}) | Should -Be @('src/public/*.ps1', 'src/private/**/*.ps1')
     }
 }
 

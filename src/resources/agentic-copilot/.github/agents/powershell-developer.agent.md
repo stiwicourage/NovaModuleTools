@@ -32,6 +32,7 @@ Implement PowerShell command and helper changes in the {{ProjectName}} style.
 ## Skills to use
 
 - `/powershell-module-development`
+- `/terminal-ux-design`
 - `/pester-testing`
 - `/building-maintainable-code`
 

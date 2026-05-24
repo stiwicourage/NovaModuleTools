@@ -41,6 +41,7 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 
 ## Skills to use
 
+- `/terminal-ux-design`
 - `/building-maintainable-code`
 - `/documentation`
 - `/markdown-authoring`

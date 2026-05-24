@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - The workflow reads `ProjectName` and `Description` from `project.json`, requires a `ShortName` on every run for token replacement, and fails clearly when the project metadata or short name is invalid.
     - Nova refreshes only the approved managed Agentic Copilot paths under `.github/` plus `AGENTS.md` and `CONTRIBUTING.md`, while `README.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` are created only when they are missing.
     - The new cmdlet and CLI route prompt before overwriting managed scaffold content by default, and support non-interactive execution only through `-OverrideWarning` / `--override-warning` / `-o`.
+- Added `terminal-ux-design` to Nova's repository-local and scaffolded Agentic Copilot guidance.
+    - The new guidance combines Atlassian's 10 design principles for delightful CLIs with Jakob Nielsen's 10 usability heuristics for user interface design, and applies them to both the PowerShell cmdlet surface and any unix-style CLI alias surface (such as `% nova`) as terminal-first user interfaces.
+    - The new skill ships with a "two surfaces, two conventions" framing, a shared mapping table for concrete PowerShell cmdlet and CLI alias UX mechanisms, a universal instruction that points terminal-facing changes at the skill, and updated architect, implementation, and review agent entry points.
 
 ### Changed
 
@@ -19,6 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Removed
 
 ### Fixed
+
+- `Test-NovaBuild` now expands configured Pester coverage globs into concrete source files before invoking Pester, so nested helpers remain measurable in `artifacts/coverage.xml` while repository and scaffolded `project.json` defaults can stay on the simpler `src/private/**/*.ps1` entry.
 
 ### Security
 

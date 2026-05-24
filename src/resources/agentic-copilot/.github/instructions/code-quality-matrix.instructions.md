@@ -126,7 +126,7 @@ This file tells Agentic Copilot how to shape source code from the start. Test-sp
     - No dead code. Remove unreachable branches and unused private helpers.
     - No long or multi-responsibility identifiers. Use focused, intent-revealing names.
     - No magic literals. Lift unexplained numbers and strings into named constants, script variables, or lookup tables.
-    - No broad catches. Catch specific exceptions only when the layer adds context; otherwise let failures surface clearly through `Stop-NovaOperation` or a structured `ErrorRecord` instead of silent fallback.
+    - No broad catches. Catch specific exceptions only when the layer adds context; otherwise let failures surface clearly through `Stop-{{ShortName}}Operation` or a structured `ErrorRecord` instead of silent fallback.
     - Files must end with exactly one trailing newline and no extra blank lines at the bottom.
 - Common objection: "Style is taste." Style is repeatable. These items are not taste, they are signals reviewers and tools rely on.
 

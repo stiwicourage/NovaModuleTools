@@ -92,6 +92,23 @@ function Get-NovaConfiguredPesterCoveragePercentTarget {
     return [double]$coveragePercentTarget
 }
 
+function Get-NovaConfiguredPesterCoveragePath {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$ProjectPesterSettings
+    )
+
+    $codeCoverageSettings = Get-NovaPesterSettingValue -InputObject $ProjectPesterSettings -Name 'CodeCoverage'
+    if ($true -ne [bool](Get-NovaPesterSettingValue -InputObject $codeCoverageSettings -Name 'Enabled')) {
+        return @()
+    }
+
+    return @(
+        Get-NovaPesterSettingValue -InputObject $codeCoverageSettings -Name 'Path' |
+            Where-Object {-not [string]::IsNullOrWhiteSpace([string]$_)}
+    )
+}
+
 function Initialize-NovaPesterCoverageConfiguration {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Mutates PesterConfiguration state, not user-facing resources. ShouldProcess is not appropriate here.')]
     [CmdletBinding()]
@@ -109,6 +126,110 @@ function Initialize-NovaPesterCoverageConfiguration {
     if ($null -ne $coveragePercentTarget) {
         $PesterConfig.CodeCoverage.CoveragePercentTarget = $coveragePercentTarget
     }
+
+    $resolvedCoveragePath = @(Get-NovaResolvedPesterCoveragePath -ProjectInfo $ProjectInfo)
+    if ($resolvedCoveragePath.Count -gt 0) {
+        $PesterConfig.CodeCoverage.Path = $resolvedCoveragePath
+    }
+}
+
+function Get-NovaResolvedPesterCoveragePath {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$ProjectInfo
+    )
+
+    $coveragePath = @(Get-NovaConfiguredPesterCoveragePath -ProjectPesterSettings $ProjectInfo.Pester)
+    if ($coveragePath.Count -eq 0) {
+        return @()
+    }
+
+    $coverageFile = @(Get-NovaPesterCoverageFile -ProjectRoot $ProjectInfo.ProjectRoot)
+    $resolvedPath = New-Object 'System.Collections.Generic.List[string]'
+    foreach ($pattern in $coveragePath) {
+        Add-NovaResolvedCoveragePath -ResolvedPath $resolvedPath -CoverageFile $coverageFile -Pattern $pattern
+    }
+
+    return @($resolvedPath)
+}
+
+function Get-NovaPesterCoverageFile {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot
+    )
+
+    $resolvedProjectRoot = (Resolve-Path -LiteralPath $ProjectRoot -ErrorAction Stop).Path
+    foreach ($file in (Get-ChildItem -LiteralPath $resolvedProjectRoot -Recurse -File | Sort-Object FullName)) {
+        [pscustomobject]@{
+            FullPath = ConvertTo-NovaCoveragePathString -Path $file.FullName
+            RelativePath = ConvertTo-NovaCoveragePathString -Path ([System.IO.Path]::GetRelativePath($resolvedProjectRoot, $file.FullName))
+        }
+    }
+}
+
+function Add-NovaResolvedCoveragePath {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowEmptyCollection()][System.Collections.Generic.List[string]]$ResolvedPath,
+        [Parameter(Mandatory)][object[]]$CoverageFile,
+        [Parameter(Mandatory)][string]$Pattern
+    )
+
+    $patternVariant = @(Get-NovaCoveragePathPatternVariant -Pattern $Pattern)
+
+    foreach ($file in $CoverageFile) {
+        if ((Test-NovaCoveragePathMatch -CoverageFile $file -Pattern $patternVariant) -and -not $ResolvedPath.Contains($file.RelativePath)) {
+            $ResolvedPath.Add($file.RelativePath)
+        }
+    }
+}
+
+function Test-NovaCoveragePathMatch {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$CoverageFile,
+        [Parameter(Mandatory)][string[]]$Pattern
+    )
+
+    foreach ($item in $Pattern) {
+        $wildcardPattern = [System.Management.Automation.WildcardPattern]::new($item, [System.Management.Automation.WildcardOptions]::IgnoreCase)
+        if ($wildcardPattern.IsMatch($CoverageFile.RelativePath) -or $wildcardPattern.IsMatch($CoverageFile.FullPath)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Get-NovaCoveragePathPatternVariant {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Pattern
+    )
+
+    $patternVariant = New-Object 'System.Collections.Generic.List[string]'
+    $normalizedPattern = ConvertTo-NovaCoveragePathString -Path $Pattern
+    $patternVariant.Add($normalizedPattern)
+
+    $collapsedPattern = $normalizedPattern
+    while ($collapsedPattern.Contains('/**/')) {
+        $collapsedPattern = $collapsedPattern.Replace('/**/', '/')
+        if (-not $patternVariant.Contains($collapsedPattern)) {
+            $patternVariant.Add($collapsedPattern)
+        }
+    }
+
+    return @($patternVariant)
+}
+
+function ConvertTo-NovaCoveragePathString {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Path
+    )
+
+    return $Path -replace '\\', '/'
 }
 
 function Get-NovaPesterSettingValue {
