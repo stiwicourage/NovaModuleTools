@@ -45,6 +45,8 @@ Use `-Example` when you want the scaffold to start from the packaged example pro
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the scaffold target after the interactive answers have been collected, without creating folders, writing `project.json`, or initializing Git.
 
+During scaffold creation, Nova shows progress for the main setup phases and finishes with the created project root plus the next cmdlet to run.
+
 ## EXAMPLES
 
 ### EXAMPLE 1
@@ -149,6 +151,8 @@ Generated projects start with NovaModuleTools defaults for recursive discovery, 
 `Initialize-NovaModule` uses `SupportsShouldProcess`, so `Get-Help Initialize-NovaModule -Full` surfaces native
 `-WhatIf` and
 `-Confirm` support.
+
+Press `Ctrl+C` during the interactive prompt flow if you want to cancel before Nova creates the scaffold.
 
 ## RELATED LINKS
 

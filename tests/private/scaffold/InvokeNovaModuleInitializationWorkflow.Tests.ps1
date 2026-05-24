@@ -19,13 +19,21 @@ Describe 'Invoke-NovaModuleInitializationWorkflow' {
         Mock Write-NovaModuleProjectJson {}
         Mock Initialize-NovaModuleAgenticCopilotScaffold {}
         Mock Write-Message {}
+        Mock Write-Progress {}
 
         Invoke-NovaModuleInitializationWorkflow -WorkflowContext $script:context
 
         Assert-MockCalled Initialize-NovaModuleScaffold -Times 1
         Assert-MockCalled Write-NovaModuleProjectJson -Times 1
         Assert-MockCalled Initialize-NovaModuleAgenticCopilotScaffold -Times 0
-        Assert-MockCalled Write-Message -Times 1
+        Assert-MockCalled Write-Progress -Times 3
+        Assert-MockCalled Write-Message -Times 4
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $InputObject -eq 'Created Nova module scaffold: DemoModule' -and $color -eq 'Green'
+        }
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $InputObject -eq 'Invoke-NovaBuild'
+        }
     }
 
     It 'invokes the Agentic Copilot scaffold step when the answer set requests it' {
@@ -33,6 +41,7 @@ Describe 'Invoke-NovaModuleInitializationWorkflow' {
         Mock Write-NovaModuleProjectJson {}
         Mock Initialize-NovaModuleAgenticCopilotScaffold {}
         Mock Write-Message {}
+        Mock Write-Progress {}
 
         $contextWithAgentic = [pscustomobject]@{
             AnswerSet = @{ProjectName = 'DemoModule'; EnableAgenticCopilot = 'Yes'}
@@ -42,5 +51,26 @@ Describe 'Invoke-NovaModuleInitializationWorkflow' {
         Invoke-NovaModuleInitializationWorkflow -WorkflowContext $contextWithAgentic
 
         Assert-MockCalled Initialize-NovaModuleAgenticCopilotScaffold -Times 1
+        Assert-MockCalled Write-Progress -Times 4
+    }
+
+    It 'suggests Test-NovaBuild as the next step for the example scaffold' {
+        Mock Initialize-NovaModuleScaffold {}
+        Mock Write-NovaModuleProjectJson {}
+        Mock Initialize-NovaModuleAgenticCopilotScaffold {}
+        Mock Write-Message {}
+        Mock Write-Progress {}
+
+        $exampleContext = [pscustomobject]@{
+            AnswerSet = @{ProjectName = 'DemoModule'; EnableAgenticCopilot = 'No'}
+            Layout = [pscustomobject]@{Project = '/tmp/DemoModule'; ProjectJsonFile = '/tmp/DemoModule/project.json'}
+            Example = $true
+        }
+
+        Invoke-NovaModuleInitializationWorkflow -WorkflowContext $exampleContext
+
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $InputObject -eq 'Test-NovaBuild'
+        }
     }
 }
