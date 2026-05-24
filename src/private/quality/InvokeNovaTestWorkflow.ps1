@@ -5,34 +5,225 @@ function Invoke-NovaTestWorkflow {
         [switch]$ShouldRun
     )
 
-    if (Test-NovaTestWorkflowBuildRequested -WorkflowContext $WorkflowContext) {
-        $workflowParams = Get-NovaBuildCommandParameterMap -WorkflowParams $WorkflowContext.WorkflowParams -OverrideWarningRequested:(($WorkflowContext.PSObject.Properties.Name -contains 'OverrideWarningRequested') -and $WorkflowContext.OverrideWarningRequested)
-        Invoke-NovaBuild @workflowParams
+    $progressActivity = 'Running Nova test workflow'
+    $whatIfEnabled = Test-NovaWhatIfWorkflowContext -WorkflowContext $WorkflowContext
+    $testResult = $null
+    $shouldRunWorkflow = Test-NovaTestWorkflowShouldRun -WorkflowContext $WorkflowContext -BoundParameters $PSBoundParameters -ShouldRun:$ShouldRun
+
+    try {
+        Invoke-NovaTestWorkflowBuildStep -WorkflowContext $WorkflowContext -Activity $progressActivity -WhatIfEnabled:$whatIfEnabled
+
+        if (-not $shouldRunWorkflow) {
+            Write-NovaTestWorkflowPreviewResult -WorkflowContext $WorkflowContext -WhatIfEnabled:$whatIfEnabled
+            return
+        }
+
+        $testResult = Invoke-NovaTestWorkflowExecution -WorkflowContext $WorkflowContext -Activity $progressActivity
+    } finally {
+        Write-Progress -Activity $progressActivity -Completed
     }
 
-    if (-not (Test-NovaTestWorkflowShouldRun -WorkflowContext $WorkflowContext -BoundParameters $PSBoundParameters -ShouldRun:$ShouldRun)) {
+    Write-NovaTestWorkflowResult -WorkflowContext $WorkflowContext -TestResult $testResult
+}
+
+function Invoke-NovaTestWorkflowBuildStep {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
+        [Parameter(Mandatory)][string]$Activity,
+        [switch]$WhatIfEnabled
+    )
+
+    if (-not (Test-NovaTestWorkflowBuildRequested -WorkflowContext $WorkflowContext)) {
         return
     }
 
-    Initialize-NovaPesterArtifactDirectory -WorkflowContext $WorkflowContext
+    $buildCommandParameters = Get-NovaBuildCommandParameterMap -WorkflowParams (Get-NovaPropertyValue -InputObject $WorkflowContext -Name 'WorkflowParams') -OverrideWarningRequested:(($WorkflowContext.PSObject.Properties.Name -contains 'OverrideWarningRequested') -and $WorkflowContext.OverrideWarningRequested)
+    Invoke-NovaTestWorkflowStep -Activity $Activity -Status (Get-NovaTestWorkflowBuildStatus -WhatIfEnabled:$WhatIfEnabled) -PercentComplete 20 -Action {
+        Invoke-NovaBuild @buildCommandParameters
+    }
+}
+
+function Write-NovaTestWorkflowPreviewResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
+        [switch]$WhatIfEnabled
+    )
+
+    if (-not $WhatIfEnabled) {
+        return
+    }
+
+    Write-NovaTestWorkflowResult -WorkflowContext $WorkflowContext -WhatIfEnabled
+}
+
+function Invoke-NovaTestWorkflowExecution {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
+        [Parameter(Mandatory)][string]$Activity
+    )
+
+    Invoke-NovaTestWorkflowStep -Activity $Activity -Status 'Preparing the test result directory' -PercentComplete 40 -Action {
+        Initialize-NovaPesterArtifactDirectory -WorkflowContext $WorkflowContext
+    }
+
     $WorkflowContext.PesterConfig.TestResult.OutputPath = $WorkflowContext.TestResultPath
     $coverageTargetAssertion = Get-NovaCoverageTargetAssertionScriptBlock -WorkflowContext $WorkflowContext
+    $testResult = Invoke-NovaTestWorkflowStep -Activity $Activity -Status 'Running Pester tests' -PercentComplete 70 -Action {
+        Invoke-NovaPesterWithSuppressedProgress -Configuration $WorkflowContext.PesterConfig
+    }
+
+    Invoke-NovaTestWorkflowStep -Activity $Activity -Status 'Writing the test result report' -PercentComplete 85 -Action {
+        & $WorkflowContext.TestResultArtifactWriter.ScriptBlock -TestResult $testResult -OutputPath $WorkflowContext.TestResultPath -ReportWriter $WorkflowContext.TestResultReportWriter.ScriptBlock
+    }
+
+    if ($testResult.Result -ne 'Passed') {
+        Stop-NovaOperation -Message (Get-NovaTestWorkflowFailureMessage -WorkflowContext $WorkflowContext) -ErrorId 'Nova.Workflow.TestRunFailed' -Category InvalidOperation -TargetObject $WorkflowContext.TestResultPath
+    }
+
+    Invoke-NovaTestWorkflowStep -Activity $Activity -Status 'Checking the configured code coverage target' -PercentComplete 95 -Action {
+        & $coverageTargetAssertion -WorkflowContext $WorkflowContext -TestResult $testResult
+    }
+
+    return $testResult
+}
+
+function Invoke-NovaTestWorkflowStep {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Activity,
+        [Parameter(Mandatory)][string]$Status,
+        [Parameter(Mandatory)][int]$PercentComplete,
+        [Parameter(Mandatory)][scriptblock]$Action
+    )
+
+    Write-Progress -Activity $Activity -Status $Status -PercentComplete $PercentComplete
+    & $Action
+}
+
+function Get-NovaTestWorkflowBuildStatus {
+    [CmdletBinding()]
+    param(
+        [switch]$WhatIfEnabled
+    )
+
+    if ($WhatIfEnabled) {
+        return 'Previewing the build-before-test workflow'
+    }
+
+    return 'Building the current project state'
+}
+
+function Invoke-NovaPesterWithSuppressedProgress {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$Configuration
+    )
 
     $previousProgressPreference = $global:ProgressPreference
     $global:ProgressPreference = 'SilentlyContinue'
     try {
-        $testResult = Invoke-NovaPester -Configuration $WorkflowContext.PesterConfig
+        return Invoke-NovaPester -Configuration $Configuration
     } finally {
         $global:ProgressPreference = $previousProgressPreference
     }
+}
 
-    & $WorkflowContext.TestResultArtifactWriter.ScriptBlock -TestResult $testResult -OutputPath $WorkflowContext.TestResultPath -ReportWriter $WorkflowContext.TestResultReportWriter.ScriptBlock
+function Get-NovaTestWorkflowFailureMessage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext
+    )
 
-    if ($testResult.Result -ne 'Passed') {
-        Stop-NovaOperation -Message 'Tests failed' -ErrorId 'Nova.Workflow.TestRunFailed' -Category InvalidOperation -TargetObject $WorkflowContext.TestResultPath
+    return "Pester reported one or more failing tests. Review the output above and the test result file at $( $WorkflowContext.TestResultPath ), then rerun Test-NovaBuild."
+}
+
+function Write-NovaTestWorkflowResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
+        [AllowNull()][object]$TestResult,
+        [switch]$WhatIfEnabled
+    )
+
+    Write-Message (Get-NovaTestWorkflowStatusMessage -WorkflowContext $WorkflowContext -WhatIfEnabled:$WhatIfEnabled) -color Green
+    Write-Message "Results file: $( $WorkflowContext.TestResultPath )"
+
+    $coverageMessage = Get-NovaTestWorkflowCoverageMessage -WorkflowContext $WorkflowContext -TestResult $TestResult -WhatIfEnabled:$WhatIfEnabled
+    if (-not [string]::IsNullOrWhiteSpace($coverageMessage)) {
+        Write-Message $coverageMessage
     }
 
-    & $coverageTargetAssertion -WorkflowContext $WorkflowContext -TestResult $testResult
+    foreach ($line in (Get-NovaTestWorkflowNextStepLine -WhatIfEnabled:$WhatIfEnabled)) {
+        Write-Message $line
+    }
+}
+
+function Get-NovaTestWorkflowStatusMessage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
+        [switch]$WhatIfEnabled
+    )
+
+    if ($WhatIfEnabled) {
+        return "Test plan ready for $( $WorkflowContext.ProjectInfo.ProjectName )"
+    }
+
+    return "Pester tests passed for $( $WorkflowContext.ProjectInfo.ProjectName )"
+}
+
+function Get-NovaTestWorkflowCoverageMessage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
+        [AllowNull()][object]$TestResult,
+        [switch]$WhatIfEnabled
+    )
+
+    $coveragePercentTarget = Get-NovaConfiguredCoveragePercentTarget -WorkflowContext $WorkflowContext
+    if ($WhatIfEnabled) {
+        if ($null -eq $coveragePercentTarget) {
+            return $null
+        }
+
+        return "Configured coverage target: $( Format-NovaCoveragePercentValue -Value ([double]$coveragePercentTarget) )%"
+    }
+
+    $codeCoverage = Get-NovaPropertyValue -InputObject $TestResult -Name 'CodeCoverage'
+    $coveragePercent = Get-NovaPropertyValue -InputObject $codeCoverage -Name 'CoveragePercent'
+    if ($null -eq $coveragePercent -or [string]::IsNullOrWhiteSpace([string]$coveragePercent)) {
+        return $null
+    }
+
+    $formattedCoverage = Format-NovaCoveragePercentValue -Value ([double]$coveragePercent)
+    if ($null -eq $coveragePercentTarget) {
+        return "Measured code coverage: $formattedCoverage%"
+    }
+
+    $formattedTarget = Format-NovaCoveragePercentValue -Value ([double]$coveragePercentTarget)
+    return "Measured code coverage: $formattedCoverage% (target: $formattedTarget%)"
+}
+
+function Get-NovaTestWorkflowNextStepLine {
+    [CmdletBinding()]
+    param(
+        [switch]$WhatIfEnabled
+    )
+
+    if ($WhatIfEnabled) {
+        return @(
+            'Next step:'
+            'Run Test-NovaBuild without -WhatIf when you are ready to execute the test workflow.'
+        )
+    }
+
+    return @(
+        'Next step:'
+        'Publish-NovaModule -Local'
+    )
 }
 
 function Test-NovaTestWorkflowBuildRequested {
@@ -129,7 +320,7 @@ function Get-NovaDefaultCoverageTargetAssertionScriptBlock {
         $codeCoverage = & $propertyReader -InputObject $TestResult -Name 'CodeCoverage'
         $coveragePercent = & $propertyReader -InputObject $codeCoverage -Name 'CoveragePercent'
         if ($null -eq $coveragePercent -or [string]::IsNullOrWhiteSpace([string]$coveragePercent)) {
-            $exception = [System.IO.InvalidDataException]::new("Code coverage target $formattedTarget% is configured, but the Pester result did not include a coverage percentage.")
+            $exception = [System.IO.InvalidDataException]::new("Code coverage target $formattedTarget% is configured, but the Pester result did not include a coverage percentage. Review the coverage settings in project.json and the test result file at $resolvedTargetObject.")
             $errorRecord = [System.Management.Automation.ErrorRecord]::new($exception, 'Nova.Workflow.CodeCoveragePercentMissing', [System.Management.Automation.ErrorCategory]::InvalidData, $resolvedTargetObject)
             throw $errorRecord
         }
@@ -140,7 +331,7 @@ function Get-NovaDefaultCoverageTargetAssertionScriptBlock {
         }
 
         $formattedCoverage = & $percentFormatter -Value $coveragePercent
-        $exception = [System.InvalidOperationException]::new("Code coverage $formattedCoverage% did not meet the configured target $formattedTarget%.")
+        $exception = [System.InvalidOperationException]::new("Code coverage $formattedCoverage% did not meet the configured target $formattedTarget%. Review the failing tests or coverage settings, then rerun Test-NovaBuild.")
         $errorRecord = [System.Management.Automation.ErrorRecord]::new($exception, 'Nova.Workflow.CodeCoverageTargetNotMet', [System.Management.Automation.ErrorCategory]::InvalidOperation, $resolvedTargetObject)
         throw $errorRecord
     }.GetNewClosure()

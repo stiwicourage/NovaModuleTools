@@ -10,6 +10,8 @@ function Stop-NovaOperation {
 function Invoke-NovaBuild {}
 function Invoke-NovaPester {param($Configuration)}
 function Get-NovaBuildCommandParameterMap {param($WorkflowParams, [switch]$OverrideWarningRequested) return @{}}
+function Write-Message {param([string]$Text, [string]$color)}
+function Write-Progress {param([string]$Activity, [string]$Status, [int]$PercentComplete, [switch]$Completed)}
 function New-NovaInvokeNovaTestWorkflowContext {
     param(
         [hashtable]$PesterSettings = @{},
@@ -21,7 +23,7 @@ function New-NovaInvokeNovaTestWorkflowContext {
     return [pscustomobject]@{
         BuildRequested = $BuildRequested
         WorkflowParams = $WorkflowParams
-        ProjectInfo = [pscustomobject]@{Pester = $PesterSettings}
+        ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'; Pester = $PesterSettings}
         TestResultDirectory = $TestResultDirectory
         TestResultPath = Join-Path $TestResultDirectory 'TestResults.xml'
         PesterConfig = [pscustomobject]@{TestResult = [pscustomobject]@{OutputPath = $null}}

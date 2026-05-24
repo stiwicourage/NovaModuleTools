@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `New-NovaModulePackage` now shows progress for build validation and artifact creation, ends with the package target plus the next suggested deployment step, and uses a package-plan summary in `-WhatIf` mode.
 - `Publish-NovaModule` now shows progress for build validation, publish, local import, and CI restore phases, ends with the publish target plus a suggested verification step, and uses a publish-plan summary in `-WhatIf` mode.
 - `Set-NovaUpdateNotificationPreference` now ends with a clear success or preview summary, prints the settings file path, suggests `Get-NovaUpdateNotificationPreference` as the next verification step, and gives a more actionable validation error when no enable/disable switch is supplied.
+- `Test-NovaBuild` now shows progress across the main test phases, ends with the result file path plus a coverage summary and next-step hint when tests pass, uses a test-plan summary in `-WhatIf` mode, and fails with more actionable guidance when Pester or coverage checks fail.
 
 ### Deprecated
 
