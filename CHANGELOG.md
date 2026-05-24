@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `Invoke-NovaCli` now treats blank command input as root help, reports unknown commands with clearer recovery guidance, and ships a dedicated PlatyPS help topic for the PowerShell wrapper surface.
 - `Invoke-NovaRelease` now shows progress for the main release phases, ends with the publish target plus a next-step hint, and uses a plan summary instead of a success summary when `-WhatIf` previews the release.
 - `New-NovaModulePackage` now shows progress for build validation and artifact creation, ends with the package target plus the next suggested deployment step, and uses a package-plan summary in `-WhatIf` mode.
+- `Publish-NovaModule` now shows progress for build validation, publish, local import, and CI restore phases, ends with the publish target plus a suggested verification step, and uses a publish-plan summary in `-WhatIf` mode.
 
 ### Deprecated
 
