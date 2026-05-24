@@ -7,3 +7,4 @@ function Build-Help {param($ProjectInfo)}
 function Copy-ProjectResource {param($ProjectInfo)}
 function Invoke-NovaModuleUpdateNotificationSafely {}
 function Import-NovaBuiltModuleForCi {param($ProjectInfo)}
+function Write-Message {param([string]$Text, [string]$color)}

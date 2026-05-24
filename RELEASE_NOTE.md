@@ -19,6 +19,7 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 - `Initialize-NovaModule` now shows scaffold progress, ends with the project root and the next suggested cmdlet, and gives clearer recovery guidance when the target project folder already exists.
 - `Install-NovaCli` now prints the installed launcher path, suggests the next command to run, and gives a clearer `PATH` warning when the launcher directory is not yet available from the shell.
 - `Invoke-NovaAgenticCopilotScaffold` now shows apply progress, ends with the project root plus suggested review and validation steps, and gives clearer cancellation guidance when the overwrite warning is declined.
+- `Invoke-NovaBuild` now shows progress for the main build phases, ends with the output module directory plus the next suggested validation step, and explains the refreshed session when `-ContinuousIntegration` reloads the built module.
 
 ### Deprecated
 
