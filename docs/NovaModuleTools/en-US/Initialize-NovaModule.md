@@ -1,7 +1,7 @@
 ---
 document type: cmdlet
 external help file: NovaModuleTools-Help.xml
-HelpUri: ''
+HelpUri: 'https://www.novamoduletools.com/core-workflows.html#scaffold'
 Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 04/25/2026
@@ -44,6 +44,8 @@ Use `-Example` when you want the scaffold to start from the packaged example pro
 `Yes`, Nova asks for the short project name, adds the same starter package to either scaffold style, and merges the example README instead of replacing it with the generic starter README outright.
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the scaffold target after the interactive answers have been collected, without creating folders, writing `project.json`, or initializing Git.
+
+During scaffold creation, Nova shows progress for the main setup phases and finishes with the created project root plus the next cmdlet to run.
 
 ## EXAMPLES
 
@@ -150,7 +152,9 @@ Generated projects start with NovaModuleTools defaults for recursive discovery, 
 `-WhatIf` and
 `-Confirm` support.
 
+Press `Ctrl+C` during the interactive prompt flow if you want to cancel before Nova creates the scaffold.
+
 ## RELATED LINKS
 
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Get-NovaProjectInfo.md
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)
+- [Get-NovaProjectInfo](./Get-NovaProjectInfo.md)

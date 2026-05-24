@@ -66,6 +66,9 @@ Import-MarkdownCommandHelp -Path ./docs/{{ProjectName}}/en-US/<CommandName>.md |
 - The `external help file` field must always use the module name, not the command name: `{{ProjectName}}-Help.xml`. The `Module Name` field must match the project name. When both fields use the module name, Nova build produces a single `<ModuleName>-Help.xml` under `dist/<ModuleName>/en-US/`. If either field contains a command name instead, the build produces per-command XML files and the module manifest cannot find its help.
 - Keep the H1 title equal to the exact command name.
 - Preserve the standard PlatyPS section order with uppercase H2 headers: `SYNOPSIS`, `SYNTAX`, optional `ALIASES`, `DESCRIPTION`, `EXAMPLES`, `PARAMETERS`, `INPUTS`, `OUTPUTS`, `NOTES`, and `RELATED LINKS`.
+- In `## RELATED LINKS`, use only a bulleted list of Markdown links. Do not use bare URLs or backticked command names as list items.
+- Prefer relative links to sibling command-help files when the related topic has a matching file in `docs/{{ProjectName}}/en-US/`, for example `[Invoke-NovaBuild](./Invoke-NovaBuild.md)`.
+- Do not use GitHub blob URLs in shipped command help. If a relative command-help link is not suitable after PlatyPS validation, use the related topic's `novamoduletools.com` `HelpUri` instead.
 - Keep at least one example under `## EXAMPLES`.
 - Keep parameter sections as `### -ParameterName` blocks with the PlatyPS-generated YAML metadata code block.
 - Only hand-edit parameter metadata when PlatyPS cannot infer it correctly, especially `DefaultValue` and `SupportsWildcards`.
@@ -82,6 +85,7 @@ Import-MarkdownCommandHelp -Path ./docs/{{ProjectName}}/en-US/<CommandName>.md |
 - Use `Update-MarkdownCommandHelp` after command or parameter changes so syntax, aliases, and parameter metadata stay synchronized with the implementation.
 - Use `Test-MarkdownCommandHelp` as the quick structural gate before handoff; use `Import-MarkdownCommandHelp` diagnostics when you need more detail.
 - Use existing valid files under `docs/{{ProjectName}}/en-US/` as the structural template before inventing a new layout.
+- Validate any new `RELATED LINKS` target style through the real PlatyPS import/export path before applying it repo-wide.
 - Keep command help separate from contributor docs and project/site docs.
 
 ## Review expectations
@@ -90,4 +94,5 @@ Import-MarkdownCommandHelp -Path ./docs/{{ProjectName}}/en-US/<CommandName>.md |
 - Reviewers should flag help files where `external help file` contains a command name (e.g., `Get-Something-Help.xml`) instead of the module name (`{{ProjectName}}-Help.xml`). This produces per-command XML files that the module manifest cannot locate at runtime.
 - Reviewers should flag help files that would fail `Test-MarkdownCommandHelp` or produce diagnostics/errors when imported with `Import-MarkdownCommandHelp`.
 - Reviewers should flag any new public entry point that does not add its matching command-help file in the same change.
+- Reviewers should flag `RELATED LINKS` entries that use GitHub blob URLs, plain URLs, or bare/backticked command names instead of Markdown links.
 - Treat build errors from `Import-MarkdownCommandHelp` as a sign that the file is not valid PlatyPS help yet.

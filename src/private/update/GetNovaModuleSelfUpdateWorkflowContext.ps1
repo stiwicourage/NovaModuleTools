@@ -4,7 +4,7 @@ function Get-NovaModuleSelfUpdateWorkflowContext {
         [pscustomobject]$Preference,
         [pscustomobject]$InstalledModule,
         [pscustomobject]$LookupResult,
-        [int]$TimeoutMilliseconds = 10000
+        [hashtable]$WorkflowParams = @{}
     )
 
     $resolvedPreference = if ($null -ne $Preference) {
@@ -20,7 +20,7 @@ function Get-NovaModuleSelfUpdateWorkflowContext {
     $resolvedLookupResult = if ($null -ne $LookupResult) {
         $LookupResult
     } else {
-        Invoke-NovaModuleUpdateLookup -AllowPrereleaseNotifications:$resolvedPreference.PrereleaseNotificationsEnabled -TimeoutMilliseconds $TimeoutMilliseconds
+        Invoke-NovaModuleUpdateLookup -AllowPrereleaseNotifications:$resolvedPreference.PrereleaseNotificationsEnabled -TimeoutMilliseconds 10000
     }
 
     if ($null -eq $resolvedLookupResult) {
@@ -38,6 +38,7 @@ function Get-NovaModuleSelfUpdateWorkflowContext {
         Preference = $resolvedPreference
         InstalledModule = $resolvedInstalledModule
         LookupResult = $resolvedLookupResult
+        WorkflowParams = $WorkflowParams
         Plan = $plan
         Action = $action
     }

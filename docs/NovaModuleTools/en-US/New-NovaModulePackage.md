@@ -1,7 +1,7 @@
 ---
 document type: cmdlet
 external help file: NovaModuleTools-Help.xml
-HelpUri: ''
+HelpUri: 'https://www.novamoduletools.com/packaging-and-delivery.html#pack'
 Locale: en-US
 Module Name: NovaModuleTools
   ms.date: 04/26/2026
@@ -34,6 +34,8 @@ Use `-OverrideWarning` only when you intentionally want the nested build to cont
 `src/public` contains zero or multiple top-level functions.
 
 The package is written to `artifacts/packages/` by default. You can override generic package metadata through the optional `Package` section in `project.json`.
+
+During a packaging run, Nova shows progress for the build-validation phase and the artifact-creation phase. When packaging completes, Nova prints the package target together with the next suggested step. In `-WhatIf` mode, Nova ends with a package-plan summary instead of a package-created summary.
 
 Use this `project.json` shape when you want to control package types and the package output directory:
 
@@ -275,7 +277,9 @@ When `-SkipTests` is used, only `Test-NovaBuild` is skipped. Build still runs.
 
 Files under `src/public` are expected to contain exactly one top-level function each. `-OverrideWarning` bypasses that guard only for the current packaging run.
 
+Use `Ctrl+C` if you need to stop a running packaging workflow before the package artifacts are created.
+
 ## RELATED LINKS
 
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Test-NovaBuild.md
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)
+- [Test-NovaBuild](./Test-NovaBuild.md)

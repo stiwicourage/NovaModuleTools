@@ -1,7 +1,7 @@
 ---
 document type: cmdlet
 external help file: NovaModuleTools-Help.xml
-HelpUri: ''
+HelpUri: 'https://www.novamoduletools.com/packaging-and-delivery.html#publish'
 Locale: en-US
 Module Name: NovaModuleTools
   ms.date: 04/26/2026
@@ -45,9 +45,11 @@ Use `-ContinuousIntegration` when the same CI/self-hosting session should switch
 Use `-OverrideWarning` only when you intentionally want the nested build to continue even though a file under
 `src/public` contains zero or multiple top-level functions.
 
-This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the resolved publish target and workflow without building, testing, or publishing.
+This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` when you want the normal build-validation flow to run but the nested publish step to stay in preview mode.
 
 Use `-Confirm` when you want PowerShell to prompt before the publish workflow starts.
+
+During a publish run, Nova shows progress for the build-validation phase, the publish phase, the local import phase when applicable, and the CI restore phase when `-ContinuousIntegration` is used. When the run completes, Nova prints the publish target together with the next suggested verification step. In `-WhatIf` mode, Nova ends with a publish-plan summary instead of a publish-completed summary.
 
 ## EXAMPLES
 
@@ -89,7 +91,7 @@ Prompts before the repository publish workflow starts.
 PS> Publish-NovaModule -Local -WhatIf
 ```
 
-Previews the local publish workflow and target directory without making changes. No module copy or import happens when `-WhatIf` is used.
+Runs the normal build-validation flow, then previews the local publish target directory without copying or importing the module.
 
 ### EXAMPLE 6
 
@@ -300,8 +302,10 @@ When `-ContinuousIntegration` is used, Nova restores the built `dist/` module af
 `Publish-NovaModule` uses `SupportsShouldProcess`, so `Get-Help Publish-NovaModule -Full` should surface native
 `-WhatIf` and `-Confirm` support.
 
+Use `Ctrl+C` if you need to stop a running publish workflow before the publish step finishes.
+
 ## RELATED LINKS
 
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Test-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaRelease.md
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)
+- [Test-NovaBuild](./Test-NovaBuild.md)
+- [Invoke-NovaRelease](./Invoke-NovaRelease.md)

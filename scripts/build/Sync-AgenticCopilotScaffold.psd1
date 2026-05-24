@@ -139,35 +139,35 @@
             New = '- `docs/` - project documentation'
         }
         @{
-            Old = '- `.github/instructions/documentation.instructions.md`'
+            Old = "- ``.github/instructions/documentation.instructions.md```n"
             New = ''
         }
         @{
-            Old = '- `/quality tooling-quality`'
+            Old = "- ``/quality tooling-quality```n"
             New = ''
         }
         @{
-            Old = '- `/codescene-quality`'
+            Old = "- ``/codescene-quality```n"
             New = ''
         }
         @{
-            Old = '- `/guiding-refactoring-with-maintainability`'
+            Old = "- ``/guiding-refactoring-with-maintainability```n"
             New = ''
         }
         @{
-            Old = '- `/guiding-refactoring-with-code-health`'
+            Old = "- ``/guiding-refactoring-with-code-health```n"
             New = ''
         }
         @{
-            Old = '- `/safeguarding-ai-generated-code`'
+            Old = "- ``/safeguarding-ai-generated-code```n"
             New = ''
         }
         @{
-            Old = '- `/workflow guidance`'
+            Old = "- ``/workflow guidance```n"
             New = ''
         }
         @{
-            Old = '- `/documentation-html`'
+            Old = "- ``/documentation-html```n"
             New = ''
         }
         @{
@@ -449,6 +449,10 @@
         @{
             Old = ', or `nova` CLI route naming conventions.'
             New = '.'
+        }
+        @{
+            Old = 'Stop-NovaOperation'
+            New = 'Stop-{{ShortName}}Operation'
         }
     )
 }

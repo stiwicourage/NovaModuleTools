@@ -186,6 +186,12 @@ Describe 'Invoke-NovaCliCommandRoute' {
         Invoke-NovaCliCommandRoute -InvocationContext (New-TestContext -Command 'init') | Should -Be 'init'
     }
 
+    It 'dispatches copilot' {
+        Mock Invoke-NovaCliCopilotCommand {'copilot'}
+        Mock Confirm-NovaCliRoutedCommand {}
+        Invoke-NovaCliCommandRoute -InvocationContext (New-TestContext -Command 'copilot') | Should -Be 'copilot'
+    }
+
     It 'dispatches bump' {
         Mock Invoke-NovaCliBumpRouteCommand { 'bumped' }
         Mock Confirm-NovaCliRoutedCommand {}
@@ -225,6 +231,16 @@ Describe 'Invoke-NovaCliCommandRoute' {
 
     It 'throws on unknown command' {
         Mock Confirm-NovaCliRoutedCommand {}
-        {Invoke-NovaCliCommandRoute -InvocationContext (New-TestContext -Command 'bogus')} | Should -Throw -ErrorId 'Nova.Validation.UnknownCliCommand'
+        $record = $null
+
+        try {
+            Invoke-NovaCliCommandRoute -InvocationContext (New-TestContext -Command 'bogus')
+        } catch {
+            $record = $_
+        }
+
+        $record | Should -Not -BeNullOrEmpty
+        $record.FullyQualifiedErrorId | Should -Be 'Nova.Validation.UnknownCliCommand'
+        $record.Exception.Message | Should -Be "Unknown nova command: bogus. Run 'nova --help' to list available commands, or 'nova --help <command>' for command-specific help."
     }
 }

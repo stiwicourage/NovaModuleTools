@@ -6,12 +6,12 @@ function Initialize-NovaModuleScaffold {
         [switch]$Example
     )
 
-    if (Test-Path $Paths.Project) {
-        Stop-NovaOperation -Message 'Project already exists, aborting' -ErrorId 'Nova.Workflow.ScaffoldProjectAlreadyExists' -Category ResourceExists -TargetObject $Paths.Project
+    if (Test-Path -LiteralPath $Paths.Project) {
+        Stop-NovaOperation -Message "Project folder already exists: $( $Paths.Project ). Choose a different project name or remove or move the existing folder before running Initialize-NovaModule again." -ErrorId 'Nova.Workflow.ScaffoldProjectAlreadyExists' -Category ResourceExists -TargetObject $Paths.Project
     }
 
-    Write-Message "`nStarted Module Scaffolding" -color Green
-    Write-Message 'Setting up Directories'
+    Write-Message 'Starting Nova module scaffold' -color Green
+    Write-Message 'Creating project directories'
 
     if ($Example) {
         Initialize-NovaExampleModuleScaffold -Paths $Paths
@@ -21,7 +21,7 @@ function Initialize-NovaModuleScaffold {
 
     if ($Answer.EnableGit -eq 'Yes') {
         Update-NovaGitIgnore -ProjectRoot $Paths.Project -Confirm:$false
-        Write-Message 'Initialize Git Repo'
+        Write-Message 'Initializing Git repository'
         New-InitiateGitRepo -DirectoryPath $Paths.Project
     }
 }
@@ -39,7 +39,7 @@ function Initialize-NovaDefaultModuleScaffold {
     }
 
     if ($Answer.EnablePester -eq 'Yes') {
-        Write-Message 'Include Pester Configs'
+        Write-Message 'Creating tests folder'
         New-Item -ItemType Directory -Path $Paths.Tests | Out-Null
     }
 }
@@ -50,7 +50,7 @@ function Initialize-NovaExampleModuleScaffold {
         [Parameter(Mandatory)][pscustomobject]$Paths
     )
 
-    Write-Message 'Copy example project template'
+    Write-Message 'Copying packaged example project'
     New-Item -ItemType Directory -Path $Paths.Project | Out-Null
     Copy-NovaExampleProjectTemplate -DestinationPath $Paths.Project
 }

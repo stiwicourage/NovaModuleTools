@@ -1,7 +1,7 @@
 ---
 document type: cmdlet
 external help file: NovaModuleTools-Help.xml
-HelpUri: ''
+HelpUri: 'https://www.novamoduletools.com/versioning-and-updates.html#notification-preferences'
 Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 04/25/2026
@@ -38,6 +38,8 @@ The same stored preference is also used by `Update-NovaModuleTool` (alias: `Upda
 
 Stable self-updates remain available and do not require prerelease eligibility.
 
+When the preference changes, Nova prints the settings file path together with the next recommended verification command. In `-WhatIf` mode, Nova ends with a preview summary instead of writing the preference file.
+
 ## EXAMPLES
 
 ### EXAMPLE 1
@@ -46,7 +48,7 @@ Stable self-updates remain available and do not require prerelease eligibility.
 PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications
 ```
 
-Turns off prerelease self-update eligibility and restricts `Update-NovaModuleTool` to stable releases only.
+Turns off prerelease self-update eligibility, keeps stable releases available, and suggests `Get-NovaUpdateNotificationPreference` as the next verification step.
 
 ### EXAMPLE 2
 
@@ -55,7 +57,7 @@ PS> Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications
 ```
 
 Turns prerelease self-update eligibility back on, which allows `Update-NovaModuleTool` /
-`Update-NovaModuleTools` to consider a prerelease target again.
+`Update-NovaModuleTools` to consider a prerelease target again and suggests `Get-NovaUpdateNotificationPreference` as the next verification step.
 
 ### EXAMPLE 3
 
@@ -63,7 +65,7 @@ Turns prerelease self-update eligibility back on, which allows `Update-NovaModul
 PS> Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications -WhatIf
 ```
 
-Previews the change that would disable prerelease self-update eligibility.
+Previews the change that would disable prerelease self-update eligibility without writing the settings file.
 
 ### EXAMPLE 4
 
@@ -195,7 +197,9 @@ Returns the current prerelease self-update state, the always-available stable-up
 
 Use this command together with `Get-NovaUpdateNotificationPreference` when you want to confirm the stored setting.
 
+Use `-WhatIf` or `-Confirm` when you want an easy way to preview or stop the change before the settings file is updated.
+
 ## RELATED LINKS
 
-- `Get-NovaUpdateNotificationPreference`
-- `Update-NovaModuleTool`
+- [Get-NovaUpdateNotificationPreference](./Get-NovaUpdateNotificationPreference.md)
+- [Update-NovaModuleTool](./Update-NovaModuleTools.md)

@@ -1,7 +1,7 @@
 ---
 document type: cmdlet
 external help file: NovaModuleTools-Help.xml
-HelpUri: ''
+HelpUri: 'https://www.novamoduletools.com/packaging-and-delivery.html#release'
 Locale: en-US
 Module Name: NovaModuleTools
   ms.date: 05/03/2026
@@ -56,6 +56,8 @@ When local release mode is selected, the resolved local publish target is previe
 `Publish-NovaModule -Local`. Unlike `Publish-NovaModule -Local`, `Invoke-NovaRelease` does not import the published module into the current session after publishing; it returns the version result for automation-friendly release flows.
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the entire release workflow and resolved publish target without building, testing, versioning, or publishing.
+
+During the workflow, Nova shows progress for the main release phases. When the workflow completes, Nova prints the publish target and a short next-step hint. In `-WhatIf` mode, Nova ends with a release-plan summary instead of a release-complete message.
 
 ## EXAMPLES
 
@@ -323,9 +325,11 @@ When `-ContinuousIntegration` is used, the release workflow restores the built `
 `Invoke-NovaRelease` uses `SupportsShouldProcess`, so `Get-Help Invoke-NovaRelease -Full` surfaces native `-WhatIf`
 and `-Confirm` support.
 
+Use `Ctrl+C` if you need to stop a running release before all phases complete.
+
 ## RELATED LINKS
 
-- `Invoke-NovaBuild`
-- `Test-NovaBuild`
-- `Update-NovaModuleVersion`
-- `Publish-NovaModule`
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)
+- [Test-NovaBuild](./Test-NovaBuild.md)
+- [Update-NovaModuleVersion](./Update-NovaModuleVersion.md)
+- [Publish-NovaModule](./Publish-NovaModule.md)

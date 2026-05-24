@@ -9,6 +9,7 @@ Describe 'Update-NovaModuleVersion' {
     BeforeEach {
         $script:ciActivation = [pscustomobject]@{ShouldReturn=$false; Result=$null}
         $script:ctxArgs = $null; $script:invoked = $false
+        $script:workflowArgs = $null
         $script:workflowResult = [pscustomobject]@{NewVersion='1.1.0'}
         $script:outputResult = $null
     }
@@ -27,9 +28,20 @@ Describe 'Update-NovaModuleVersion' {
         $result.NewVersion | Should -Be '1.1.0'
     }
 
+    It 'forwards the WhatIf preview flags to the workflow' {
+        Update-NovaModuleVersion -Path . -WhatIf | Out-Null
+        $script:workflowArgs.ShouldRun | Should -BeFalse
+        $script:workflowArgs.WhatIfEnabled | Should -BeTrue
+    }
+
     It 'returns nothing when the workflow returns null' {
         $script:workflowResult = $null
         Update-NovaModuleVersion -Path . | Should -BeNullOrEmpty
         $script:outputResult | Should -BeNullOrEmpty
+    }
+
+    It 'defaults Path from the current location when Path is omitted' {
+        Update-NovaModuleVersion | Out-Null
+        $script:ctxArgs.ProjectRoot | Should -Be (Get-Location).Path
     }
 }

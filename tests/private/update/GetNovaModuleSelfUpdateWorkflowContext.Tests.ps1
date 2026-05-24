@@ -28,6 +28,17 @@ Describe 'Get-NovaModuleSelfUpdateWorkflowContext' {
         $ctx.Action | Should -Be 'Update NovaModuleTools to prerelease version 3.0.0-rc1'
     }
 
+    It 'carries forwarded workflow parameters into the context' {
+        Mock Read-NovaUpdateNotificationPreference {[pscustomobject]@{PrereleaseNotificationsEnabled=$false}}
+        Mock Get-NovaInstalledModuleVersionInfo {[pscustomobject]@{Version='1.0.0'}}
+        Mock Invoke-NovaModuleUpdateLookup {[pscustomobject]@{Version='2.0.0'}}
+        Mock Get-NovaModuleSelfUpdatePlan {[pscustomobject]@{TargetVersion='2.0.0'; IsPrereleaseTarget=$false}}
+
+        $ctx = Get-NovaModuleSelfUpdateWorkflowContext -WorkflowParams @{WhatIf = $true}
+
+        $ctx.WorkflowParams.WhatIf | Should -BeTrue
+    }
+
     It 'throws when no lookup result is available' {
         Mock Read-NovaUpdateNotificationPreference {[pscustomobject]@{PrereleaseNotificationsEnabled=$false}}
         Mock Get-NovaInstalledModuleVersionInfo {[pscustomobject]@{Version='1.0.0'}}

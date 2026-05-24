@@ -38,4 +38,13 @@ Describe 'Publish-NovaBuiltModule' {
         Publish-NovaBuiltModule -ProjectInfo $script:project
         Should -Invoke Publish-NovaBuiltModuleToDirectory -Times 1 -ParameterFilter {$ModuleDirectoryPath -eq '/local/resolved'}
     }
+
+    It 'uses Get-NovaProjectInfo when ProjectInfo is not supplied' {
+        Mock Get-NovaProjectInfo { return $script:project }
+        Mock Publish-NovaBuiltModuleToDirectory {}
+        Mock Resolve-NovaLocalPublishPath {return '/local/resolved'}
+        Publish-NovaBuiltModule
+        Should -Invoke Get-NovaProjectInfo -Times 1
+        Should -Invoke Publish-NovaBuiltModuleToDirectory -Times 1 -ParameterFilter {$ProjectInfo -eq $script:project}
+    }
 }

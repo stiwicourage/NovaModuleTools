@@ -42,25 +42,27 @@ Describe 'Build-Manifest' {
         $manifest.Description | Should -Be 'A module'
     }
 
-    It 'adds resources/ paths when CopyResourcesToModuleRoot is false' {
+    It 'records resource manifest entries for CopyResourcesToModuleRoot=<CopyResourcesToModuleRoot>' -ForEach @(
+        @{
+            CopyResourcesToModuleRoot = $false
+            ExpectedFormat = 'resources/MyFormat.Format.ps1xml'
+            ExpectedType = 'resources/MyTypes.Types.ps1xml'
+        }
+        @{
+            CopyResourcesToModuleRoot = $true
+            ExpectedFormat = 'MyFormat.Format.ps1xml'
+            ExpectedType = 'MyTypes.Types.ps1xml'
+        }
+    ) {
+        $script:ctx.CopyResourcesToModuleRoot = $CopyResourcesToModuleRoot
         Set-Content -Path (Join-Path $script:ctx.ResourcesDir 'MyFormat.Format.ps1xml') -Value '<x/>'
         Set-Content -Path (Join-Path $script:ctx.ResourcesDir 'MyTypes.Types.ps1xml') -Value '<x/>'
         Mock Get-NovaBuildProjectInfo { $script:ctx }
         Mock Assert-ManifestSchema {}
         Build-Manifest -ProjectInfo ([pscustomobject]@{})
         $manifest = Import-PowerShellDataFile -Path $script:ctx.ManifestFilePSD1
-        ($manifest.FormatsToProcess -join ',') | Should -Match 'resources'
-        ($manifest.TypesToProcess -join ',') | Should -Match 'resources'
-    }
-
-    It 'adds bare filenames when CopyResourcesToModuleRoot is true' {
-        $script:ctx.CopyResourcesToModuleRoot = $true
-        Set-Content -Path (Join-Path $script:ctx.ResourcesDir 'MyFormat.Format.ps1xml') -Value '<x/>'
-        Mock Get-NovaBuildProjectInfo { $script:ctx }
-        Mock Assert-ManifestSchema {}
-        Build-Manifest -ProjectInfo ([pscustomobject]@{})
-        $manifest = Import-PowerShellDataFile -Path $script:ctx.ManifestFilePSD1
-        $manifest.FormatsToProcess | Should -Be 'MyFormat.Format.ps1xml'
+        $manifest.FormatsToProcess | Should -Be $ExpectedFormat
+        $manifest.TypesToProcess | Should -Be $ExpectedType
     }
 
     It 'sets Prerelease when version has a prerelease label' {

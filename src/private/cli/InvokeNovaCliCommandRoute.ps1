@@ -191,6 +191,9 @@ function Invoke-NovaCliCommandRoute {
         'init' {
             return Invoke-NovaCliInitCommand -Arguments $InvocationContext.Arguments -ForwardedParameters $mutatingCommonParameters -WhatIfEnabled:$InvocationContext.WhatIfEnabled
         }
+        'copilot' {
+            return Invoke-NovaCliCopilotCommand -Arguments $InvocationContext.Arguments -CommonParameters $InvocationContext.CommonParameters -MutatingCommonParameters $InvocationContext.MutatingCommonParameters
+        }
         'bump' {
             return Invoke-NovaCliBumpRouteCommand -InvocationContext $InvocationContext
         }
@@ -213,7 +216,7 @@ function Invoke-NovaCliCommandRoute {
             return Get-NovaCliHelp
         }
         default {
-            Stop-NovaOperation -Message "Unknown command: <$command> | Use 'nova --help' to see available commands." -ErrorId 'Nova.Validation.UnknownCliCommand' -Category InvalidArgument -TargetObject $command
+            Stop-NovaOperation -Message "Unknown nova command: $command. Run 'nova --help' to list available commands, or 'nova --help <command>' for command-specific help." -ErrorId 'Nova.Validation.UnknownCliCommand' -Category InvalidArgument -TargetObject $command
         }
     }
 }

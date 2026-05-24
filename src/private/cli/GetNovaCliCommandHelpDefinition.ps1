@@ -4,6 +4,7 @@ function Get-NovaCliHelpCommandNameList {
 
     return @(
         'init'
+        'copilot'
         'info'
         'version'
         'build'

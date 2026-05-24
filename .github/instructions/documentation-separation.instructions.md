@@ -20,6 +20,10 @@ NovaModuleTools has multiple documentation surfaces with different audiences. Ke
 - Do not write cmdlet help markdown as if it were `nova` CLI documentation.
 - Use CLI syntax in CLI-oriented website docs when a CLI variant exists.
 - Use cmdlet syntax in help markdown and PowerShell-specific contributor guidance.
+- On website pages that support the command-surface toggle, keep surface-specific wording behind the matching visibility gate.
+    - CLI-only flags, labels, and guidance belong in elements marked with `data-command-visibility="command-line"`.
+    - PowerShell-only parameters, labels, and guidance belong in elements marked with `data-command-visibility="powershell"`.
+    - Shared prose should stay surface-neutral instead of mixing `--option` and `-Parameter` spellings in the same always-visible paragraph.
 
 ## Allowed exception
 
@@ -33,6 +37,7 @@ NovaModuleTools has multiple documentation surfaces with different audiences. Ke
 - Does this page describe a `nova` workflow or a PowerShell cmdlet workflow?
 - If a `nova` command exists, is the website doc using it instead of the cmdlet?
 - If a cmdlet is shown in website docs, is it there because no CLI variant exists?
+- If the page uses the command-surface toggle, do the visible labels, flags, and parameter names match the selected surface?
 - Would an end user mistake this page for cmdlet help?
 
 ## Follow-up expectations

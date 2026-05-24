@@ -1,7 +1,7 @@
 ---
 document type: cmdlet
 external help file: NovaModuleTools-Help.xml
-HelpUri: ''
+HelpUri: 'https://www.novamoduletools.com/core-workflows.html#build'
 Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 04/25/2026
@@ -28,6 +28,8 @@ PS> Invoke-NovaBuild [-ContinuousIntegration] [-OverrideWarning] [-WhatIf] [-Con
 `Invoke-NovaBuild` runs the NovaModuleTools build pipeline for the current project.
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the build target without clearing `dist/` or generating new build output.
+
+During a real build, Nova shows progress for the main build phases and ends with the output module directory plus the next suggested validation step.
 
 Use `-ContinuousIntegration` when the same PowerShell session needs to keep using the freshly built `dist/` module after the build completes. In CI/self-hosting flows, that re-activates the built module before the command returns.
 
@@ -62,7 +64,7 @@ If `Preamble` is configured, those lines are written at the very top of the gene
 PS> Invoke-NovaBuild
 ```
 
-Builds the current project into `dist/<ProjectName>/`.
+Builds the current project into `dist/<ProjectName>/`, prints the output module directory, and suggests `Test-NovaBuild` as the next validation step.
 
 ### EXAMPLE 2
 
@@ -70,7 +72,7 @@ Builds the current project into `dist/<ProjectName>/`.
 PS> Invoke-NovaBuild -Verbose
 ```
 
-Builds the current project and writes verbose progress for the build workflow.
+Builds the current project, shows phase progress for the build workflow, and writes verbose details from the underlying build helpers.
 
 ### EXAMPLE 3
 
@@ -172,9 +174,11 @@ When `-ContinuousIntegration` is used together with a real build, the command re
 
 Files under `src/public` are expected to contain exactly one top-level function each. Use `-OverrideWarning` only when you intentionally want to bypass that guard for the current build.
 
+Use `Ctrl+C` if you need to stop a running build before all phases complete.
+
 ## RELATED LINKS
 
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Get-NovaProjectInfo.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Test-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Publish-NovaModule.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Update-NovaModuleTools.md
+- [Get-NovaProjectInfo](./Get-NovaProjectInfo.md)
+- [Test-NovaBuild](./Test-NovaBuild.md)
+- [Publish-NovaModule](./Publish-NovaModule.md)
+- [Update-NovaModuleTool](./Update-NovaModuleTools.md)

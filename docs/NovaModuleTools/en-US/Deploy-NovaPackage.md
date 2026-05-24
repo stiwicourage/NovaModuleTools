@@ -1,10 +1,10 @@
----
+﻿---
 document type: cmdlet
 external help file: NovaModuleTools-Help.xml
-HelpUri: ''
+HelpUri: https://www.novamoduletools.com/packaging-and-delivery.html#upload
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/25/2026
+ms.date: 05.24.2026
 PlatyPS schema version: 2024-05-01
 title: Deploy-NovaPackage
 ---
@@ -19,9 +19,14 @@ Uploads one or more generated package artifacts to a raw HTTP endpoint.
 
 ### __AllParameterSets
 
-```powershell
-PS> Deploy-NovaPackage [[-PackagePath] <string[]>] [[-PackageType] <string[]>] [[-Url] <string>] [[-Repository] <string>] [[-UploadPath] <string>] [[-Headers] <hashtable>] [[-Token] <string>] [[-TokenEnvironmentVariable] <string>] [[-AuthenticationScheme] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
+Deploy-NovaPackage [[-PackagePath] <string[]>] [[-PackageType] <string[]>] [[-Url] <string>]
+ [[-Repository] <string>] [-WhatIf] [-Confirm] [-UploadPath <string>] [-Headers <hashtable>]
+ [-Token <string>] [-TokenEnvironmentVariable <string>] [-AuthenticationScheme <string>]
+ [<CommonParameters>]
+```
+
+## ALIASES
 
 ## DESCRIPTION
 
@@ -41,6 +46,8 @@ Use `-Url` when CI/CD or an ad-hoc script should upload directly to a raw endpoi
 This command is intentionally separate from `Publish-NovaModule`. `Deploy-NovaPackage` performs raw HTTP artifact uploads, while `Publish-NovaModule` remains focused on PowerShell repository publishing.
 
 When you run `Deploy-NovaPackage -Confirm`, PowerShell uses its native confirmation prompt against the full resolved upload set instead of prompting once per artifact.
+
+Before uploads start, `Deploy-NovaPackage` prints a concise summary of the resolved upload set. During multi-artifact uploads it shows progress, and after success it prints a short completion summary plus a verification hint while still returning result objects for automation.
 
 ## EXAMPLES
 
@@ -87,10 +94,10 @@ Uploads the explicitly selected package files instead of discovering them from t
 ### EXAMPLE 6
 
 ```powershell
-PS> Deploy-NovaPackage -Repository LocalNexus -WhatIf
+PS> Deploy-NovaPackage -PackageType @('NuGet', 'Zip') -Repository LocalNexus
 ```
 
-Previews which package artifacts would be uploaded and which destination URLs would be used.
+Uploads both matching `.nupkg` and `.zip` artifacts, shows progress as each artifact is sent, and prints a short completion summary with a suggested verification step.
 
 ### EXAMPLE 7
 
@@ -102,175 +109,6 @@ Uses PowerShell's native confirmation prompt for the full resolved upload set be
 
 ## PARAMETERS
 
-### -PackagePath
-
-Optional explicit package file path list. When omitted, the command resolves matching artifacts from the configured package output directory.
-
-```yaml
-Type: System.String[]
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: [ ]
-ParameterSets:
-  - Name: (All)
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: [ ]
-HelpMessage: ''
-```
-
-### -PackageType
-
-Optional package type filter. Supported values follow the same normalization as `Package.Types`, including `NuGet`,
-`Zip`, `.nupkg`, and `.zip`.
-
-```yaml
-Type: System.String[]
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: [ ]
-ParameterSets:
-  - Name: (All)
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: [ ]
-HelpMessage: ''
-```
-
-### -Url
-
-Explicit raw upload base URL. This takes precedence over repository or package configuration.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: [ ]
-ParameterSets:
-  - Name: (All)
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: [ ]
-HelpMessage: ''
-```
-
-### -Repository
-
-Repository name to resolve from `Package.Repositories`.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: [ ]
-ParameterSets:
-  - Name: (All)
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: [ ]
-HelpMessage: ''
-```
-
-### -UploadPath
-
-Optional extra path segment appended between the resolved base URL and the uploaded package file name.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: [ ]
-ParameterSets:
-  - Name: (All)
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: [ ]
-HelpMessage: ''
-```
-
-### -Headers
-
-Optional additional HTTP headers. These are merged with `Package.Headers` and repository-specific headers.
-
-```yaml
-Type: System.Collections.Hashtable
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: [ ]
-ParameterSets:
-  - Name: (All)
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: [ ]
-HelpMessage: ''
-```
-
-### -Token
-
-Optional explicit token value used to populate the resolved authentication header.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: [ ]
-ParameterSets:
-  - Name: (All)
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: [ ]
-HelpMessage: ''
-```
-
-### -TokenEnvironmentVariable
-
-Optional environment variable name that holds the upload token.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: [ ]
-ParameterSets:
-  - Name: (All)
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: [ ]
-HelpMessage: ''
-```
-
 ### -AuthenticationScheme
 
 Optional authentication scheme prefix used when formatting the resolved authentication header value.
@@ -279,38 +117,16 @@ Optional authentication scheme prefix used when formatting the resolved authenti
 Type: System.String
 DefaultValue: ''
 SupportsWildcards: false
-Aliases: [ ]
+Aliases: []
 ParameterSets:
-  - Name: (All)
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
 DontShow: false
-AcceptedValues: [ ]
-HelpMessage: ''
-```
-
-### -WhatIf
-
-Shows what would happen if the cmdlet runs. The cmdlet is not run.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases:
-  - wi
-ParameterSets:
-  - Name: (All)
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: [ ]
+AcceptedValues: []
 HelpMessage: ''
 ```
 
@@ -323,24 +139,227 @@ Type: System.Management.Automation.SwitchParameter
 DefaultValue: False
 SupportsWildcards: false
 Aliases:
-  - cf
+- cf
 ParameterSets:
-  - Name: (All)
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
 DontShow: false
-AcceptedValues: [ ]
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Headers
+
+Optional additional HTTP headers. These are merged with `Package.Headers` and repository-specific headers.
+Optional additional HTTP headers.
+These are merged with `Package.Headers` and repository-specific headers.
+
+```yaml
+Type: System.Collections.Hashtable
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -PackagePath
+
+Optional explicit package file path list. When omitted, the command resolves matching artifacts from the configured package output directory.
+Optional explicit package file path list.
+When omitted, the command resolves matching artifacts from the configured package output directory.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -PackageType
+
+Optional package type filter. Supported values follow the same normalization as `Package.Types`, including `NuGet`,
+`Zip`, `.nupkg`, and `.zip`.
+Optional package type filter.
+Supported values follow the same normalization as `Package.Types`, including `NuGet`,
+`Zip`, `.nupkg`, and `.zip`.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 1
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Repository
+
+Repository name to resolve from `Package.Repositories`.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 3
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Token
+
+Optional explicit token value used to populate the resolved authentication header.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -TokenEnvironmentVariable
+
+Optional environment variable name that holds the upload token.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -UploadPath
+
+Optional extra path segment appended between the resolved base URL and the uploaded package file name.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Url
+
+Explicit raw upload base URL. This takes precedence over repository or package configuration.
+Explicit raw upload base URL.
+This takes precedence over repository or package configuration.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -WhatIf
+
+Shows what would happen if the cmdlet runs. The cmdlet is not run.
+Shows what would happen if the cmdlet runs.
+The cmdlet is not run.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases:
+- wi
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
 HelpMessage: ''
 ```
 
 ### CommonParameters
 
-This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`, `-ErrorVariable`, `-InformationAction`,
-`-InformationVariable`, `-OutBuffer`, `-OutVariable`, `-PipelineVariable`, `-ProgressAction`, `-Verbose`,
-`-WarningAction`, `-WarningVariable`, `-WhatIf`, and `-Confirm`.
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -363,5 +382,5 @@ If no upload target can be resolved, `Deploy-NovaPackage` fails fast with a clea
 
 ## RELATED LINKS
 
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/New-NovaModulePackage.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Publish-NovaModule.md
+- [New-NovaModulePackage](./New-NovaModulePackage.md)
+- [Publish-NovaModule](./Publish-NovaModule.md)

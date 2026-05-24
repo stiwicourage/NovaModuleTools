@@ -109,6 +109,76 @@ function Test-NovaModuleAgenticCopilotTemplateFileEnabled {
     return $Answer.ContainsKey('EnablePester') -and $Answer.EnablePester -eq 'Yes'
 }
 
+function Test-NovaModuleAgenticCopilotPathMatchesPolicyEntry {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$RelativePath,
+        [Parameter(Mandatory)][string]$Entry
+    )
+
+    if ( $Entry.EndsWith('/', [System.StringComparison]::Ordinal)) {
+        return $RelativePath.StartsWith($Entry, [System.StringComparison]::OrdinalIgnoreCase)
+    }
+
+    return $RelativePath.Equals($Entry, [System.StringComparison]::OrdinalIgnoreCase)
+}
+
+function Test-NovaModuleAgenticCopilotPathMatchesPolicyList {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$RelativePath,
+        [string[]]$EntryList = @()
+    )
+
+    foreach ($entry in @($EntryList)) {
+        if (Test-NovaModuleAgenticCopilotPathMatchesPolicyEntry -RelativePath $RelativePath -Entry $entry) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Get-NovaModuleAgenticCopilotDestinationWriteMode {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$RelativePath,
+        [AllowNull()][pscustomobject]$ScaffoldPolicy
+    )
+
+    if ($null -eq $ScaffoldPolicy) {
+        return 'Overwrite'
+    }
+
+    if (Test-NovaModuleAgenticCopilotPathMatchesPolicyList -RelativePath $RelativePath -EntryList $ScaffoldPolicy.ManagedOverwritePathList) {
+        return 'Overwrite'
+    }
+
+    if (Test-NovaModuleAgenticCopilotPathMatchesPolicyList -RelativePath $RelativePath -EntryList $ScaffoldPolicy.AddOnlyPathList) {
+        return 'AddIfMissing'
+    }
+
+    return 'Skip'
+}
+
+function Test-NovaModuleAgenticCopilotShouldWriteDestinationFile {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$DestinationPath,
+        [Parameter(Mandatory)][string]$WriteMode
+    )
+
+    if ($WriteMode -eq 'Overwrite') {
+        return $true
+    }
+
+    if ($WriteMode -eq 'AddIfMissing') {
+        return -not (Test-Path -LiteralPath $DestinationPath)
+    }
+
+    return $false
+}
+
 function ConvertTo-NovaModuleAgenticCopilotNormalizedFileContent {
     [CmdletBinding()]
     param(
@@ -169,7 +239,8 @@ function Initialize-NovaModuleAgenticCopilotScaffold {
     param(
         [Parameter(Mandatory)][hashtable]$Answer,
         [Parameter(Mandatory)][string]$ProjectRoot,
-        [switch]$Example
+        [switch]$Example,
+        [AllowNull()][pscustomobject]$ScaffoldPolicy = $null
     )
 
     $templateRoot = Get-NovaModuleAgenticCopilotTemplateRoot
@@ -188,6 +259,11 @@ function Initialize-NovaModuleAgenticCopilotScaffold {
         }
 
         $destinationPath = Join-Path $ProjectRoot ($relativePath -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+        $writeMode = Get-NovaModuleAgenticCopilotDestinationWriteMode -RelativePath $relativePath -ScaffoldPolicy $ScaffoldPolicy
+        if (-not (Test-NovaModuleAgenticCopilotShouldWriteDestinationFile -DestinationPath $destinationPath -WriteMode $writeMode)) {
+            continue
+        }
+
         $templateContent = Get-Content -LiteralPath $templateFile.FullName -Raw
         $destinationContent = Get-NovaModuleAgenticCopilotDestinationContent -RelativePath $relativePath -TemplateContent $templateContent -ScaffoldContext $scaffoldContext
         Write-NovaModuleAgenticCopilotDestinationFile -DestinationPath $destinationPath -Content $destinationContent

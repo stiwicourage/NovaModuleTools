@@ -1,7 +1,7 @@
 ---
 document type: cmdlet
 external help file: NovaModuleTools-Help.xml
-HelpUri: ''
+HelpUri: 'https://www.novamoduletools.com/versioning-and-updates.html#bump'
 Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 04/25/2026
@@ -43,7 +43,7 @@ When Git tags exist, only commits since the latest tag are considered. If Git-ba
 If the repository exists but has no commits yet, the command stops with: `Cannot bump version because the repository
 has no commits yet. Create an initial commit first.`
 
-This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the calculated release label and the exact next version without changing the stored version.
+This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the calculated release label and the exact next version without changing the stored version. The command now ends with a clear plan, cancellation, or success summary, prints the resolved version file plus the detected/applied release label, and suggests the next step to run.
 
 Use `-ContinuousIntegration` when the same session should first re-activate the built `dist/` module before the version bump workflow starts. This is useful in CI/self-hosting flows where an earlier command changed the active module state.
 
@@ -58,7 +58,7 @@ When the current version is already a prerelease for the selected release line, 
 PS> Update-NovaModuleVersion
 ```
 
-Updates the version in the current project using the release label inferred from recent commit messages.
+Updates the version in the current project using the release label inferred from recent commit messages, then prints the version file plus the next suggested validation step.
 
 ### EXAMPLE 2
 
@@ -81,7 +81,7 @@ Label: Minor
 CommitCount: 12
 ```
 
-Shows the calculated version update without modifying `project.json`.
+Shows the calculated version update without modifying `project.json`, then ends with a version-update plan summary and a reminder to rerun without `-WhatIf` when you are ready to write the new version.
 
 ### EXAMPLE 4
 
@@ -111,7 +111,7 @@ Label: Minor
 CommitCount: 12
 ```
 
-Shows how `-Preview` keeps the detected semantic label for reporting but deterministically enters the next patch preview track when the current version is stable.
+Shows how `-Preview` keeps the detected semantic label for reporting but deterministically enters the next patch preview track when the current version is stable, while the plan summary still points to the exact next version that would be written.
 
 ### EXAMPLE 6
 
@@ -165,7 +165,7 @@ Label: Major
 CommitCount: 34
 ```
 
-Shows how stable `0.y.z` bumps still warn that `1.0.0` must be set manually when the API becomes stable, while breaking-change commits on that line continue to plan the next minor version instead of jumping straight to `1.0.0`.
+Shows how stable `0.y.z` bumps still warn that `1.0.0` must be set manually when the API becomes stable, while breaking-change commits on that line continue to plan the next minor version instead of jumping straight to `1.0.0`. The plan output also keeps both the detected and applied release labels visible.
 
 ### EXAMPLE 10
 
@@ -303,6 +303,6 @@ When Git-based inference is unavailable, `Update-NovaModuleVersion` now requires
 
 ## RELATED LINKS
 
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Get-NovaProjectInfo.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaRelease.md
+- [Get-NovaProjectInfo](./Get-NovaProjectInfo.md)
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)
+- [Invoke-NovaRelease](./Invoke-NovaRelease.md)

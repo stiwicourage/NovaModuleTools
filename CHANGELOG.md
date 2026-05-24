@@ -7,13 +7,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Added `Invoke-NovaAgenticCopilotScaffold` and `% nova copilot` for applying or refreshing Nova's managed Agentic Copilot scaffold in an existing project root.
+    - The workflow reads `ProjectName` and `Description` from `project.json`, requires a `ShortName` on every run for token replacement, and fails clearly when the project metadata or short name is invalid.
+    - Nova refreshes only the approved managed Agentic Copilot paths under `.github/` plus `AGENTS.md` and `CONTRIBUTING.md`, while `README.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` are created only when they are missing.
+    - The new cmdlet and CLI route prompt before overwriting managed scaffold content by default, and support non-interactive execution only through `-OverrideWarning` / `--override-warning` / `-o`.
+- Added `terminal-ux-design` to Nova's repository-local and scaffolded Agentic Copilot guidance.
+    - The new guidance combines Atlassian's 10 design principles for delightful CLIs with Jakob Nielsen's 10 usability heuristics for user interface design, and applies them to both the PowerShell cmdlet surface and any unix-style CLI alias surface (such as `% nova`) as terminal-first user interfaces.
+    - The new skill ships with a "two surfaces, two conventions" framing, a shared mapping table for concrete PowerShell cmdlet and CLI alias UX mechanisms, a universal instruction that points terminal-facing changes at the skill, and updated architect, implementation, and review agent entry points.
+
 ### Changed
+
+- `Deploy-NovaPackage` now shows a concise resolved-upload summary before execution, reports progress while multiple artifacts are uploading, and prints a short completion summary with a suggested verification step after successful raw uploads.
+- `Get-NovaProjectInfo` now fails with clearer recovery guidance when `-Path` does not exist, points to a file, or the target folder is missing `project.json`.
+- `Get-NovaUpdateNotificationPreference -Verbose` now explains whether Nova is reading a stored preference or the built-in default, and the command help now points read-only PowerShell users to the matching `% nova notification` workflow.
+- `Initialize-NovaModule` now shows scaffold progress, ends with the created project root plus the next suggested cmdlet, and fails with clearer guidance when the target project folder already exists.
+- `Install-NovaCli` now prints the installed launcher path, suggests the next command to run, and gives a clearer `PATH` warning when the destination directory is not yet available from the shell.
+- `Invoke-NovaAgenticCopilotScaffold` now shows apply progress, ends with the project root plus suggested review and validation steps, and fails with clearer cancellation guidance when the overwrite warning is declined.
+- `Invoke-NovaBuild` now shows progress for the main build phases, ends with the output module directory plus the next suggested validation step, and explains the refreshed session when `-ContinuousIntegration` reloads the built module.
+- `Invoke-NovaCli` now treats blank command input as root help, reports unknown commands with clearer recovery guidance, and ships a dedicated PlatyPS help topic for the PowerShell wrapper surface.
+- `Invoke-NovaRelease` now shows progress for the main release phases, ends with the publish target plus a next-step hint, and uses a plan summary instead of a success summary when `-WhatIf` previews the release.
+- `New-NovaModulePackage` now shows progress for build validation and artifact creation, ends with the package target plus the next suggested deployment step, and uses a package-plan summary in `-WhatIf` mode.
+- `Publish-NovaModule` now shows progress for build validation, publish, local import, and CI restore phases, ends with the publish target plus a suggested verification step, and uses a publish-plan summary in `-WhatIf` mode.
+- `Set-NovaUpdateNotificationPreference` now ends with a clear success or preview summary, prints the settings file path, suggests `Get-NovaUpdateNotificationPreference` as the next verification step, and gives a more actionable validation error when no enable/disable switch is supplied.
+- `Test-NovaBuild` now shows progress across the main test phases, ends with the result file path plus a coverage summary and next-step hint when tests pass, uses a test-plan summary in `-WhatIf` mode, and fails with more actionable guidance when Pester or coverage checks fail.
+- `Update-NovaModuleTool` now ends with a visible up-to-date, preview, cancelled, or updated summary, skips prerelease confirmation during `-WhatIf`, shows progress for the actual self-update step, and suggests `Get-NovaProjectInfo -Installed` after a successful update.
+- `Update-NovaModuleVersion` now ends with a visible preview, cancelled, or updated summary, prints the resolved version file plus the detected/applied release label, shows progress while writing `project.json`, and suggests the next command to run after the bump.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- `Test-NovaBuild` now expands configured Pester coverage globs into concrete source files before invoking Pester, so nested helpers remain measurable in `artifacts/coverage.xml` while repository and scaffolded `project.json` defaults can stay on the simpler `src/private/**/*.ps1` entry.
+- PowerShell command help `RELATED LINKS` now use valid PlatyPS Markdown links and point to shipped help topics instead of GitHub blob pages.
 
 ### Security
 
@@ -412,6 +439,7 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 - All basic functionality of Module is ready
 
 [Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/3.0.1...HEAD
+
 [3.0.1]: https://github.com/stiwicourage/NovaModuleTools/compare/3.0.0...3.0.1
 [3.0.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.4.0...3.0.0
 [2.4.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.1...2.4.0
@@ -432,4 +460,3 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-

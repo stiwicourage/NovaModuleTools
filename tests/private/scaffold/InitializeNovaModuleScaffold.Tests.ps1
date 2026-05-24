@@ -8,6 +8,18 @@ BeforeAll {
 }
 
 Describe 'Initialize-NovaModuleScaffold' {
+    It 'fails with recovery guidance when the project folder already exists' {
+        $paths = [pscustomobject]@{Project = (Join-Path $TestDrive 'ExistingProject')}
+        $null = New-Item -ItemType Directory -Path $paths.Project -Force
+
+        {
+            Initialize-NovaModuleScaffold -Answer @{
+                EnableGit = 'No'
+                EnableAgenticCopilot = 'No'
+            } -Paths $paths
+        } | Should -Throw '*Project folder already exists:*Choose a different project name or remove or move the existing folder before running Initialize-NovaModule again.*'
+    }
+
     It 'creates the default .gitignore for the standard scaffold when Git is enabled' {
         $paths = Get-NovaModuleScaffoldLayout -Path $TestDrive -ProjectName 'StandardWithGit'
         Mock Write-Message {}

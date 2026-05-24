@@ -11,7 +11,7 @@
     --outline: rgba(255, 255, 255, 0.12);
     --shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
     --radius: 22px;
-    --max-width: none;
+    --max-width: 1600px;
     --anchor-offset: 2.90rem;
 }
 

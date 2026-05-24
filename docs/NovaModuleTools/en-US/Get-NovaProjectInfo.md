@@ -1,7 +1,7 @@
 ---
 document type: cmdlet
 external help file: NovaModuleTools-Help.xml
-HelpUri: ''
+HelpUri: 'https://www.novamoduletools.com/project-json-reference.html'
 Locale: en-US
 Module Name: NovaModuleTools
 ms.date: 05/06/2026
@@ -49,6 +49,9 @@ Use this command from scripts, tests, or troubleshooting when you want one objec
 When you use `-Version`, the command returns only the project version string instead of the full project object.
 
 When you use `-Installed`, the command returns the installed `NovaModuleTools` module name and version string instead of project metadata.
+
+When `-Path` does not resolve to an existing project root folder, or the folder does not contain `project.json`,
+the command fails with an actionable error that tells you how to recover.
 
 ## EXAMPLES
 
@@ -185,10 +188,13 @@ Returned by default. The object includes project metadata, defaulted build setti
 
 This command throws a clear error when `project.json` is missing or empty.
 
+If `-Path` points to a file or a folder that does not exist, `Get-NovaProjectInfo` tells you to rerun it from a
+Nova project root or pass `-Path` to the folder that contains `project.json`.
+
 `-Installed` does not require a project path or a `project.json` file.
 
 ## RELATED LINKS
 
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Test-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Update-NovaModuleVersion.md
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)
+- [Test-NovaBuild](./Test-NovaBuild.md)
+- [Update-NovaModuleVersion](./Update-NovaModuleVersion.md)

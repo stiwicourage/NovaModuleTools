@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
-    <title>NovaModuleTools — Core workflows for scaffold, build, test, import, and reload</title>
-    <meta content="Follow the normal NovaModuleTools workflow for scaffolding, building, testing, importing, and reloading PowerShell modules during day-to-day development."
+    <title>NovaModuleTools — Core workflows for scaffold, copilot guidance, build, test, import, and reload</title>
+    <meta content="Follow the normal NovaModuleTools workflow for scaffolding, applying managed copilot guidance, building, testing, importing, and reloading PowerShell modules during day-to-day development."
           name="description">
     <meta content="index,follow,max-image-preview:large" name="robots">
     <meta content="#0b1020" name="theme-color">
@@ -12,14 +12,14 @@
     <link href="./assets/icon.png" rel="icon" type="image/png">
     <link href="./assets/icon.png" rel="apple-touch-icon">
     <meta content="article" property="og:type">
-    <meta content="NovaModuleTools — Core workflows for scaffold, build, test, import, and reload" property="og:title">
-    <meta content="Use this guide for the normal NovaModuleTools lifecycle: scaffold a project, build the module, run tests, import the built output, and reload safely after changes."
+    <meta content="NovaModuleTools — Core workflows for scaffold, copilot guidance, build, test, import, and reload" property="og:title">
+    <meta content="Use this guide for the normal NovaModuleTools lifecycle: scaffold a project, apply or refresh managed copilot guidance, build the module, run tests, import the built output, and reload safely after changes."
           property="og:description">
     <meta content="https://www.novamoduletools.com/core-workflows.html" property="og:url">
     <meta content="https://www.novamoduletools.com/assets/icon.png" property="og:image">
     <meta content="summary" name="twitter:card">
-    <meta content="NovaModuleTools — Core workflows for scaffold, build, test, import, and reload" name="twitter:title">
-    <meta content="Use this guide for the normal NovaModuleTools lifecycle: scaffold a project, build the module, run tests, import the built output, and reload safely after changes."
+    <meta content="NovaModuleTools — Core workflows for scaffold, copilot guidance, build, test, import, and reload" name="twitter:title">
+    <meta content="Use this guide for the normal NovaModuleTools lifecycle: scaffold a project, apply or refresh managed copilot guidance, build the module, run tests, import the built output, and reload safely after changes."
           name="twitter:description">
     <link href="./assets/site.css" rel="stylesheet">
     <script type="application/ld+json">
@@ -27,7 +27,7 @@
             "@context": "https://schema.org",
             "@type": "TechArticle",
             "headline": "NovaModuleTools core workflows",
-            "description": "The daily scaffold, build, test, import, and reload workflow for NovaModuleTools.",
+            "description": "The daily scaffold, managed copilot guidance, build, test, import, and reload workflow for NovaModuleTools.",
             "url": "https://www.novamoduletools.com/core-workflows.html"
         }
     </script>
@@ -77,7 +77,7 @@
 <main class="page-shell">
     <section class="guide-hero">
         <p class="eyebrow">How-to Guides</p>
-        <h1>Use the normal Nova loop: scaffold → build → test → import → reload</h1>
+        <h1>Use the normal Nova loop: scaffold → copilot guidance → build → test → import → reload</h1>
         <p class="lead">Most of your time with NovaModuleTools should stay in this loop. Once you are comfortable here,
             packaging, upload, publish, and release become much easier to reason about.</p>
     </section>
@@ -87,6 +87,7 @@
             <h2>On this page</h2>
             <ul class="toc-list">
                 <li><a href="#scaffold">Create the project</a></li>
+                <li><a href="#agentic-copilot">Apply the copilot workflow to an existing project</a></li>
                 <li><a href="#build">Build the module</a></li>
                 <li><a href="#test">Run the tests</a></li>
                 <li><a href="#import">Import the built output</a></li>
@@ -158,6 +159,41 @@ PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
                 <p>Use the example scaffold when you want the shortest path to understanding a real project layout, test
                     suite, and package configuration. Use the minimal scaffold when you already know the structure you
                     want.</p>
+            </section>
+
+            <section class="content-section" id="agentic-copilot">
+                <h2>Apply the copilot workflow to an existing project</h2>
+                <p>Use this workflow when the project already exists and you want Nova to add or refresh its managed
+                    <strong>Agentic Copilot</strong> guidance without recreating the module scaffold.</p>
+                <div class="surface-example" data-command-example>
+                    <div class="surface-example__meta">
+                        <p class="surface-example__title">Apply or refresh the managed scaffold</p>
+                        <p class="surface-example__status">Showing: <span data-command-surface-label>PowerShell</span>
+                        </p>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="powershell">
+                        <pre><code>PS&gt; Invoke-NovaAgenticCopilotScaffold -ShortName NMT
+PS&gt; Invoke-NovaAgenticCopilotScaffold -Path ~/Work/MyModule -ShortName NMT -OverrideWarning</code></pre>
+                    </div>
+                    <div class="surface-example__surface" data-command-surface="command-line" hidden>
+                        <pre><code>% nova copilot --short-name NMT
+% nova copilot --path ~/Work/MyModule --short-name NMT -o</code></pre>
+                    </div>
+                </div>
+                <p>The target directory must contain a valid <code>project.json</code>. Nova reads
+                    <code>ProjectName</code> and <code>Description</code> from that file and requires an explicit short
+                    name on every run for generated placeholders such as <code>Invoke-&lt;ShortName&gt;*</code>.</p>
+                <p>Nova refreshes only the managed Agentic guidance paths under <code>.github/</code> together with
+                    <code>AGENTS.md</code> and <code>CONTRIBUTING.md</code>. Existing <code>README.md</code>,
+                    <code>CHANGELOG.md</code>, and <code>RELEASE_NOTE.md</code> are preserved and are created only when
+                    they are missing.</p>
+                <p>By default Nova prompts before it overwrites the managed scaffold paths.</p>
+                <p data-command-visibility="powershell">Use <code>-OverrideWarning</code> only when you intentionally
+                    want a non-interactive apply, and use <code>-WhatIf</code> when you want to preview the changes
+                    first.</p>
+                <p data-command-visibility="command-line" hidden>Use <code>--override-warning</code> /
+                    <code>-o</code> only when you intentionally want a non-interactive apply, and use
+                    <code>--what-if</code> when you want to preview the changes first.</p>
             </section>
 
             <section class="content-section" id="build">
