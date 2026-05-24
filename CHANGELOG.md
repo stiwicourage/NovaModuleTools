@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `Install-NovaCli` now prints the installed launcher path, suggests the next command to run, and gives a clearer `PATH` warning when the destination directory is not yet available from the shell.
 - `Invoke-NovaAgenticCopilotScaffold` now shows apply progress, ends with the project root plus suggested review and validation steps, and fails with clearer cancellation guidance when the overwrite warning is declined.
 - `Invoke-NovaBuild` now shows progress for the main build phases, ends with the output module directory plus the next suggested validation step, and explains the refreshed session when `-ContinuousIntegration` reloads the built module.
+- `Invoke-NovaCli` now treats blank command input as root help, reports unknown commands with clearer recovery guidance, and ships a dedicated PlatyPS help topic for the PowerShell wrapper surface.
 
 ### Deprecated
 

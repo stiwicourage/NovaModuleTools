@@ -8,8 +8,14 @@ function Invoke-NovaCli {
         [string[]]$Arguments
     )
 
+    $commandName = if ([string]::IsNullOrWhiteSpace($Command)) {
+        '--help'
+    } else {
+        $Command
+    }
+
     $invocationRequest = [pscustomobject]@{
-        Command = $Command
+        Command = $commandName
         BoundParameters = $PSBoundParameters
         Arguments = $Arguments
     }

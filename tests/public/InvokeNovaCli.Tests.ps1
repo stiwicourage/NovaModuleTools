@@ -14,6 +14,10 @@ Describe 'Invoke-NovaCli' {
         (Invoke-NovaCli).Command | Should -Be '--help'
     }
 
+    It 'defaults blank command input to --help' {
+        (Invoke-NovaCli '').Command | Should -Be '--help'
+    }
+
     It 'forwards command and remaining arguments to the invocation context' {
         Invoke-NovaCli 'build' '--ci' '--override-warning' | Out-Null
         $script:request.Command | Should -Be 'build'

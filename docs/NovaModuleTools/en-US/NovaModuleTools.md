@@ -32,6 +32,10 @@ Shows whether prerelease update notifications are enabled. Stable release notifi
 
 Installs the bundled command-line launcher into a user command directory on macOS or Linux.
 
+### `PS> Invoke-NovaCli`
+
+Runs Nova's launcher-style command routing from inside PowerShell.
+
 ### `PS> Invoke-NovaBuild`
 
 Builds the current NovaModuleTools project into a ready-to-import PowerShell module.
