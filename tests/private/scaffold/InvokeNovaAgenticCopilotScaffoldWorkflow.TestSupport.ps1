@@ -7,6 +7,10 @@ function Initialize-NovaModuleAgenticCopilotScaffold {
     )
 }
 
+function Write-Message {
+    param([string]$Message, [string]$color)
+}
+
 function Stop-NovaOperation {
     param([string]$Message, [string]$ErrorId, [System.Management.Automation.ErrorCategory]$Category, $TargetObject)
     $exception = [System.Exception]::new($Message)

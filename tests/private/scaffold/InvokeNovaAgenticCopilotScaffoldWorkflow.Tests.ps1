@@ -71,7 +71,7 @@ Describe 'Confirm-NovaAgenticCopilotScaffoldWarning' {
                 ManagedOverwritePathList = @('.github/agents/')
                 AddOnlyPathList = @('README.md')
             })
-        } | Should -Throw -ErrorId 'Nova.Workflow.AgenticCopilotScaffoldCancelled'
+        } | Should -Throw '*Agentic Copilot scaffold apply cancelled for /repo.*choose Yes when you are ready to overwrite the managed scaffold paths.*'
     }
 }
 
@@ -80,6 +80,7 @@ Describe 'Invoke-NovaAgenticCopilotScaffoldWorkflow' {
         Mock Confirm-NovaAgenticCopilotScaffoldWarning {}
         Mock Initialize-NovaModuleAgenticCopilotScaffold {}
         Mock Write-Message {}
+        Mock Write-Progress {}
     }
 
     It 'returns without applying when ShouldRun is false' {
@@ -108,6 +109,13 @@ Describe 'Invoke-NovaAgenticCopilotScaffoldWorkflow' {
 
         Assert-MockCalled Confirm-NovaAgenticCopilotScaffoldWarning -Times 1
         Assert-MockCalled Initialize-NovaModuleAgenticCopilotScaffold -Times 1
-        Assert-MockCalled Write-Message -Times 1
+        Assert-MockCalled Write-Progress -Times 3
+        Assert-MockCalled Write-Message -Times 5
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Message -eq 'Agentic Copilot scaffold applied to Demo' -and $color -eq 'Green'
+        }
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Message -eq 'Test-NovaBuild'
+        }
     }
 }
