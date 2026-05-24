@@ -17,7 +17,7 @@ Describe 'Invoke-NovaPackageArtifactUpload' {
 
     It 'throws when the package file does not exist' {
         Remove-Item -LiteralPath $script:file -Force
-        {Invoke-NovaPackageArtifactUpload -UploadArtifact $script:artifact} | Should -Throw '*Package file not found*'
+        {Invoke-NovaPackageArtifactUpload -UploadArtifact $script:artifact} | Should -Throw '*Run New-NovaModulePackage first or provide a valid -PackagePath*'
     }
 
     It 'returns a result object including the status code on success' {
@@ -28,6 +28,6 @@ Describe 'Invoke-NovaPackageArtifactUpload' {
 
     It 'wraps upload errors into Stop-NovaOperation' {
         Mock Invoke-NovaPackageUploadRequest {throw 'boom'}
-        {Invoke-NovaPackageArtifactUpload -UploadArtifact $script:artifact} | Should -Throw '*Package upload failed*'
+        {Invoke-NovaPackageArtifactUpload -UploadArtifact $script:artifact} | Should -Throw '*Check the upload URL, authentication token, and network access, then try again*'
     }
 }
