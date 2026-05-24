@@ -4,20 +4,74 @@ BeforeAll {
 
     function Write-NovaUpdateNotificationPreference {param([bool]$PrereleaseNotificationsEnabled)}
     function Get-NovaUpdateNotificationPreferenceStatus {return [pscustomobject]@{PrereleaseNotificationsEnabled = $true; SettingsPath = '/tmp/x.json'}}
+    function Write-Message {param([string]$Text, [string]$color)}
+}
+
+Describe 'Test-NovaUpdateNotificationPreferenceChangeWhatIfEnabled' {
+    It 'returns true when WorkflowParams.WhatIf is enabled' {
+        $workflowContext = [pscustomobject]@{WorkflowParams = @{WhatIf = $true}}
+        Test-NovaUpdateNotificationPreferenceChangeWhatIfEnabled -WorkflowContext $workflowContext | Should -BeTrue
+    }
+
+    It 'returns false when WorkflowParams.WhatIf is not enabled' {
+        $workflowContext = [pscustomobject]@{WorkflowParams = @{}}
+        Test-NovaUpdateNotificationPreferenceChangeWhatIfEnabled -WorkflowContext $workflowContext | Should -BeFalse
+    }
 }
 
 Describe 'Invoke-NovaUpdateNotificationPreferenceChange' {
+    BeforeEach {
+        Mock Write-Message {}
+    }
+
     It 'writes the requested preference and returns the resulting status' {
         Mock Write-NovaUpdateNotificationPreference {}
         Mock Get-NovaUpdateNotificationPreferenceStatus {return [pscustomobject]@{PrereleaseNotificationsEnabled = $false; SettingsPath = '/tmp/x.json'}}
 
-        $workflowContext = [pscustomobject]@{PrereleaseNotificationsEnabled = $false; Action = 'Disable prerelease update notifications'; Target = '/tmp/x.json'}
-        $status = Invoke-NovaUpdateNotificationPreferenceChange -WorkflowContext $workflowContext
+        $workflowContext = [pscustomobject]@{
+            PrereleaseNotificationsEnabled = $false
+            Action = 'Disable prerelease self-update notifications'
+            Target = '/tmp/x.json'
+            WorkflowParams = @{}
+        }
+        $status = Invoke-NovaUpdateNotificationPreferenceChange -WorkflowContext $workflowContext -ShouldRun
 
         Assert-MockCalled Write-NovaUpdateNotificationPreference -Times 1 -ParameterFilter {
             $PrereleaseNotificationsEnabled -eq $false
         }
         Assert-MockCalled Get-NovaUpdateNotificationPreferenceStatus -Times 1
+        Assert-MockCalled Write-Message -Times 4
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Prerelease self-updates are now disabled.' -and $color -eq 'Green'
+        }
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Get-NovaUpdateNotificationPreference'
+        }
         $status.PrereleaseNotificationsEnabled | Should -BeFalse
+    }
+
+    It 'writes a preview summary in WhatIf mode without storing the preference' {
+        Mock Write-NovaUpdateNotificationPreference {}
+        Mock Get-NovaUpdateNotificationPreferenceStatus {}
+
+        $workflowContext = [pscustomobject]@{
+            PrereleaseNotificationsEnabled = $true
+            Action = 'Enable prerelease self-update notifications'
+            Target = '/tmp/x.json'
+            WorkflowParams = @{WhatIf = $true}
+        }
+
+        $status = Invoke-NovaUpdateNotificationPreferenceChange -WorkflowContext $workflowContext
+
+        Assert-MockCalled Write-NovaUpdateNotificationPreference -Times 0
+        Assert-MockCalled Get-NovaUpdateNotificationPreferenceStatus -Times 0
+        Assert-MockCalled Write-Message -Times 4
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Notification preference plan ready: prerelease self-updates enabled' -and $color -eq 'Green'
+        }
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Run Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications without -WhatIf when you are ready to store the preference.'
+        }
+        $status | Should -BeNullOrEmpty
     }
 }
