@@ -21,6 +21,7 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 - `Invoke-NovaAgenticCopilotScaffold` now shows apply progress, ends with the project root plus suggested review and validation steps, and gives clearer cancellation guidance when the overwrite warning is declined.
 - `Invoke-NovaBuild` now shows progress for the main build phases, ends with the output module directory plus the next suggested validation step, and explains the refreshed session when `-ContinuousIntegration` reloads the built module.
 - `Invoke-NovaCli` now treats blank command input as root help, reports unknown commands with clearer recovery guidance, and ships a dedicated help topic for the PowerShell wrapper surface.
+- `Invoke-NovaRelease` now shows progress for the main release phases, ends with the publish target plus a next-step hint, and uses a plan summary instead of a success summary when `-WhatIf` previews the release.
 
 ### Deprecated
 

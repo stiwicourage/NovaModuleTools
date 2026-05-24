@@ -1,11 +1,7 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/release/InvokeNovaReleaseWorkflow.ps1')
-    function Get-NovaBuildCommandParameterMap {param([hashtable]$WorkflowParams,[switch]$OverrideWarningRequested) $map=@{}+$WorkflowParams; if($OverrideWarningRequested){$map.OverrideWarning=$true}; return $map}
-    function Invoke-NovaBuild {param() $script:buildCalls += 1}
-    function Test-NovaBuild {param() $script:testCalls += 1}
-    function Update-NovaModuleVersion {param() $script:versionCalls += 1; return [pscustomobject]@{Version='1.0.0'}}
-    function Import-NovaBuiltModuleForCi {param($ProjectInfo) $script:restoreCalls += 1}
+    . (Join-Path $PSScriptRoot 'InvokeNovaReleaseWorkflow.TestSupport.ps1')
 }
 
 Describe 'Get-NovaReleaseNestedWorkflowParameterMap' {
@@ -46,14 +42,16 @@ Describe 'Invoke-NovaReleaseWorkflow' {
         $script:versionCalls = 0
         $script:restoreCalls = 0
         $script:publishCalls = 0
+        Mock Write-Message {}
+        Mock Write-Progress {}
     }
 
-    It 'builds, tests, updates version, builds again, publishes, and restores in CI' {
+    It 'builds, tests, updates version, builds again, publishes, restores in CI, and reports the result' {
         $ctx = [pscustomobject]@{
             WorkflowParams = @{}
             PublishParams = @{}
-            PublishInvocation = [pscustomobject]@{Action = {param() $script:publishCalls += 1}}
-            ProjectInfo = [pscustomobject]@{}
+            PublishInvocation = [pscustomobject]@{Action = {param() $script:publishCalls += 1}; Target = 'PSGallery'; IsLocal = $false}
+            ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
             ContinuousIntegrationRequested = $true
             SkipTestsRequested = $false
             OverrideWarningRequested = $false
@@ -65,18 +63,53 @@ Describe 'Invoke-NovaReleaseWorkflow' {
         $script:versionCalls | Should -Be 1
         $script:publishCalls | Should -Be 1
         $script:restoreCalls | Should -Be 1
+        Assert-MockCalled Write-Progress -Times 6
+        Assert-MockCalled Write-Message -Times 5
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Released Nova module: NovaModuleTools 1.0.0' -and $color -eq 'Green'
+        }
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Get-NovaProjectInfo -Version'
+        }
     }
 
     It 'skips tests when SkipTestsRequested and skips restore when not CI' {
         $ctx = [pscustomobject]@{
             WorkflowParams = @{}
             PublishParams = @{}
-            PublishInvocation = [pscustomobject]@{Action = {param() $script:publishCalls += 1}}
-            ProjectInfo = [pscustomobject]@{}
+            PublishInvocation = [pscustomobject]@{Action = {param() $script:publishCalls += 1}; Target = '/modules'; IsLocal = $true}
+            ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
             SkipTestsRequested = $true
         }
         $null = Invoke-NovaReleaseWorkflow -WorkflowContext $ctx
         $script:testCalls | Should -Be 0
         $script:restoreCalls | Should -Be 0
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Pre-release tests were skipped for this run.'
+        }
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Get-NovaProjectInfo -Installed'
+        }
+    }
+
+    It 'writes a release plan summary in WhatIf mode without restoring the built module' {
+        $ctx = [pscustomobject]@{
+            WorkflowParams = @{WhatIf = $true}
+            PublishParams = @{}
+            PublishInvocation = [pscustomobject]@{Action = {param() $script:publishCalls += 1}; Target = 'PSGallery'; IsLocal = $false}
+            ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+            ContinuousIntegrationRequested = $true
+            SkipTestsRequested = $false
+        }
+
+        $null = Invoke-NovaReleaseWorkflow -WorkflowContext $ctx
+
+        $script:restoreCalls | Should -Be 0
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Release plan ready for NovaModuleTools -> 1.0.0' -and $color -eq 'Green'
+        }
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Run Invoke-NovaRelease without -WhatIf when you are ready to apply the release.'
+        }
     }
 }

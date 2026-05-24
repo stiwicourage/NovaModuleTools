@@ -57,6 +57,8 @@ When local release mode is selected, the resolved local publish target is previe
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the entire release workflow and resolved publish target without building, testing, versioning, or publishing.
 
+During the workflow, Nova shows progress for the main release phases. When the workflow completes, Nova prints the publish target and a short next-step hint. In `-WhatIf` mode, Nova ends with a release-plan summary instead of a release-complete message.
+
 ## EXAMPLES
 
 ### EXAMPLE 1
@@ -322,6 +324,8 @@ When `-ContinuousIntegration` is used, the release workflow restores the built `
 
 `Invoke-NovaRelease` uses `SupportsShouldProcess`, so `Get-Help Invoke-NovaRelease -Full` surfaces native `-WhatIf`
 and `-Confirm` support.
+
+Use `Ctrl+C` if you need to stop a running release before all phases complete.
 
 ## RELATED LINKS
 
