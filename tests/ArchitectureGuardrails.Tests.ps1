@@ -82,7 +82,7 @@ Describe 'Architecture guardrails' {
 
     It 'public command files use only their approved Nova helper surface' {
         $testCases = @(
-            [pscustomobject]@{Path = 'src/public/DeployNovaPackage.ps1'; ExpectedHelpers = @('Get-NovaPackageUploadWorkflowContext', 'Get-NovaProjectInfo', 'Invoke-NovaPackageUploadWorkflow', 'New-NovaPackageUploadDynamicParameterDictionary', 'New-NovaPackageUploadOption')}
+            [pscustomobject]@{Path = 'src/public/DeployNovaPackage.ps1'; ExpectedHelpers = @('Get-NovaPackageUploadWorkflowContext', 'Get-NovaProjectInfo', 'Invoke-NovaPackageUploadWorkflow', 'New-NovaPackageUploadDynamicParameterDictionary', 'New-NovaPackageUploadOption', 'Write-NovaPackageUploadResultOutput', 'Write-NovaPackageUploadWorkflowContext')}
             [pscustomobject]@{Path = 'src/public/GetNovaProjectInfo.ps1'; ExpectedHelpers = @('Format-NovaCliVersionString', 'Get-NovaCliInstalledVersion', 'Get-NovaProjectInfoContext', 'Get-NovaProjectInfoResult')}
             [pscustomobject]@{Path = 'src/public/GetNovaUpdateNotificationPreference.ps1'; ExpectedHelpers = @('Get-NovaUpdateNotificationPreferenceStatus')}
             [pscustomobject]@{Path = 'src/public/InitializeNovaModule.ps1'; ExpectedHelpers = @('Get-NovaModuleInitializationWorkflowContext', 'Invoke-NovaModuleInitializationWorkflow')}

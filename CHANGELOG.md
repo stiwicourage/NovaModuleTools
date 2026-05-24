@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- `Deploy-NovaPackage` now shows a concise resolved-upload summary before execution, reports progress while multiple artifacts are uploading, and prints a short completion summary with a suggested verification step after successful raw uploads.
+
 ### Deprecated
 
 ### Removed

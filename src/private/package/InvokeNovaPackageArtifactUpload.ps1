@@ -6,13 +6,13 @@ function Invoke-NovaPackageArtifactUpload {
     )
 
     if (-not (Test-Path -LiteralPath $UploadArtifact.PackagePath -PathType Leaf)) {
-        Stop-NovaOperation -Message "Package file not found: $( $UploadArtifact.PackagePath )" -ErrorId 'Nova.Environment.PackageUploadFileNotFound' -Category ObjectNotFound -TargetObject $UploadArtifact.PackagePath
+        Stop-NovaOperation -Message "Package file not found: $( $UploadArtifact.PackagePath ). Run New-NovaModulePackage first or provide a valid -PackagePath." -ErrorId 'Nova.Environment.PackageUploadFileNotFound' -Category ObjectNotFound -TargetObject $UploadArtifact.PackagePath
     }
 
     try {
         $response = Invoke-NovaPackageUploadRequest -UploadArtifact $UploadArtifact
     } catch {
-        Stop-NovaOperation -Message "Package upload failed for $( $UploadArtifact.PackagePath ) -> $( $UploadArtifact.UploadUrl ). $( $_.Exception.Message )" -ErrorId 'Nova.Dependency.PackageUploadRequestFailed' -Category ConnectionError -TargetObject $UploadArtifact.UploadUrl
+        Stop-NovaOperation -Message "Package upload failed for $( $UploadArtifact.PackagePath ) -> $( $UploadArtifact.UploadUrl ). Check the upload URL, authentication token, and network access, then try again. Details: $( $_.Exception.Message )" -ErrorId 'Nova.Dependency.PackageUploadRequestFailed' -Category ConnectionError -TargetObject $UploadArtifact.UploadUrl
     }
 
     return [pscustomobject]@{
