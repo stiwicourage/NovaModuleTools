@@ -6,6 +6,20 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [3.1.0] - 2026-05-24
+
+### Added
+
 - Added `Invoke-NovaAgenticCopilotScaffold` and `% nova copilot` for adding or refreshing Nova's managed Agentic Copilot workflow in an existing project.
     - The workflow reads `ProjectName` and `Description` from `project.json`, requires an explicit `ShortName` on every run, and stops with a clear validation error when the target project metadata is missing or invalid.
     - Nova refreshes only its managed Agentic Copilot files and folders, while `README.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` are created only when they are missing.
@@ -29,15 +43,9 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 - `Update-NovaModuleTool` now ends with a visible up-to-date, preview, cancelled, or updated summary, skips prerelease confirmation during `-WhatIf`, shows progress for the actual self-update step, and suggests `Get-NovaProjectInfo -Installed` after a successful update.
 - `Update-NovaModuleVersion` now ends with a visible preview, cancelled, or updated summary, prints the resolved version file plus the detected/applied release label, shows progress while writing `project.json`, and suggests the next command to run after the bump.
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 
 - PowerShell command help `RELATED LINKS` now use valid help-topic.
-
-### Security
 
 ## [3.0.1] - 2026-05-18
 
@@ -218,3 +226,4 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ## [0.0.4] - 2024-06-25
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
+
