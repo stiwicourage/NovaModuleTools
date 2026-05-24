@@ -1,29 +1,67 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/package/InvokeNovaPackageWorkflow.ps1')
-
-    function Invoke-NovaBuildValidation {param($WorkflowContext) $script:validated = $true}
-    function Invoke-NovaPackageArtifactCreation {param($WorkflowContext) return @([pscustomobject]@{PackagePath='/p'})}
+    . (Join-Path $PSScriptRoot 'InvokeNovaPackageWorkflow.TestSupport.ps1')
 }
 
 Describe 'Invoke-NovaPackageWorkflow' {
     BeforeEach {
         $script:validated = $false
+        Mock Write-Message {}
+        Mock Write-Progress {}
     }
 
     It 'validates the build and returns without creating artifacts when ShouldRun is false' {
         Mock Invoke-NovaPackageArtifactCreation {}
-        $result = Invoke-NovaPackageWorkflow -WorkflowContext ([pscustomobject]@{})
+        $result = Invoke-NovaPackageWorkflow -WorkflowContext ([pscustomobject]@{
+            WorkflowParams = @{}
+            SkipTestsRequested = $false
+            ProjectInfo = [pscustomobject]@{ProjectName = 'Demo'}
+            Target = '/p/Demo.1.0.0.nupkg'
+        })
         $script:validated | Should -BeTrue
         Should -Invoke Invoke-NovaPackageArtifactCreation -Times 0
+        Assert-MockCalled Write-Progress -Times 2
         $result | Should -BeNullOrEmpty
     }
 
-    It 'creates artifacts when ShouldRun is set' {
-        $artifacts = @([pscustomobject]@{PackagePath='/p'})
+    It 'creates artifacts, reports progress, and prints the next suggested step when ShouldRun is set' {
+        $artifacts = @([pscustomobject]@{PackagePath='/p/Demo.1.0.0.nupkg'; OutputDirectory='/p'})
         Mock Invoke-NovaPackageArtifactCreation {return $artifacts}
-        $result = Invoke-NovaPackageWorkflow -WorkflowContext ([pscustomobject]@{}) -ShouldRun
+        $result = Invoke-NovaPackageWorkflow -WorkflowContext ([pscustomobject]@{
+            WorkflowParams = @{}
+            SkipTestsRequested = $false
+            ProjectInfo = [pscustomobject]@{ProjectName = 'Demo'}
+            Target = '/p/Demo.1.0.0.nupkg'
+        }) -ShouldRun
         Should -Invoke Invoke-NovaPackageArtifactCreation -Times 1
+        Assert-MockCalled Write-Progress -Times 3
+        Assert-MockCalled Write-Message -Times 3
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Created 1 package artifact for Demo' -and $color -eq 'Green'
+        }
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Deploy-NovaPackage'
+        }
         @($result).Count | Should -Be 1
+    }
+
+    It 'writes a package plan summary in WhatIf mode' {
+        $result = Invoke-NovaPackageWorkflow -WorkflowContext ([pscustomobject]@{
+            WorkflowParams = @{WhatIf = $true}
+            SkipTestsRequested = $true
+            ProjectInfo = [pscustomobject]@{ProjectName = 'Demo'}
+            Target = '/p/Demo.1.0.0.nupkg'
+        })
+
+        $script:validated | Should -BeTrue
+        Assert-MockCalled Write-Message -Times 3
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Package plan ready for Demo' -and $color -eq 'Green'
+        }
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Run New-NovaModulePackage without -WhatIf when you are ready to create the package artifacts.'
+        }
+        $result | Should -BeNullOrEmpty
     }
 }
