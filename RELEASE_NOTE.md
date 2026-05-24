@@ -21,6 +21,8 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Fixed
 
+- PowerShell command help `RELATED LINKS` now use valid help-topic links instead of GitHub blob pages.
+
 ### Security
 
 ## [3.0.1] - 2026-05-18

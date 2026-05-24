@@ -260,6 +260,6 @@ If `project.json` configures `Pester.CodeCoverage.CoveragePercentTarget`, `Test-
 
 ## RELATED LINKS
 
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Get-NovaProjectInfo.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Publish-NovaModule.md
+- [Get-NovaProjectInfo](./Get-NovaProjectInfo.md)
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)
+- [Publish-NovaModule](./Publish-NovaModule.md)

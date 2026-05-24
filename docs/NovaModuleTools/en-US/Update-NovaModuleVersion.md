@@ -303,6 +303,6 @@ When Git-based inference is unavailable, `Update-NovaModuleVersion` now requires
 
 ## RELATED LINKS
 
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Get-NovaProjectInfo.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Invoke-NovaRelease.md
+- [Get-NovaProjectInfo](./Get-NovaProjectInfo.md)
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)
+- [Invoke-NovaRelease](./Invoke-NovaRelease.md)

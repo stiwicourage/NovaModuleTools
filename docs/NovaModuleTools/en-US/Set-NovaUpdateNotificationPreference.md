@@ -197,5 +197,5 @@ Use this command together with `Get-NovaUpdateNotificationPreference` when you w
 
 ## RELATED LINKS
 
-- `Get-NovaUpdateNotificationPreference`
-- `Update-NovaModuleTool`
+- [Get-NovaUpdateNotificationPreference](./Get-NovaUpdateNotificationPreference.md)
+- [Update-NovaModuleTool](./Update-NovaModuleTools.md)

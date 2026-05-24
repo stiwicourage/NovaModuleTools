@@ -174,7 +174,7 @@ Files under `src/public` are expected to contain exactly one top-level function 
 
 ## RELATED LINKS
 
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Get-NovaProjectInfo.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Test-NovaBuild.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Publish-NovaModule.md
-- https://github.com/stiwicourage/NovaModuleTools/blob/main/docs/NovaModuleTools/en-US/Update-NovaModuleTools.md
+- [Get-NovaProjectInfo](./Get-NovaProjectInfo.md)
+- [Test-NovaBuild](./Test-NovaBuild.md)
+- [Publish-NovaModule](./Publish-NovaModule.md)
+- [Update-NovaModuleTool](./Update-NovaModuleTools.md)

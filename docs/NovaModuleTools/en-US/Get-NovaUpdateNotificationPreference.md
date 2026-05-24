@@ -81,6 +81,6 @@ When prerelease notifications are enabled again, `Update-NovaModuleTool` / `Upda
 
 ## RELATED LINKS
 
-- `Invoke-NovaBuild`
-- `Set-NovaUpdateNotificationPreference`
-- `Update-NovaModuleTool`
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)
+- [Set-NovaUpdateNotificationPreference](./Set-NovaUpdateNotificationPreference.md)
+- [Update-NovaModuleTool](./Update-NovaModuleTools.md)
