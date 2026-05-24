@@ -16,21 +16,23 @@ Describe 'Get-NovaUpdateNotificationPreferenceChangeContext' {
     }
 
     It 'returns an enable context when -EnablePrereleaseNotifications is set' {
-        $context = Get-NovaUpdateNotificationPreferenceChangeContext -EnablePrereleaseNotifications
+        $context = Get-NovaUpdateNotificationPreferenceChangeContext -EnablePrereleaseNotifications -WorkflowParams @{WhatIf = $true}
 
         $context.PrereleaseNotificationsEnabled | Should -BeTrue
-        $context.Action | Should -Be 'Enable prerelease update notifications'
+        $context.Action | Should -Be 'Enable prerelease self-update notifications'
         $context.Target | Should -Not -BeNullOrEmpty
+        $context.WorkflowParams | Should -BeOfType Hashtable
+        $context.WorkflowParams.WhatIf | Should -BeTrue
     }
 
     It 'returns a disable context when -DisablePrereleaseNotifications is set' {
         $context = Get-NovaUpdateNotificationPreferenceChangeContext -DisablePrereleaseNotifications
 
         $context.PrereleaseNotificationsEnabled | Should -BeFalse
-        $context.Action | Should -Be 'Disable prerelease update notifications'
+        $context.Action | Should -Be 'Disable prerelease self-update notifications'
     }
 
     It 'throws via Stop-NovaOperation when neither switch is provided' {
-        {Get-NovaUpdateNotificationPreferenceChangeContext} | Should -Throw '*Specify either*'
+        {Get-NovaUpdateNotificationPreferenceChangeContext} | Should -Throw '*Example: Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications*'
     }
 }

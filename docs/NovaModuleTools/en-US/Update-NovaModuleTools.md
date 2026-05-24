@@ -38,7 +38,9 @@ When prerelease notifications are enabled, `Update-NovaModuleTool` may target a 
 
 Stable updates do not require prerelease confirmation.
 
-After a successful update, `Update-NovaModuleTool` prints the release notes link from the installed module manifest.
+When a newer version is available, `Update-NovaModuleTool` shows progress while it installs the update and reads the release-notes link from the updated module. Every command path ends with a visible summary: up-to-date, preview, cancelled, or updated.
+
+After a successful update, `Update-NovaModuleTool` prints the release notes link from the installed module manifest and suggests `Get-NovaProjectInfo -Installed` as the next verification step.
 
 ## EXAMPLES
 
@@ -48,7 +50,7 @@ After a successful update, `Update-NovaModuleTool` prints the release notes link
 PS> Update-NovaModuleTool
 ```
 
-Updates the installed `NovaModuleTools` module by using the stored prerelease preference to resolve the update candidate.
+Updates the installed `NovaModuleTools` module by using the stored prerelease preference to resolve the update candidate, then prints the current version, target version, and the next suggested verification step.
 
 ### EXAMPLE 2
 
@@ -76,13 +78,13 @@ Successful updates print the release notes link from the installed module manife
 PS> Update-NovaModuleTool -WhatIf
 ```
 
-Previews the resolved update action without running `Update-Module`.
+Previews the resolved update action without prompting for prerelease confirmation or running `Update-Module`.
 
 ## PARAMETERS
 
 ### -WhatIf
 
-Shows what would happen if the cmdlet runs. `Update-NovaModuleTool` resolves the target version first, then previews the selected stable or prerelease update action without changing the installed module.
+Shows what would happen if the cmdlet runs. `Update-NovaModuleTool` resolves the target version first, then previews the selected stable or prerelease update action without prompting for prerelease confirmation or changing the installed module.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -147,8 +149,11 @@ If the PowerShell Gallery cannot be reached well enough to resolve an update can
 
 Use `Get-NovaUpdateNotificationPreference` and `Set-NovaUpdateNotificationPreference` to inspect or change the stored prerelease setting.
 
+Use `Ctrl+C` if you need to stop an active self-update before `Update-Module` finishes.
+
 ## RELATED LINKS
 
 - [Get-NovaUpdateNotificationPreference](./Get-NovaUpdateNotificationPreference.md)
 - [Set-NovaUpdateNotificationPreference](./Set-NovaUpdateNotificationPreference.md)
+- [Get-NovaProjectInfo](./Get-NovaProjectInfo.md)
 - [Invoke-NovaBuild](./Invoke-NovaBuild.md)

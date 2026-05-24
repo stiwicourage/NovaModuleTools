@@ -95,7 +95,7 @@ Describe 'Architecture guardrails' {
             [pscustomobject]@{Path = 'src/public/PublishNovaModule.ps1'; ExpectedHelpers = @('Get-NovaDynamicDeliveryParameterDictionary', 'Get-NovaProjectInfo', 'Get-NovaPublishWorkflowContext', 'Get-NovaShouldProcessForwardingParameter', 'Invoke-NovaPublishWorkflow', 'Write-NovaPublishWorkflowContext')}
             [pscustomobject]@{Path = 'src/public/SetNovaUpdateNotificationPreference.ps1'; ExpectedHelpers = @('Get-NovaUpdateNotificationPreferenceChangeContext', 'Invoke-NovaUpdateNotificationPreferenceChange')}
             [pscustomobject]@{Path = 'src/public/TestNovaBuild.ps1'; ExpectedHelpers = @('Get-NovaTestWorkflowContext', 'Invoke-NovaTestWorkflow', 'New-NovaTestDynamicParameterDictionary')}
-            [pscustomobject]@{Path = 'src/public/UpdateNovaModuleTools.ps1'; ExpectedHelpers = @('Complete-NovaModuleSelfUpdateResult', 'Confirm-NovaPrereleaseModuleUpdate', 'Get-NovaModuleSelfUpdateWorkflowContext', 'Invoke-NovaModuleSelfUpdateWorkflow', 'Write-NovaModuleReleaseNotesLink')}
+            [pscustomobject]@{Path = 'src/public/UpdateNovaModuleTools.ps1'; ExpectedHelpers = @('Confirm-NovaPrereleaseModuleUpdate', 'Get-NovaModuleSelfUpdateWorkflowContext', 'Invoke-NovaModuleSelfUpdateWorkflow', 'Write-NovaModuleReleaseNotesLink')}
             [pscustomobject]@{Path = 'src/public/UpdateNovaModuleVersion.ps1'; ExpectedHelpers = @('Get-NovaVersionUpdateWorkflowContext', 'Invoke-NovaVersionUpdateCiActivation', 'Invoke-NovaVersionUpdateWorkflow', 'Write-NovaVersionUpdateResultOutput')}
         )
         $expectedPaths = @($testCases | ForEach-Object Path | Sort-Object)

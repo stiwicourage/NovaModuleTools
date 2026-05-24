@@ -29,6 +29,8 @@ PS> Invoke-NovaBuild [-ContinuousIntegration] [-OverrideWarning] [-WhatIf] [-Con
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the build target without clearing `dist/` or generating new build output.
 
+During a real build, Nova shows progress for the main build phases and ends with the output module directory plus the next suggested validation step.
+
 Use `-ContinuousIntegration` when the same PowerShell session needs to keep using the freshly built `dist/` module after the build completes. In CI/self-hosting flows, that re-activates the built module before the command returns.
 
 Use `-OverrideWarning` only when you intentionally want to continue a build even though a file under `src/public`
@@ -62,7 +64,7 @@ If `Preamble` is configured, those lines are written at the very top of the gene
 PS> Invoke-NovaBuild
 ```
 
-Builds the current project into `dist/<ProjectName>/`.
+Builds the current project into `dist/<ProjectName>/`, prints the output module directory, and suggests `Test-NovaBuild` as the next validation step.
 
 ### EXAMPLE 2
 
@@ -70,7 +72,7 @@ Builds the current project into `dist/<ProjectName>/`.
 PS> Invoke-NovaBuild -Verbose
 ```
 
-Builds the current project and writes verbose progress for the build workflow.
+Builds the current project, shows phase progress for the build workflow, and writes verbose details from the underlying build helpers.
 
 ### EXAMPLE 3
 
@@ -171,6 +173,8 @@ Run this command from the project root so `project.json`, `src/`, `docs/<Project
 When `-ContinuousIntegration` is used together with a real build, the command re-imports the freshly built module after the build succeeds. `-WhatIf` previews remain side-effect free and do not change the loaded module state.
 
 Files under `src/public` are expected to contain exactly one top-level function each. Use `-OverrideWarning` only when you intentionally want to bypass that guard for the current build.
+
+Use `Ctrl+C` if you need to stop a running build before all phases complete.
 
 ## RELATED LINKS
 

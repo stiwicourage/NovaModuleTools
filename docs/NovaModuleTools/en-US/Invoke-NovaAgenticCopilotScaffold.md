@@ -34,6 +34,8 @@ By default the workflow shows an overwrite warning before it updates the managed
 
 The target path must contain a valid `project.json`. Invalid project metadata or an invalid short name stops the command with a clear validation error.
 
+During apply or refresh, Nova shows progress for the main scaffold phases and ends with the project root plus the next suggested review and validation steps.
+
 ## EXAMPLES
 
 ### EXAMPLE 1
@@ -200,6 +202,8 @@ This workflow does not persist `ShortName` to `project.json` and does not infer 
 - `CONTRIBUTING.md`
 
 `README.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` are created only when they are missing.
+
+Press `Ctrl+C` before confirming the overwrite warning if you want to cancel the apply without changing files.
 
 ## RELATED LINKS
 

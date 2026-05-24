@@ -3,22 +3,22 @@ function Update-NovaModuleTool {
     [Alias('Update-NovaModuleTools')]
     param()
 
-    $workflowContext = Get-NovaModuleSelfUpdateWorkflowContext
+    $workflowContext = Get-NovaModuleSelfUpdateWorkflowContext -WorkflowParams @{WhatIf = [bool]$WhatIfPreference}
     $plan = $workflowContext.Plan
-    if (-not $plan.UpdateAvailable) {
-        return Complete-NovaModuleSelfUpdateResult -Plan $plan -ReleaseNotesUri $null
+    if ($plan.IsPrereleaseTarget -and -not $WhatIfPreference) {
+        $prereleaseConfirmed = Confirm-NovaPrereleaseModuleUpdate -Cmdlet $PSCmdlet -CurrentVersion $plan.CurrentVersion -TargetVersion $plan.TargetVersion
+        if (-not $prereleaseConfirmed) {
+            $plan.Cancelled = $true
+            return Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext $workflowContext -ShouldRun:$false
+        }
     }
 
-    if ($plan.IsPrereleaseTarget -and -not (Confirm-NovaPrereleaseModuleUpdate -Cmdlet $PSCmdlet -CurrentVersion $plan.CurrentVersion -TargetVersion $plan.TargetVersion)) {
-        $plan.Cancelled = $true
-        return Complete-NovaModuleSelfUpdateResult -Plan $plan -ReleaseNotesUri $null
+    $shouldRun = $plan.UpdateAvailable -and $PSCmdlet.ShouldProcess($plan.ModuleName, $workflowContext.Action)
+    if (-not $shouldRun) {
+        $plan.Cancelled = (-not $WhatIfPreference) -and $plan.UpdateAvailable
     }
 
-    if (-not $PSCmdlet.ShouldProcess($plan.ModuleName, $workflowContext.Action)) {
-        return Complete-NovaModuleSelfUpdateResult -Plan $plan -ReleaseNotesUri $null
-    }
-
-    $result = Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext $workflowContext
+    $result = Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext $workflowContext -ShouldRun:$shouldRun
     Write-NovaModuleReleaseNotesLink -ReleaseNotesUri $result.ReleaseNotesUri
     return $result
 }

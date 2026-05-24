@@ -7,25 +7,46 @@ function Invoke-NovaVersionUpdateWorkflow {
     )
 
     $versionWriteResult = $null
-    if ($ShouldRun) {
-        $versionWriteResult = Set-NovaModuleVersion -ProjectInfo $WorkflowContext.ProjectInfo -Label (Get-NovaVersionUpdateEffectiveLabel -WorkflowContext $WorkflowContext) -PreviewRelease:$WorkflowContext.PreviewRelease -Confirm:$false
+    $progressActivity = 'Updating Nova module version'
+    try {
+        if ($ShouldRun) {
+            $versionWriteResult = Invoke-NovaVersionUpdateWorkflowStep -Activity $progressActivity -Status (Get-NovaVersionUpdateApplyStatus -WorkflowContext $WorkflowContext) -PercentComplete 80 -Action {
+                Set-NovaModuleVersion -ProjectInfo $WorkflowContext.ProjectInfo -Label (Get-NovaVersionUpdateEffectiveLabel -WorkflowContext $WorkflowContext) -PreviewRelease:$WorkflowContext.PreviewRelease -Confirm:$false
+            }
+        }
+    }
+    finally {
+        if ($ShouldRun) {
+            Write-Progress -Activity $progressActivity -Completed
+        }
     }
 
-    if (-not (Test-NovaVersionUpdateResultRequired -ShouldRun:$ShouldRun -WhatIfEnabled:$WhatIfEnabled)) {
-        return
-    }
-
-    return Get-NovaVersionUpdateResult -WorkflowContext $WorkflowContext -Applied:($null -ne $versionWriteResult -and $versionWriteResult.Applied)
+    $wasApplied = $null -ne $versionWriteResult -and $versionWriteResult.Applied
+    $wasCancelled = (-not $ShouldRun) -and (-not $WhatIfEnabled)
+    return Get-NovaVersionUpdateResult -WorkflowContext $WorkflowContext -Applied:$wasApplied -Previewed:$WhatIfEnabled -Cancelled:$wasCancelled
 }
 
-function Test-NovaVersionUpdateResultRequired {
+function Invoke-NovaVersionUpdateWorkflowStep {
     [CmdletBinding()]
     param(
-        [switch]$ShouldRun,
-        [switch]$WhatIfEnabled
+        [Parameter(Mandatory)][string]$Activity,
+        [Parameter(Mandatory)][string]$Status,
+        [Parameter(Mandatory)][int]$PercentComplete,
+        [Parameter(Mandatory)][scriptblock]$Action
     )
 
-    return $ShouldRun -or $WhatIfEnabled
+    Write-Progress -Activity $Activity -Status $Status -PercentComplete $PercentComplete
+    return & $Action
+}
+
+function Get-NovaVersionUpdateApplyStatus {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext
+    )
+
+    $target = Get-NovaVersionUpdateTarget -WorkflowContext $WorkflowContext
+    return "Writing version $( $WorkflowContext.NewVersion ) to $target"
 }
 
 function Get-NovaVersionUpdateEffectiveLabel {
@@ -34,28 +55,35 @@ function Get-NovaVersionUpdateEffectiveLabel {
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
 
-    if ($WorkflowContext.PSObject.Properties.Name -contains 'EffectiveLabel' -and -not [string]::IsNullOrWhiteSpace($WorkflowContext.EffectiveLabel)) {
-        return $WorkflowContext.EffectiveLabel
+    $effectiveLabel = Get-NovaVersionUpdateWorkflowPropertyValue -WorkflowContext $WorkflowContext -Name 'EffectiveLabel'
+    if (-not [string]::IsNullOrWhiteSpace($effectiveLabel)) {
+        return $effectiveLabel
     }
 
-    return $WorkflowContext.Label
+    return Get-NovaVersionUpdateWorkflowPropertyValue -WorkflowContext $WorkflowContext -Name 'Label'
 }
 
 function Get-NovaVersionUpdateResult {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
-        [switch]$Applied
+        [switch]$Applied,
+        [switch]$Previewed,
+        [switch]$Cancelled
     )
 
     return [pscustomobject]@{
-        PreviousVersion = $WorkflowContext.PreviousVersion
-        NewVersion = $WorkflowContext.NewVersion
-        Label = $WorkflowContext.Label
+        PreviousVersion = Get-NovaVersionUpdateWorkflowPropertyValue -WorkflowContext $WorkflowContext -Name 'PreviousVersion'
+        NewVersion = Get-NovaVersionUpdateWorkflowPropertyValue -WorkflowContext $WorkflowContext -Name 'NewVersion'
+        Label = Get-NovaVersionUpdateWorkflowPropertyValue -WorkflowContext $WorkflowContext -Name 'Label'
         EffectiveLabel = Get-NovaVersionUpdateEffectiveLabel -WorkflowContext $WorkflowContext
         AdvisoryMessage = Get-NovaVersionUpdateAdvisoryMessage -WorkflowContext $WorkflowContext
-        CommitCount = $WorkflowContext.CommitCount
+        CommitCount = Get-NovaVersionUpdateWorkflowPropertyValue -WorkflowContext $WorkflowContext -Name 'CommitCount'
+        ProjectFile = Get-NovaVersionUpdateProjectFile -WorkflowContext $WorkflowContext
+        Target = Get-NovaVersionUpdateTarget -WorkflowContext $WorkflowContext
         Applied = [bool]$Applied
+        Previewed = [bool]$Previewed
+        Cancelled = [bool]$Cancelled
     }
 }
 
@@ -65,10 +93,53 @@ function Get-NovaVersionUpdateAdvisoryMessage {
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
 
-    if ($WorkflowContext.PSObject.Properties.Name -notcontains 'AdvisoryMessage') {
+    return Get-NovaVersionUpdateWorkflowPropertyValue -WorkflowContext $WorkflowContext -Name 'AdvisoryMessage'
+}
+
+function Get-NovaVersionUpdateProjectFile {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext
+    )
+
+    $projectInfo = Get-NovaVersionUpdateWorkflowPropertyValue -WorkflowContext $WorkflowContext -Name 'ProjectInfo'
+    if ($null -eq $projectInfo) {
         return $null
     }
 
-    return $WorkflowContext.AdvisoryMessage
+    $projectFileProperty = $projectInfo.PSObject.Properties['ProjectJSON']
+    if ($null -eq $projectFileProperty) {
+        return $null
+    }
+
+    return $projectFileProperty.Value
 }
 
+function Get-NovaVersionUpdateTarget {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext
+    )
+
+    $projectFile = Get-NovaVersionUpdateProjectFile -WorkflowContext $WorkflowContext
+    if (-not [string]::IsNullOrWhiteSpace($projectFile)) {
+        return [System.IO.Path]::GetFileName($projectFile)
+    }
+
+    return Get-NovaVersionUpdateWorkflowPropertyValue -WorkflowContext $WorkflowContext -Name 'Target'
+}
+
+function Get-NovaVersionUpdateWorkflowPropertyValue {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
+        [Parameter(Mandatory)][string]$Name
+    )
+
+    $property = $WorkflowContext.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        return $null
+    }
+
+    return $property.Value
+}

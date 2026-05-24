@@ -40,6 +40,8 @@ With the default
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the planned test run and XML output path without creating `artifacts/` or invoking Pester.
 
+During a test run, Nova shows progress for the optional pre-test build, test-result preparation, the Pester run, result writing, and code-coverage validation. When tests pass, Nova prints the result file path, a coverage summary when one is available, and a suggested next step. In `-WhatIf` mode, Nova ends with a test-plan summary instead of invoking Pester.
+
 ## EXAMPLES
 
 ### EXAMPLE 1
@@ -48,7 +50,7 @@ This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShoul
 PS> Test-NovaBuild
 ```
 
-Runs the Pester tests for the current project.
+Runs the Pester tests for the current project and prints the result file path plus the next suggested command when the run succeeds.
 
 ### EXAMPLE 2
 
@@ -56,7 +58,7 @@ Runs the Pester tests for the current project.
 PS> Test-NovaBuild -Build
 ```
 
-Builds the project first, then runs the configured Pester test workflow.
+Builds the project first, then runs the configured Pester test workflow with the same completion summary as a normal test run.
 
 ### EXAMPLE 3
 
@@ -88,7 +90,7 @@ Overrides the console output settings for the current test run while keeping col
 PS> Test-NovaBuild -WhatIf
 ```
 
-Previews the planned Pester run without executing tests or writing `artifacts/TestResults.xml`.
+Previews the planned Pester run, prints the planned result file path, and does not execute tests or write `artifacts/TestResults.xml`.
 
 ### EXAMPLE 7
 
@@ -96,7 +98,7 @@ Previews the planned Pester run without executing tests or writing `artifacts/Te
 PS> Test-NovaBuild -Build -WhatIf
 ```
 
-Previews the build-before-test workflow without rebuilding the project or running Pester.
+Previews the build-before-test workflow, including the planned result file path and configured coverage target, without rebuilding the project or running Pester.
 
 ## PARAMETERS
 
@@ -257,6 +259,8 @@ If `project.json` configures `Pester.CodeCoverage.CoveragePercentTarget`, `Test-
 
 `Test-NovaBuild` uses `SupportsShouldProcess`, so `Get-Help Test-NovaBuild -Full` surfaces native `-WhatIf` and
 `-Confirm` support.
+
+Use `Ctrl+C` if you need to stop a running test workflow before Pester completes.
 
 ## RELATED LINKS
 

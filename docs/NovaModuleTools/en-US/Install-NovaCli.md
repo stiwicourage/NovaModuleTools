@@ -30,7 +30,8 @@ PS> Install-NovaCli [[-DestinationDirectory] <string>] [-Force] [-WhatIf] [-Conf
 By default, the launcher is installed to `~/.local/bin/nova` on macOS and Linux. If that directory is not on your
 `PATH`, the command warns so you can update your shell profile.
 
-After a successful install, `Install-NovaCli` also prints the release notes link from the installed module manifest.
+After a successful install, `Install-NovaCli` prints the installed launcher path, suggests the next command to run,
+and also prints the release notes link from the installed module manifest.
 
 Use this command when you want `nova` to be available directly from your shell as the launcher-oriented CLI entrypoint.
 
@@ -168,8 +169,13 @@ Returns the installed command name, destination directory, installed path, and w
 
 ## NOTES
 
-After running `Install-NovaCli`, add the destination directory to your shell `PATH` if needed.
+`Install-NovaCli` currently supports macOS and Linux. On Windows, use `Invoke-NovaCli` from `pwsh` after importing
+NovaModuleTools.
+
+After running `Install-NovaCli`, add the destination directory to your shell `PATH` if needed, start a new shell,
+and then run `nova --help` to confirm the launcher is available.
 
 ## RELATED LINKS
 
+- [Update-NovaModuleTool](./Update-NovaModuleTools.md)
 - [Publish-NovaModule](./Publish-NovaModule.md)

@@ -216,7 +216,7 @@ function Invoke-NovaCliCommandRoute {
             return Get-NovaCliHelp
         }
         default {
-            Stop-NovaOperation -Message "Unknown command: <$command> | Use 'nova --help' to see available commands." -ErrorId 'Nova.Validation.UnknownCliCommand' -Category InvalidArgument -TargetObject $command
+            Stop-NovaOperation -Message "Unknown nova command: $command. Run 'nova --help' to list available commands, or 'nova --help <command>' for command-specific help." -ErrorId 'Nova.Validation.UnknownCliCommand' -Category InvalidArgument -TargetObject $command
         }
     }
 }
