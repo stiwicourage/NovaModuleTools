@@ -8,6 +8,12 @@ Describe 'Write-NovaPackageUploadResultOutput' {
         Mock Write-Host {}
     }
 
+    It 'returns no repository next-step message for an empty result list' {
+        $message = Get-NovaPackageUploadResultNextStepMessage -Result @()
+
+        $message | Should -BeNullOrEmpty
+    }
+
     It 'writes a single-artifact summary and URL-specific next step' {
         $result = @([pscustomobject]@{UploadUrl = 'https://packages.example/raw/NovaModuleTools.1.0.0.nupkg'})
 

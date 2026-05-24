@@ -26,6 +26,19 @@ Describe 'Invoke-NovaPackageUploadWorkflow' {
         Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
     }
 
+    It 'uses a generic progress status when the artifact file name is blank' {
+        Mock Invoke-NovaPackageArtifactUpload {[pscustomobject]@{StatusCode=200; Artifact=$UploadArtifact}}
+        $ctx = [pscustomobject]@{UploadArtifactList=@()}
+
+        $null = Invoke-NovaPackageUploadWorkflow -WorkflowContext $ctx -UploadArtifactList @([pscustomobject]@{PackageFileName=''})
+
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
+            (-not $Completed) -and
+            $Status -eq 'Uploading artifact 1 of 1'
+        }
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
+    }
+
     It 'falls back to the workflow context artifact list when no explicit upload list is supplied' {
         Mock Invoke-NovaPackageArtifactUpload {[pscustomobject]@{StatusCode=200; Artifact=$UploadArtifact}}
         $ctx = [pscustomobject]@{UploadArtifactList=@([pscustomobject]@{PackageFileName='a.nupkg'})}

@@ -34,7 +34,7 @@ function Get-NovaPackageUploadResultSummaryMessage {
 function Get-NovaPackageUploadResultNextStepMessage {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][object[]]$Result
+        [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Result
     )
 
     $resolvedResult = @($Result)

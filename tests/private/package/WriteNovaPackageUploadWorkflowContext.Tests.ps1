@@ -9,6 +9,19 @@ Describe 'Write-NovaPackageUploadWorkflowContext' {
         Mock Write-Verbose {}
     }
 
+    It 'writes nothing when no artifacts are resolved' {
+        $workflowContext = [pscustomobject]@{
+            UploadArtifactList = @()
+            Target = ''
+            Operation = 'Upload package artifacts'
+        }
+
+        Write-NovaPackageUploadWorkflowContext -WorkflowContext $workflowContext
+
+        Should -Invoke Write-Host -Times 0
+        Should -Invoke Write-Verbose -Times 0
+    }
+
     It 'writes a ready message and verbose target for multiple artifacts' {
         $workflowContext = [pscustomobject]@{
             UploadArtifactList = @([pscustomobject]@{}, [pscustomobject]@{})
