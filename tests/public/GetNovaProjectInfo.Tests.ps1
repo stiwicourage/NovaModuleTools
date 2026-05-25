@@ -6,8 +6,12 @@ BeforeAll {
 }
 
 Describe 'Get-NovaProjectInfo' {
-    It 'returns a formatted installed version when -Installed is set' {
-        Get-NovaProjectInfo -Installed | Should -Match 'NovaModuleTools 1\.2\.3|.+1\.2\.3'
+    It 'returns the installed project version when -Installed is set' {
+        Get-NovaProjectInfo -Installed | Should -Be 'ProjectX 9.8.7'
+    }
+
+    It 'returns the installed NovaModuleTools version when -InstalledNovaVersion is set' {
+        Get-NovaProjectInfo -InstalledNovaVersion | Should -Match 'NovaModuleTools 1\.2\.3|.+1\.2\.3'
     }
 
     It 'returns the project info result when -Version is not set' {

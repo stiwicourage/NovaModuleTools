@@ -8,6 +8,11 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Changed
 
+- `Get-NovaProjectInfo` now matches the CLI version split on the PowerShell surface.
+    - Use `-Installed` for the installed current project/module version.
+    - Use `-InstalledNovaVersion` for the installed `NovaModuleTools` version.
+- `Update-NovaModuleTool` now suggests `Get-NovaProjectInfo -InstalledNovaVersion` after a successful self-update.
+
 ### Deprecated
 
 ### Removed
@@ -226,4 +231,3 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ## [0.0.4] - 2024-06-25
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
-
