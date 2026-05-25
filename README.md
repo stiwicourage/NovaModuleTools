@@ -130,7 +130,9 @@ To inspect the current project version, the installed version of the current pro
 `NovaModuleTools` tool version, use:
 
 ```powershell
+PS> Get-NovaProjectInfo -Version
 PS> Get-NovaProjectInfo -Installed
+PS> Get-NovaProjectInfo -InstalledNovaVersion
 % nova version
 % nova version --installed
 % nova version -i
@@ -140,7 +142,9 @@ PS> Get-NovaProjectInfo -Installed
 
 - `% nova version` shows the version from the current project's `project.json`
 - `% nova version --installed` / `% nova version -i` shows the locally installed version of the current project/module from the local module path
-- `Get-NovaProjectInfo -Installed` shows the installed `NovaModuleTools` module name and version from PowerShell
+- `Get-NovaProjectInfo -Version` shows the version from the current project's `project.json`
+- `Get-NovaProjectInfo -Installed` shows the locally installed version of the current project/module from PowerShell
+- `Get-NovaProjectInfo -InstalledNovaVersion` shows the installed `NovaModuleTools` module name and version from PowerShell
 - `% nova --version` / `% nova -v` shows the installed `NovaModuleTools` version
 
 ### CLI help

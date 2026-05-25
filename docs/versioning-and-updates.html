@@ -113,14 +113,14 @@
                             <td>Use this when you want to know what your project will build and publish as.</td>
                         </tr>
                         <tr>
-                            <td><code>% nova version --installed</code> or <code>% nova version -i</code></td>
+                            <td><code>Get-NovaProjectInfo -Installed</code> or <code>% nova version --installed</code></td>
                             <td>The version installed locally for the current project/module from the module path.</td>
                             <td>Use this when you want to compare the installed copy against the current working
                                 project.
                             </td>
                         </tr>
                         <tr>
-                            <td><code>Get-NovaProjectInfo -Installed</code> or <code>% nova --version</code></td>
+                            <td><code>Get-NovaProjectInfo -InstalledNovaVersion</code> or <code>% nova --version</code></td>
                             <td>The installed NovaModuleTools version.</td>
                             <td>Use this when you are troubleshooting Nova itself or checking whether the tool needs an
                                 update.
@@ -137,7 +137,8 @@
                     </div>
                     <div class="surface-example__surface" data-command-surface="powershell">
                         <pre><code>PS&gt; Get-NovaProjectInfo -Version
-PS&gt; Get-NovaProjectInfo -Installed</code></pre>
+PS&gt; Get-NovaProjectInfo -Installed
+PS&gt; Get-NovaProjectInfo -InstalledNovaVersion</code></pre>
                     </div>
                     <div class="surface-example__surface" data-command-surface="command-line" hidden>
                         <pre><code>% nova version
@@ -146,12 +147,6 @@ PS&gt; Get-NovaProjectInfo -Installed</code></pre>
 % nova --version
 % nova -v</code></pre>
                     </div>
-                </div>
-                <div class="surface-note" data-command-visibility="powershell">
-                    <p><strong>PowerShell note:</strong> project version lookup and installed-tool version lookup both
-                        have direct
-                        cmdlet forms. The installed current-project module view remains launcher-oriented on this page,
-                        as shown in the comparison table above.</p>
                 </div>
             </section>
 

@@ -6,11 +6,17 @@ function Get-NovaProjectInfo {
         [string]$Path = (Get-Location).Path,
         [Parameter(ParameterSetName = 'ProjectVersion')]
         [switch]$Version,
-        [Parameter(ParameterSetName = 'InstalledVersion')]
-        [switch]$Installed
+        [Parameter(ParameterSetName = 'InstalledProjectVersion')]
+        [switch]$Installed,
+        [Parameter(ParameterSetName = 'InstalledNovaVersion')]
+        [switch]$InstalledNovaVersion
     )
 
     if ($Installed) {
+        return Get-NovaInstalledProjectVersion
+    }
+
+    if ($InstalledNovaVersion) {
         $module = $ExecutionContext.SessionState.Module
         $installedVersion = Get-NovaCliInstalledVersion -Module $module
         return Format-NovaCliVersionString -Name $module.Name -Version $installedVersion

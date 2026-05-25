@@ -215,6 +215,6 @@ function Get-NovaModuleSelfUpdateWorkflowNextStepLine {
 
     return @(
         'Next step:'
-        'Get-NovaProjectInfo -Installed'
+        'Get-NovaProjectInfo -InstalledNovaVersion'
     )
 }

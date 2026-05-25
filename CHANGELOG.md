@@ -9,6 +9,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- `Get-NovaProjectInfo` now aligns its installed-version views with the existing CLI version contract.
+    - `-Installed` now returns the installed version of the current project/module from the local module path.
+    - `-InstalledNovaVersion` now returns the installed `NovaModuleTools` module name and version from PowerShell.
+- `Update-NovaModuleTool` now suggests `Get-NovaProjectInfo -InstalledNovaVersion` after a successful self-update so the PowerShell verification step checks the installed NovaModuleTools version directly.
+
 ### Deprecated
 
 ### Removed
@@ -468,4 +473,3 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-
