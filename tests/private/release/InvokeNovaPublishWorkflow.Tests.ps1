@@ -232,3 +232,20 @@ Describe 'Invoke-NovaPublishWorkflow' {
         }
     }
 }
+
+Describe 'Get-NovaPublishWorkflowPropertyValue' {
+    It 'returns the value from a dictionary when the key exists' {
+        $dict = @{Name = 'test-value'}
+        Get-NovaPublishWorkflowPropertyValue -InputObject $dict -Name 'Name' | Should -Be 'test-value'
+    }
+
+    It 'returns null from a dictionary when the key does not exist' {
+        $dict = @{Other = 'test-value'}
+        Get-NovaPublishWorkflowPropertyValue -InputObject $dict -Name 'Missing' | Should -BeNullOrEmpty
+    }
+
+    It 'returns null when a PSObject does not have the named property' {
+        $obj = [pscustomobject]@{Exists = 'yes'}
+        Get-NovaPublishWorkflowPropertyValue -InputObject $obj -Name 'Missing' | Should -BeNullOrEmpty
+    }
+}

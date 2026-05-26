@@ -451,6 +451,21 @@ Describe 'Write-NovaPesterExecutionOutput' {
             $MessageData -eq 'discovery' -and $Tags.Count -eq 1 -and $Tags[0] -eq 'Pester' -and $InformationAction -eq 'Continue'
         }
     }
+
+    It 'initializes the record index to zero when the property value is null' {
+        $execution = [pscustomobject]@{
+            PowerShell = [pscustomobject]@{
+                Streams = [pscustomobject]@{Information = @()}
+            }
+            CompletedTestCount = 0
+            TotalTestCount = $null
+            NextInformationRecordIndex = $null
+        }
+
+        Write-NovaPesterExecutionOutput -Execution $execution
+
+        $execution.NextInformationRecordIndex | Should -Be 0
+    }
 }
 
 Describe 'Get-NovaTestWorkflowCoverageMessage' {
@@ -487,5 +502,90 @@ Describe 'Get-NovaTestWorkflowPesterPercentComplete' {
 
     It 'caps completed test progress at the configured end percent' {
         Get-NovaTestWorkflowPesterPercentComplete -StartPercentComplete 70 -EndPercentComplete 94 -CompletedTestCount 5 -TotalTestCount 4 | Should -Be 94
+    }
+
+    It 'returns the end percent immediately when the total test count is zero' {
+        Get-NovaTestWorkflowPesterPercentComplete -StartPercentComplete 70 -EndPercentComplete 94 -CompletedTestCount 0 -TotalTestCount 0 | Should -Be 94
+    }
+
+    It 'returns the start percent when the computed value falls below the range minimum' {
+        Get-NovaTestWorkflowPesterPercentComplete -StartPercentComplete 94 -EndPercentComplete 70 -CompletedTestCount 5 -TotalTestCount 4 | Should -Be 94
+    }
+}
+
+Describe 'Get-NovaPesterExecutionInformationRecordBuffer' {
+    It 'returns an empty array when the execution has no PowerShell' {
+        $execution = [pscustomobject]@{PowerShell = $null}
+        $result = @(Get-NovaPesterExecutionInformationRecordBuffer -Execution $execution)
+        $result.Count | Should -Be 0
+    }
+}
+
+Describe 'Get-NovaPesterExecution' {
+    It 'returns an execution object with the expected initial properties' {
+        $execution = $null
+        try {
+            $execution = Get-NovaPesterExecution -Configuration ([pscustomobject]@{})
+            $execution.PowerShell | Should -Not -BeNullOrEmpty
+            $execution.AsyncResult | Should -Not -BeNullOrEmpty
+            $execution.CompletedTestCount | Should -Be 0
+            $execution.NextInformationRecordIndex | Should -Be 0
+            $execution.TotalTestCount | Should -BeNullOrEmpty
+            $execution.LastProgressStatus | Should -BeNullOrEmpty
+            $execution.LastProgressPercentComplete | Should -BeNullOrEmpty
+        } finally {
+            if ($null -ne $execution -and $null -ne $execution.PowerShell) {
+                $execution.PowerShell.Dispose()
+            }
+        }
+    }
+}
+
+Describe 'Wait-NovaPesterExecution' {
+    It 'returns true when the async operation completes within the timeout' {
+        $ps = [powershell]::Create()
+        $null = $ps.AddScript('return 0')
+        $asyncResult = $ps.BeginInvoke()
+        $execution = [pscustomobject]@{PowerShell = $ps; AsyncResult = $asyncResult}
+        try {
+            $result = Wait-NovaPesterExecution -Execution $execution -TimeoutMilliseconds 30000
+            $result | Should -BeTrue
+        } finally {
+            $ps.Dispose()
+        }
+    }
+}
+
+Describe 'Receive-NovaPesterExecutionResult' {
+    It 'returns the last output object from the completed execution' {
+        $ps = [powershell]::Create()
+        $null = $ps.AddScript('[pscustomobject]@{Result = "Passed"}')
+        $asyncResult = $ps.BeginInvoke()
+        $execution = [pscustomobject]@{PowerShell = $ps; AsyncResult = $asyncResult}
+        try {
+            $null = $asyncResult.AsyncWaitHandle.WaitOne(30000)
+            $result = Receive-NovaPesterExecutionResult -Execution $execution
+            $result.Result | Should -Be 'Passed'
+        } finally {
+            $ps.Dispose()
+        }
+    }
+}
+
+Describe 'Complete-NovaPesterExecution' {
+    It 'returns immediately when the execution is null' {
+        { Complete-NovaPesterExecution -Execution $null } | Should -Not -Throw
+    }
+
+    It 'returns immediately when the PowerShell property is null' {
+        $execution = [pscustomobject]@{PowerShell = $null}
+        { Complete-NovaPesterExecution -Execution $execution } | Should -Not -Throw
+    }
+
+    It 'disposes the PowerShell instance' {
+        $ps = [powershell]::Create()
+        $null = $ps.AddScript('return 0')
+        $execution = [pscustomobject]@{PowerShell = $ps}
+        { Complete-NovaPesterExecution -Execution $execution } | Should -Not -Throw
     }
 }
