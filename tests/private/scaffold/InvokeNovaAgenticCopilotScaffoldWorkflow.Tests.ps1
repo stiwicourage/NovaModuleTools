@@ -110,6 +110,13 @@ Describe 'Invoke-NovaAgenticCopilotScaffoldWorkflow' {
         Assert-MockCalled Confirm-NovaAgenticCopilotScaffoldWarning -Times 1
         Assert-MockCalled Initialize-NovaModuleAgenticCopilotScaffold -Times 1
         Assert-MockCalled Write-Progress -Times 3
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Confirming overwrite warning' -and $PercentComplete -eq 20
+        }
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Refreshing managed scaffold files' -and $PercentComplete -eq 75
+        }
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
         Assert-MockCalled Write-Message -Times 5
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
             $Message -eq 'Agentic Copilot scaffold applied to Demo' -and $color -eq 'Green'

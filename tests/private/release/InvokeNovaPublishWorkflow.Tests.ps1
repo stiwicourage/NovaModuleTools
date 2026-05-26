@@ -48,11 +48,19 @@ Describe 'Invoke-NovaPublishWorkflowCiRestore' {
 
 Describe 'Invoke-NovaPublishWorkflow' {
     BeforeEach {
+        . (Join-Path $projectRoot 'src/private/release/InvokeNovaPublishWorkflow.ps1')
         $script:validationCalls = 0
         $script:publishCalls = 0
         $script:localImportCalls = 0
         $script:ciImportCalls = 0
-        Mock Write-Message {}
+        $script:messages = @()
+        Set-Item -Path Function:\Write-Message -Value {
+            param($Text, $color)
+            $script:messages += [pscustomobject]@{
+                Text = $Text
+                Color = $color
+            }
+        }
         Mock Write-Progress {}
     }
 
@@ -72,13 +80,16 @@ Describe 'Invoke-NovaPublishWorkflow' {
         $script:publishCalls | Should -Be 1
         $script:localImportCalls | Should -Be 0
         Assert-MockCalled Write-Progress -Times 3
-        Assert-MockCalled Write-Message -Times 4
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Published Nova module: NovaModuleTools' -and $color -eq 'Green'
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Building and testing publish output' -and $PercentComplete -eq 35
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Find-Module NovaModuleTools -Repository PSGallery'
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Publishing to repository PSGallery' -and $PercentComplete -eq 75
         }
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        $script:messages.Count | Should -Be 4
+        ($script:messages | Where-Object {$_.Text -eq 'Published Nova module: NovaModuleTools' -and $_.Color -eq 'Green'}).Count | Should -Be 1
+        ($script:messages | Where-Object {$_.Text -eq 'Find-Module NovaModuleTools -Repository PSGallery'}).Count | Should -Be 1
     }
 
     It 'imports the local published module, restores the built module in CI, and reports the result' {
@@ -104,19 +115,18 @@ Describe 'Invoke-NovaPublishWorkflow' {
         $script:localImportCalls | Should -Be 1
         $script:ciImportCalls | Should -Be 1
         Assert-MockCalled Write-Progress -Times 5
-        Assert-MockCalled Write-Message -Times 6
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Pre-publish tests were skipped for this run.'
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Importing the published local module' -and $PercentComplete -eq 90
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'The published local module is loaded from /m/Mod.psd1.'
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Refreshing the current session with the built module' -and $PercentComplete -eq 98
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'The freshly built dist module is loaded again for later commands in this session.'
-        }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Get-NovaProjectInfo -Installed'
-        }
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        $script:messages.Count | Should -Be 7
+        ($script:messages | Where-Object {$_.Text -eq 'Pre-publish tests were skipped for this run.'}).Count | Should -Be 1
+        ($script:messages | Where-Object {$_.Text -eq 'The published local module is loaded from /m/Mod.psd1.'}).Count | Should -Be 1
+        ($script:messages | Where-Object {$_.Text -eq 'The freshly built dist module is loaded again for later commands in this session.'}).Count | Should -Be 1
+        ($script:messages | Where-Object {$_.Text -eq 'Get-NovaProjectInfo -Installed'}).Count | Should -Be 1
     }
 
     It 'writes a publish plan summary in WhatIf mode without importing or restoring modules' {
@@ -139,12 +149,86 @@ Describe 'Invoke-NovaPublishWorkflow' {
         $script:publishCalls | Should -Be 1
         $script:localImportCalls | Should -Be 0
         $script:ciImportCalls | Should -Be 0
-        Assert-MockCalled Write-Message -Times 4
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Publish plan ready for NovaModuleTools' -and $color -eq 'Green'
+        $script:messages.Count | Should -Be 4
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Previewing publish to repository PSGallery' -and $PercentComplete -eq 75
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Run Publish-NovaModule without -WhatIf when you are ready to publish the module.'
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        ($script:messages | Where-Object {$_.Text -eq 'Publish plan ready for NovaModuleTools' -and $_.Color -eq 'Green'}).Count | Should -Be 1
+        ($script:messages | Where-Object {$_.Text -eq 'Run Publish-NovaModule without -WhatIf when you are ready to publish the module.'}).Count | Should -Be 1
+    }
+
+    It 'still writes the result after the local publish import refreshes the module session' {
+        $originalStatusMessage = (Get-Command -Name Get-NovaPublishWorkflowStatusMessage -CommandType Function).ScriptBlock
+        $originalNextStepLine = (Get-Command -Name Get-NovaPublishWorkflowNextStepLine -CommandType Function).ScriptBlock
+        Mock Invoke-NovaBuildValidation {$script:validationCalls += 1}
+        $ctx = [pscustomobject]@{
+            PublishParams = @{}
+            PublishInvocation = [pscustomobject]@{
+                Action = {param() $script:publishCalls += 1}
+                IsLocal = $true
+                Target = '/modules'
+                Parameters = [pscustomobject]@{ProjectInfo = [pscustomobject]@{ProjectName='NovaModuleTools'}}
+            }
+            LocalPublishActivation = [pscustomobject]@{
+                ManifestPath='/m/NovaModuleTools.psd1'
+                ImportAction = {
+                    param($ProjectName,$ManifestPath)
+                    $script:localImportCalls += 1
+                    Remove-Item Function:\Get-NovaPublishWorkflowStatusMessage -ErrorAction SilentlyContinue
+                    Remove-Item Function:\Get-NovaPublishWorkflowNextStepLine -ErrorAction SilentlyContinue
+                }
+            }
+            ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+            WorkflowParams = @{}
+            SkipTestsRequested = $true
+            ContinuousIntegrationRequested = $false
+        }
+
+        try {
+            { Invoke-NovaPublishWorkflow -WorkflowContext $ctx -ShouldRun } | Should -Not -Throw
+
+            $script:localImportCalls | Should -Be 1
+            ($script:messages | Where-Object {$_.Text -eq 'Published Nova module: NovaModuleTools' -and $_.Color -eq 'Green'}).Count | Should -Be 1
+            ($script:messages | Where-Object {$_.Text -eq 'The published local module is loaded from /m/NovaModuleTools.psd1.'}).Count | Should -Be 1
+        } finally {
+            Set-Item -Path Function:\Get-NovaPublishWorkflowStatusMessage -Value $originalStatusMessage
+            Set-Item -Path Function:\Get-NovaPublishWorkflowNextStepLine -Value $originalNextStepLine
+        }
+    }
+
+    It 'still writes the result after the CI restore refreshes the module session' {
+        $originalStatusMessage = (Get-Command -Name Get-NovaPublishWorkflowStatusMessage -CommandType Function).ScriptBlock
+        $originalNextStepLine = (Get-Command -Name Get-NovaPublishWorkflowNextStepLine -CommandType Function).ScriptBlock
+        Mock Invoke-NovaBuildValidation {$script:validationCalls += 1}
+        $ctx = [pscustomobject]@{
+            PublishParams = @{}
+            PublishInvocation = [pscustomobject]@{
+                Action = {param() $script:publishCalls += 1}
+                IsLocal = $false
+                Target = 'PSGallery'
+            }
+            LocalPublishActivation = $null
+            ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+            WorkflowParams = @{}
+            SkipTestsRequested = $false
+            ContinuousIntegrationRequested = $true
+        }
+
+        Mock Import-NovaBuiltModuleForCi {
+            $script:ciImportCalls += 1
+            Remove-Item Function:\Get-NovaPublishWorkflowStatusMessage -ErrorAction SilentlyContinue
+            Remove-Item Function:\Get-NovaPublishWorkflowNextStepLine -ErrorAction SilentlyContinue
+        }
+
+        try {
+            { Invoke-NovaPublishWorkflow -WorkflowContext $ctx -ShouldRun } | Should -Not -Throw
+
+            $script:ciImportCalls | Should -Be 1
+            ($script:messages | Where-Object {$_.Text -eq 'Published Nova module: NovaModuleTools' -and $_.Color -eq 'Green'}).Count | Should -Be 1
+        } finally {
+            Set-Item -Path Function:\Get-NovaPublishWorkflowStatusMessage -Value $originalStatusMessage
+            Set-Item -Path Function:\Get-NovaPublishWorkflowNextStepLine -Value $originalNextStepLine
         }
     }
 }

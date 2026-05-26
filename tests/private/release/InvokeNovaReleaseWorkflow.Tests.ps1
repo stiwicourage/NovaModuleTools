@@ -65,12 +65,20 @@ Describe 'Test-NovaReleaseWorkflowShouldRestoreBuiltModule' {
 
 Describe 'Invoke-NovaReleaseWorkflow' {
     BeforeEach {
+        . (Join-Path $projectRoot 'src/private/release/InvokeNovaReleaseWorkflow.ps1')
         $script:buildCalls = 0
         $script:testCalls = 0
         $script:versionCalls = 0
         $script:restoreCalls = 0
         $script:publishCalls = 0
-        Mock Write-Message {}
+        $script:messages = @()
+        Set-Item -Path Function:\Write-Message -Value {
+            param($Text, $color)
+            $script:messages += [pscustomobject]@{
+                Text = $Text
+                Color = $color
+            }
+        }
         Mock Write-Progress {}
     }
 
@@ -92,13 +100,28 @@ Describe 'Invoke-NovaReleaseWorkflow' {
         $script:publishCalls | Should -Be 1
         $script:restoreCalls | Should -Be 1
         Assert-MockCalled Write-Progress -Times 6
-        Assert-MockCalled Write-Message -Times 5
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Released Nova module: NovaModuleTools 1.0.0' -and $color -eq 'Green'
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Building the current project state' -and $PercentComplete -eq 15
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Get-NovaProjectInfo -Version'
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Running pre-release tests' -and $PercentComplete -eq 35
         }
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Updating the project version' -and $PercentComplete -eq 55
+        }
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Rebuilding release output' -and $PercentComplete -eq 75
+        }
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Publishing release to repository PSGallery' -and $PercentComplete -eq 90
+        }
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Refreshing the current session with the built module' -and $PercentComplete -eq 98
+        }
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        $script:messages.Count | Should -Be 5
+        ($script:messages | Where-Object {$_.Text -eq 'Released Nova module: NovaModuleTools 1.0.0' -and $_.Color -eq 'Green'}).Count | Should -Be 1
+        ($script:messages | Where-Object {$_.Text -eq 'Get-NovaProjectInfo -Version'}).Count | Should -Be 1
     }
 
     It 'skips tests when SkipTestsRequested and skips restore when not CI' {
@@ -112,12 +135,12 @@ Describe 'Invoke-NovaReleaseWorkflow' {
         $null = Invoke-NovaReleaseWorkflow -WorkflowContext $ctx
         $script:testCalls | Should -Be 0
         $script:restoreCalls | Should -Be 0
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Pre-release tests were skipped for this run.'
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Publishing release to the local module path' -and $PercentComplete -eq 90
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Get-NovaProjectInfo -Installed'
-        }
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        ($script:messages | Where-Object {$_.Text -eq 'Pre-release tests were skipped for this run.'}).Count | Should -Be 1
+        ($script:messages | Where-Object {$_.Text -eq 'Get-NovaProjectInfo -Installed'}).Count | Should -Be 1
     }
 
     It 'writes a release plan summary in WhatIf mode without restoring the built module' {
@@ -133,11 +156,44 @@ Describe 'Invoke-NovaReleaseWorkflow' {
         $null = Invoke-NovaReleaseWorkflow -WorkflowContext $ctx
 
         $script:restoreCalls | Should -Be 0
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Release plan ready for NovaModuleTools -> 1.0.0' -and $color -eq 'Green'
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Planning the next release version' -and $PercentComplete -eq 55
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Run Invoke-NovaRelease without -WhatIf when you are ready to apply the release.'
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Previewing publish to repository PSGallery' -and $PercentComplete -eq 90
+        }
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        ($script:messages | Where-Object {$_.Text -eq 'Release plan ready for NovaModuleTools -> 1.0.0' -and $_.Color -eq 'Green'}).Count | Should -Be 1
+        ($script:messages | Where-Object {$_.Text -eq 'Run Invoke-NovaRelease without -WhatIf when you are ready to apply the release.'}).Count | Should -Be 1
+    }
+
+    It 'still writes the result after the CI restore refreshes the module session' {
+        $originalStatusMessage = (Get-Command -Name Get-NovaReleaseWorkflowStatusMessage -CommandType Function).ScriptBlock
+        $originalNextStepLine = (Get-Command -Name Get-NovaReleaseWorkflowNextStepLine -CommandType Function).ScriptBlock
+        $ctx = [pscustomobject]@{
+            WorkflowParams = @{}
+            PublishParams = @{}
+            PublishInvocation = [pscustomobject]@{Action = {param() $script:publishCalls += 1}; Target = 'PSGallery'; IsLocal = $false}
+            ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
+            ContinuousIntegrationRequested = $true
+            SkipTestsRequested = $false
+            OverrideWarningRequested = $false
+        }
+
+        Mock Import-NovaBuiltModuleForCi {
+            $script:restoreCalls += 1
+            Remove-Item Function:\Get-NovaReleaseWorkflowStatusMessage -ErrorAction SilentlyContinue
+            Remove-Item Function:\Get-NovaReleaseWorkflowNextStepLine -ErrorAction SilentlyContinue
+        }
+
+        try {
+            { Invoke-NovaReleaseWorkflow -WorkflowContext $ctx } | Should -Not -Throw
+
+            $script:restoreCalls | Should -Be 1
+            ($script:messages | Where-Object {$_.Text -eq 'Released Nova module: NovaModuleTools 1.0.0' -and $_.Color -eq 'Green'}).Count | Should -Be 1
+        } finally {
+            Set-Item -Path Function:\Get-NovaReleaseWorkflowStatusMessage -Value $originalStatusMessage
+            Set-Item -Path Function:\Get-NovaReleaseWorkflowNextStepLine -Value $originalNextStepLine
         }
     }
 }
