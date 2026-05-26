@@ -58,6 +58,9 @@ function Invoke-NovaPublishWorkflow {
     $progressActivity = 'Running Nova publish workflow'
     $importedLocalModule = $false
     $restoredBuiltModule = $false
+    $resolvedResult = Get-NovaPublishWorkflowResolvedResult -WorkflowContext $WorkflowContext -WhatIfEnabled:$whatIfEnabled
+    $messageWriter = (Get-Command -Name Write-Message -CommandType Function -ErrorAction Stop).ScriptBlock
+    $resultWriter = (Get-Command -Name Write-NovaPublishWorkflowResolvedResult -CommandType Function -ErrorAction Stop).ScriptBlock
 
     try {
         Invoke-NovaPublishWorkflowStep -Activity $progressActivity -Status (Get-NovaPublishWorkflowValidationStatus -WorkflowContext $WorkflowContext) -PercentComplete 35 -Action {
@@ -86,7 +89,7 @@ function Invoke-NovaPublishWorkflow {
         Write-Progress -Activity $progressActivity -Completed
     }
 
-    Write-NovaPublishWorkflowResult -WorkflowContext $WorkflowContext -WhatIfEnabled:$whatIfEnabled -ImportedLocalModule:$importedLocalModule -RestoredBuiltModule:$restoredBuiltModule
+    & $resultWriter -Result $resolvedResult -MessageWriter $messageWriter -ImportedLocalModule:$importedLocalModule -RestoredBuiltModule:$restoredBuiltModule
 }
 
 function Get-NovaPublishWorkflowValidationStatus {
@@ -122,32 +125,53 @@ function Get-NovaPublishWorkflowPublishStatus {
     return "Publishing to $targetDescription"
 }
 
-function Write-NovaPublishWorkflowResult {
+function Get-NovaPublishWorkflowResolvedResult {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
-        [switch]$WhatIfEnabled,
+        [switch]$WhatIfEnabled
+    )
+
+    $localManifestPath = $null
+    if ($WorkflowContext.PSObject.Properties.Name -contains 'LocalPublishActivation') {
+        $localManifestPath = Get-NovaPublishWorkflowPropertyValue -InputObject $WorkflowContext.LocalPublishActivation -Name 'ManifestPath'
+    }
+
+    return [pscustomobject]@{
+        StatusMessage = Get-NovaPublishWorkflowStatusMessage -WorkflowContext $WorkflowContext -WhatIfEnabled:$WhatIfEnabled
+        PublishTarget = $WorkflowContext.PublishInvocation.Target
+        SkipTestsRequested = $WorkflowContext.SkipTestsRequested
+        LocalManifestPath = $localManifestPath
+        NextStepLines = @(Get-NovaPublishWorkflowNextStepLine -WorkflowContext $WorkflowContext -WhatIfEnabled:$WhatIfEnabled)
+    }
+}
+
+function Write-NovaPublishWorkflowResolvedResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Result,
+        [Parameter(Mandatory)][scriptblock]$MessageWriter,
         [switch]$ImportedLocalModule,
         [switch]$RestoredBuiltModule
     )
 
-    Write-Message (Get-NovaPublishWorkflowStatusMessage -WorkflowContext $WorkflowContext -WhatIfEnabled:$WhatIfEnabled) -color Green
-    Write-Message "Publish target: $( $WorkflowContext.PublishInvocation.Target )"
+    & $MessageWriter $Result.StatusMessage -color Green
+    & $MessageWriter "Publish target: $( $Result.PublishTarget )"
 
-    if ($WorkflowContext.SkipTestsRequested) {
-        Write-Message 'Pre-publish tests were skipped for this run.'
+    if ($Result.SkipTestsRequested) {
+        & $MessageWriter 'Pre-publish tests were skipped for this run.'
     }
 
-    if ($ImportedLocalModule) {
-        Write-Message "The published local module is loaded from $( $WorkflowContext.LocalPublishActivation.ManifestPath )."
+    if ($ImportedLocalModule -and -not [string]::IsNullOrWhiteSpace($Result.LocalManifestPath)) {
+        & $MessageWriter "The published local module is loaded from $( $Result.LocalManifestPath )."
     }
 
     if ($RestoredBuiltModule) {
-        Write-Message 'The freshly built dist module is loaded again for later commands in this session.'
+        & $MessageWriter 'The freshly built dist module is loaded again for later commands in this session.'
     }
 
-    foreach ($line in (Get-NovaPublishWorkflowNextStepLine -WorkflowContext $WorkflowContext -WhatIfEnabled:$WhatIfEnabled)) {
-        Write-Message $line
+    foreach ($line in $Result.NextStepLines) {
+        & $MessageWriter $line
     }
 }
 
@@ -190,4 +214,30 @@ function Get-NovaPublishWorkflowNextStepLine {
         'Next step:'
         "Find-Module $( $WorkflowContext.ProjectInfo.ProjectName ) -Repository $( $WorkflowContext.PublishInvocation.Target )"
     )
+}
+
+function Get-NovaPublishWorkflowPropertyValue {
+    [CmdletBinding()]
+    param(
+        [AllowNull()][object]$InputObject,
+        [Parameter(Mandatory)][string]$Name
+    )
+
+    if ($null -eq $InputObject) {
+        return $null
+    }
+
+    if ($InputObject -is [System.Collections.IDictionary]) {
+        if ( $InputObject.Contains($Name)) {
+            return $InputObject[$Name]
+        }
+
+        return $null
+    }
+
+    if ($InputObject.PSObject.Properties.Name -contains $Name) {
+        return $InputObject.$Name
+    }
+
+    return $null
 }

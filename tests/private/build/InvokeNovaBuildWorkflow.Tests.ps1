@@ -36,6 +36,13 @@ Describe 'Invoke-NovaBuildWorkflow' {
             Assert-MockCalled Invoke-NovaModuleUpdateNotificationSafely -Times 1
             Assert-MockCalled Import-NovaBuiltModuleForCi -Times 0
             Assert-MockCalled Write-Progress -Times 9
+            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+                $Status -eq 'Validating public command layout' -and $PercentComplete -eq 10
+            }
+            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+                $Status -eq 'Checking update notifications' -and $PercentComplete -eq 94
+            }
+            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
             Assert-MockCalled Write-Message -Times 3
             Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
                 $Text -eq 'Built Nova module: NovaModuleTools' -and $color -eq 'Green'
@@ -77,6 +84,10 @@ Describe 'Invoke-NovaBuildWorkflow' {
             $global:steps -join ',' | Should -Be 'public-layout,reset,module,duplicates,manifest,help,resources,notification,ci'
             Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1
             Assert-MockCalled Write-Progress -Times 10
+            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+                $Status -eq 'Refreshing the current session with the built module' -and $PercentComplete -eq 98
+            }
+            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
             Assert-MockCalled Write-Message -Times 3
         } finally {
             Remove-Variable -Name steps -Scope Global -ErrorAction SilentlyContinue

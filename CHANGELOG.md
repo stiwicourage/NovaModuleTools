@@ -20,6 +20,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- `Publish-NovaModule` now keeps its completion summary available after local publish import or CI session refresh steps reload the module, so local publish flows no longer fail with missing private release-helper functions at the end of a successful publish.
+- `Test-NovaBuild` and `% nova test` now keep the Nova progress display visibly active during long Pester runs instead of appearing stuck on one step while tests continue in the background.
+    - During the long Pester phase, Nova now uses the discovered test count plus completed test results to drive the progress bar, so the visible percentage tracks real test completion instead of elapsed time.
+    - The progress text now stays simple while the bar itself reflects the real test-driven completion state.
+    - The configured Pester output still flows live so `project.json` settings such as `Pester.Output.Verbosity = "Detailed"` remain visible.
+- Progress-enabled private workflows now have stronger mirrored progress-contract tests, and the repository adds a guardrail test so future `Write-Progress` workflows cannot land without matching test ownership.
+
 ### Security
 
 ## [3.1.0] - 2026-05-24

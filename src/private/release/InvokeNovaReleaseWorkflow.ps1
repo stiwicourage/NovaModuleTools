@@ -55,6 +55,9 @@ function Invoke-NovaReleaseWorkflow {
     $whatIfEnabled = Test-NovaReleaseWorkflowWhatIfEnabled -WorkflowParams $workflowParams
     $progressActivity = 'Running Nova release workflow'
     $versionResult = $null
+    $resolvedResult = Get-NovaReleaseWorkflowResolvedResult -WorkflowContext $WorkflowContext -WhatIfEnabled:$whatIfEnabled
+    $messageWriter = (Get-Command -Name Write-Message -CommandType Function -ErrorAction Stop).ScriptBlock
+    $resultWriter = (Get-Command -Name Write-NovaReleaseWorkflowResolvedResult -CommandType Function -ErrorAction Stop).ScriptBlock
 
     try {
         Invoke-NovaReleaseWorkflowStep -Activity $progressActivity -Status 'Building the current project state' -PercentComplete 15 -Action {
@@ -88,7 +91,7 @@ function Invoke-NovaReleaseWorkflow {
         Write-Progress -Activity $progressActivity -Completed
     }
 
-    Write-NovaReleaseWorkflowResult -WorkflowContext $WorkflowContext -VersionResult $versionResult -WhatIfEnabled:$whatIfEnabled -ShouldRestoreBuiltModule:$shouldRestoreBuiltModule
+    & $resultWriter -Result $resolvedResult -MessageWriter $messageWriter -VersionResult $versionResult -ShouldRestoreBuiltModule:$shouldRestoreBuiltModule
     return $versionResult
 }
 
@@ -147,30 +150,46 @@ function Get-NovaReleasePublishStepStatus {
     return "Publishing release to $targetDescription"
 }
 
-function Write-NovaReleaseWorkflowResult {
+function Get-NovaReleaseWorkflowResolvedResult {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
+        [switch]$WhatIfEnabled
+    )
+
+    return [pscustomobject]@{
+        ProjectInfo = $WorkflowContext.ProjectInfo
+        PublishTarget = $WorkflowContext.PublishInvocation.Target
+        SkipTestsRequested = ($WorkflowContext.PSObject.Properties.Name -contains 'SkipTestsRequested') -and $WorkflowContext.SkipTestsRequested
+        NextStepLines = @(Get-NovaReleaseWorkflowNextStepLine -WorkflowContext $WorkflowContext -WhatIfEnabled:$WhatIfEnabled)
+        WhatIfEnabled = [bool]$WhatIfEnabled
+    }
+}
+
+function Write-NovaReleaseWorkflowResolvedResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Result,
+        [Parameter(Mandatory)][scriptblock]$MessageWriter,
         [AllowNull()][object]$VersionResult,
-        [switch]$WhatIfEnabled,
         [switch]$ShouldRestoreBuiltModule
     )
 
     $resolvedVersion = Get-NovaReleaseWorkflowResultVersion -VersionResult $VersionResult
-    $statusMessage = Get-NovaReleaseWorkflowStatusMessage -ProjectInfo $WorkflowContext.ProjectInfo -Version $resolvedVersion -WhatIfEnabled:$WhatIfEnabled
-    Write-Message $statusMessage -color Green
-    Write-Message "Publish target: $( $WorkflowContext.PublishInvocation.Target )"
+    $statusMessage = Get-NovaReleaseWorkflowStatusMessage -ProjectInfo $Result.ProjectInfo -Version $resolvedVersion -WhatIfEnabled:$Result.WhatIfEnabled
+    & $MessageWriter $statusMessage -color Green
+    & $MessageWriter "Publish target: $( $Result.PublishTarget )"
 
-    if ($WorkflowContext.SkipTestsRequested) {
-        Write-Message 'Pre-release tests were skipped for this run.'
+    if ($Result.SkipTestsRequested) {
+        & $MessageWriter 'Pre-release tests were skipped for this run.'
     }
 
     if ($ShouldRestoreBuiltModule) {
-        Write-Message 'The freshly built dist module is loaded again for later commands in this session.'
+        & $MessageWriter 'The freshly built dist module is loaded again for later commands in this session.'
     }
 
-    foreach ($line in (Get-NovaReleaseWorkflowNextStepLine -WorkflowContext $WorkflowContext -WhatIfEnabled:$WhatIfEnabled)) {
-        Write-Message $line
+    foreach ($line in $Result.NextStepLines) {
+        & $MessageWriter $line
     }
 }
 

@@ -19,6 +19,10 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Fixed
 
+- `Publish-NovaModule` no longer loses its completion summary after local publish import or CI session refresh steps reload the module.
+- `Test-NovaBuild` and `% nova test` now keep the Nova progress display visibly active during long Pester runs instead of appearing stuck on one step while tests continue.
+    - During the long Pester phase, Nova now drives the progress bar from discovered and completed Pester tests instead of elapsed time, keeps the progress text simple, and still shows configured Pester output such as `Pester.Output.Verbosity = "Detailed"`.
+
 ### Security
 
 ## [3.1.0] - 2026-05-24
