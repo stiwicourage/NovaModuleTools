@@ -9,11 +9,11 @@ Use the `terminal-ux-design` skill when a change touches any user-facing command
 This applies to:
 
 - PowerShell cmdlets
-- `% nova` CLI routes
+- CLI routes
 - private helpers that shape user-visible terminal behavior
 - contributor docs, command help, and scaffold content that teach those workflows
 
-Keep PowerShell cmdlet UX and `% nova` CLI UX distinct, but hold both to the same terminal UX bar.
+Keep PowerShell cmdlet UX and CLI UX distinct, but hold both to the same terminal UX bar.
 
 The skill is authoritative for:
 

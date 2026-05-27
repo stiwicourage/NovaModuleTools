@@ -454,5 +454,13 @@
             Old = 'Stop-NovaOperation'
             New = 'Stop-{{ShortName}}Operation'
         }
+        @{
+            Old = '`% nova` CLI routes'
+            New = 'CLI routes'
+        }
+        @{
+            Old = '`% nova` CLI UX distinct'
+            New = 'CLI UX distinct'
+        }
     )
 }
