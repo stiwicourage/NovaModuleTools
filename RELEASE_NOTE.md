@@ -20,6 +20,8 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Removed
 
+- Boolean `Package.Latest` values (`true` / `false`) are no longer accepted. Passing them now throws with a migration message pointing to `"always"` or `"never"`. The JSON schema also rejects boolean values for this field.
+
 ### Fixed
 
 - `Publish-NovaModule` no longer loses its completion summary after local publish import or CI session refresh steps reload the module.

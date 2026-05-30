@@ -25,6 +25,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Removed
 
+- Removed boolean `Package.Latest` compat shim deprecated in 2.4.0. Setting `Package.Latest` to `true` or `false` now throws `Nova.Validation.InvalidPackageLatestPolicy` with a migration message. Use `"always"` or `"never"` instead.
+- Removed `boolean` from the JSON schema `anyOf` for `Package.Latest` in `src/resources/Schema-Project.json` and `docs/schema/v3/project.json`. VS Code and schema-aware editors now reject boolean values for this field at edit time.
+
 ### Fixed
 
 - `Publish-NovaModule` now keeps its completion summary available after local publish import or CI session refresh steps reload the module, so local publish flows no longer fail with missing private release-helper functions at the end of a successful publish.
