@@ -27,7 +27,7 @@ function Get-NovaTestWorkflowContext {
         [Parameter(Mandatory)][hashtable]$BoundParameters
     )
 
-    Test-ProjectSchema Pester | Out-Null
+    Test-ProjectSchema | Out-Null
     Assert-NovaPesterAvailable
     $projectInfo = Get-NovaProjectInfo
     $pesterConfig = New-PesterConfiguration -Hashtable $projectInfo.Pester

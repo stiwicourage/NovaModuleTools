@@ -1,4 +1,5 @@
 {
+  "$schema": "https://www.novamoduletools.com/schema/v3/project.json",
   "ProjectName": "NovaExampleModule",
   "Description": "A working example project that demonstrates how to build, test, package, and upload a small module with NovaModuleTools.",
   "Version": "0.1.0",

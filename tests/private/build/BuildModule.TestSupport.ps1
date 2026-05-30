@@ -5,7 +5,8 @@ function Stop-NovaOperation {
     throw $record
 }
 function Get-NovaBuildProjectInfo {param($ProjectInfo); return $ProjectInfo}
-function Test-ProjectSchema {param([string]$Schema); return $true}
+function Test-ProjectSchema {}
+function Export-NovaProjectJsonSchema {}
 function Add-ProjectPreambleToModuleBuilder {param($Builder, $ProjectInfo)}
 function Get-ProjectScriptFile {param($ProjectInfo); return @()}
 function Add-ScriptFileContentToModuleBuilder {param($Builder, $ProjectInfo, $File)}

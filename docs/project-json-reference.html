@@ -109,14 +109,13 @@
                         defaults
                         to a single <code>.nupkg</code> written to <code>artifacts/packages/</code>.</p>
                 </div>
-                <div class="notice notice--warning">
-                    <strong>Important compatibility note.</strong>
-                    <p>The runtime and shipped examples currently use some manifest and Pester fields more broadly than
-                        the JSON schema files explicitly enumerate. In practice, the current product and examples use
+                <div class="notice">
+                    <strong>Schema coverage.</strong>
+                    <p>The unified JSON schema covers all documented fields including
                         <code>Manifest.ReleaseNotes</code>, <code>Manifest.LicenseUri</code>,
-                        <code>Manifest.IconUri</code>, and <code>Pester.TestResult.OutputFormat</code>. The reference
-                        below documents the live behavior that the product uses today and calls out those schema gaps
-                        where they matter.</p>
+                        <code>Manifest.IconUri</code>, and <code>Pester.TestResult.OutputFormat</code>. VS Code picks
+                        up the schema automatically when the <code>$schema</code> field is present in
+                        <code>project.json</code>.</p>
                 </div>
             </section>
 
@@ -204,6 +203,15 @@
 
             <section class="content-section" id="top-level">
                 <h2>Top-level project settings</h2>
+                <div class="notice">
+                    <strong>VS Code IntelliSense.</strong>
+                    <p>When <code>nova init</code> scaffolds a new project, it injects a <code>$schema</code> field
+                        that points to the versioned public schema at
+                        <code>https://www.novamoduletools.com/schema/v{major}/project.json</code>. VS Code picks this
+                        up automatically to provide field validation, autocomplete, and hover descriptions while you
+                        edit <code>project.json</code>. You can add the field manually to any existing project by
+                        inserting it as the first key in the file.</p>
+                </div>
                 <div class="table-scroll">
                     <table>
                         <thead>
@@ -215,6 +223,14 @@
                         </tr>
                         </thead>
                         <tbody>
+                        <tr>
+                            <td><code>$schema</code></td>
+                            <td>Optional URI pointing to the versioned JSON schema for this file.</td>
+                            <td>Injected automatically by <code>nova init</code></td>
+                            <td>Enables VS Code IntelliSense, field validation, and hover descriptions while editing
+                                <code>project.json</code>.
+                            </td>
+                        </tr>
                         <tr>
                             <td><code>ProjectName</code></td>
                             <td>Name of the module and the output folder under <code>dist/</code>.</td>

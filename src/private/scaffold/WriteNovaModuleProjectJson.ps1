@@ -18,6 +18,12 @@ function Write-NovaModuleProjectJson {
         $jsonData.Manifest.GUID = (New-Guid).GUID
     }
 
+    $moduleVersion = $ExecutionContext.SessionState.Module.Version
+    if ($null -ne $moduleVersion) {
+        $majorVersion = $moduleVersion.Major
+        $jsonData['$schema'] = "https://www.novamoduletools.com/schema/v$majorVersion/project.json"
+    }
+
     if (-not $Example -and $Answer.EnablePester -eq 'No') {
         $jsonData.Remove('Pester')
     }

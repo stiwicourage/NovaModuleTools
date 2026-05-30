@@ -17,18 +17,14 @@ Describe 'Test-ProjectSchema' {
         Remove-Item -LiteralPath $script:tempSchema -ErrorAction SilentlyContinue
     }
 
-    It 'returns the result for the Build schema' {
-        Test-ProjectSchema -Schema 'Build' | Should -BeTrue
-        Assert-MockCalled Get-ResourceFilePath -Times 1 -ParameterFilter {$FileName -eq 'Schema-Build.json'}
-    }
-
-    It 'returns the result for the Pester schema' {
-        Test-ProjectSchema -Schema 'Pester' | Should -BeTrue
+    It 'validates project.json against Schema-Project.json and returns true' {
+        Test-ProjectSchema | Should -BeTrue
+        Assert-MockCalled Get-ResourceFilePath -Times 1 -ParameterFilter {$FileName -eq 'Schema-Project.json'}
     }
 
     It 'translates Test-Json failures into Stop-NovaOperation' {
         Mock Test-Json {throw 'bad schema'}
 
-        {Test-ProjectSchema -Schema 'Build'} | Should -Throw
+        {Test-ProjectSchema} | Should -Throw
     }
 }

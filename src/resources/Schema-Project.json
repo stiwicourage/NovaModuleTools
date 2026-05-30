@@ -1,0 +1,361 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Authoritative project.json schema for NovaModuleTools projects.",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional URI pointing to the versioned JSON schema for this file. Injected automatically by nova init."
+    },
+    "ProjectName": {
+      "type": "string",
+      "description": "Name of the module and the output folder under dist/."
+    },
+    "Description": {
+      "type": "string",
+      "description": "Human-readable project description. Feeds manifest and package metadata."
+    },
+    "Version": {
+      "type": "string",
+      "description": "Current semantic version of the project."
+    },
+    "CopyResourcesToModuleRoot": {
+      "type": "boolean",
+      "description": "When true, resources are copied into the module root instead of a resources/ subfolder."
+    },
+    "BuildRecursiveFolders": {
+      "type": "boolean",
+      "description": "Default enabled recursive discovery for src/classes, src/private and tests. src/public stays top-level only unless explicitly set to false for top-level-only discovery."
+    },
+    "SetSourcePath": {
+      "type": "boolean",
+      "description": "Default enabled source markers: emit '# Source: <relative path>' before each concatenated source file in the generated dist/<Project>/<Project>.psm1."
+    },
+    "FailOnDuplicateFunctionNames": {
+      "type": "boolean",
+      "description": "Default enabled validation: fail build when duplicate top-level function names exist in the generated dist/<Project>/<Project>.psm1."
+    },
+    "Preamble": {
+      "type": "array",
+      "description": "Optional module-level lines written at the very top of the generated dist/<Project>/<Project>.psm1 before any source markers or other generated content.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "Manifest": {
+      "type": "object",
+      "description": "Controls metadata for the generated PowerShell module manifest.",
+      "properties": {
+        "Author": {
+          "type": "string",
+          "description": "Sets the manifest author and the default package author when Package.Authors is omitted."
+        },
+        "PowerShellHostVersion": {
+          "type": "string",
+          "description": "Defines the minimum PowerShell version expected by the generated module."
+        },
+        "GUID": {
+          "type": "string",
+          "description": "Sets the manifest GUID. Generate a new GUID for each distinct module."
+        },
+        "Tags": {
+          "type": "array",
+          "description": "Adds manifest tags and is reused by package metadata when present.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ProjectUri": {
+          "type": "string",
+          "description": "Publishes a project URL in the manifest and package metadata."
+        },
+        "ReleaseNotes": {
+          "type": "string",
+          "description": "Publishes a release notes link for packaging and user-facing metadata."
+        },
+        "LicenseUri": {
+          "type": "string",
+          "description": "Publishes a license URL for packaging and manifest metadata."
+        },
+        "IconUri": {
+          "type": "string",
+          "description": "Publishes an icon URL for the module manifest."
+        },
+        "Copyright": {
+          "type": "string",
+          "description": "Sets the copyright string in the module manifest."
+        },
+        "RequiredModules": {
+          "type": "array",
+          "description": "Lists modules that must be imported before this module. Each entry is either a module name string or a module-specification object.",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Module name."
+              },
+              {
+                "type": "object",
+                "description": "Module specification.",
+                "required": ["ModuleName"],
+                "properties": {
+                  "ModuleName": { "type": "string" },
+                  "ModuleVersion": { "type": "string" },
+                  "RequiredVersion": { "type": "string" },
+                  "MaximumVersion": { "type": "string" },
+                  "GUID": { "type": "string" }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "Author",
+        "PowerShellHostVersion",
+        "GUID"
+      ]
+    },
+    "Package": {
+      "type": "object",
+      "description": "Controls package creation and optional raw HTTP upload defaults.",
+      "properties": {
+        "Id": {
+          "type": "string",
+          "description": "Package identifier used in generated package file names."
+        },
+        "Types": {
+          "type": "array",
+          "description": "List of package types to produce.",
+          "items": {
+            "type": "string",
+            "pattern": "^(?:[Nn][Uu][Gg][Ee][Tt]|[Zz][Ii][Pp]|\\.[Nn][Uu][Pp][Kk][Gg]|\\.[Zz][Ii][Pp])$"
+          }
+        },
+        "Latest": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "never",
+                "stable",
+                "always"
+              ]
+            }
+          ],
+          "description": "Controls whether a latest alias is published alongside the versioned package."
+        },
+        "OutputDirectory": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "Path": {
+                  "type": "string"
+                },
+                "Clean": {
+                  "type": "boolean"
+                }
+              }
+            }
+          ],
+          "description": "Directory where generated packages are written."
+        },
+        "PackageFileName": {
+          "type": "string",
+          "description": "Base file name for the generated package (without extension)."
+        },
+        "AddVersionToFileName": {
+          "type": "boolean",
+          "description": "When true, the version string is appended to the package file name."
+        },
+        "FileNamePattern": {
+          "type": "string",
+          "description": "Glob pattern used to identify generated package files for upload."
+        },
+        "Authors": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Package authors list. Defaults to Manifest.Author when omitted."
+        },
+        "Description": {
+          "type": "string",
+          "description": "Package description. Defaults to top-level Description when omitted."
+        },
+        "RepositoryUrl": {
+          "type": "string",
+          "description": "Base URL for raw HTTP upload."
+        },
+        "RawRepositoryUrl": {
+          "type": "string",
+          "description": "Alternate raw repository URL."
+        },
+        "UploadPath": {
+          "type": "string",
+          "description": "Sub-path appended to RepositoryUrl for the upload target."
+        },
+        "Headers": {
+          "type": "object",
+          "description": "Custom HTTP headers sent with every upload request.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "Auth": {
+          "type": "object",
+          "description": "Authentication configuration for upload requests.",
+          "properties": {
+            "HeaderName": {
+              "type": "string"
+            },
+            "Scheme": {
+              "type": "string"
+            },
+            "Token": {
+              "type": "string"
+            },
+            "TokenEnvironmentVariable": {
+              "type": "string"
+            }
+          }
+        },
+        "Repositories": {
+          "type": "array",
+          "description": "List of named upload repository targets.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Url": {
+                "type": "string"
+              },
+              "UploadPath": {
+                "type": "string"
+              },
+              "Headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "Auth": {
+                "type": "object",
+                "properties": {
+                  "HeaderName": {
+                    "type": "string"
+                  },
+                  "Scheme": {
+                    "type": "string"
+                  },
+                  "Token": {
+                    "type": "string"
+                  },
+                  "TokenEnvironmentVariable": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "required": [
+              "Name",
+              "Url"
+            ]
+          }
+        }
+      }
+    },
+    "Pester": {
+      "type": "object",
+      "description": "Controls the Pester test run configuration used by Test-NovaBuild.",
+      "properties": {
+        "CodeCoverage": {
+          "type": "object",
+          "description": "Configures code coverage collection during test runs.",
+          "properties": {
+            "Enabled": {
+              "type": "boolean",
+              "description": "When true, code coverage is collected."
+            },
+            "Path": {
+              "type": "array",
+              "description": "Glob patterns selecting source files to include in coverage analysis.",
+              "items": {
+                "type": "string"
+              }
+            },
+            "CoveragePercentTarget": {
+              "type": "number",
+              "description": "Minimum code coverage percentage required for a passing build."
+            },
+            "OutputPath": {
+              "type": "string",
+              "description": "Path where the coverage report file is written."
+            },
+            "OutputFormat": {
+              "type": "string",
+              "description": "Coverage report format (e.g. JaCoCo)."
+            }
+          }
+        },
+        "TestResult": {
+          "type": "object",
+          "description": "Configures test result file output.",
+          "properties": {
+            "Enabled": {
+              "type": "boolean",
+              "description": "When true, a test result file is written."
+            },
+            "OutputFormat": {
+              "type": "string",
+              "description": "Test result file format (e.g. NUnitXml)."
+            }
+          },
+          "required": [
+            "Enabled"
+          ]
+        },
+        "Output": {
+          "type": "object",
+          "description": "Configures Pester console output during test runs.",
+          "properties": {
+            "Verbosity": {
+              "type": "string",
+              "description": "Pester output verbosity level (e.g. Detailed, Normal, Minimal)."
+            }
+          },
+          "required": [
+            "Verbosity"
+          ]
+        }
+      },
+      "required": [
+        "TestResult",
+        "Output"
+      ]
+    }
+  },
+  "required": [
+    "ProjectName",
+    "Description",
+    "Version",
+    "Manifest"
+  ]
+}

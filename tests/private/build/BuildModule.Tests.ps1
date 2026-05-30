@@ -24,6 +24,7 @@ Describe 'Build-Module' {
     It 'throws when no source files exist' {
         Mock Get-NovaBuildProjectInfo { $script:ctx }
         Mock Test-ProjectSchema {}
+        Mock Export-NovaProjectJsonSchema {}
         Mock Add-ProjectPreambleToModuleBuilder {}
         Mock Get-ProjectScriptFile { @() }
         { Build-Module -ProjectInfo ([pscustomobject]@{}) } | Should -Throw -ErrorId 'Nova.Environment.BuildSourceFilesNotFound'
@@ -32,6 +33,7 @@ Describe 'Build-Module' {
     It 'writes the psm1 when source files exist' {
         Mock Get-NovaBuildProjectInfo { $script:ctx }
         Mock Test-ProjectSchema {}
+        Mock Export-NovaProjectJsonSchema {}
         Mock Add-ProjectPreambleToModuleBuilder {}
         Set-Content -Path (Join-Path $script:ctx.PublicDir 'A.ps1') -Value 'function A {}'
         Mock Get-ProjectScriptFile { @(Get-Item (Join-Path $script:ctx.PublicDir 'A.ps1')) }
@@ -44,6 +46,7 @@ Describe 'Build-Module' {
     It 'stops with friendly error when psm1 write fails' {
         Mock Get-NovaBuildProjectInfo { $script:ctx }
         Mock Test-ProjectSchema {}
+        Mock Export-NovaProjectJsonSchema {}
         Mock Add-ProjectPreambleToModuleBuilder {}
         Set-Content -Path (Join-Path $script:ctx.PublicDir 'A.ps1') -Value 'function A {}'
         Mock Get-ProjectScriptFile { @(Get-Item (Join-Path $script:ctx.PublicDir 'A.ps1')) }
