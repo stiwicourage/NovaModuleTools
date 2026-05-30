@@ -12,7 +12,8 @@ Implement the issue in the NovaModuleTools repository using the repository-local
 
 ## Required process
 
-1. If scope, acceptance criteria, or ownership are still unclear, start with `.github/prompts/design-change.prompt.md` and `architect.agent.md` before implementing.
+1. **Before any other action:** invoke the `skill` tool for `markdown-authoring` when the final handoff summary will be returned as copy-ready Markdown. This is a blocking requirement — load the skill before reading files or producing output.
+2. If scope, acceptance criteria, or ownership are still unclear, start with `.github/prompts/design-change.prompt.md` and `architect.agent.md` before implementing.
 2. Read `README.md`, `CONTRIBUTING.md`, `.github/copilot-instructions.md`, and `.github/pull_request_template.md`.
 3. Inspect the relevant public command, matching private helper domain, tests, and docs.
 4. If the issue is release-, workflow-, or coverage-related, also inspect the matching `.github/workflows/*.yml` and `scripts/build/ci/*.ps1` files.

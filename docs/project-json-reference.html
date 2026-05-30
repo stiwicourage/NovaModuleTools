@@ -206,11 +206,13 @@
                 <div class="notice">
                     <strong>VS Code IntelliSense.</strong>
                     <p>When <code>nova init</code> scaffolds a new project, it injects a <code>$schema</code> field
-                        that points to the versioned public schema at
-                        <code>https://www.novamoduletools.com/schema/v{major}/project.json</code>. VS Code picks this
-                        up automatically to provide field validation, autocomplete, and hover descriptions while you
-                        edit <code>project.json</code>. You can add the field manually to any existing project by
-                        inserting it as the first key in the file.</p>
+                        pointing to the versioned public schema at
+                        <code>https://www.novamoduletools.com/schema/v{major}/project.json</code>, and also writes a
+                        <code>.vscode/settings.json</code> entry that maps <code>project.json</code> to the same URL.
+                        Together these two outputs let VS Code load the schema and provide IntelliSense, field
+                        validation, and hover descriptions without a manual trust prompt. To enable this on an existing
+                        project, add the <code>$schema</code> field as the first key in <code>project.json</code> and
+                        add the matching <code>json.schemas</code> entry to <code>.vscode/settings.json</code>.</p>
                 </div>
                 <div class="table-scroll">
                     <table>

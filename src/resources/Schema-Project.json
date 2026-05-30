@@ -130,7 +130,8 @@
           "description": "List of package types to produce.",
           "items": {
             "type": "string",
-            "pattern": "^(?:[Nn][Uu][Gg][Ee][Tt]|[Zz][Ii][Pp]|\\.[Nn][Uu][Pp][Kk][Gg]|\\.[Zz][Ii][Pp])$"
+            "enum": ["NuGet", "Zip", ".nupkg", ".zip"],
+            "description": "Valid values: NuGet, Zip, .nupkg, .zip (case-insensitive at runtime)."
           }
         },
         "Latest": {
