@@ -87,9 +87,27 @@
         },
         "RequiredModules": {
           "type": "array",
-          "description": "Lists modules that must be imported before this module.",
+          "description": "Lists modules that must be imported before this module. Each entry is either a module name string or a module-specification object.",
           "items": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Module name."
+              },
+              {
+                "type": "object",
+                "description": "Module specification.",
+                "required": ["ModuleName"],
+                "properties": {
+                  "ModuleName": { "type": "string" },
+                  "ModuleVersion": { "type": "string" },
+                  "RequiredVersion": { "type": "string" },
+                  "MaximumVersion": { "type": "string" },
+                  "GUID": { "type": "string" }
+                },
+                "additionalProperties": false
+              }
+            ]
           }
         }
       },
