@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `project.json` now has a single authoritative JSON schema hosted at `https://www.novamoduletools.com/schema/v{major}/project.json`.
     - `Invoke-NovaBuild` exports the schema to `docs/schema/v{major}/project.json` during build, creating the directory when missing.
     - `nova init` injects `"$schema": "https://www.novamoduletools.com/schema/v{major}/project.json"` into every scaffolded project.
+    - `nova init` also writes `.vscode/settings.json` mapping `project.json` to the hosted schema URL so VS Code trusts the remote schema automatically without prompting.
     - VS Code picks up the schema automatically to provide field validation, autocomplete, and hover descriptions while editing `project.json`.
     - The two partial internal schemas (`Schema-Build.json`, `Schema-Pester.json`) are removed; `Schema-Project.json` is the new single source.
 
@@ -32,6 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - The progress text now stays simple while the bar itself reflects the real test-driven completion state.
     - The configured Pester output still flows live so `project.json` settings such as `Pester.Output.Verbosity = "Detailed"` remain visible.
 - Progress-enabled private workflows now have stronger mirrored progress-contract tests, and the repository adds a guardrail test so future `Write-Progress` workflows cannot land without matching test ownership.
+- `Package.Types` values in `project.json` now report a human-readable validation error in VS Code instead of showing the raw regex pattern. VS Code now shows the accepted values (`NuGet`, `Zip`, `.nupkg`, `.zip`) directly in the error.
 
 ### Security
 

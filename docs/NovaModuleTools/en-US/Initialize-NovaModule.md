@@ -25,7 +25,7 @@ PS> Initialize-NovaModule [-Path <string>] [-Example] [-WhatIf] [-Confirm] [<Com
 
 ## DESCRIPTION
 
-`Initialize-NovaModule` creates a new project folder, the standard `src/` layout, and a starter `project.json` file.
+`Initialize-NovaModule` creates a new project folder, the standard `src/` layout, a starter `project.json` file, and a `.vscode/settings.json` entry that maps `project.json` to the versioned JSON schema so VS Code provides IntelliSense without a manual trust prompt.
 
 The standard scaffold `project.json` includes Nova's standard Pester defaults, including an opt-in `CodeCoverage` block with `Enabled=false`, common `src/` coverage paths, JaCoCo output in `artifacts/coverage.xml`, and a `90` percent target that can be enabled later.
 
