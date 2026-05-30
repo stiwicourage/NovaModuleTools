@@ -8,7 +8,8 @@ function Build-Module {
     $novaBuildVersion = (Get-Command Invoke-NovaBuild).Version
     Write-Verbose "Running NovaModuleTools Version: $novaBuildVersion"
     Write-Verbose 'Buidling module psm1 file'
-    Test-ProjectSchema -Schema Build | Out-Null
+    Test-ProjectSchema | Out-Null
+    Export-NovaProjectJsonSchema
 
     $sb = [System.Text.StringBuilder]::new()
     Add-ProjectPreambleToModuleBuilder -Builder $sb -ProjectInfo $data

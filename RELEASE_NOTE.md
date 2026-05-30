@@ -6,6 +6,8 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Added
 
+- `nova init` now injects a `"$schema"` property into new projects pointing to the hosted versioned JSON schema, enabling VS Code IntelliSense, autocomplete, and hover descriptions while editing `project.json`.
+
 ### Changed
 
 - `Get-NovaProjectInfo` now matches the CLI version split on the PowerShell surface.

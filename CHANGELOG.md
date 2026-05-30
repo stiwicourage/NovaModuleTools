@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `project.json` now has a single authoritative JSON schema hosted at `https://www.novamoduletools.com/schema/v{major}/project.json`.
+    - `Invoke-NovaBuild` exports the schema to `docs/schema/v{major}/project.json` during build, creating the directory when missing.
+    - `nova init` injects `"$schema": "https://www.novamoduletools.com/schema/v{major}/project.json"` into every scaffolded project.
+    - VS Code picks up the schema automatically to provide field validation, autocomplete, and hover descriptions while editing `project.json`.
+    - The two partial internal schemas (`Schema-Build.json`, `Schema-Pester.json`) are removed; `Schema-Project.json` is the new single source.
+
 ### Changed
 
 - `Get-NovaProjectInfo` now aligns its installed-version views with the existing CLI version contract.
