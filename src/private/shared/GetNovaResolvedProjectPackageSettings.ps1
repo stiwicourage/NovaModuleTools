@@ -41,13 +41,8 @@ function ConvertTo-NovaPackageLatestPolicy {
         return 'never'
     }
 
-    # TODO: Remove legacy boolean Package.Latest handling in the next major version.
     if ($Value -is [bool]) {
-        if ($Value) {
-            return 'always'
-        }
-
-        return 'never'
+        Stop-NovaOperation -Message "true/false is no longer a valid Package.Latest value. Use 'always' or 'never' instead." -ErrorId 'Nova.Validation.InvalidPackageLatestPolicy' -Category InvalidData -TargetObject $Value
     }
 
     $policy = "$Value".Trim()

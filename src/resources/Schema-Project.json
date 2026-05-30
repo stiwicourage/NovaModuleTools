@@ -135,18 +135,11 @@
           }
         },
         "Latest": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "enum": [
-                "never",
-                "stable",
-                "always"
-              ]
-            }
+          "type": "string",
+          "enum": [
+            "never",
+            "stable",
+            "always"
           ],
           "description": "Controls whether a latest alias is published alongside the versioned package."
         },

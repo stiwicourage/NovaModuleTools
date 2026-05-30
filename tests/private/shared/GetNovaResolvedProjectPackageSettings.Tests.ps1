@@ -9,11 +9,11 @@ Describe 'ConvertTo-NovaPackageLatestPolicy' {
     It 'returns never for $null' {
         ConvertTo-NovaPackageLatestPolicy -Value $null | Should -Be 'never'
     }
-    It 'maps boolean $true to always' {
-        ConvertTo-NovaPackageLatestPolicy -Value $true | Should -Be 'always'
+    It 'throws for boolean $true with migration-friendly error' {
+        { ConvertTo-NovaPackageLatestPolicy -Value $true } | Should -Throw -ErrorId 'Nova.Validation.InvalidPackageLatestPolicy'
     }
-    It 'maps boolean $false to never' {
-        ConvertTo-NovaPackageLatestPolicy -Value $false | Should -Be 'never'
+    It 'throws for boolean $false with migration-friendly error' {
+        { ConvertTo-NovaPackageLatestPolicy -Value $false } | Should -Throw -ErrorId 'Nova.Validation.InvalidPackageLatestPolicy'
     }
     It 'returns never for whitespace' {
         ConvertTo-NovaPackageLatestPolicy -Value '  ' | Should -Be 'never'
