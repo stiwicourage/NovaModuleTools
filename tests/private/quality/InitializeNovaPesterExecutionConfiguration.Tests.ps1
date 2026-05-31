@@ -260,4 +260,12 @@ Describe 'Initialize-NovaPesterExecutionConfiguration' {
             )
         } | Should -Throw '*ScriptBlock and other container types are not supported*'
     }
+
+    It 'returns empty metadata when override helper inputs are null' {
+        $propertyNames = Get-NovaPesterOverridePropertyName -InputObject $null
+        $value = Get-NovaPesterOverrideValue -InputObject $null -Name 'Container'
+
+        $propertyNames | Should -HaveCount 0
+        $value | Should -BeNullOrEmpty
+    }
 }
