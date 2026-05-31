@@ -32,7 +32,7 @@ Use this repository as the starting point for your module.
 
 - Review `README.md`, `CONTRIBUTING.md`, and `.github/copilot-instructions.md`.
 - Use `Invoke-NovaBuild` / `% nova build` to produce the first local build.
-- Use `Test-NovaBuild` / `% nova test` before opening a pull request.
+- Use `Invoke-NovaTest` / `% nova test` for unit tests and `Test-NovaBuild` / `% nova test --build` for build-validation integration tests before opening a pull request.
 '@
     }
 }

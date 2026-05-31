@@ -10,12 +10,12 @@ function Test-NovaBuild {
     )
 
     dynamicparam {
-        return New-NovaTestDynamicParameterDictionary
+        return Get-NovaDynamicOverrideWarningParameterDictionary
     }
 
     end {
         $workflowContext = Get-NovaTestWorkflowContext -TestOption @{
-            Build = $PSBoundParameters.ContainsKey('Build')
+            TestMode = 'BuildValidation'
             TagFilter = $TagFilter
             ExcludeTagFilter = $ExcludeTagFilter
             OutputVerbosity = $OutputVerbosity

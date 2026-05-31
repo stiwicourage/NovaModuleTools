@@ -6,9 +6,9 @@ Security updates are provided for the latest two stable release lines only.
 
 | Version | Supported          |
 |---------|--------------------|
+| 3.x.x   | :white_check_mark: |
 | 2.x.x   | :white_check_mark: |
-| 1.9.x   | :white_check_mark: |
-| < 1.9   | :x:                |
+| < 2.x   | :x:                |
 
 ## Reporting a Vulnerability
 

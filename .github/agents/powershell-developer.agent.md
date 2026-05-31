@@ -47,7 +47,9 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 - Preserve existing command names, warning semantics, and output shape.
 - Keep new or heavily changed source functions aligned with `.github/instructions/code-quality-matrix.instructions.md`: short, single-purpose, low-duplication, and split by clear responsibility unless the scope explicitly justifies otherwise.
 - Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and `./run.ps1` for normal analyzer loops; use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repository-approved settings.
-- Validate Nova-managed project tests through `Test-NovaBuild`; do not call `Invoke-Pester` directly.
+- Validate Nova-managed project tests through `Invoke-NovaTest` for unit validation and `Test-NovaBuild` for build-validation integration validation; do not call `Invoke-Pester` directly.
+- For public commands, keep unit coverage in `tests/public/<Command>.Tests.ps1` and keep per-command integration ownership in `tests/public/<Command>.Integration.Tests.ps1` when built-module behavior itself needs validation.
+- For destructive or environment-coupled public commands, prefer safe `-WhatIf` integration coverage when that still proves `ShouldProcess`, routing, and output behavior.
 - When help files change, keep `docs/NovaModuleTools/en-US/*.md` valid for `Import-MarkdownCommandHelp`: build and import the dist module first (`Import-Module ./dist/NovaModuleTools/NovaModuleTools.psd1 -Force`), then use `New-MarkdownCommandHelp` for new files, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff. Generating help without the module imported causes `external help file` to default to the command name instead of the module name, producing per-command XML files that the manifest cannot find. A new public `src/public/*.ps1` file is not done until its matching help file exists.
 
 ## Definition of done
@@ -56,7 +58,8 @@ Implement PowerShell command and helper changes in the NovaModuleTools style.
 - Build output still comes from Nova-generated `dist/` files, not hand-authored module files in `src/`.
 - Public/private file ownership still follows the one externally called function per file rule, with private helpers kept as sibling top-level functions instead of nested function declarations.
 - Every new public entry point has its matching help file.
-- Project test validation ran through `Test-NovaBuild`.
+- Project test validation ran through `Invoke-NovaTest` for unit coverage and `Test-NovaBuild` for build-validation integration coverage.
+- Public-command integration coverage stays owned by `tests/public/<Command>.Integration.Tests.ps1` when built-module behavior needs validation.
 - Any ScriptAnalyzer findings reported by `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` are resolved.
 - Every changed or generated text file has been checked and ends with exactly one trailing newline and no extra blank lines at the bottom.
 - Docs/changelog review is complete.

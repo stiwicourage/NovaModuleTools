@@ -89,13 +89,25 @@ This creates the built module under `dist/NovaModuleTools/`.
 
 Files under `src/public/` are expected to contain exactly one top-level function each. Nova now stops build-driven workflows when a public file contains zero or multiple top-level functions, because that layout can accidentally export helpers as part of the public API surface. Use `-OverrideWarning` / `--override-warning` / `-o` only when you intentionally want to bypass that guard for a specific build, test-build, package, publish, or release run.
 
-When you want the test workflow to rebuild first, use:
+When you want the PowerShell unit-test workflow, use:
 
 ```powershell
-PS> Test-NovaBuild -Build
+PS> Invoke-NovaTest
+% nova test
+```
+
+When you want the build-validation integration workflow, use:
+
+```powershell
+PS> Test-NovaBuild
 % nova test --build
 % nova test -b
 ```
+
+- `Invoke-NovaTest` is the unit-test entrypoint. Keep public command unit ownership in `tests/public/<Command>.Tests.ps1`.
+- `Test-NovaBuild` is the build-validation integration-test entrypoint. Keep per-command public integration ownership in `tests/public/<Command>.Integration.Tests.ps1` when the built command behavior itself needs coverage.
+- For destructive or environment-coupled commands, prefer safe `-WhatIf` integration coverage when that still proves `ShouldProcess` wiring and command behavior.
+- `Invoke-NovaTest` also supports a PowerShell-only `-PesterConfigurationOverride` hook for runtime-only unit-test data injection. In v1 Nova accepts only `Run.Container`, so you can pass `New-PesterContainer -Path ... -Data @{ Credential = $credential }` without turning the managed test workflow into arbitrary Pester passthrough.
 
 NovaModuleTools can self-update the installed module from PowerShell or the `nova` CLI launcher.
 
@@ -130,7 +142,9 @@ To inspect the current project version, the installed version of the current pro
 `NovaModuleTools` tool version, use:
 
 ```powershell
+PS> Get-NovaProjectInfo -Version
 PS> Get-NovaProjectInfo -Installed
+PS> Get-NovaProjectInfo -InstalledNovaVersion
 % nova version
 % nova version --installed
 % nova version -i
@@ -140,7 +154,9 @@ PS> Get-NovaProjectInfo -Installed
 
 - `% nova version` shows the version from the current project's `project.json`
 - `% nova version --installed` / `% nova version -i` shows the locally installed version of the current project/module from the local module path
-- `Get-NovaProjectInfo -Installed` shows the installed `NovaModuleTools` module name and version from PowerShell
+- `Get-NovaProjectInfo -Version` shows the version from the current project's `project.json`
+- `Get-NovaProjectInfo -Installed` shows the locally installed version of the current project/module from PowerShell
+- `Get-NovaProjectInfo -InstalledNovaVersion` shows the installed `NovaModuleTools` module name and version from PowerShell
 - `% nova --version` / `% nova -v` shows the installed `NovaModuleTools` version
 
 ### CLI help
@@ -267,20 +283,22 @@ $module = Import-Module $distManifestPath -Force -PassThru
 Run the repository test workflow from the repository root:
 
 ```powershell
+PS> Invoke-NovaTest
 PS> Test-NovaBuild
 ```
 
 Notes:
 
-- `Test-NovaBuild` runs Nova's managed test workflow; this repo's mirrored unit tests dot-source `src/**/*.ps1`
-  directly, while cross-cutting tests still cover built-module behavior where that is the point of the test
-- it writes NUnit XML to `artifacts/TestResults.xml`
-- when `Pester.CodeCoverage.Enabled` is `true`, it also writes JaCoCo XML to `artifacts/coverage.xml`
-- it respects `BuildRecursiveFolders` when discovering tests
-- if `project.json` sets `Pester.CodeCoverage.CoveragePercentTarget`, `Test-NovaBuild` fails when the measured coverage percentage is lower than that configured target
+- `Invoke-NovaTest` runs Nova's managed unit-test workflow; this repo's mirrored unit tests dot-source `src/**/*.ps1`
+  directly, while cross-cutting integration tests cover built-module behavior where that is the point of the test
+- `Invoke-NovaTest` writes NUnit XML to `artifacts/UnitTestResults.xml`
+- when `Pester.CodeCoverage.Enabled` is `true`, `Invoke-NovaTest` also writes JaCoCo XML to `artifacts/coverage.xml`
+- `Test-NovaBuild` runs the build-validation integration flow and writes NUnit XML to `artifacts/TestResults.xml`
+- both commands respect `BuildRecursiveFolders` when discovering matching test files
+- if `project.json` sets `Pester.CodeCoverage.CoveragePercentTarget`, `Invoke-NovaTest` fails when the measured coverage percentage is lower than that configured target
 - this repository currently enables coverage with a `99` percent target; the template and packaged example
   `project.json` files ship the same JaCoCo configuration shape with `Enabled=false` and a `90` percent opt-in target
-- make sure `Pester 5.7.1` is available before running `Test-NovaBuild`
+- make sure `Pester 5.7.1` is available before running `Invoke-NovaTest` or `Test-NovaBuild`
 - the published `NovaModuleTools` manifest also declares `Pester 5.7.1`, so installed end-user workflows can still resolve that dependency automatically
 
 ### Create a package artifact
@@ -303,7 +321,7 @@ PS> New-NovaModulePackage -SkipTests
 % nova package -s
 ```
 
-`-SkipTests` / `--skip-tests` skips `Test-NovaBuild` only. `Invoke-NovaBuild` still runs.
+`-SkipTests` / `--skip-tests` skips both `Invoke-NovaTest` and `Test-NovaBuild`. `Invoke-NovaBuild` still runs.
 
 Use this `project.json` shape when you want to control the package types and output directory:
 
@@ -401,8 +419,8 @@ PS> Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTes
 % nova release --repository PSGallery --api-key $env:PSGALLERY_API -s
 ```
 
-These forms skip `Test-NovaBuild` only. `Publish-NovaModule` still builds before publishing, and `Invoke-NovaRelease`
-still runs both build steps around the version bump.
+These forms skip both `Invoke-NovaTest` and `Test-NovaBuild`. `Publish-NovaModule` still builds before publishing, and
+`Invoke-NovaRelease` still runs both build steps around the version bump.
 
 `Invoke-NovaRelease` now uses the same direct delivery parameters as `Publish-NovaModule` and `% nova release`, so PowerShell automation can pass `-Local`, `-Repository`, `-ModuleDirectoryPath`, and `-ApiKey` without wrapping them in a
 `-PublishOption` hashtable.
@@ -443,7 +461,8 @@ PS> pwsh -NoLogo -NoProfile -File ./run.ps1
 ```
 
 `run.ps1` is the repository quality wrapper. It runs ScriptAnalyzer first, validates `CHANGELOG.md` and
-`RELEASE_NOTE.md`, refreshes the Agentic Copilot scaffold mirror, and then runs `Test-NovaBuild`.
+`RELEASE_NOTE.md`, refreshes the Agentic Copilot scaffold mirror, then runs `Invoke-NovaTest`, and finally runs
+`Test-NovaBuild`.
 
 ### Working on help and docs
 
@@ -518,7 +537,7 @@ Packaged resources that ship with the module, including:
 - the packaged example project under `src/resources/example/`
 - the Agentic Copilot starter package under `src/resources/agentic-copilot/`
 
-The example project is both a shipped resource and a maintained working reference. The Agentic Copilot starter package is generated from Nova's repository-local agentic guidance, including Nova build/test/package expectations, `project.json` `Manifest.PowerShellHostVersion` compatibility guidance, generated `dist` module files, command-help ownership, source-mirrored test guidance, Test-NovaBuild-only project test guidance that forbids direct `Invoke-Pester` so agent validation matches Nova's build/import/StrictMode flow, guidance that ScriptAnalyzer findings reported by `run.ps1` must be fixed before handoff, explicit PSScriptAnalyzer workflow guidance for `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`, `./run.ps1`, and focused `Invoke-ScriptAnalyzer` usage, explicit public/private PowerShell file ownership rules, best-effort source/helper-script maintainability guidance plus separate test-design guidance that live in Agentic Copilot files, a generated
+The example project is both a shipped resource and a maintained working reference. The Agentic Copilot starter package is generated from Nova's repository-local agentic guidance, including Nova build/test/package expectations, `project.json` `Manifest.PowerShellHostVersion` compatibility guidance, generated `dist` module files, command-help ownership, source-mirrored test guidance, separate `Invoke-NovaTest` unit-test and `Test-NovaBuild` build-validation guidance that forbids direct `Invoke-Pester` so agent validation matches Nova's build/import/StrictMode flow, guidance that ScriptAnalyzer findings reported by `run.ps1` must be fixed before handoff, explicit PSScriptAnalyzer workflow guidance for `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`, `./run.ps1`, and focused `Invoke-ScriptAnalyzer` usage, explicit public/private PowerShell file ownership rules, best-effort source/helper-script maintainability guidance plus separate test-design guidance that live in Agentic Copilot files, a generated
 `scripts/build/Test-TextFileFormatting.ps1` helper and matching `tests/TextFileFormatting.Tests.ps1` guardrail when Pester is enabled so extra blank lines at EOF fail the project test flow, and explicit valid-PlatyPS help guidance for
 `docs/<ProjectName>/en-US/*.md` that uses the documented `New-MarkdownCommandHelp` / `Update-MarkdownCommandHelp` /
 `Test-MarkdownCommandHelp` workflow and requires a matching help file for every new public entry point in the same change, and a strict file-ending rule for changed or generated text files. When the init flow adds that starter package, it also asks for a short project name so scaffolded guidance can replace placeholders such as `Invoke-<ShortName>*`. Run
@@ -589,9 +608,10 @@ explicitly. The repository `Tests.yml` workflow also downloads that same JaCoCo 
 The normal repository workflow is:
 
 1. `pwsh -NoLogo -NoProfile -File ./run.ps1` for the full repository quality loop
-2. `Test-NovaBuild` when you only need focused test validation
-3. `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` when you only need the analyzer pass
-4. Optional CI helper flow via `scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
+2. `Invoke-NovaTest` when you only need focused unit-test validation
+3. `Test-NovaBuild` when you need focused build-validation integration coverage
+4. `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` when you only need the analyzer pass
+5. Optional CI helper flow via `scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
 
 When you test local publish behavior during development, remember that `Publish-NovaModule -Local` reloads the published module from the local install directory into the current PowerShell session. Re-import `dist/` if your next step depends on the built-but-unpublished output instead.
 

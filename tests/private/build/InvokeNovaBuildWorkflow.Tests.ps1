@@ -36,12 +36,25 @@ Describe 'Invoke-NovaBuildWorkflow' {
             Assert-MockCalled Invoke-NovaModuleUpdateNotificationSafely -Times 1
             Assert-MockCalled Import-NovaBuiltModuleForCi -Times 0
             Assert-MockCalled Write-Progress -Times 9
-            Assert-MockCalled Write-Message -Times 3
+            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+                $Status -eq 'Validating public command layout' -and $PercentComplete -eq 10
+            }
+            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+                $Status -eq 'Checking update notifications' -and $PercentComplete -eq 94
+            }
+            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+            Assert-MockCalled Write-Message -Times 5
             Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
                 $Text -eq 'Built Nova module: NovaModuleTools' -and $color -eq 'Green'
             }
             Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-                $Text -eq 'Next step: Test-NovaBuild'
+                $Text -eq 'Next steps:'
+            }
+            Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+                $Text -eq 'Invoke-NovaTest'
+            }
+            Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+                $Text -eq 'Test-NovaBuild'
             }
         } finally {
             Remove-Variable -Name steps -Scope Global -ErrorAction SilentlyContinue
@@ -77,10 +90,46 @@ Describe 'Invoke-NovaBuildWorkflow' {
             $global:steps -join ',' | Should -Be 'public-layout,reset,module,duplicates,manifest,help,resources,notification,ci'
             Assert-MockCalled Import-NovaBuiltModuleForCi -Times 1
             Assert-MockCalled Write-Progress -Times 10
-            Assert-MockCalled Write-Message -Times 4
-            Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-                $Text -eq 'The freshly built dist module is loaded for later commands in this session.'
+            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+                $Status -eq 'Refreshing the current session with the built module' -and $PercentComplete -eq 98
             }
+            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+            Assert-MockCalled Write-Message -Times 3
+        } finally {
+            Remove-Variable -Name steps -Scope Global -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'does not call the local result helper after the CI import refreshes the module session' {
+        $global:steps = @()
+        try {
+            $workflowContext = [pscustomobject]@{
+                ProjectInfo = [pscustomobject]@{
+                    ProjectName = 'NovaModuleTools'
+                    OutputModuleDir = '/tmp/dist/NovaModuleTools'
+                    FailOnDuplicateFunctionNames = $true
+                }
+                ContinuousIntegrationRequested = $true
+            }
+
+            Mock Assert-NovaPublicFunctionFileLayout {$global:steps += 'public-layout'}
+            Mock Reset-ProjectDist {$global:steps += 'reset'}
+            Mock Build-Module {$global:steps += 'module'}
+            Mock Assert-BuiltModuleHasNoDuplicateFunctionName {$global:steps += 'duplicates'}
+            Mock Build-Manifest {$global:steps += 'manifest'}
+            Mock Build-Help {$global:steps += 'help'}
+            Mock Copy-ProjectResource {$global:steps += 'resources'}
+            Mock Invoke-NovaModuleUpdateNotificationSafely {$global:steps += 'notification'}
+            Mock Import-NovaBuiltModuleForCi {
+                $global:steps += 'ci'
+                Remove-Item Function:\Write-NovaBuildWorkflowResult -ErrorAction SilentlyContinue
+            }
+            Mock Write-Message {}
+            Mock Write-Progress {}
+
+            { Invoke-NovaBuildWorkflow -WorkflowContext $workflowContext } | Should -Not -Throw
+
+            $global:steps -join ',' | Should -Be 'public-layout,reset,module,duplicates,manifest,help,resources,notification,ci'
         } finally {
             Remove-Variable -Name steps -Scope Global -ErrorAction SilentlyContinue
         }

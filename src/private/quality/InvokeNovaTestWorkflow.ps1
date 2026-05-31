@@ -71,11 +71,14 @@ function Invoke-NovaTestWorkflowExecution {
 
     $WorkflowContext.PesterConfig.TestResult.OutputPath = $WorkflowContext.TestResultPath
     $coverageTargetAssertion = Get-NovaCoverageTargetAssertionScriptBlock -WorkflowContext $WorkflowContext
-    $testResult = Invoke-NovaTestWorkflowStep -Activity $Activity -Status 'Running Pester tests' -PercentComplete 70 -Action {
-        Invoke-NovaPesterWithSuppressedProgress -Configuration $WorkflowContext.PesterConfig
+    $testProgressContext = [pscustomobject]@{
+        Activity = $Activity
+        StartPercentComplete = 70
+        EndPercentComplete = 94
     }
+    $testResult = Invoke-NovaPesterWithSuppressedProgress -Configuration $WorkflowContext.PesterConfig -ProgressContext $testProgressContext
 
-    Invoke-NovaTestWorkflowStep -Activity $Activity -Status 'Writing the test result report' -PercentComplete 85 -Action {
+    Invoke-NovaTestWorkflowStep -Activity $Activity -Status 'Writing the test result report' -PercentComplete 96 -Action {
         & $WorkflowContext.TestResultArtifactWriter.ScriptBlock -TestResult $testResult -OutputPath $WorkflowContext.TestResultPath -ReportWriter $WorkflowContext.TestResultReportWriter.ScriptBlock
     }
 
@@ -83,7 +86,7 @@ function Invoke-NovaTestWorkflowExecution {
         Stop-NovaOperation -Message (Get-NovaTestWorkflowFailureMessage -WorkflowContext $WorkflowContext) -ErrorId 'Nova.Workflow.TestRunFailed' -Category InvalidOperation -TargetObject $WorkflowContext.TestResultPath
     }
 
-    Invoke-NovaTestWorkflowStep -Activity $Activity -Status 'Checking the configured code coverage target' -PercentComplete 95 -Action {
+    Invoke-NovaTestWorkflowStep -Activity $Activity -Status 'Checking the configured code coverage target' -PercentComplete 99 -Action {
         & $coverageTargetAssertion -WorkflowContext $WorkflowContext -TestResult $testResult
     }
 
@@ -119,16 +122,316 @@ function Get-NovaTestWorkflowBuildStatus {
 function Invoke-NovaPesterWithSuppressedProgress {
     [CmdletBinding()]
     param(
+        [Parameter(Mandatory)][object]$Configuration,
+        [Parameter(Mandatory)][pscustomobject]$ProgressContext
+    )
+
+    $heartbeatMilliseconds = Get-NovaPropertyValue -InputObject $ProgressContext -Name 'HeartbeatMilliseconds'
+    if ($null -eq $heartbeatMilliseconds) {
+        $heartbeatMilliseconds = 2000
+    }
+
+    $execution = Get-NovaPesterExecution -Configuration $Configuration
+    try {
+        Write-NovaTestWorkflowPesterProgress -Execution $execution -ProgressContext $ProgressContext
+        while (-not (Wait-NovaPesterExecution -Execution $execution -TimeoutMilliseconds $HeartbeatMilliseconds)) {
+            Write-NovaPesterExecutionOutput -Execution $execution
+            Write-NovaTestWorkflowPesterProgress -Execution $execution -ProgressContext $ProgressContext
+        }
+
+        Write-NovaPesterExecutionOutput -Execution $execution
+        Write-NovaTestWorkflowPesterProgress -Execution $execution -ProgressContext $ProgressContext
+        return Receive-NovaPesterExecutionResult -Execution $execution
+    } finally {
+        Complete-NovaPesterExecution -Execution $execution
+    }
+}
+
+function Write-NovaPesterExecutionOutput {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Execution
+    )
+
+    $informationRecords = @(Get-NovaPesterExecutionInformationRecordBuffer -Execution $Execution)
+    $nextInformationRecordIndex = Get-NovaPropertyValue -InputObject $Execution -Name 'NextInformationRecordIndex'
+    if ($null -eq $nextInformationRecordIndex) {
+        $nextInformationRecordIndex = 0
+    }
+
+    while ($nextInformationRecordIndex -lt $informationRecords.Count) {
+        $record = $informationRecords[$nextInformationRecordIndex]
+        Invoke-NovaPesterExecutionProgressStateUpdate -Execution $Execution -Record $record
+        Write-NovaPesterInformationRecord -Record $record
+        $nextInformationRecordIndex += 1
+    }
+
+    $Execution.NextInformationRecordIndex = $nextInformationRecordIndex
+}
+
+function Get-NovaPesterExecutionInformationRecordBuffer {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Execution
+    )
+
+    $powershell = Get-NovaPropertyValue -InputObject $Execution -Name 'PowerShell'
+    if ($null -eq $powershell) {
+        return @()
+    }
+
+    return @(Get-NovaPropertyValue -InputObject $powershell.Streams -Name 'Information')
+}
+
+function Write-NovaPesterInformationRecord {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$Record
+    )
+
+    $messageData = Get-NovaPropertyValue -InputObject $Record -Name 'MessageData'
+    $tags = @(Get-NovaPropertyValue -InputObject $Record -Name 'Tags')
+    if (($tags -contains 'PSHOST') -and (Test-NovaPesterHostInformationMessage -MessageData $messageData)) {
+        Write-NovaPesterHostInformationMessage -MessageData $messageData
+        return
+    }
+
+    Write-Information -MessageData $messageData -Tags $tags -InformationAction Continue
+}
+
+function Invoke-NovaPesterExecutionProgressStateUpdate {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Execution,
+        [Parameter(Mandatory)][object]$Record
+    )
+
+    $messageText = Get-NovaPesterInformationMessageText -Record $Record
+    $discoveredTestCount = Get-NovaPesterDiscoveredTestCount -MessageText $messageText
+    if ($null -ne $discoveredTestCount) {
+        $Execution.TotalTestCount = $discoveredTestCount
+        return
+    }
+
+    if (Test-NovaPesterTestCompletionMessage -Record $Record -MessageText $messageText) {
+        $Execution.CompletedTestCount = (Get-NovaPropertyValue -InputObject $Execution -Name 'CompletedTestCount') + 1
+    }
+}
+
+function Get-NovaPesterInformationMessageText {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$Record
+    )
+
+    $messageData = Get-NovaPropertyValue -InputObject $Record -Name 'MessageData'
+    if (Test-NovaPesterHostInformationMessage -MessageData $messageData) {
+        return [string](Get-NovaPropertyValue -InputObject $messageData -Name 'Message')
+    }
+
+    return [string]$messageData
+}
+
+function Get-NovaPesterDiscoveredTestCount {
+    [CmdletBinding()]
+    param(
+        [AllowNull()][string]$MessageText
+    )
+
+    $match = [System.Text.RegularExpressions.Regex]::Match([string]$MessageText, 'Discovery found (?<Count>\d+) tests? in')
+    if (-not $match.Success) {
+        return $null
+    }
+
+    return [int]$match.Groups['Count'].Value
+}
+
+function Test-NovaPesterTestCompletionMessage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$Record,
+        [AllowNull()][string]$MessageText
+    )
+
+    $messageData = Get-NovaPropertyValue -InputObject $Record -Name 'MessageData'
+    if (-not (Test-NovaPesterHostInformationMessage -MessageData $messageData)) {
+        return $false
+    }
+
+    if ($true -ne [bool](Get-NovaPropertyValue -InputObject $messageData -Name 'NoNewLine')) {
+        return $false
+    }
+
+    return [string]$MessageText -match '^\s+\[(\+|-|!|\?)\]\s+'
+}
+
+function Test-NovaPesterHostInformationMessage {
+    [CmdletBinding()]
+    param(
+        [AllowNull()][object]$MessageData
+    )
+
+    return $null -ne $MessageData -and $MessageData.PSObject.Properties.Name -contains 'Message'
+}
+
+function Write-NovaPesterHostInformationMessage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$MessageData
+    )
+
+    $writeHostParameters = @{
+        Object = $MessageData.Message
+    }
+
+    if ($true -eq [bool](Get-NovaPropertyValue -InputObject $MessageData -Name 'NoNewLine')) {
+        $writeHostParameters.NoNewline = $true
+    }
+
+    foreach ($colorName in 'ForegroundColor', 'BackgroundColor') {
+        $colorValue = Get-NovaPropertyValue -InputObject $MessageData -Name $colorName
+        if ($null -ne $colorValue) {
+            $writeHostParameters[$colorName] = $colorValue
+        }
+    }
+
+    Write-Host @writeHostParameters
+}
+
+function Get-NovaPesterExecution {
+    [CmdletBinding()]
+    param(
         [Parameter(Mandatory)][object]$Configuration
     )
 
-    $previousProgressPreference = $global:ProgressPreference
-    $global:ProgressPreference = 'SilentlyContinue'
-    try {
-        return Invoke-NovaPester -Configuration $Configuration
-    } finally {
-        $global:ProgressPreference = $previousProgressPreference
+    $powershell = [powershell]::Create()
+    $command = @'
+param($Configuration)
+Import-Module Pester -ErrorAction Stop
+$previousProgressPreference = $global:ProgressPreference
+$global:ProgressPreference = 'SilentlyContinue'
+try {
+    Invoke-Pester -Configuration $Configuration
+} finally {
+    $global:ProgressPreference = $previousProgressPreference
+}
+'@
+    $null = $powershell.AddScript($command).AddArgument($Configuration)
+
+    return [pscustomobject]@{
+        PowerShell = $powershell
+        AsyncResult = $powershell.BeginInvoke()
+        CompletedTestCount = 0
+        NextInformationRecordIndex = 0
+        TotalTestCount = $null
+        LastProgressStatus = $null
+        LastProgressPercentComplete = $null
     }
+}
+
+function Wait-NovaPesterExecution {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Execution,
+        [Parameter(Mandatory)][int]$TimeoutMilliseconds
+    )
+
+    return $Execution.AsyncResult.AsyncWaitHandle.WaitOne($TimeoutMilliseconds)
+}
+
+function Receive-NovaPesterExecutionResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Execution
+    )
+
+    $output = $Execution.PowerShell.EndInvoke($Execution.AsyncResult)
+    return @($output | Select-Object -Last 1)[0]
+}
+
+function Complete-NovaPesterExecution {
+    [CmdletBinding()]
+    param(
+        [AllowNull()][pscustomobject]$Execution
+    )
+
+    if ($null -eq $Execution) {
+        return
+    }
+
+    $powershell = Get-NovaPropertyValue -InputObject $Execution -Name 'PowerShell'
+    if ($null -eq $powershell) {
+        return
+    }
+
+    $powershell.Dispose()
+}
+
+function Write-NovaTestWorkflowPesterProgress {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Execution,
+        [Parameter(Mandatory)][pscustomobject]$ProgressContext
+    )
+
+    $activity = Get-NovaPropertyValue -InputObject $ProgressContext -Name 'Activity'
+    $startPercentComplete = Get-NovaPropertyValue -InputObject $ProgressContext -Name 'StartPercentComplete'
+    $endPercentComplete = Get-NovaPropertyValue -InputObject $ProgressContext -Name 'EndPercentComplete'
+    $totalTestCount = Get-NovaPropertyValue -InputObject $Execution -Name 'TotalTestCount'
+    $completedTestCount = Get-NovaPropertyValue -InputObject $Execution -Name 'CompletedTestCount'
+    $status = Get-NovaTestWorkflowPesterStatus -TotalTestCount $totalTestCount
+    $percentComplete = Get-NovaTestWorkflowPesterPercentComplete -StartPercentComplete $startPercentComplete -EndPercentComplete $endPercentComplete -CompletedTestCount $completedTestCount -TotalTestCount $totalTestCount
+
+    if (($Execution.LastProgressStatus -eq $status) -and ($Execution.LastProgressPercentComplete -eq $percentComplete)) {
+        return
+    }
+
+    Write-Progress -Activity $activity -Status $status -PercentComplete $percentComplete
+    $Execution.LastProgressStatus = $status
+    $Execution.LastProgressPercentComplete = $percentComplete
+}
+
+function Get-NovaTestWorkflowPesterStatus {
+    [CmdletBinding()]
+    param(
+        [AllowNull()][object]$TotalTestCount
+    )
+
+    if ($null -eq $TotalTestCount) {
+        return 'Discovering Pester tests'
+    }
+
+    return 'Running Pester tests'
+}
+
+function Get-NovaTestWorkflowPesterPercentComplete {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][int]$StartPercentComplete,
+        [Parameter(Mandatory)][int]$EndPercentComplete,
+        [Parameter(Mandatory)][int]$CompletedTestCount,
+        [AllowNull()][object]$TotalTestCount
+    )
+
+    if ($null -eq $TotalTestCount) {
+        return $StartPercentComplete
+    }
+
+    if ($TotalTestCount -le 0) {
+        return $EndPercentComplete
+    }
+
+    $progressRange = $EndPercentComplete - $StartPercentComplete
+    $percentComplete = $StartPercentComplete + [int][math]::Floor(($CompletedTestCount / $TotalTestCount) * $progressRange)
+    if ($percentComplete -gt $EndPercentComplete) {
+        return $EndPercentComplete
+    }
+
+    if ($percentComplete -lt $StartPercentComplete) {
+        return $StartPercentComplete
+    }
+
+    return $percentComplete
 }
 
 function Get-NovaTestWorkflowFailureMessage {
@@ -137,7 +440,8 @@ function Get-NovaTestWorkflowFailureMessage {
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
 
-    return "Pester reported one or more failing tests. Review the output above and the test result file at $( $WorkflowContext.TestResultPath ), then rerun Test-NovaBuild."
+    $commandName = Get-NovaTestWorkflowCommandName -WorkflowContext $WorkflowContext
+    return "Pester reported one or more failing tests. Review the output above and the test result file at $( $WorkflowContext.TestResultPath ), then rerun $commandName."
 }
 
 function Write-NovaTestWorkflowResult {
@@ -156,7 +460,7 @@ function Write-NovaTestWorkflowResult {
         Write-Message $coverageMessage
     }
 
-    foreach ($line in (Get-NovaTestWorkflowNextStepLine -WhatIfEnabled:$WhatIfEnabled)) {
+    foreach ($line in (Get-NovaTestWorkflowNextStepLine -WorkflowContext $WorkflowContext -WhatIfEnabled:$WhatIfEnabled)) {
         Write-Message $line
     }
 }
@@ -210,13 +514,15 @@ function Get-NovaTestWorkflowCoverageMessage {
 function Get-NovaTestWorkflowNextStepLine {
     [CmdletBinding()]
     param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$WhatIfEnabled
     )
 
     if ($WhatIfEnabled) {
+        $commandName = Get-NovaTestWorkflowCommandName -WorkflowContext $WorkflowContext
         return @(
             'Next step:'
-            'Run Test-NovaBuild without -WhatIf when you are ready to execute the test workflow.'
+            "Run $commandName without -WhatIf when you are ready to execute the test workflow."
         )
     }
 
@@ -292,18 +598,20 @@ function Get-NovaCoverageTargetAssertionScriptBlock {
         'CodeCoverage'
     }
 
-    return Get-NovaDefaultCoverageTargetAssertionScriptBlock -CoveragePercentTarget $coveragePercentTarget -TargetObject $targetObject
+    return Get-NovaDefaultCoverageTargetAssertionScriptBlock -CoveragePercentTarget $coveragePercentTarget -TargetObject $targetObject -CommandName (Get-NovaTestWorkflowCommandName -WorkflowContext $WorkflowContext)
 }
 
 function Get-NovaDefaultCoverageTargetAssertionScriptBlock {
     [CmdletBinding()]
     param(
         [AllowNull()][Nullable[double]]$CoveragePercentTarget,
-        [Parameter(Mandatory)][string]$TargetObject
+        [Parameter(Mandatory)][string]$TargetObject,
+        [Parameter(Mandatory)][string]$CommandName
     )
 
     $resolvedCoveragePercentTarget = $CoveragePercentTarget
     $resolvedTargetObject = $TargetObject
+    $resolvedCommandName = $CommandName
     $propertyReader = (Get-Command -Name Get-NovaPropertyValue -CommandType Function -ErrorAction Stop).ScriptBlock
     $percentFormatter = (Get-Command -Name Format-NovaCoveragePercentValue -CommandType Function -ErrorAction Stop).ScriptBlock
 
@@ -331,7 +639,7 @@ function Get-NovaDefaultCoverageTargetAssertionScriptBlock {
         }
 
         $formattedCoverage = & $percentFormatter -Value $coveragePercent
-        $exception = [System.InvalidOperationException]::new("Code coverage $formattedCoverage% did not meet the configured target $formattedTarget%. Review the failing tests or coverage settings, then rerun Test-NovaBuild.")
+        $exception = [System.InvalidOperationException]::new("Code coverage $formattedCoverage% did not meet the configured target $formattedTarget%. Review the failing tests or coverage settings, then rerun $resolvedCommandName.")
         $errorRecord = [System.Management.Automation.ErrorRecord]::new($exception, 'Nova.Workflow.CodeCoverageTargetNotMet', [System.Management.Automation.ErrorCategory]::InvalidOperation, $resolvedTargetObject)
         throw $errorRecord
     }.GetNewClosure()
@@ -343,8 +651,11 @@ function Get-NovaConfiguredCoveragePercentTarget {
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
 
-    $projectInfo = Get-NovaPropertyValue -InputObject $WorkflowContext -Name 'ProjectInfo'
-    $pesterSettings = Get-NovaPropertyValue -InputObject $projectInfo -Name 'Pester'
+    $pesterSettings = Get-NovaPropertyValue -InputObject $WorkflowContext -Name 'PesterSettings'
+    if ($null -eq $pesterSettings) {
+        $projectInfo = Get-NovaPropertyValue -InputObject $WorkflowContext -Name 'ProjectInfo'
+        $pesterSettings = Get-NovaPropertyValue -InputObject $projectInfo -Name 'Pester'
+    }
     $codeCoverageSettings = Get-NovaPropertyValue -InputObject $pesterSettings -Name 'CodeCoverage'
 
     if ($true -ne [bool](Get-NovaPropertyValue -InputObject $codeCoverageSettings -Name 'Enabled')) {
@@ -357,6 +668,20 @@ function Get-NovaConfiguredCoveragePercentTarget {
     }
 
     return [double]$coveragePercentTarget
+}
+
+function Get-NovaTestWorkflowCommandName {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext
+    )
+
+    $commandName = Get-NovaPropertyValue -InputObject $WorkflowContext -Name 'CommandName'
+    if ([string]::IsNullOrWhiteSpace([string]$commandName)) {
+        return 'Invoke-NovaTest'
+    }
+
+    return [string]$commandName
 }
 
 function Get-NovaPropertyValue {

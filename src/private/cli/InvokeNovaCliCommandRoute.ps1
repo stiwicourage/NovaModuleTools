@@ -34,6 +34,24 @@ function Invoke-NovaCliParsedCommand {
     return & $ActionCommand @options @mutatingCommonParameters
 }
 
+function Invoke-NovaCliTestRouteCommand {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$InvocationContext
+    )
+
+    $options = ConvertFrom-NovaTestCliArgument -Arguments $InvocationContext.Arguments
+    $actionCommand = if ($options.ContainsKey('Build') -and [bool]$options.Build) {
+        'Test-NovaBuild'
+    } else {
+        'Invoke-NovaTest'
+    }
+
+    $mutatingCommonParameters = $InvocationContext.MutatingCommonParameters
+    $options.Remove('Build') | Out-Null
+    return & $actionCommand @options @mutatingCommonParameters
+}
+
 function Invoke-NovaCliBumpCommand {
     [CmdletBinding()]
     param(
@@ -180,7 +198,7 @@ function Invoke-NovaCliCommandRoute {
             return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaBuildCliArgument' -ActionCommand 'Invoke-NovaBuild'
         }
         'test' {
-            return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaTestCliArgument' -ActionCommand 'Test-NovaBuild'
+            return Invoke-NovaCliTestRouteCommand -InvocationContext $InvocationContext
         }
         'package' {
             return Invoke-NovaCliParsedCommand -InvocationContext $InvocationContext -ParserCommand 'ConvertFrom-NovaPackageCliArgument' -ActionCommand 'New-NovaModulePackage'

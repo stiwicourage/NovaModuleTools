@@ -19,20 +19,20 @@ Describe 'Get-NovaDynamicParameterAttributeCollection' {
     }
 }
 
-Describe 'Add-NovaDynamic*Parameter' {
+Describe 'Add-NovaDynamicTypedParameter' {
     It 'adds a switch parameter with the right type' {
         $dict = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
-        Add-NovaDynamicSwitchParameter -ParameterDictionary $dict -Name 'X'
+        Add-NovaDynamicTypedParameter -ParameterDictionary $dict -Name 'X' -ParameterType ([switch])
         $dict['X'].ParameterType | Should -Be ([switch])
     }
     It 'adds a string parameter with the right type' {
         $dict = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
-        Add-NovaDynamicStringParameter -ParameterDictionary $dict -Name 'Y' -ParameterSetNameList @('S')
+        Add-NovaDynamicTypedParameter -ParameterDictionary $dict -Name 'Y' -ParameterType ([string]) -ParameterSetNameList @('S')
         $dict['Y'].ParameterType | Should -Be ([string])
     }
     It 'adds a hashtable parameter with the right type' {
         $dict = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
-        Add-NovaDynamicHashtableParameter -ParameterDictionary $dict -Name 'Z' -Mandatory
+        Add-NovaDynamicTypedParameter -ParameterDictionary $dict -Name 'Z' -ParameterType ([hashtable]) -Mandatory
         $dict['Z'].ParameterType | Should -Be ([hashtable])
     }
 }
@@ -43,6 +43,14 @@ Describe 'Get-NovaDynamicDeliveryParameterDictionary' {
         $dict.ContainsKey('SkipTests') | Should -BeTrue
         $dict.ContainsKey('ContinuousIntegration') | Should -BeTrue
         $dict.ContainsKey('OverrideWarning') | Should -BeTrue
+    }
+}
+
+Describe 'Get-NovaDynamicOverrideWarningParameterDictionary' {
+    It 'contains only the OverrideWarning switch' {
+        $dict = Get-NovaDynamicOverrideWarningParameterDictionary
+        $dict.Keys | Should -Be @('OverrideWarning')
+        $dict['OverrideWarning'].ParameterType | Should -Be ([switch])
     }
 }
 

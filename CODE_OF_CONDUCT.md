@@ -60,41 +60,11 @@ The following behavior is not acceptable in the Terra Nova community:
 ## Community Principles
 
 Terra Nova is guided by these principles:
-
--
-
-*
-
-*Clarity over cleverness
-**
-
--
-
-*
-
-*Automation over manual processes
-**
-
--
-
-*
-
-*Consistency over fragmentation
-**
-
--
-
-*
-
-*Quality and pragmatism in balance
-**
-
--
-
-*
-
-*Open by default
-**
+- **Clarity over cleverness**
+- **Automation over manual processes**
+- **Consistency over fragmentation**
+- **Quality and pragmatism in balance**
+- **Open by default**
 
 We encourage contributions that align with these principles and improve the ecosystem as a whole.
 

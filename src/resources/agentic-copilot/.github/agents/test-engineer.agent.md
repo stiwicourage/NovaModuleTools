@@ -35,22 +35,24 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 
 ## Constraints
 
-- Prefer the smallest `Test-NovaBuild` scope the project already supports, then the full repo quality loop.
+- Prefer the smallest `Invoke-NovaTest` scope for unit behavior, then `Test-NovaBuild` for build-validation integration coverage, then the full repo quality loop.
 - Keep test files maintainable; passing tests are not enough if maintainability degrades.
 - Reuse existing fixture and support patterns before adding new ones.
 - Do not group unrelated source files into one broad test file when mirrored `tests/public`, `tests/private`, or `tests/classes` ownership is possible.
+- For public commands, keep unit coverage in `tests/public/<Command>.Tests.ps1` and per-command integration ownership in `tests/public/<Command>.Integration.Tests.ps1` when built-module behavior needs coverage.
+- For destructive or environment-coupled public commands, prefer safe `-WhatIf` integration coverage when that still proves the command wiring and `ShouldProcess` behavior.
 - Do not introduce PowerShell 7.x-only test syntax or APIs into a project that targets `5.1` unless compatibility coverage is explicitly part of the scope.
 - If quality tooling flags a regression, refactor the tests or helpers instead of suppressing the finding.
 - Keep new or heavily changed tests focused, isolated, and easy to scan; split setup or assertion helpers when a test stops being readable.
 - Use `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` as the normal analyzer entrypoint for changed test/helpers, and only fall back to direct `Invoke-ScriptAnalyzer` for focused local investigation with the repository-approved settings.
-- Use `Test-NovaBuild` as the test entrypoint for Nova-managed projects; do not validate with direct `Invoke-Pester`.
+- Use `Invoke-NovaTest` as the unit-test entrypoint and `Test-NovaBuild` as the build-validation integration-test entrypoint for Nova-managed projects; do not validate with direct `Invoke-Pester`.
 
 ## Definition of done
 
 - The changed behavior is covered.
 - Each new or changed `src/**/*.ps1` file has a matching source-mirrored test, or the cross-cutting owner test is named explicitly.
 - The touched tests are readable and low-duplication.
-- Validation uses `Test-NovaBuild` for project test execution.
+- Validation uses `Invoke-NovaTest` for unit execution and `Test-NovaBuild` for build-validation integration execution.
 - Validation and quality tooling implications are addressed.
 - The pre-commit quality tooling safeguard is clean before the work is treated as commit-ready when local quality tooling is available.
 

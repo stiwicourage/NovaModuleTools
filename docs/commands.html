@@ -268,7 +268,7 @@ PS&gt; Invoke-NovaAgenticCopilotScaffold -Path ~/Work/MyModule -ShortName NMT -O
                             <li><strong>Use when:</strong> you need to confirm what Nova resolved from
                                 <code>project.json</code></li>
                             <li data-command-visibility="powershell"><strong>Extra views:</strong>
-                                <code>-Version</code> and <code>-Installed</code></li>
+                                <code>-Version</code>, <code>-Installed</code>, and <code>-InstalledNovaVersion</code></li>
                         </ul>
                         <div class="surface-example" data-command-example>
                             <div class="surface-example__meta">
@@ -282,8 +282,9 @@ PS&gt; Invoke-NovaAgenticCopilotScaffold -Path ~/Work/MyModule -ShortName NMT -O
                             <div class="surface-example__surface" data-command-surface="powershell">
                                 <pre><code>PS&gt; Get-NovaProjectInfo
 PS&gt; Get-NovaProjectInfo -Version
-PS&gt; Get-NovaProjectInfo -Installed</code></pre>
-                            </div>
+PS&gt; Get-NovaProjectInfo -Installed
+PS&gt; Get-NovaProjectInfo -InstalledNovaVersion</code></pre>
+                           </div>
                         </div>
                         <p><a class="text-link" href="./project-json-reference.html">See project.json behavior</a></p>
                     </article>
@@ -338,21 +339,27 @@ PS&gt; Invoke-NovaBuild -ContinuousIntegration</code></pre>
                             <p><strong>Launcher route:</strong> <code>nova test</code></p>
                         </div>
                         <div class="surface-note" data-command-visibility="powershell">
-                            <p><strong>Cmdlet:</strong> <code>Test-NovaBuild</code></p>
+                            <p><strong>Cmdlets:</strong> <code>Invoke-NovaTest</code> for unit tests, <code>Test-NovaBuild</code> for build validation</p>
                         </div>
-                        <p>Run Pester for the current project and write results to
+                        <p>Run Nova's managed test workflows for the current project. <code>Invoke-NovaTest</code>
+                            writes unit-test results to <code>artifacts/UnitTestResults.xml</code>, and
+                            <code>Test-NovaBuild</code> writes build-validation results to
                             <code>artifacts/TestResults.xml</code>.</p>
-                        <p>If coverage is enabled in <code>project.json</code>, the same workflow also writes
-                            <code>artifacts/coverage.xml</code> and fails when measured coverage stays below the
+                        <p>If coverage is enabled in <code>project.json</code>, <code>Invoke-NovaTest</code> also
+                            writes <code>artifacts/coverage.xml</code> and fails when measured coverage stays below the
                             configured <code>CoveragePercentTarget</code>.</p>
                         <ul class="plain-list">
-                            <li><strong>Use when:</strong> you want the standard Nova test flow</li>
+                            <li><strong>Use when:</strong> you want unit tests from PowerShell or the default Nova test flow from the CLI</li>
                             <li data-command-visibility="command-line" hidden><strong>Best launcher option:</strong>
                                 <code>--build</code> rebuilds before testing
                             </li>
                             <li data-command-visibility="powershell"><strong>Cmdlet extras:</strong>
-                                <code>-Build</code>, <code>-TagFilter</code>, <code>-ExcludeTagFilter</code>,
-                                <code>-OutputVerbosity</code>, and <code>-OutputRenderMode</code></li>
+                                <code>Invoke-NovaTest</code> supports <code>-TagFilter</code>,
+                                <code>-ExcludeTagFilter</code>, <code>-OutputVerbosity</code>, and
+                                <code>-OutputRenderMode</code>, and the guarded
+                                <code>-PesterConfigurationOverride</code> hook for <code>Run.Container</code>.
+                                <code>Test-NovaBuild</code> supports the same output options plus
+                                <code>-OverrideWarning</code>.</li>
                         </ul>
                         <div class="surface-example" data-command-example>
                             <div class="surface-example__meta">
@@ -366,9 +373,12 @@ PS&gt; Invoke-NovaBuild -ContinuousIntegration</code></pre>
 % nova test --what-if</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="powershell">
-                                <pre><code>PS&gt; Test-NovaBuild
-PS&gt; Test-NovaBuild -Build
-PS&gt; Test-NovaBuild -TagFilter unit,fast</code></pre>
+                                <pre><code>PS&gt; Invoke-NovaTest
+PS&gt; Test-NovaBuild
+PS&gt; Invoke-NovaTest -TagFilter unit,fast
+PS&gt; $credential = Get-Credential
+PS&gt; $container = New-PesterContainer -Path 'tests/public/PublishNovaModule.Tests.ps1' -Data @{ Credential = $credential }
+PS&gt; Invoke-NovaTest -PesterConfigurationOverride @{ Run = @{ Container = @($container) } }</code></pre>
                             </div>
                         </div>
                         <p><a class="text-link" href="./core-workflows.html#test">See the test workflow</a></p>
@@ -589,7 +599,8 @@ PS&gt; Update-NovaModuleVersion -ContinuousIntegration</code></pre>
                             </li>
                             <li data-command-visibility="powershell"><strong>Use:</strong>
                                 <code>Get-NovaProjectInfo -Version</code> for <code>project.json</code> and
-                                <code>Get-NovaProjectInfo -Installed</code> for the installed NovaModuleTools tool
+                                <code>Get-NovaProjectInfo -Installed</code> for the installed current project/module and
+                                <code>Get-NovaProjectInfo -InstalledNovaVersion</code> for the installed NovaModuleTools tool
                                 version
                             </li>
                         </ul>
@@ -608,7 +619,8 @@ PS&gt; Update-NovaModuleVersion -ContinuousIntegration</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="powershell">
                                 <pre><code>PS&gt; Get-NovaProjectInfo -Version
-PS&gt; Get-NovaProjectInfo -Installed</code></pre>
+PS&gt; Get-NovaProjectInfo -Installed
+PS&gt; Get-NovaProjectInfo -InstalledNovaVersion</code></pre>
                             </div>
                         </div>
                         <p><a class="text-link" href="./versioning-and-updates.html#version-views">See version view

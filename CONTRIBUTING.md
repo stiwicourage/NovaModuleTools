@@ -55,7 +55,8 @@ pwsh -NoLogo -NoProfile -File ./run.ps1
 
 `run.ps1` is the authoritative repository quality wrapper. It runs ScriptAnalyzer first, validates
 `CHANGELOG.md` and `RELEASE_NOTE.md`, refreshes the Agentic Copilot scaffold mirror, and then runs
-`Test-NovaBuild`.
+`Invoke-NovaTest` followed by `Test-NovaBuild`. `Invoke-NovaTest` is the unit-test entrypoint, while
+`Test-NovaBuild` is the build-validation integration-test entrypoint.
 
 If you are working on the CodeScene integration, the CI coverage helper writes the JaCoCo artifact that the CodeScene upload step consumes:
 
@@ -68,6 +69,26 @@ If you are working on the CodeScene integration, the CI coverage helper writes t
 Please also make sure your contribution includes the right kind of follow-up work:
 
 - add or update tests when behavior changes
+  - keep public command unit ownership in `tests/public/<Command>.Tests.ps1`
+  - keep per-command public integration ownership in `tests/public/<Command>.Integration.Tests.ps1` when built-module behavior itself needs validation
+  - for destructive or environment-coupled commands, prefer safe `-WhatIf` integration coverage when appropriate
+  - when a unit test needs runtime-only data such as `PSCredential`, keep the secret out of the mirrored `*.Tests.ps1` file and inject it at execution time through `Invoke-NovaTest -PesterConfigurationOverride`
+
+    ```powershell
+    param($Credential)
+
+    Describe 'Publish-NovaModule credential flow' {
+        It 'receives the runtime-only credential' {
+            $Credential | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    $credential = Get-Credential
+    $container = New-PesterContainer -Path 'tests/public/PublishNovaModule.Tests.ps1' -Data @{ Credential = $credential }
+    Invoke-NovaTest -PesterConfigurationOverride @{ Run = @{ Container = @($container) } }
+    ```
+
+  - Nova v1 only accepts `Run.Container`, and each container must target a unit-test file that Nova already discovered for the current run
 - update help files in `docs/` when a command changes
 - update `README.md` when repository workflow, architecture, or contributor expectations change
 - update `CHANGELOG.md` when the change is relevant to users, maintainers, or future contributors

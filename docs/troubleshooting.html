@@ -193,9 +193,12 @@ pwsh -NoLogo -Command 'Import-Module (Get-NovaProjectInfo).OutputModuleDir -Forc
                 <p><strong>Likely cause:</strong> you expected test output in a different location, or you ran Pester
                     directly instead of through Nova.</p>
                 <p><strong>Fix:</strong> use the Nova workflow and check:</p>
-                <pre><code>artifacts/TestResults.xml</code></pre>
-                <p><strong>Success looks like:</strong> the file exists after a successful <code>Test-NovaBuild</code>
-                    or <code>% nova test</code> run.</p>
+                <pre><code>artifacts/UnitTestResults.xml
+artifacts/TestResults.xml</code></pre>
+                <p><strong>Success looks like:</strong> <code>artifacts/UnitTestResults.xml</code> exists after a
+                    successful <code>Invoke-NovaTest</code> or <code>% nova test</code> run, and
+                    <code>artifacts/TestResults.xml</code> exists after a successful <code>Test-NovaBuild</code> or
+                    <code>% nova test --build</code> run.</p>
                 <p><a class="text-link" href="./core-workflows.html#test">See the test workflow</a></p>
             </section>
 

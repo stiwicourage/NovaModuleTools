@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: 'https://www.novamoduletools.com/core-workflows.html#test'
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/26/2026
+ms.date: 05/31/2026
 PlatyPS schema version: 2024-05-01
 title: Test-NovaBuild
 ---
@@ -13,34 +13,33 @@ title: Test-NovaBuild
 
 ## SYNOPSIS
 
-Runs Pester tests for the current NovaModuleTools project.
+Runs the NovaModuleTools build-validation integration-test workflow for the current project.
 
 ## SYNTAX
 
 ### __AllParameterSets
 
 ```text
-PS> Test-NovaBuild [-Build] [-OverrideWarning] [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>]
- [[-OutputVerbosity] <string>] [[-OutputRenderMode] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+PS> Test-NovaBuild [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>]
+ [[-OutputVerbosity] <string>] [[-OutputRenderMode] <string>] [-OverrideWarning] [-WhatIf]
+ [-Confirm] [<CommonParameters>]
 ```
+
+## ALIASES
 
 ## DESCRIPTION
 
-`Test-NovaBuild` reads the Pester configuration from `project.json`, resolves the correct test path, and runs the test suite against the current project.
+`Test-NovaBuild` reads the Pester configuration from `project.json`, discovers the build-validation integration tests for the current project, and runs the managed Nova test workflow against the built-module validation surface.
 
-When `project.json` sets `Pester.CodeCoverage.CoveragePercentTarget`, Nova also treats the configured threshold as a failure condition and stops the run if the measured coverage percentage is lower than that target.
+This build-validation flow writes NUnit XML to `artifacts/TestResults.xml`.
 
-Use `-Build` when you want Nova to rebuild the project output before the Pester run starts.
+Unlike `Invoke-NovaTest`, this command does not enforce source-coverage targets. Use `Invoke-NovaTest` for the unit-test and code-coverage workflow, and use `Test-NovaBuild` when you need build-validation integration coverage that reflects the built module path.
 
-When `-Build` is used, `-OverrideWarning` lets that nested build continue even if the `src/public` layout guard reports zero or multiple top-level functions in a public file.
+`-OverrideWarning` lets the nested build-validation flow continue even if the `src/public` layout guard reports zero or multiple top-level functions in a public file.
 
-With the default
-`BuildRecursiveFolders=true`, test files in nested folders under `tests` are discovered and run. Set
-`BuildRecursiveFolders=false` to limit discovery to top-level `tests/*.Tests.ps1` files, following Pester's normal test-file convention. The generated Pester XML report is written to `artifacts/TestResults.xml`.
+With the default `BuildRecursiveFolders=true`, integration test files in nested folders under `tests` are discovered and run. Set `BuildRecursiveFolders=false` to limit discovery to top-level matching test files.
 
-This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the planned test run and XML output path without creating `artifacts/` or invoking Pester.
-
-During a test run, Nova shows progress for the optional pre-test build, test-result preparation, the Pester run, result writing, and code-coverage validation. When tests pass, Nova prints the result file path, a coverage summary when one is available, and a suggested next step. In `-WhatIf` mode, Nova ends with a test-plan summary instead of invoking Pester.
+This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the planned build-validation run and XML output path without invoking Pester.
 
 ## EXAMPLES
 
@@ -50,39 +49,39 @@ During a test run, Nova shows progress for the optional pre-test build, test-res
 PS> Test-NovaBuild
 ```
 
-Runs the Pester tests for the current project and prints the result file path plus the next suggested command when the run succeeds.
+Runs the build-validation integration tests for the current project and writes `artifacts/TestResults.xml`.
 
 ### EXAMPLE 2
 
 ```text
-PS> Test-NovaBuild -Build
+PS> Test-NovaBuild -TagFilter smoke
 ```
 
-Builds the project first, then runs the configured Pester test workflow with the same completion summary as a normal test run.
+Runs only build-validation tests tagged `smoke`.
 
 ### EXAMPLE 3
-
-```text
-PS> Test-NovaBuild -TagFilter unit,fast
-```
-
-Runs only tests tagged `unit` or `fast`.
-
-### EXAMPLE 4
 
 ```text
 PS> Test-NovaBuild -ExcludeTagFilter slow
 ```
 
-Runs the test suite while excluding tests tagged `slow`.
+Runs the build-validation suite while excluding tests tagged `slow`.
+
+### EXAMPLE 4
+
+```text
+PS> Test-NovaBuild -OverrideWarning
+```
+
+Continues the build-validation flow even if the public-command file-layout guard reports warnings.
 
 ### EXAMPLE 5
 
 ```text
-PS> Test-NovaBuild -OutputVerbosity Normal -OutputRenderMode Ansi
+PS> Test-NovaBuild -OutputVerbosity Detailed -OutputRenderMode Ansi
 ```
 
-Overrides the console output settings for the current test run while keeping color-capable rendering.
+Overrides the console output settings for the current build-validation run.
 
 ### EXAMPLE 6
 
@@ -90,63 +89,35 @@ Overrides the console output settings for the current test run while keeping col
 PS> Test-NovaBuild -WhatIf
 ```
 
-Previews the planned Pester run, prints the planned result file path, and does not execute tests or write `artifacts/TestResults.xml`.
-
-### EXAMPLE 7
-
-```text
-PS> Test-NovaBuild -Build -WhatIf
-```
-
-Previews the build-before-test workflow, including the planned result file path and configured coverage target, without rebuilding the project or running Pester.
+Previews the planned build-validation run and does not execute tests or write `artifacts/TestResults.xml`.
 
 ## PARAMETERS
 
-### -Build
+### -Confirm
 
-Builds the project before the test workflow starts.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: [ ]
-ParameterSets:
-  - Name: (All)
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: [ ]
-HelpMessage: ''
-```
-
-### -OverrideWarning
-
-When `-Build` is also used, continue the nested build even if the `src/public` layout guard reports that a public file does not contain exactly one top-level function.
+Prompts you for confirmation before running the cmdlet.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
+DefaultValue: ''
 SupportsWildcards: false
-Aliases: [ ]
+Aliases:
+- cf
 ParameterSets:
-  - Name: (All)
-    Position: Named
-    IsRequired: false
-    ValueFromPipeline: false
-    ValueFromPipelineByPropertyName: false
-    ValueFromRemainingArguments: false
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
 DontShow: false
-AcceptedValues: [ ]
+AcceptedValues: []
 HelpMessage: ''
 ```
 
 ### -ExcludeTagFilter
 
-Array of Pester tags to exclude from the run.
+Array of Pester tags to exclude from the build-validation run.
 
 ```yaml
 Type: System.String[]
@@ -165,30 +136,32 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -TagFilter
+### -OutputRenderMode
 
-Array of Pester tags to include in the run.
+Overrides how Pester renders console output for the current build-validation run.
 
 ```yaml
-Type: System.String[]
+Type: System.String
 DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
 - Name: (All)
-  Position: 0
+  Position: 3
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
   ValueFromRemainingArguments: false
 DontShow: false
-AcceptedValues: []
+AcceptedValues:
+- Auto
+- Ansi
 HelpMessage: ''
 ```
 
 ### -OutputVerbosity
 
-Overrides the Pester console verbosity for the current run.
+Overrides the Pester console verbosity for the current build-validation run.
 
 ```yaml
 Type: System.String
@@ -211,59 +184,90 @@ AcceptedValues:
 HelpMessage: ''
 ```
 
-### -OutputRenderMode
+### -OverrideWarning
 
-Overrides how Pester renders console output for the current run.
+Continue the nested build-validation setup even if the `src/public` layout guard reports that a public file does not contain exactly one top-level function.
 
 ```yaml
-Type: System.String
-DefaultValue: ''
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
 - Name: (All)
-  Position: 3
+  Position: Named
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
   ValueFromRemainingArguments: false
 DontShow: false
-AcceptedValues:
-- Auto
-- Ansi
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -TagFilter
+
+Array of Pester tags to include in the build-validation run.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -WhatIf
+
+Runs the command in a mode that only reports what would happen without performing the actions.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- wi
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
 HelpMessage: ''
 ```
 
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
-You can't pipe objects to this cmdlet.
-
 ## OUTPUTS
 
-### None
+### System.Object
 
-This cmdlet does not emit an output object. It throws when the test run fails or when a configured code coverage target is not met.
+Returns the Pester result object from the managed build-validation run.
 
 ## NOTES
 
-The generated test result XML is written to `artifacts/TestResults.xml`.
-
-If `project.json` configures `Pester.CodeCoverage.CoveragePercentTarget`, `Test-NovaBuild` also fails when the measured coverage percentage is lower than that configured threshold.
-
-`Test-NovaBuild` uses `SupportsShouldProcess`, so `Get-Help Test-NovaBuild -Full` surfaces native `-WhatIf` and
-`-Confirm` support.
-
-Use `Ctrl+C` if you need to stop a running test workflow before Pester completes.
+`Test-NovaBuild` is the PowerShell build-validation entry point for NovaModuleTools. The `nova test --build` and `nova test -b` CLI forms map to this command.
 
 ## RELATED LINKS
 
-- [Get-NovaProjectInfo](./Get-NovaProjectInfo.md)
-- [Invoke-NovaBuild](./Invoke-NovaBuild.md)
-- [Publish-NovaModule](./Publish-NovaModule.md)
+[Invoke-NovaTest](Invoke-NovaTest.md)
+[Invoke-NovaBuild](Invoke-NovaBuild.md)

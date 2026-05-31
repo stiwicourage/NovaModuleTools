@@ -99,7 +99,7 @@
                     <li><strong><code>Package</code></strong> controls package creation and optional raw HTTP upload
                         defaults.
                     </li>
-                    <li><strong><code>Pester</code></strong> controls the test run configuration used by <code>Test-NovaBuild</code>.
+                    <li><strong><code>Pester</code></strong> controls the test run configuration used by <code>Invoke-NovaTest</code> and <code>Test-NovaBuild</code>.
                     </li>
                 </ol>
                 <div class="notice">
@@ -109,14 +109,13 @@
                         defaults
                         to a single <code>.nupkg</code> written to <code>artifacts/packages/</code>.</p>
                 </div>
-                <div class="notice notice--warning">
-                    <strong>Important compatibility note.</strong>
-                    <p>The runtime and shipped examples currently use some manifest and Pester fields more broadly than
-                        the JSON schema files explicitly enumerate. In practice, the current product and examples use
+                <div class="notice">
+                    <strong>Schema coverage.</strong>
+                    <p>The unified JSON schema covers all documented fields including
                         <code>Manifest.ReleaseNotes</code>, <code>Manifest.LicenseUri</code>,
-                        <code>Manifest.IconUri</code>, and <code>Pester.TestResult.OutputFormat</code>. The reference
-                        below documents the live behavior that the product uses today and calls out those schema gaps
-                        where they matter.</p>
+                        <code>Manifest.IconUri</code>, and <code>Pester.TestResult.OutputFormat</code>. VS Code picks
+                        up the schema automatically when the <code>$schema</code> field is present in
+                        <code>project.json</code>.</p>
                 </div>
             </section>
 
@@ -204,6 +203,17 @@
 
             <section class="content-section" id="top-level">
                 <h2>Top-level project settings</h2>
+                <div class="notice">
+                    <strong>VS Code IntelliSense.</strong>
+                    <p>When <code>nova init</code> scaffolds a new project, it injects a <code>$schema</code> field
+                        pointing to the versioned public schema at
+                        <code>https://www.novamoduletools.com/schema/v{major}/project.json</code>, and also writes a
+                        <code>.vscode/settings.json</code> entry that maps <code>project.json</code> to the same URL.
+                        Together these two outputs let VS Code load the schema and provide IntelliSense, field
+                        validation, and hover descriptions without a manual trust prompt. To enable this on an existing
+                        project, add the <code>$schema</code> field as the first key in <code>project.json</code> and
+                        add the matching <code>json.schemas</code> entry to <code>.vscode/settings.json</code>.</p>
+                </div>
                 <div class="table-scroll">
                     <table>
                         <thead>
@@ -215,6 +225,14 @@
                         </tr>
                         </thead>
                         <tbody>
+                        <tr>
+                            <td><code>$schema</code></td>
+                            <td>Optional URI pointing to the versioned JSON schema for this file.</td>
+                            <td>Injected automatically by <code>nova init</code></td>
+                            <td>Enables VS Code IntelliSense, field validation, and hover descriptions while editing
+                                <code>project.json</code>.
+                            </td>
+                        </tr>
                         <tr>
                             <td><code>ProjectName</code></td>
                             <td>Name of the module and the output folder under <code>dist/</code>.</td>
@@ -603,8 +621,8 @@
 
             <section class="content-section" id="pester">
                 <h2><code>Pester</code> settings</h2>
-                <p>NovaModuleTools passes your <code>Pester</code> settings into the test run configuration used by
-                    <code>Test-NovaBuild</code>.</p>
+                <p>NovaModuleTools passes your <code>Pester</code> settings into the managed test run configuration used by
+                    <code>Invoke-NovaTest</code> and <code>Test-NovaBuild</code>.</p>
                 <div class="table-scroll">
                     <table>
                         <thead>
@@ -626,7 +644,7 @@
                             <td><code>Pester.TestResult.OutputFormat</code></td>
                             <td>Passed through by the current project template and examples.</td>
                             <td><code>NUnitXml</code></td>
-                            <td>Determines the result format written to <code>artifacts/TestResults.xml</code>.</td>
+                            <td>Determines the result format written to the managed NUnit result artifacts.</td>
                         </tr>
                         <tr>
                             <td><code>Pester.CodeCoverage.Enabled</code></td>
@@ -668,7 +686,7 @@
                             <td><code>Pester.Output.Verbosity</code></td>
                             <td>Controls Pester console verbosity.</td>
                             <td><code>Detailed</code> in the current project template</td>
-                            <td>Affects what you see during <code>Test-NovaBuild</code> and <code>% nova test</code>.
+                            <td>Affects what you see during <code>Invoke-NovaTest</code>, <code>Test-NovaBuild</code>, and <code>% nova test</code>.
                             </td>
                         </tr>
                         </tbody>
@@ -678,7 +696,7 @@
                     the explicit default source globs shown above. The minimal scaffold keeps
                     <code>Enabled=false</code>, while the packaged example scaffold sets <code>Enabled=true</code> so
                     coverage works against <code>src/**/*.ps1</code> immediately. At runtime,
-                    <code>Test-NovaBuild</code> also lets you override verbosity and render mode temporarily with
+                    <code>Invoke-NovaTest</code> and <code>Test-NovaBuild</code> both let you override verbosity and render mode temporarily with
                     <code>-OutputVerbosity</code> and <code>-OutputRenderMode</code>.</p>
                 <p>When you enable coverage, Nova writes JaCoCo output to <code>artifacts/coverage.xml</code> and fails
                     the test workflow if the measured percentage is lower than

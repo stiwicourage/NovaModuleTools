@@ -84,6 +84,8 @@ function Update-NovaModuleVersion {}
 
 function Invoke-NovaBuild {}
 
+function Invoke-NovaTest {}
+
 function Test-NovaBuild {}
 
 function New-NovaModulePackage {}

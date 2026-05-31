@@ -7,13 +7,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `project.json` now has a single authoritative JSON schema hosted at `https://www.novamoduletools.com/schema/v{major}/project.json`.
+    - `Invoke-NovaBuild` exports the schema to `docs/schema/v{major}/project.json` during build, creating the directory when missing.
+    - `nova init` injects `"$schema": "https://www.novamoduletools.com/schema/v{major}/project.json"` into every scaffolded project.
+    - `nova init` also writes `.vscode/settings.json` mapping `project.json` to the hosted schema URL so VS Code trusts the remote schema automatically without prompting.
+    - VS Code picks up the schema automatically to provide field validation, autocomplete, and hover descriptions while editing `project.json`.
+    - The two partial internal schemas (`Schema-Build.json`, `Schema-Pester.json`) are removed; `Schema-Project.json` is the new single source.
+- Added `Invoke-NovaTest` as the dedicated NovaModuleTools unit-test command.
+    - `% nova test` now routes to `Invoke-NovaTest`.
+    - `Invoke-NovaTest` writes unit-test NUnit output to `artifacts/UnitTestResults.xml` and remains the code-coverage entry point.
+    - `Invoke-NovaTest` now accepts a guarded `-PesterConfigurationOverride` hook for runtime-only unit-test data injection through `Run.Container`, including `PSCredential` values supplied through `New-PesterContainer -Data`.
+
 ### Changed
+
+- `Get-NovaProjectInfo` now aligns its installed-version views with the existing CLI version contract.
+    - `-Installed` now returns the installed version of the current project/module from the local module path.
+    - `-InstalledNovaVersion` now returns the installed `NovaModuleTools` module name and version from PowerShell.
+- `Update-NovaModuleTool` now suggests `Get-NovaProjectInfo -InstalledNovaVersion` after a successful self-update so the PowerShell verification step checks the installed NovaModuleTools version directly.
+- `Test-NovaBuild` now focuses on build-validation integration tests instead of acting as the combined unit-and-build test entry point.
+    - `% nova test --build` and `% nova test -b` now route to `Test-NovaBuild`.
+    - `Test-NovaBuild` now writes build-validation NUnit output to `artifacts/TestResults.xml` without enforcing source coverage.
+- CI, release, packaging, and repository quality workflows now run `Invoke-NovaTest` before `Test-NovaBuild` when tests are not skipped.
 
 ### Deprecated
 
 ### Removed
 
+- Removed boolean `Package.Latest` compat shim deprecated in 2.4.0. Setting `Package.Latest` to `true` or `false` now throws `Nova.Validation.InvalidPackageLatestPolicy` with a migration message. Use `"always"` or `"never"` instead.
+- Removed `boolean` from the JSON schema `anyOf` for `Package.Latest` in `src/resources/Schema-Project.json` and `docs/schema/v3/project.json`. VS Code and schema-aware editors now reject boolean values for this field at edit time.
+
 ### Fixed
+
+- `Publish-NovaModule` now keeps its completion summary available after local publish import or CI session refresh steps reload the module, so local publish flows no longer fail with missing private release-helper functions at the end of a successful publish.
+- `Test-NovaBuild` and `% nova test` now keep the Nova progress display visibly active during long Pester runs instead of appearing stuck on one step while tests continue in the background.
+    - During the long Pester phase, Nova now uses the discovered test count plus completed test results to drive the progress bar, so the visible percentage tracks real test completion instead of elapsed time.
+    - The progress text now stays simple while the bar itself reflects the real test-driven completion state.
+    - The configured Pester output still flows live so `project.json` settings such as `Pester.Output.Verbosity = "Detailed"` remain visible.
+- Progress-enabled private workflows now have stronger mirrored progress-contract tests, and the repository adds a guardrail test so future `Write-Progress` workflows cannot land without matching test ownership.
+- `Package.Types` values in `project.json` now report a human-readable validation error in VS Code instead of showing the raw regex pattern. VS Code now shows the accepted values (`NuGet`, `Zip`, `.nupkg`, `.zip`) directly in the error.
 
 ### Security
 
@@ -468,4 +499,3 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-

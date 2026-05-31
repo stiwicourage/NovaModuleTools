@@ -240,6 +240,7 @@ pwsh -NoLogo -Command 'Import-Module (Get-NovaProjectInfo).OutputModuleDir -Forc
                         <pre><code>PS&gt; Initialize-NovaModule -Example -Path ~/Work
 PS&gt; Set-Location ~/Work/&lt;YourProjectName&gt;
 PS&gt; Invoke-NovaBuild
+PS&gt; Invoke-NovaTest
 PS&gt; Test-NovaBuild
 PS&gt; $project = Get-NovaProjectInfo
 PS&gt; Import-Module $project.OutputModuleDir -Force

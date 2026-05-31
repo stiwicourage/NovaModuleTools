@@ -148,8 +148,15 @@ Describe 'Invoke-NovaModuleSelfUpdateWorkflow' {
 
         $result.Updated | Should -BeTrue
         $result.ReleaseNotesUri | Should -Be 'https://example.com/n'
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Installing version 1.1.0' -and $PercentComplete -eq 80
+        }
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Reading release notes from the updated module' -and $PercentComplete -eq 95
+        }
+        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Updated NovaModuleTools to version 1.1.0.' -and $color -eq 'Green'}
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Get-NovaProjectInfo -Installed'}
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Get-NovaProjectInfo -InstalledNovaVersion'}
         Assert-MockCalled Write-Progress -Times 3
     }
 }

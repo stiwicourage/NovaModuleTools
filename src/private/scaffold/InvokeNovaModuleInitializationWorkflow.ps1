@@ -15,6 +15,10 @@ function Invoke-NovaModuleInitializationWorkflow {
             Write-NovaModuleProjectJson -Answer $WorkflowContext.AnswerSet -ProjectJsonFile $WorkflowContext.Layout.ProjectJsonFile -Example:$WorkflowContext.Example
         }
 
+        Invoke-NovaModuleInitializationStep -Activity $progressActivity -Status 'Writing VS Code settings' -PercentComplete 75 -Action {
+            Write-NovaVsCodeSettings -ProjectRoot $WorkflowContext.Layout.Project
+        }
+
         if ($WorkflowContext.AnswerSet.EnableAgenticCopilot -eq 'Yes') {
             Invoke-NovaModuleInitializationStep -Activity $progressActivity -Status 'Applying Agentic Copilot starter' -PercentComplete 85 -Action {
                 Initialize-NovaModuleAgenticCopilotScaffold -Answer $WorkflowContext.AnswerSet -ProjectRoot $WorkflowContext.Layout.Project -Example:$WorkflowContext.Example
@@ -66,6 +70,7 @@ function Get-NovaModuleInitializationNextStepLine {
     )
 
     if ($WorkflowContext.Example) {
+        $nextSteps += 'Invoke-NovaTest'
         $nextSteps += 'Test-NovaBuild'
         return $nextSteps
     }

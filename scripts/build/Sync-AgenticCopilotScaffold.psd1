@@ -284,7 +284,7 @@
         }
         @{
             Old = '- local quality loop: `pwsh -NoLogo -NoProfile -File ./run.ps1`'
-            New = '- local quality loop: use the repository quality wrapper when one exists; otherwise run ScriptAnalyzer, build, and `Test-NovaBuild` in the documented project order'
+            New = '- local quality loop: use the repository quality wrapper when one exists; otherwise run ScriptAnalyzer, build, `Invoke-NovaTest`, and `Test-NovaBuild` in the documented project order'
         }
         @{
             Old = 'If `run.ps1` or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports findings, fix them before review, handoff, or commit. Do not treat a failing local quality loop as an acceptable stopping point.'
@@ -319,16 +319,16 @@
             New = 'from the repository quality loop or `Invoke-ScriptAnalyzerCI.ps1`'
         }
         @{
-            Old = '`run.ps1`-style local checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.'
-            New = 'local quality checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild` when the project defines a combined wrapper.'
+            Old = '`run.ps1`-style local checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Invoke-NovaTest`, then `Test-NovaBuild`.'
+            New = 'local quality checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Invoke-NovaTest`, then `Test-NovaBuild` when the project defines a combined wrapper.'
         }
         @{
             Old = 'Resolve any ScriptAnalyzer findings that `./run.ps1` reports before handoff.'
             New = 'Resolve any ScriptAnalyzer findings reported by the repository quality loop before handoff.'
         }
         @{
-            Old = '4. After meaningful steps, run `./run.ps1` (analyzer → build → `Test-NovaBuild`).'
-            New = '4. After meaningful steps, run the repository quality loop when present (typically analyzer → build → `Test-NovaBuild`).'
+            Old = '4. After meaningful steps, run `./run.ps1` (analyzer → build → `Invoke-NovaTest` → `Test-NovaBuild`).'
+            New = '4. After meaningful steps, run the repository quality loop when present (typically analyzer → build → `Invoke-NovaTest` → `Test-NovaBuild`).'
         }
         @{
             Old = 'or GitHub release automation.'
@@ -453,6 +453,14 @@
         @{
             Old = 'Stop-NovaOperation'
             New = 'Stop-{{ShortName}}Operation'
+        }
+        @{
+            Old = '`% nova` CLI routes'
+            New = 'CLI routes'
+        }
+        @{
+            Old = '`% nova` CLI UX distinct'
+            New = 'CLI UX distinct'
         }
     )
 }

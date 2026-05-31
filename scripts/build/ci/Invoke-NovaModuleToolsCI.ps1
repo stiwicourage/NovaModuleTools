@@ -5,15 +5,14 @@ param(
 
 Set-StrictMode -Version Latest
 
-function Copy-NovaModuleToolsTestResultIfPresent {
+function Copy-NovaModuleToolsArtifactIfPresent {
     param(
-        [Parameter(Mandatory)][string]$ProjectRoot,
-        [Parameter(Mandatory)][string]$ArtifactsDirectory
+        [Parameter(Mandatory)][string]$SourcePath,
+        [Parameter(Mandatory)][string]$DestinationPath
     )
 
-    $sourcePath = Join-Path $ProjectRoot 'artifacts/TestResults.xml'
-    if (Test-Path -LiteralPath $sourcePath) {
-        Copy-Item -LiteralPath $sourcePath -Destination (Join-Path $ArtifactsDirectory 'novamoduletools-nunit.xml') -Force
+    if (Test-Path -LiteralPath $SourcePath) {
+        Copy-Item -LiteralPath $SourcePath -Destination $DestinationPath -Force
     }
 }
 
@@ -34,15 +33,18 @@ $projectInfo = Get-NovaProjectInfo
 $novaModuleToolsTestFailed = $false
 try {
     if (@($ExcludeTag).Count -gt 0) {
+        Invoke-NovaTest -ExcludeTagFilter $ExcludeTag
         Test-NovaBuild -ExcludeTagFilter $ExcludeTag
     } else {
+        Invoke-NovaTest
         Test-NovaBuild
     }
 } catch {
     $novaModuleToolsTestFailed = $true
-    Write-Warning "Test-NovaBuild failed: $( $_.Exception.Message )"
+    Write-Warning "Nova test workflow failed: $( $_.Exception.Message )"
 } finally {
-    Copy-NovaModuleToolsTestResultIfPresent -ProjectRoot $projectInfo.ProjectRoot -ArtifactsDirectory $OutputDirectory
+    Copy-NovaModuleToolsArtifactIfPresent -SourcePath (Join-Path $projectInfo.ProjectRoot 'artifacts/UnitTestResults.xml') -DestinationPath (Join-Path $OutputDirectory 'novamoduletools-unit-nunit.xml')
+    Copy-NovaModuleToolsArtifactIfPresent -SourcePath (Join-Path $projectInfo.ProjectRoot 'artifacts/TestResults.xml') -DestinationPath (Join-Path $OutputDirectory 'novamoduletools-integration-nunit.xml')
 }
 
 if ($novaModuleToolsTestFailed) {

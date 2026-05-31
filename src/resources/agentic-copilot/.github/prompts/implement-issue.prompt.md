@@ -12,7 +12,8 @@ Implement the issue in the {{ProjectName}} repository using the repository-local
 
 ## Required process
 
-1. If scope, acceptance criteria, or ownership are still unclear, start with `.github/prompts/design-change.prompt.md` and `architect.agent.md` before implementing.
+1. **Before any other action:** invoke the `skill` tool for `markdown-authoring` when the final handoff summary will be returned as copy-ready Markdown. This is a blocking requirement — load the skill before reading files or producing output.
+2. If scope, acceptance criteria, or ownership are still unclear, start with `.github/prompts/design-change.prompt.md` and `architect.agent.md` before implementing.
 2. Read `README.md`, `CONTRIBUTING.md`, `.github/copilot-instructions.md`, and `.github/pull_request_template.md`.
 3. Inspect the relevant public command, matching private helper domain, tests, and docs.
 4. If the issue is release-, workflow-, or coverage-related, also inspect the matching workflow files, when present and `scripts/build/ci/*.ps1` files.
@@ -26,13 +27,14 @@ Implement the issue in the {{ProjectName}} repository using the repository-local
 12. Keep file/function ownership explicit: one externally called function per file, with private-file extras limited to related same-file top-level support helpers, keep the file name aligned to the entry function, and do not declare functions inside functions.
 13. Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the bottom.
 14. Add or update the matching source-mirrored Pester file for every changed `src/**/*.ps1` file; if the behavior is genuinely cross-cutting, document which integration/guardrail test owns it and why a mirrored unit test is not practical.
-15. Validate Nova-managed project tests through `Test-NovaBuild`; do not call `Invoke-Pester` directly because it can bypass Nova's build/import/StrictMode flow.
-16. Add or update valid PlatyPS-compatible help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change. Use `New-MarkdownCommandHelp` for new help, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff; do not replace command help with plain Markdown prose.
-17. For every new public entry point, create its matching help file immediately in the same change.
-18. Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `RELEASE_NOTE.md`, help docs, and project docs as applicable.
-19. If a commit message is requested, derive it from `$GIT_BRANCH_NAME` and the implemented change using the repository's Conventional Commit rules.
-20. Run the relevant validation, then summarize what changed, why, and how it was verified.
-21. If that summary is returned as Markdown or copy-ready UI output, format it according to the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
+15. Validate Nova-managed project tests through `Invoke-NovaTest` for unit validation and `Test-NovaBuild` for build-validation integration validation; do not call `Invoke-Pester` directly because it can bypass Nova's build/import/StrictMode flow.
+16. For public commands, keep unit coverage in `tests/public/<Command>.Tests.ps1` and keep per-command integration ownership in `tests/public/<Command>.Integration.Tests.ps1` when built-module behavior itself needs validation. For destructive or environment-coupled public commands, prefer safe `-WhatIf` integration coverage when that still proves `ShouldProcess`, routing, and output behavior.
+17. Add or update valid PlatyPS-compatible help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change. Use `New-MarkdownCommandHelp` for new help, `Update-MarkdownCommandHelp` after command-surface changes, and `Test-MarkdownCommandHelp` before handoff; do not replace command help with plain Markdown prose.
+18. For every new public entry point, create its matching help file immediately in the same change.
+19. Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `RELEASE_NOTE.md`, help docs, and project docs as applicable.
+20. If a commit message is requested, derive it from `$GIT_BRANCH_NAME` and the implemented change using the repository's Conventional Commit rules.
+21. Run the relevant validation, then summarize what changed, why, and how it was verified.
+22. If that summary is returned as Markdown or copy-ready UI output, format it according to the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`).
 
 ## Repository-specific reminders
 

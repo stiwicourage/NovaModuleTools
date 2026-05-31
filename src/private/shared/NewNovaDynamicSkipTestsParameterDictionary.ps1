@@ -23,45 +23,18 @@ function Get-NovaDynamicParameterAttributeCollection {
     return $attributeCollection
 }
 
-function Add-NovaDynamicSwitchParameter {
+function Add-NovaDynamicTypedParameter {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][System.Management.Automation.RuntimeDefinedParameterDictionary]$ParameterDictionary,
         [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][type]$ParameterType,
         [string[]]$ParameterSetNameList = @(),
         [switch]$Mandatory
     )
 
     $attributeCollection = Get-NovaDynamicParameterAttributeCollection -ParameterSetNameList $ParameterSetNameList -Mandatory:$Mandatory
-    $runtimeParameter = [System.Management.Automation.RuntimeDefinedParameter]::new($Name, [switch],$attributeCollection)
-    $ParameterDictionary.Add($Name, $runtimeParameter)
-}
-
-function Add-NovaDynamicStringParameter {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][System.Management.Automation.RuntimeDefinedParameterDictionary]$ParameterDictionary,
-        [Parameter(Mandatory)][string]$Name,
-        [string[]]$ParameterSetNameList = @(),
-        [switch]$Mandatory
-    )
-
-    $attributeCollection = Get-NovaDynamicParameterAttributeCollection -ParameterSetNameList $ParameterSetNameList -Mandatory:$Mandatory
-    $runtimeParameter = [System.Management.Automation.RuntimeDefinedParameter]::new($Name, [string],$attributeCollection)
-    $ParameterDictionary.Add($Name, $runtimeParameter)
-}
-
-function Add-NovaDynamicHashtableParameter {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][System.Management.Automation.RuntimeDefinedParameterDictionary]$ParameterDictionary,
-        [Parameter(Mandatory)][string]$Name,
-        [string[]]$ParameterSetNameList = @(),
-        [switch]$Mandatory
-    )
-
-    $attributeCollection = Get-NovaDynamicParameterAttributeCollection -ParameterSetNameList $ParameterSetNameList -Mandatory:$Mandatory
-    $runtimeParameter = [System.Management.Automation.RuntimeDefinedParameter]::new($Name, [hashtable],$attributeCollection)
+    $runtimeParameter = [System.Management.Automation.RuntimeDefinedParameter]::new($Name, $ParameterType, $attributeCollection)
     $ParameterDictionary.Add($Name, $runtimeParameter)
 }
 
@@ -70,9 +43,18 @@ function Get-NovaDynamicDeliveryParameterDictionary {
     param()
 
     $parameterDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
-    Add-NovaDynamicSwitchParameter -ParameterDictionary $parameterDictionary -Name 'SkipTests'
-    Add-NovaDynamicSwitchParameter -ParameterDictionary $parameterDictionary -Name 'ContinuousIntegration'
-    Add-NovaDynamicSwitchParameter -ParameterDictionary $parameterDictionary -Name 'OverrideWarning'
+    Add-NovaDynamicTypedParameter -ParameterDictionary $parameterDictionary -Name 'SkipTests' -ParameterType ([switch])
+    Add-NovaDynamicTypedParameter -ParameterDictionary $parameterDictionary -Name 'ContinuousIntegration' -ParameterType ([switch])
+    Add-NovaDynamicTypedParameter -ParameterDictionary $parameterDictionary -Name 'OverrideWarning' -ParameterType ([switch])
+    return $parameterDictionary
+}
+
+function Get-NovaDynamicOverrideWarningParameterDictionary {
+    [CmdletBinding()]
+    param()
+
+    $parameterDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+    Add-NovaDynamicTypedParameter -ParameterDictionary $parameterDictionary -Name 'OverrideWarning' -ParameterType ([switch])
     return $parameterDictionary
 }
 
@@ -81,8 +63,8 @@ function Get-NovaDynamicReleaseParameterDictionary {
     param()
 
     $parameterDictionary = Get-NovaDynamicDeliveryParameterDictionary
-    Add-NovaDynamicStringParameter -ParameterDictionary $parameterDictionary -Name 'Path' -ParameterSetNameList @('Local', 'Repository', 'PublishOption')
+    Add-NovaDynamicTypedParameter -ParameterDictionary $parameterDictionary -Name 'Path' -ParameterType ([string]) -ParameterSetNameList @('Local', 'Repository', 'PublishOption')
     # TODO: Remove the legacy PublishOption dynamic parameter this was deprecated on: 2026-05-03.
-    Add-NovaDynamicHashtableParameter -ParameterDictionary $parameterDictionary -Name 'PublishOption' -ParameterSetNameList @('PublishOption') -Mandatory
+    Add-NovaDynamicTypedParameter -ParameterDictionary $parameterDictionary -Name 'PublishOption' -ParameterType ([hashtable]) -ParameterSetNameList @('PublishOption') -Mandatory
     return $parameterDictionary
 }

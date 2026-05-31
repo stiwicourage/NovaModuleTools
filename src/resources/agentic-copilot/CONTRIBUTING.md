@@ -11,8 +11,11 @@ Before opening a pull request:
 - when you add a new public function, create its matching help file in the same change
 - use Nova commands and `project.json` for build, test, package, and release behavior
 - keep PowerShell code, tests, and examples compatible with `project.json` `Manifest.PowerShellHostVersion`; if the project targets `5.1`, do not add PowerShell 7.x-only features
-- keep local quality checks ordered as ScriptAnalyzer, then `Invoke-NovaBuild`, then `Test-NovaBuild` when your project defines a combined wrapper
-- use `Test-NovaBuild` as the project test entrypoint; do not validate with direct `Invoke-Pester`
+- keep local quality checks ordered as ScriptAnalyzer, then `Invoke-NovaBuild`, then `Invoke-NovaTest`, then `Test-NovaBuild` when your project defines both test flows
+- use `Invoke-NovaTest` for unit validation and `Test-NovaBuild` for build-validation integration runs; do not validate with direct `Invoke-Pester`
+- keep public command unit ownership in `tests/public/<Command>.Tests.ps1`
+- keep per-command public integration ownership in `tests/public/<Command>.Integration.Tests.ps1` when built-module behavior itself needs validation
+- for destructive or environment-coupled commands, prefer safe `-WhatIf` integration coverage when appropriate
 - if the repository quality loop or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before you ask for review
 - follow `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth; use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repo-approved settings
 - keep one externally called function per file and match the file name to that function; private files may keep extra related functions only as same-file top-level support helpers, and PowerShell functions must not declare nested functions inside their bodies

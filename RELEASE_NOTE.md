@@ -6,13 +6,36 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Added
 
+- `nova init` now injects a `"$schema"` property into new projects pointing to the hosted versioned JSON schema, enabling VS Code IntelliSense, autocomplete, and hover descriptions while editing `project.json`.
+    - `nova init` also writes `.vscode/settings.json` mapping `project.json` to the schema URL so VS Code trusts it automatically — no manual "Allow" step required.
+- Added `Invoke-NovaTest` as the dedicated PowerShell unit-test command.
+    - `% nova test` now maps to `Invoke-NovaTest`.
+    - Unit-test NUnit results are now written to `artifacts/UnitTestResults.xml`.
+    - `Invoke-NovaTest` now supports guarded runtime-only test-data injection through `-PesterConfigurationOverride`, limited in v1 to `Run.Container` entries such as `New-PesterContainer -Data @{ Credential = $credential }`.
+
 ### Changed
+
+- `Get-NovaProjectInfo` now matches the CLI version split on the PowerShell surface.
+    - Use `-Installed` for the installed current project/module version.
+    - Use `-InstalledNovaVersion` for the installed `NovaModuleTools` version.
+- `Update-NovaModuleTool` now suggests `Get-NovaProjectInfo -InstalledNovaVersion` after a successful self-update.
+- `Test-NovaBuild` is now the build-validation integration-test command instead of the combined default test entry point.
+    - `% nova test --build` and `% nova test -b` now map to `Test-NovaBuild`.
+    - Build-validation NUnit results continue to use `artifacts/TestResults.xml`.
+- Repository and CI quality loops now run `Invoke-NovaTest` before `Test-NovaBuild` when tests are enabled.
 
 ### Deprecated
 
 ### Removed
 
+- Boolean `Package.Latest` values (`true` / `false`) are no longer accepted. Passing them now throws with a migration message pointing to `"always"` or `"never"`. The JSON schema also rejects boolean values for this field.
+
 ### Fixed
+
+- `Publish-NovaModule` no longer loses its completion summary after local publish import or CI session refresh steps reload the module.
+- `Test-NovaBuild` and `% nova test` now keep the Nova progress display visibly active during long Pester runs instead of appearing stuck on one step while tests continue.
+    - During the long Pester phase, Nova now drives the progress bar from discovered and completed Pester tests instead of elapsed time, keeps the progress text simple, and still shows configured Pester output such as `Pester.Output.Verbosity = "Detailed"`.
+- Invalid `Package.Types` values in `project.json` now show the accepted values (`NuGet`, `Zip`, `.nupkg`, `.zip`) directly in VS Code instead of the raw regex pattern.
 
 ### Security
 
@@ -226,4 +249,3 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ## [0.0.4] - 2024-06-25
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
-

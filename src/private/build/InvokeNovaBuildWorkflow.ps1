@@ -43,15 +43,19 @@ function Invoke-NovaBuildWorkflow {
         }
 
         if ($continuousIntegrationRequested) {
+            Write-NovaBuildWorkflowResult -ProjectInfo $projectInfo
+
             Invoke-NovaBuildWorkflowStep -Activity $progressActivity -Status 'Refreshing the current session with the built module' -PercentComplete 98 -Action {
                 $null = Import-NovaBuiltModuleForCi -ProjectInfo $projectInfo
             }
+
+            return
         }
     } finally {
         Write-Progress -Activity $progressActivity -Completed
     }
 
-    Write-NovaBuildWorkflowResult -ProjectInfo $projectInfo -ContinuousIntegrationRequested:$continuousIntegrationRequested
+    Write-NovaBuildWorkflowResult -ProjectInfo $projectInfo
 }
 
 function Invoke-NovaBuildWorkflowStep {
@@ -70,18 +74,14 @@ function Invoke-NovaBuildWorkflowStep {
 function Write-NovaBuildWorkflowResult {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
-        [switch]$ContinuousIntegrationRequested
+        [Parameter(Mandatory)][pscustomobject]$ProjectInfo
     )
 
     Write-Message "Built Nova module: $( $ProjectInfo.ProjectName )" -color Green
     Write-Message "Output module: $( $ProjectInfo.OutputModuleDir )"
-
-    if ($ContinuousIntegrationRequested) {
-        Write-Message 'The freshly built dist module is loaded for later commands in this session.'
-    }
-
-    Write-Message 'Next step: Test-NovaBuild'
+    Write-Message 'Next steps:'
+    Write-Message 'Invoke-NovaTest'
+    Write-Message 'Test-NovaBuild'
 }
 
 function Invoke-NovaBuildDuplicateValidation {

@@ -40,7 +40,7 @@ Stable updates do not require prerelease confirmation.
 
 When a newer version is available, `Update-NovaModuleTool` shows progress while it installs the update and reads the release-notes link from the updated module. Every command path ends with a visible summary: up-to-date, preview, cancelled, or updated.
 
-After a successful update, `Update-NovaModuleTool` prints the release notes link from the installed module manifest and suggests `Get-NovaProjectInfo -Installed` as the next verification step.
+After a successful update, `Update-NovaModuleTool` prints the release notes link from the installed module manifest and suggests `Get-NovaProjectInfo -InstalledNovaVersion` as the next verification step.
 
 ## EXAMPLES
 

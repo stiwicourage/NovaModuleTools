@@ -27,8 +27,8 @@ Canonical rule source for cross-cutting {{ProjectName}} conventions that apply t
 
 Use the smallest validation set that proves the change, then run the repository quality loop before finishing code work:
 
-- local quality loop: use the repository quality wrapper when one exists; otherwise run ScriptAnalyzer, build, and `Test-NovaBuild` in the documented project order
-- test validation: `Test-NovaBuild`
+- local quality loop: use the repository quality wrapper when one exists; otherwise run ScriptAnalyzer, build, `Invoke-NovaTest`, and `Test-NovaBuild` in the documented project order
+- test validation: `Invoke-NovaTest` for unit-test validation, then `Test-NovaBuild` for build-validation integration coverage
 - analyzer only: `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
 - CI-parity coverage flow: use the repository-specific CI helper when one exists
 

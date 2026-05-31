@@ -20,8 +20,10 @@ Follow this workflow when working with Copilot in this repository.
 
 - Use Nova commands and `project.json` for build, test, package, and release behavior.
 - Treat `project.json` `Manifest.PowerShellHostVersion` as the compatibility target for PowerShell code, tests, and examples. If it is `5.1`, do not introduce PowerShell 7.x-only features.
-- Keep local quality checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild` when your project defines a combined wrapper.
-- Use `Test-NovaBuild` as the project test entrypoint. Do not validate with direct `Invoke-Pester`, because it can bypass Nova's build/import/StrictMode flow and disagree with later user-visible test runs.
+- Keep local quality checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Invoke-NovaTest`, then `Test-NovaBuild` when your project defines both test flows.
+- Use `Invoke-NovaTest` for unit validation and `Test-NovaBuild` for build-validation integration runs. Do not validate with direct `Invoke-Pester`, because it can bypass Nova's build/import/StrictMode flow and disagree with later user-visible test runs.
+- Keep public command unit coverage in `tests/public/<Command>.Tests.ps1` and keep per-command integration ownership in `tests/public/<Command>.Integration.Tests.ps1` when built-module behavior itself needs validation.
+- For destructive or environment-coupled public commands, prefer safe `-WhatIf` integration coverage when that still proves `ShouldProcess` wiring and command behavior.
 - If the repository quality loop or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before review or handoff.
 - Follow `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth. Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and the repository quality loop, when present, and use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repo-approved settings.
 - Keep one externally called function per file and match the file name to that function. Public files own one command each; private files may keep extra related functions only as same-file top-level support helpers, and PowerShell functions must not declare nested functions inside their bodies.
@@ -33,6 +35,7 @@ Follow this workflow when working with Copilot in this repository.
 - Do not hand-create module `.psm1` or module `.psd1` files in source; Nova generates them under `dist/{{ProjectName}}/`.
 - Add PlatyPS-compatible help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change.
 - Keep tests mirrored to source files: every new or changed `src/**/*.ps1` file should have one focused `.Tests.ps1` file, for example `src/private/foo/Get-Thing.ps1` -> `tests/private/foo/Get-Thing.Tests.ps1`.
+- For public commands, the mirrored unit-test owner is `tests/public/<Command>.Tests.ps1`; add `tests/public/<Command>.Integration.Tests.ps1` when the built public command behavior itself needs integration coverage.
 - Put shared test setup in `tests/TestHelpers/` or a test-support file instead of grouping unrelated source coverage into broad catch-all tests.
 
 ## Start here

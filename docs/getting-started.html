@@ -210,8 +210,9 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                     best-effort source/helper-script maintainability guidance plus separate test-design guidance
                     delivered through <strong>Agentic Copilot</strong> guidance files, explicit PSScriptAnalyzer workflow
                     guidance for <code>./scripts/build/Invoke-ScriptAnalyzerCI.ps1</code>, <code>./run.ps1</code>, and
-                    focused <code>Invoke-ScriptAnalyzer</code> usage, Test-NovaBuild-only project test guidance that
-                    forbids direct <code>Invoke-Pester</code>, explicit valid-PlatyPS help guidance for
+                    focused <code>Invoke-ScriptAnalyzer</code> usage, separate <code>Invoke-NovaTest</code> unit-test
+                    and <code>Test-NovaBuild</code> build-validation guidance that forbids direct
+                    <code>Invoke-Pester</code>, explicit valid-PlatyPS help guidance for
                     <code>docs/&lt;ProjectName&gt;/en-US/*.md</code> using
                     <code>New-MarkdownCommandHelp</code>, <code>Update-MarkdownCommandHelp</code>, and
                     <code>Test-MarkdownCommandHelp</code>, with a matching help file required for every new public
@@ -257,6 +258,7 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                     <div class="surface-example__surface" data-command-surface="powershell">
                         <pre><code>PS&gt; Set-Location ~/Work/&lt;YourProjectName&gt;
 PS&gt; Invoke-NovaBuild
+PS&gt; Invoke-NovaTest
 PS&gt; Test-NovaBuild</code></pre>
                     </div>
                     <div class="surface-example__surface" data-command-surface="command-line" hidden>
@@ -268,6 +270,7 @@ PS&gt; Test-NovaBuild</code></pre>
                 <p><strong>Expected result:</strong></p>
                 <ul class="plain-list">
                     <li>the built module is written to <code>dist/&lt;ProjectName&gt;/</code></li>
+                    <li>unit-test and build-validation workflows both complete successfully</li>
                     <li>the test run writes results to <code>artifacts/TestResults.xml</code></li>
                 </ul>
                 <p>The scaffold keeps code coverage opt-in. When you later set

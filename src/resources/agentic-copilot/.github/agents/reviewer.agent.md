@@ -27,7 +27,9 @@ Review changes for correctness, maintainability, test coverage, workflow safety,
 - Review changed `src/**/*.ps1` against `.github/instructions/code-quality-matrix.instructions.md` and `tests/**/*.ps1` against `.github/instructions/testing-policy.instructions.md`; flag new or heavily changed code that ignores those maintainability rules without a clear, explicit reason.
 - Flag public files that do not keep exactly one top-level function, and flag private files that group multiple externally called functions instead of limiting extra functions to related same-file top-level support helpers. Also flag file/function name mismatches for public commands or externally called private helpers, and flag nested function declarations inside PowerShell functions.
 - Flag broad catch-all test files when focused source-mirrored tests would make ownership clearer.
-- Flag Nova-managed validation that bypasses `Test-NovaBuild` with direct `Invoke-Pester`.
+- Flag public-command changes that skip `tests/public/<Command>.Tests.ps1` or the owning `tests/public/<Command>.Integration.Tests.ps1` without a clear cross-cutting justification.
+- Flag destructive or environment-coupled public-command integrations that should have used safe `-WhatIf` coverage but did not.
+- Flag Nova-managed validation that bypasses `Invoke-NovaTest` or `Test-NovaBuild` with direct `Invoke-Pester`.
 - Flag any PSScriptAnalyzer rule excludes or suppressions; the code should be fixed instead.
 - Flag unresolved ScriptAnalyzer findings from the repository quality loop or `Invoke-ScriptAnalyzerCI.ps1`; they should be fixed instead of deferred.
 - Flag every changed or generated text file if they do not exactly have one trailing newline with no extra blank lines at the bottom.

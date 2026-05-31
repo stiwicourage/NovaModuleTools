@@ -1,0 +1,66 @@
+BeforeAll {
+    $projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+    . (Join-Path $projectRoot 'src/public/InvokeNovaTest.ps1')
+
+    function Get-NovaDynamicOverrideWarningParameterDictionary {
+        $dictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+        $attributeCollection = [System.Collections.ObjectModel.Collection[System.Attribute]]::new()
+        $attributeCollection.Add([System.Management.Automation.ParameterAttribute]::new())
+        $runtimeParameter = [System.Management.Automation.RuntimeDefinedParameter]::new('OverrideWarning', [switch], $attributeCollection)
+        $dictionary.Add('OverrideWarning', $runtimeParameter)
+        return $dictionary
+    }
+
+    function Get-NovaTestWorkflowContext {
+        param($TestOption, $BoundParameters)
+
+        $script:testOption = $TestOption
+        $script:boundParameters = $BoundParameters
+        return [pscustomobject]@{Target = '/proj'; Operation = 'Test'}
+    }
+
+    function Invoke-NovaTestWorkflow {
+        param($WorkflowContext, [switch]$ShouldRun)
+
+        $script:shouldRun = [bool]$ShouldRun
+    }
+}
+
+Describe 'Invoke-NovaTest' {
+    BeforeEach {
+        $script:testOption = $null
+        $script:boundParameters = $null
+        $script:shouldRun = $null
+    }
+
+    It 'forwards unit-test options to the workflow context' {
+        $override = @{
+            Run = @{
+                Container = @(
+                    [pscustomobject]@{
+                        Type = 'File'
+                        Item = '/proj/tests/Example.Tests.ps1'
+                        Data = @{ Credential = 'placeholder' }
+                    }
+                )
+            }
+        }
+
+        Invoke-NovaTest -OverrideWarning -TagFilter 'fast' -ExcludeTagFilter 'integration' -OutputVerbosity 'Detailed' -PesterConfigurationOverride $override
+
+        $script:testOption.TestMode | Should -Be 'Unit'
+        $script:testOption.TagFilter | Should -Be @('fast')
+        $script:testOption.ExcludeTagFilter | Should -Be @('integration')
+        $script:testOption.OutputVerbosity | Should -Be 'Detailed'
+        $script:testOption.PesterConfigurationOverride | Should -Be $override
+        $script:boundParameters.OverrideWarning | Should -BeTrue
+        $script:shouldRun | Should -BeTrue
+    }
+
+    It 'invokes the workflow with ShouldRun=$false when -WhatIf is set' {
+        Invoke-NovaTest -WhatIf | Out-Null
+
+        $script:boundParameters.WhatIf | Should -BeTrue
+        $script:shouldRun | Should -BeFalse
+    }
+}

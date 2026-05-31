@@ -33,7 +33,7 @@ Use this skill when producing Markdown files in the repository or Markdown outpu
 ## Copy-safe fence rules
 
 - When the entire response must be wrapped, start with a line containing exactly `~~~` and end with a line containing exactly `~~~`.
-- Do not place prose before or after that outer wrapper.
+- **Any text outside the `~~~` block is a rule violation.** This includes greetings, preambles, "here is the summary" lead-ins, observations appended after the block, and any other prose. The response must be the `~~~` block and nothing else.
 - Inside the wrapped block, use normal Markdown.
 - For inner code examples, use triple backticks and include a language when helpful.
 - Never use triple backticks as the outer wrapper when the content itself may already contain fenced code blocks.

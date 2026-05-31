@@ -141,8 +141,9 @@ PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
                     guidance, a best-effort source/helper-script maintainability guidance plus separate test-design
                     guidance delivered through <strong>Agentic Copilot</strong> guidance files, explicit
                     PSScriptAnalyzer workflow guidance for <code>./scripts/build/Invoke-ScriptAnalyzerCI.ps1</code>,
-                    <code>./run.ps1</code>, and focused <code>Invoke-ScriptAnalyzer</code> usage, Test-NovaBuild-only
-                    project test guidance that forbids direct <code>Invoke-Pester</code>, explicit valid-PlatyPS help
+                    <code>./run.ps1</code>, and focused <code>Invoke-ScriptAnalyzer</code> usage, separate
+                    <code>Invoke-NovaTest</code> unit-test and <code>Test-NovaBuild</code> build-validation guidance
+                    that forbids direct <code>Invoke-Pester</code>, explicit valid-PlatyPS help
                     guidance for <code>docs/&lt;ProjectName&gt;/en-US/*.md</code> using
                     <code>New-MarkdownCommandHelp</code>, <code>Update-MarkdownCommandHelp</code>, and
                     <code>Test-MarkdownCommandHelp</code>, with a matching help file required for every new public
@@ -241,11 +242,14 @@ PS&gt; Invoke-NovaBuild -ContinuousIntegration</code></pre>
                         </p>
                     </div>
                     <div class="surface-example__surface" data-command-surface="powershell">
-                        <pre><code>PS&gt; Test-NovaBuild
-PS&gt; Test-NovaBuild -Build
-PS&gt; Test-NovaBuild -TagFilter unit,fast
+                        <pre><code>PS&gt; Invoke-NovaTest
+PS&gt; Test-NovaBuild
+PS&gt; Invoke-NovaTest -TagFilter unit,fast
 PS&gt; Test-NovaBuild -ExcludeTagFilter slow
-PS&gt; Test-NovaBuild -OutputVerbosity Detailed -OutputRenderMode Ansi</code></pre>
+                        PS&gt; Invoke-NovaTest -OutputVerbosity Detailed -OutputRenderMode Ansi
+                        PS&gt; $credential = Get-Credential
+                        PS&gt; $container = New-PesterContainer -Path 'tests/public/PublishNovaModule.Tests.ps1' -Data @{ Credential = $credential }
+                        PS&gt; Invoke-NovaTest -PesterConfigurationOverride @{ Run = @{ Container = @($container) } }</code></pre>
                     </div>
                     <div class="surface-example__surface" data-command-surface="command-line" hidden>
                         <pre><code>% nova test
@@ -253,12 +257,13 @@ PS&gt; Test-NovaBuild -OutputVerbosity Detailed -OutputRenderMode Ansi</code></p
 % nova test --what-if</code></pre>
                     </div>
                 </div>
-                <p><code>Test-NovaBuild</code> reads the Pester configuration from <code>project.json</code>, resolves
-                    the test path, and writes results to <code>artifacts/TestResults.xml</code>.</p>
+                <p><code>Invoke-NovaTest</code> reads the Pester configuration from <code>project.json</code>, runs the
+                    unit-test flow, and writes results to <code>artifacts/UnitTestResults.xml</code>. <code>Test-NovaBuild</code>
+                    runs the build-validation integration flow and writes results to <code>artifacts/TestResults.xml</code>.</p>
                 <p>Starter projects already include the matching <code>Pester.CodeCoverage</code> block in
                     <code>project.json</code>, but keep it disabled until you opt in. When you set
-                    <code>Pester.CodeCoverage.Enabled</code> to <code>true</code>, Nova also writes JaCoCo coverage to
-                    <code>artifacts/coverage.xml</code> and stops if the measured coverage percentage is lower than the
+                    <code>Pester.CodeCoverage.Enabled</code> to <code>true</code>, <code>Invoke-NovaTest</code> also
+                    writes JaCoCo coverage to <code>artifacts/coverage.xml</code> and stops if the measured coverage percentage is lower than the
                     configured <code>CoveragePercentTarget</code>.</p>
                 <p>Use <code>-Build</code>, <code>--build</code>, or <code>-b</code> when you want Nova to rebuild the
                     project before the test workflow starts.</p>
@@ -272,6 +277,11 @@ PS&gt; Test-NovaBuild -OutputVerbosity Detailed -OutputRenderMode Ansi</code></p
                         <code>-OutputRenderMode</code> are PowerShell cmdlet parameters, so switch to the PowerShell
                         view when you need those controls.</p>
                 </div>
+                <p data-command-visibility="powershell"><code>Invoke-NovaTest</code> also supports a guarded
+                    <code>-PesterConfigurationOverride</code> hook for runtime-only unit-test data. In v1 Nova accepts
+                    only <code>Run.Container</code>, so you can inject values such as <code>PSCredential</code> with
+                    file-backed <code>New-PesterContainer -Path</code> objects while Nova still owns discovery,
+                    coverage, result files, and the rest of the test workflow.</p>
                 <p data-command-visibility="powershell">Use <code>-WhatIf</code> if you want to preview the test run and
                     output path without creating the
                     results directory or invoking Pester.</p>
