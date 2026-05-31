@@ -23,6 +23,7 @@ It is meant to help a new user understand the smallest useful setup that can:
 - `src/private/Get-ExampleConfiguration.ps1` – a private helper used by the public function
 - `src/resources/greeting-config.json` – a resource file bundled into the built module
 - `tests/public/Get-ExampleGreeting.Tests.ps1` – source-mirrored tests for the public function
+- `tests/public/Get-ExampleGreeting.Integration.Tests.ps1` – build-validation coverage that imports the built module and exercises the public command
 - `tests/private/Get-ExampleConfiguration.Tests.ps1` – source-mirrored tests for the private helper and resource resolution
 
 ## Quick start
@@ -36,6 +37,7 @@ If `./dist/NovaModuleTools` is not available yet, build `NovaModuleTools` from t
 ```text
 PS> Import-Module ./dist/NovaModuleTools -Force
 PS> Set-Location ./src/resources/example
+PS> Invoke-NovaTest
 PS> Test-NovaBuild
 PS> Invoke-NovaBuild
 PS> New-NovaModulePackage
@@ -52,6 +54,7 @@ PS> Install-Module NovaModuleTools
 PS> Import-Module NovaModuleTools
 PS> $module = Get-Module NovaModuleTools -ListAvailable | Select-Object -First 1
 PS> Set-Location (Join-Path $module.ModuleBase 'resources/example')
+PS> Invoke-NovaTest
 PS> Test-NovaBuild
 PS> Invoke-NovaBuild
 PS> New-NovaModulePackage
@@ -62,10 +65,16 @@ PS> Get-ExampleGreeting
 
 ## Expected result
 
-After `Test-NovaBuild`, the example tests run against `src/**/*.ps1` and JaCoCo coverage is written to:
+After `Invoke-NovaTest`, the example source-mirrored tests run against `src/**/*.ps1` and JaCoCo coverage is written to:
 
 ```text
 src/resources/example/artifacts/coverage.xml
+```
+
+After `Test-NovaBuild`, the example build-validation test imports the built module from:
+
+```text
+src/resources/example/dist/NovaExampleModule
 ```
 
 After `Invoke-NovaBuild`, the built module is written to:
@@ -120,6 +129,7 @@ This example is intentionally small, but it demonstrates the most important Nova
 - how public and private functions are combined into one module
 - how resource files are copied and used at runtime
 - how tests can run against source files before a build while still producing coverage
+- how build-validation tests can import the built module and check the public command surface
 - where the current package, packaging, and raw-upload configuration keys live in `project.json`
 
 If you want a new project scaffold, use `PS> Initialize-NovaModule` (`% nova init`). If you want a concrete project you can inspect, run, or copy through `% nova init --example` / `% nova init -e`, use this example folder.

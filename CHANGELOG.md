@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- `Test-NovaBuild` and `% nova test -b` now stop with a Nova-native error when a project has no `*.Integration.Tests.ps1` files, instead of leaking the raw async Pester exception.
+    - The new guidance explains where build-validation tests belong and reminds users to keep unit tests in `Invoke-NovaTest`.
+- The packaged example scaffold now includes a minimal `*.Integration.Tests.ps1` file that imports the built module and validates `Get-ExampleGreeting`, so `nova init -e` projects can pass `Test-NovaBuild`.
+
 ### Security
 
 ## [3.2.0] - 2026-05-31
@@ -510,4 +514,3 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-

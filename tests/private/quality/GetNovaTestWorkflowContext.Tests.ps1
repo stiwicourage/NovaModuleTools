@@ -66,6 +66,19 @@ Describe 'Get-NovaTestWorkflowContext' {
         $result.Operation | Should -Be 'Build project, run build-validation integration tests, and write test results'
     }
 
+    It 'stops with an actionable error when build-validation tests are missing' {
+        $pesterConfig = & $script:getPesterConfig
+        $projectInfo = & $script:getProjectInfo -PesterSettings ([ordered]@{})
+
+        Mock Get-NovaProjectInfo {$projectInfo}
+        Mock New-PesterConfiguration {$pesterConfig}
+        Mock Get-NovaPesterRunPath {@()}
+
+        {
+            Get-NovaTestWorkflowContext -TestOption @{TestMode = 'BuildValidation'} -BoundParameters @{}
+        } | Should -Throw '*does not contain any build-validation integration tests matching ''*.Integration.Tests.ps1''*Use Invoke-NovaTest for unit tests and Test-NovaBuild for build-validation integration tests.*'
+    }
+
     It 'expands configured coverage paths into concrete project-relative source files' {
         $projectRoot = Join-Path $TestDrive 'coverage-project'
         foreach ($relativePath in @(
@@ -150,6 +163,41 @@ Describe 'Get-NovaTestWorkflowOperation' {
 
     It 'returns the unit-test operation text' {
         Get-NovaTestWorkflowOperation -TestMode 'Unit' | Should -Be 'Run unit tests and write test results'
+    }
+}
+
+Describe 'Assert-NovaDiscoveredTestPath' {
+    It 'returns silently when build-validation tests are present' {
+        {
+            Assert-NovaDiscoveredTestPath -RunPath @('/tmp/project/tests/public/Get-Thing.Integration.Tests.ps1') -ProjectInfo ([pscustomobject]@{
+                    TestsDir = '/tmp/project/tests'
+                }) -WorkflowProfile ([pscustomobject]@{
+                    Mode = 'BuildValidation'
+                    IncludePattern = '*.Integration.Tests.ps1'
+                })
+        } | Should -Not -Throw
+    }
+
+    It 'returns silently for unit-test workflows when no tests are discovered' {
+        {
+            Assert-NovaDiscoveredTestPath -RunPath @() -ProjectInfo ([pscustomobject]@{
+                    TestsDir = '/tmp/project/tests'
+                }) -WorkflowProfile ([pscustomobject]@{
+                    Mode = 'Unit'
+                    IncludePattern = '*.Tests.ps1'
+                })
+        } | Should -Not -Throw
+    }
+
+    It 'stops with the Nova build-validation guidance when no integration tests are discovered' {
+        {
+            Assert-NovaDiscoveredTestPath -RunPath @() -ProjectInfo ([pscustomobject]@{
+                    TestsDir = '/tmp/project/tests'
+                }) -WorkflowProfile ([pscustomobject]@{
+                    Mode = 'BuildValidation'
+                    IncludePattern = '*.Integration.Tests.ps1'
+                })
+        } | Should -Throw '*tests/public/Get-CommandName.Integration.Tests.ps1*'
     }
 }
 
