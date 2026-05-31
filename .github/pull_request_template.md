@@ -32,6 +32,7 @@
 ## Validation
 
 - [ ] `Invoke-NovaBuild`
+- [ ] `Invoke-NovaTest`
 - [ ] `Test-NovaBuild`
 - [ ] `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
 - [ ] `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`

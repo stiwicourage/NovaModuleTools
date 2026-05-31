@@ -182,13 +182,15 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.Readme | Should -Match 'New-MarkdownCommandHelp'
     }
 
-    It 'documents Test-NovaBuild-only project test guidance' {
+    It 'documents Nova-managed project test guidance' {
         $content = & $script:getAgenticScaffoldGuidanceContent
 
         $content.RepositoryConventions | Should -Match 'test validation: `Test-NovaBuild`'
         $content.RepositoryConventions | Should -Not -Match 'Invoke-Pester -Path'
 
-        $content.TestingPolicy | Should -Match 'Use `Test-NovaBuild` as the authoritative test entrypoint'
+        $content.TestingPolicy | Should -Match 'Use `Invoke-NovaTest` for unit-test validation and `Test-NovaBuild` for build-validation integration coverage'
+        $content.TestingPolicy | Should -Match 'Integration tests may import `dist/`'
+        $content.TestingPolicy | Should -Match '\*\.Integration\.Tests\.ps1'
         $content.TestingPolicy | Should -Match 'Do not validate with direct `Invoke-Pester`'
         $content.TestingPolicy | Should -Match 'normal path and the meaningful unhappy, invalid, or boundary cases'
         $content.TestingPolicy | Should -Match 'mocks or stubs'
@@ -209,8 +211,8 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.ImplementPrompt | Should -Match 'Validate Nova-managed project tests through `Test-NovaBuild`'
         $content.ReviewPrompt | Should -Match 'bypasses `Test-NovaBuild` with direct `Invoke-Pester`'
 
-        $content.Contributing | Should -Match 'use `Test-NovaBuild` as the project test entrypoint'
-        $content.Readme | Should -Match 'Use `Test-NovaBuild` as the project test entrypoint'
+        $content.Contributing | Should -Match 'Use `Invoke-NovaTest` for unit validation and `Test-NovaBuild` for build-validation integration runs'
+        $content.Readme | Should -Match 'Use `Invoke-NovaTest` for unit validation and `Test-NovaBuild` for build-validation integration runs'
     }
 
     It 'documents proper PSScriptAnalyzer usage guidance' {
@@ -268,7 +270,7 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.Contributing | Should -Match 'TextFileFormatting\.Tests\.ps1'
         $content.Contributing | Should -Match 'make every changed or generated text file end immediately after exactly one newline terminator with no blank spacer line at the bottom'
 
-        $content.Readme | Should -Match 'ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`'
+        $content.Readme | Should -Match 'ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Invoke-NovaTest`, then `Test-NovaBuild`'
         $content.Readme | Should -Match 'If the repository quality loop or `Invoke-ScriptAnalyzerCI\.ps1` reports ScriptAnalyzer findings, fix them before review or handoff'
         $content.Readme | Should -Match 'Keep one externally called function per file and match the file name to that function'
         $content.Readme | Should -Match 'must not declare nested functions inside their bodies'

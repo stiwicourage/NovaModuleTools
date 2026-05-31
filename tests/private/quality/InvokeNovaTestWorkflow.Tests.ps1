@@ -17,7 +17,8 @@ Describe 'Invoke-NovaTestWorkflow' {
         $workflowContext = [pscustomobject]@{
             ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'; Pester = [ordered]@{}}
             TestResultDirectory = '/tmp/nova-project/artifacts'
-            TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
+            CommandName = 'Invoke-NovaTest'
+            TestResultPath = '/tmp/nova-project/artifacts/UnitTestResults.xml'
             PesterConfig = [pscustomobject]@{TestResult = [pscustomobject]@{OutputPath = $null}}
             TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
             TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
@@ -58,14 +59,14 @@ Describe 'Invoke-NovaTestWorkflow' {
         @{
             Name = 'coverage below target'
             PesterResult = [pscustomobject]@{Result = 'Passed'; CodeCoverage = [pscustomobject]@{CoveragePercent = 66.67}}
-            ExpectedMessage = 'Code coverage 66.67% did not meet the configured target 90%. Review the failing tests or coverage settings, then rerun Test-NovaBuild.'
+            ExpectedMessage = 'Code coverage 66.67% did not meet the configured target 90%. Review the failing tests or coverage settings, then rerun Invoke-NovaTest.'
             ExpectedErrorId = 'Nova.Workflow.CodeCoverageTargetNotMet'
             ExpectedCategory = [System.Management.Automation.ErrorCategory]::InvalidOperation
         }
         @{
             Name = 'missing measured coverage'
             PesterResult = [pscustomobject]@{Result = 'Passed'}
-            ExpectedMessage = 'Code coverage target 90% is configured, but the Pester result did not include a coverage percentage. Review the coverage settings in project.json and the test result file at /tmp/nova-project/artifacts/TestResults.xml.'
+            ExpectedMessage = 'Code coverage target 90% is configured, but the Pester result did not include a coverage percentage. Review the coverage settings in project.json and the test result file at /tmp/nova-project/artifacts/UnitTestResults.xml.'
             ExpectedErrorId = 'Nova.Workflow.CodeCoveragePercentMissing'
             ExpectedCategory = [System.Management.Automation.ErrorCategory]::InvalidData
         }
@@ -76,7 +77,8 @@ Describe 'Invoke-NovaTestWorkflow' {
                 Pester = [ordered]@{CodeCoverage = [ordered]@{Enabled = $true; CoveragePercentTarget = 90}}
             }
             TestResultDirectory = '/tmp/nova-project/artifacts'
-            TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
+            CommandName = 'Invoke-NovaTest'
+            TestResultPath = '/tmp/nova-project/artifacts/UnitTestResults.xml'
             PesterConfig = [pscustomobject]@{TestResult = [pscustomobject]@{OutputPath = $null}}
             TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
             TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
@@ -92,14 +94,15 @@ Describe 'Invoke-NovaTestWorkflow' {
         $thrown.Exception.Message | Should -Be $ExpectedMessage
         $thrown.FullyQualifiedErrorId | Should -Be $ExpectedErrorId
         $thrown.CategoryInfo.Category | Should -Be $ExpectedCategory
-        $thrown.TargetObject | Should -Be '/tmp/nova-project/artifacts/TestResults.xml'
+        $thrown.TargetObject | Should -Be '/tmp/nova-project/artifacts/UnitTestResults.xml'
     }
 
     It 'does not enforce a coverage threshold when project.json does not configure one' {
         $workflowContext = [pscustomobject]@{
             ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'; Pester = [ordered]@{}}
             TestResultDirectory = '/tmp/nova-project/artifacts'
-            TestResultPath = '/tmp/nova-project/artifacts/TestResults.xml'
+            CommandName = 'Invoke-NovaTest'
+            TestResultPath = '/tmp/nova-project/artifacts/UnitTestResults.xml'
             PesterConfig = [pscustomobject]@{TestResult = [pscustomobject]@{OutputPath = $null}}
             TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
             TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
@@ -111,7 +114,7 @@ Describe 'Invoke-NovaTestWorkflow' {
         }
 
         {Invoke-NovaTestWorkflow -WorkflowContext $workflowContext} | Should -Not -Throw
-        $workflowContext.PesterConfig.TestResult.OutputPath | Should -Be '/tmp/nova-project/artifacts/TestResults.xml'
+        $workflowContext.PesterConfig.TestResult.OutputPath | Should -Be '/tmp/nova-project/artifacts/UnitTestResults.xml'
         Assert-MockCalled Write-Message -Times 5
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Measured code coverage: 10%'
@@ -195,7 +198,10 @@ Describe 'Invoke-NovaTestWorkflow' {
             ExpectedMessageCount = 0
         }
     ) {
-        $workflowContext = New-NovaInvokeNovaTestWorkflowContext -BuildRequested $BuildRequested -WorkflowParams $WorkflowParams
+        $workflowContext = New-NovaInvokeNovaTestWorkflowContext -Option @{
+            BuildRequested = $BuildRequested
+            WorkflowParams = $WorkflowParams
+        }
         Mock Invoke-NovaBuild {}
         Mock Test-Path {$true}
         Mock Invoke-NovaPesterWithSuppressedProgress {$PesterResult}
@@ -216,7 +222,7 @@ Describe 'Invoke-NovaTestWorkflow' {
             $thrown | Should -Not -BeNullOrEmpty
             $thrown.FullyQualifiedErrorId | Should -Be $ExpectedErrorId
             if ($ExpectedErrorId -eq 'Nova.Workflow.TestRunFailed') {
-                $thrown.Exception.Message | Should -Be 'Pester reported one or more failing tests. Review the output above and the test result file at /tmp/nova-project/artifacts/TestResults.xml, then rerun Test-NovaBuild.'
+                $thrown.Exception.Message | Should -Be 'Pester reported one or more failing tests. Review the output above and the test result file at /tmp/nova-project/artifacts/UnitTestResults.xml, then rerun Invoke-NovaTest.'
             }
         }
         else {
@@ -233,7 +239,8 @@ Describe 'Invoke-NovaTestWorkflow' {
         $workflowContext = [pscustomobject]@{
             ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'; Pester = [ordered]@{}}
             TestResultDirectory = $tempDir
-            TestResultPath = (Join-Path $tempDir 'TestResults.xml')
+            CommandName = 'Invoke-NovaTest'
+            TestResultPath = (Join-Path $tempDir 'UnitTestResults.xml')
             PesterConfig = [pscustomobject]@{TestResult = [pscustomobject]@{OutputPath = $null}}
             TestResultArtifactWriter = [pscustomobject]@{ScriptBlock = {}}
             TestResultReportWriter = [pscustomobject]@{ScriptBlock = {}}
@@ -248,10 +255,14 @@ Describe 'Invoke-NovaTestWorkflow' {
     }
 
     It 'writes a test plan summary in WhatIf mode after previewing the nested build step' {
-        $workflowContext = New-NovaInvokeNovaTestWorkflowContext -BuildRequested $true -WorkflowParams @{WhatIf = $true} -PesterSettings @{
-            CodeCoverage = [ordered]@{
-                Enabled = $true
-                CoveragePercentTarget = 99
+        $workflowContext = New-NovaInvokeNovaTestWorkflowContext -Option @{
+            BuildRequested = $true
+            WorkflowParams = @{WhatIf = $true}
+            PesterSettings = @{
+                CodeCoverage = [ordered]@{
+                    Enabled = $true
+                    CoveragePercentTarget = 99
+                }
             }
         }
         Mock Invoke-NovaBuild {}
@@ -274,7 +285,7 @@ Describe 'Invoke-NovaTestWorkflow' {
             $Text -eq 'Configured coverage target: 99%'
         }
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Run Test-NovaBuild without -WhatIf when you are ready to execute the test workflow.'
+            $Text -eq 'Run Invoke-NovaTest without -WhatIf when you are ready to execute the test workflow.'
         }
     }
 

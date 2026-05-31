@@ -1,4 +1,4 @@
-function Test-NovaBuild {
+function Invoke-NovaTest {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
         [string[]]$TagFilter,
@@ -9,13 +9,9 @@ function Test-NovaBuild {
         [string]$OutputRenderMode
     )
 
-    dynamicparam {
-        return Get-NovaDynamicOverrideWarningParameterDictionary
-    }
-
     end {
         $workflowContext = Get-NovaTestWorkflowContext -TestOption @{
-            TestMode = 'BuildValidation'
+            TestMode = 'Unit'
             TagFilter = $TagFilter
             ExcludeTagFilter = $ExcludeTagFilter
             OutputVerbosity = $OutputVerbosity

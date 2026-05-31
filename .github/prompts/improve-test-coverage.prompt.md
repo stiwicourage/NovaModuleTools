@@ -21,5 +21,5 @@ Improve changed-code coverage in NovaModuleTools without lowering maintainabilit
 
 - Many tests expect a built `dist/NovaModuleTools` module.
 - The CI coverage flow writes `artifacts/pester-coverage.cobertura.xml`.
-- Use `Test-NovaBuild` as the project test entrypoint; direct `Invoke-Pester` can miss Nova-specific strict-mode behavior.
+- Use `Invoke-NovaTest` for unit coverage validation and `Test-NovaBuild` for build-validation integration coverage; direct `Invoke-Pester` can miss Nova-specific strict-mode behavior.
 - Do not "fix" coverage by weakening assertions or suppressing CodeScene warnings.

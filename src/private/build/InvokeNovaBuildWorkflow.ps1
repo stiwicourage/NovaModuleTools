@@ -79,7 +79,9 @@ function Write-NovaBuildWorkflowResult {
 
     Write-Message "Built Nova module: $( $ProjectInfo.ProjectName )" -color Green
     Write-Message "Output module: $( $ProjectInfo.OutputModuleDir )"
-    Write-Message 'Next step: Test-NovaBuild'
+    Write-Message 'Next steps:'
+    Write-Message 'Invoke-NovaTest'
+    Write-Message 'Test-NovaBuild'
 }
 
 function Invoke-NovaBuildDuplicateValidation {

@@ -66,6 +66,7 @@ function Invoke-NovaReleaseWorkflow {
 
         if (-not $skipTestsRequested) {
             Invoke-NovaReleaseWorkflowStep -Activity $progressActivity -Status 'Running pre-release tests' -PercentComplete 35 -Action {
+                Invoke-NovaTest @testWorkflowParams
                 Test-NovaBuild @testWorkflowParams
             }
         }

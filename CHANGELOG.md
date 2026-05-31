@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - `nova init` also writes `.vscode/settings.json` mapping `project.json` to the hosted schema URL so VS Code trusts the remote schema automatically without prompting.
     - VS Code picks up the schema automatically to provide field validation, autocomplete, and hover descriptions while editing `project.json`.
     - The two partial internal schemas (`Schema-Build.json`, `Schema-Pester.json`) are removed; `Schema-Project.json` is the new single source.
+- Added `Invoke-NovaTest` as the dedicated NovaModuleTools unit-test command.
+    - `% nova test` now routes to `Invoke-NovaTest`.
+    - `Invoke-NovaTest` writes unit-test NUnit output to `artifacts/UnitTestResults.xml` and remains the code-coverage entry point.
 
 ### Changed
 
@@ -20,6 +23,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - `-Installed` now returns the installed version of the current project/module from the local module path.
     - `-InstalledNovaVersion` now returns the installed `NovaModuleTools` module name and version from PowerShell.
 - `Update-NovaModuleTool` now suggests `Get-NovaProjectInfo -InstalledNovaVersion` after a successful self-update so the PowerShell verification step checks the installed NovaModuleTools version directly.
+- `Test-NovaBuild` now focuses on build-validation integration tests instead of acting as the combined unit-and-build test entry point.
+    - `% nova test --build` and `% nova test -b` now route to `Test-NovaBuild`.
+    - `Test-NovaBuild` now writes build-validation NUnit output to `artifacts/TestResults.xml` without enforcing source coverage.
+- CI, release, packaging, and repository quality workflows now run `Invoke-NovaTest` before `Test-NovaBuild` when tests are not skipped.
 
 ### Deprecated
 

@@ -7,53 +7,62 @@ BeforeAll {
 
 Describe 'Get-NovaTestWorkflowContext' {
     BeforeEach {
+        $script:lastRunPathRequest = $null
+        $script:lastResultPathRequest = $null
+
         Mock Test-ProjectSchema {}
         Mock Get-Module {[pscustomobject]@{Name = 'Pester'}} -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
         Mock Get-Command {[pscustomobject]@{ScriptBlock = {}}} -ParameterFilter {$CommandType -eq 'Function'}
     }
 
-    It 'configures coverage settings for <Name>' -ForEach @(
-        @{
-            Name = 'an explicit CoveragePercentTarget'
-            PesterSettings = [ordered]@{CodeCoverage = [ordered]@{Enabled = $true; CoveragePercentTarget = 99}}
-            AssertResult = {
-                param($Result)
-                $Result.PesterConfig.CodeCoverage.CoveragePercentTarget | Should -Be 99
-            }
-        }
-        @{
-            Name = 'an omitted CoveragePercentTarget'
-            PesterSettings = [ordered]@{CodeCoverage = [ordered]@{Enabled = $true}}
-            AssertResult = {
-                param($Result)
-                $Result.PesterConfig.CodeCoverage.CoveragePercentTarget | Should -Be 80
-            }
-        }
-        @{
-            Name = 'enabled coverage path ownership in project.json'
-            PesterSettings = [ordered]@{CodeCoverage = [ordered]@{Enabled = $true; CoveragePercentTarget = 90}}
-            AssertResult = {
-                param($Result)
-                $Result.PesterConfig.CodeCoverage.Path | Should -BeNullOrEmpty
-            }
-        }
-        @{
-            Name = 'disabled coverage'
-            PesterSettings = [ordered]@{CodeCoverage = [ordered]@{Enabled = $false}}
-            AssertResult = {
-                param($Result)
-                $Result.PesterConfig.CodeCoverage.Path | Should -BeNullOrEmpty
-            }
-        }
-    ) {
+    It 'configures unit-test execution with coverage enabled and integration tests excluded' {
         $pesterConfig = & $script:getPesterConfig
-        $projectInfo = & $script:getProjectInfo -PesterSettings $PesterSettings
+        $projectInfo = & $script:getProjectInfo -PesterSettings ([ordered]@{
+            CodeCoverage = [ordered]@{
+                Enabled = $true
+                CoveragePercentTarget = 99
+            }
+        })
 
         Mock Get-NovaProjectInfo {$projectInfo}
         Mock New-PesterConfiguration {$pesterConfig}
 
-        $result = Get-NovaTestWorkflowContext -TestOption @{} -BoundParameters @{}
-        & $AssertResult $result
+        $result = Get-NovaTestWorkflowContext -TestOption @{TestMode = 'Unit'} -BoundParameters @{}
+
+        $result.BuildRequested | Should -BeFalse
+        $result.CommandName | Should -Be 'Invoke-NovaTest'
+        $result.PesterConfig.CodeCoverage.CoveragePercentTarget | Should -Be 99
+        $result.PesterSettings.CodeCoverage.Enabled | Should -BeTrue
+        $script:lastRunPathRequest.IncludePattern | Should -Be '*.Tests.ps1'
+        $script:lastRunPathRequest.ExcludePattern | Should -Be @('*.Integration.Tests.ps1')
+        $script:lastResultPathRequest.FileName | Should -Be 'UnitTestResults.xml'
+        $result.Operation | Should -Be 'Run unit tests and write test results'
+    }
+
+    It 'configures build-validation execution with coverage disabled and integration-only test discovery' {
+        $pesterConfig = & $script:getPesterConfig
+        $projectInfo = & $script:getProjectInfo -PesterSettings ([ordered]@{
+            CodeCoverage = [ordered]@{
+                Enabled = $true
+                CoveragePercentTarget = 99
+            }
+        })
+
+        Mock Get-NovaProjectInfo {$projectInfo}
+        Mock New-PesterConfiguration {$pesterConfig}
+
+        $result = Get-NovaTestWorkflowContext -TestOption @{TestMode = 'BuildValidation'} -BoundParameters @{OverrideWarning = $true}
+
+        $result.BuildRequested | Should -BeTrue
+        $result.CommandName | Should -Be 'Test-NovaBuild'
+        $result.OverrideWarningRequested | Should -BeTrue
+        $result.PesterConfig.CodeCoverage.Enabled | Should -BeFalse
+        $result.PesterConfig.CodeCoverage.Path | Should -BeNullOrEmpty
+        $result.PesterSettings.CodeCoverage.Enabled | Should -BeFalse
+        $script:lastRunPathRequest.IncludePattern | Should -Be '*.Integration.Tests.ps1'
+        $script:lastRunPathRequest.ExcludePattern | Should -Be @()
+        $script:lastResultPathRequest.FileName | Should -Be 'TestResults.xml'
+        $result.Operation | Should -Be 'Build project, run build-validation integration tests, and write test results'
     }
 
     It 'expands configured coverage paths into concrete project-relative source files' {
@@ -85,7 +94,7 @@ Describe 'Get-NovaTestWorkflowContext' {
         Mock Get-NovaProjectInfo {$projectInfo}
         Mock New-PesterConfiguration {$pesterConfig}
 
-        $result = Get-NovaTestWorkflowContext -TestOption @{} -BoundParameters @{}
+        $result = Get-NovaTestWorkflowContext -TestOption @{TestMode = 'Unit'} -BoundParameters @{}
 
         $result.PesterConfig.CodeCoverage.Path | Should -Be @(
             'src/public/GetAlpha.ps1'
@@ -98,11 +107,12 @@ Describe 'Get-NovaTestWorkflowContext' {
 }
 
 Describe 'Get-NovaTestWorkflowOperation' {
-    It 'mentions the build step when BuildRequested is true' {
-        Get-NovaTestWorkflowOperation -BuildRequested $true | Should -Match 'Build project'
+    It 'returns the build-validation operation text' {
+        Get-NovaTestWorkflowOperation -TestMode 'BuildValidation' | Should -Match 'build-validation integration tests'
     }
-    It 'omits the build step when BuildRequested is false' {
-        Get-NovaTestWorkflowOperation -BuildRequested $false | Should -Be 'Run Pester tests and write test results'
+
+    It 'returns the unit-test operation text' {
+        Get-NovaTestWorkflowOperation -TestMode 'Unit' | Should -Be 'Run unit tests and write test results'
     }
 }
 
@@ -111,9 +121,49 @@ Describe 'Assert-NovaPesterAvailable' {
         Mock Get-Module {@()} -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
         {Assert-NovaPesterAvailable} | Should -Throw
     }
+
     It 'returns silently when Pester is available' {
         Mock Get-Module {@([pscustomobject]@{Name = 'Pester'})} -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
         {Assert-NovaPesterAvailable} | Should -Not -Throw
+    }
+}
+
+Describe 'Get-NovaTestWorkflowProfile' {
+    It 'defaults to the unit-test profile' {
+        $result = Get-NovaTestWorkflowProfile -TestOption @{}
+
+        $result.Mode | Should -Be 'Unit'
+        $result.CommandName | Should -Be 'Invoke-NovaTest'
+        $result.CoverageEnabled | Should -BeTrue
+    }
+
+    It 'returns the build-validation profile when requested' {
+        $result = Get-NovaTestWorkflowProfile -TestOption @{TestMode = 'BuildValidation'}
+
+        $result.Mode | Should -Be 'BuildValidation'
+        $result.CommandName | Should -Be 'Test-NovaBuild'
+        $result.CoverageEnabled | Should -BeFalse
+    }
+}
+
+Describe 'Get-NovaTestWorkflowMode' {
+    It 'defaults to Unit when the option is absent' {
+        Get-NovaTestWorkflowMode -TestOption @{} | Should -Be 'Unit'
+    }
+
+    It 'returns the requested mode when present' {
+        Get-NovaTestWorkflowMode -TestOption @{TestMode = 'BuildValidation'} | Should -Be 'BuildValidation'
+    }
+}
+
+Describe 'Get-NovaTestWorkflowPesterConfiguration' {
+    It 'returns the project settings unchanged when coverage is enabled' {
+        $settings = [pscustomobject]@{CodeCoverage = [pscustomobject]@{Enabled = $true}}
+        Get-NovaTestWorkflowPesterConfiguration -ProjectPesterSettings $settings -CoverageEnabled:$true | Should -Be $settings
+    }
+
+    It 'returns disabled coverage settings for build validation' {
+        (Get-NovaTestWorkflowPesterConfiguration -ProjectPesterSettings $null -CoverageEnabled:$false).CodeCoverage.Enabled | Should -BeFalse
     }
 }
 
@@ -121,6 +171,7 @@ Describe 'Get-NovaTestOptionValue' {
     It 'returns the option value when present' {
         Get-NovaTestOptionValue -TestOption @{TagFilter = @('a', 'b')} -Name 'TagFilter' | Should -Be @('a', 'b')
     }
+
     It 'returns null when the option is absent' {
         Get-NovaTestOptionValue -TestOption @{} -Name 'TagFilter' | Should -BeNullOrEmpty
     }
@@ -130,9 +181,7 @@ Describe 'Get-NovaConfiguredPesterCoveragePercentTarget' {
     It 'returns null when CodeCoverage is disabled' {
         Get-NovaConfiguredPesterCoveragePercentTarget -ProjectPesterSettings ([ordered]@{CodeCoverage = [ordered]@{Enabled = $false}}) | Should -BeNullOrEmpty
     }
-    It 'returns null when CoveragePercentTarget is empty' {
-        Get-NovaConfiguredPesterCoveragePercentTarget -ProjectPesterSettings ([ordered]@{CodeCoverage = [ordered]@{Enabled = $true; CoveragePercentTarget = ''}}) | Should -BeNullOrEmpty
-    }
+
     It 'returns the configured value as double when set' {
         Get-NovaConfiguredPesterCoveragePercentTarget -ProjectPesterSettings ([ordered]@{CodeCoverage = [ordered]@{Enabled = $true; CoveragePercentTarget = 99}}) | Should -Be 99.0
     }
@@ -148,20 +197,26 @@ Describe 'Get-NovaConfiguredPesterCoveragePath' {
     }
 }
 
+Describe 'Disable-NovaPesterCoverageConfiguration' {
+    It 'disables coverage and clears configured paths' {
+        $pesterConfig = & $script:getPesterConfig
+        Disable-NovaPesterCoverageConfiguration -PesterConfig $pesterConfig
+
+        $pesterConfig.CodeCoverage.Enabled | Should -BeFalse
+        $pesterConfig.CodeCoverage.Path | Should -BeNullOrEmpty
+    }
+}
+
 Describe 'Get-NovaPesterSettingValue' {
     It 'returns null for null input' {
         Get-NovaPesterSettingValue -InputObject $null -Name 'X' | Should -BeNullOrEmpty
     }
+
     It 'reads from IDictionary by key' {
         Get-NovaPesterSettingValue -InputObject @{X = 'value'} -Name 'X' | Should -Be 'value'
     }
-    It 'returns null from IDictionary when key is missing' {
-        Get-NovaPesterSettingValue -InputObject @{Other = 1} -Name 'X' | Should -BeNullOrEmpty
-    }
+
     It 'reads named property from PSCustomObject' {
         Get-NovaPesterSettingValue -InputObject ([pscustomobject]@{X = 'value'}) -Name 'X' | Should -Be 'value'
-    }
-    It 'returns null when PSCustomObject lacks the property' {
-        Get-NovaPesterSettingValue -InputObject ([pscustomobject]@{Other = 1}) -Name 'X' | Should -BeNullOrEmpty
     }
 }

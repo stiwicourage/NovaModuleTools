@@ -117,9 +117,12 @@ Describe 'Invoke-NovaAgenticCopilotScaffoldWorkflow' {
             $Status -eq 'Refreshing managed scaffold files' -and $PercentComplete -eq 75
         }
         Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
-        Assert-MockCalled Write-Message -Times 5
+        Assert-MockCalled Write-Message -Times 6
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
             $Message -eq 'Agentic Copilot scaffold applied to Demo' -and $color -eq 'Green'
+        }
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Message -eq 'Invoke-NovaTest'
         }
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
             $Message -eq 'Test-NovaBuild'

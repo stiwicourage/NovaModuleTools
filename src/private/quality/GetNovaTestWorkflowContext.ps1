@@ -1,14 +1,14 @@
 function Get-NovaTestWorkflowOperation {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][bool]$BuildRequested
+        [Parameter(Mandatory)][string]$TestMode
     )
 
-    if ($BuildRequested) {
-        return 'Build project, run Pester tests, and write test results'
+    if ($TestMode -eq 'BuildValidation') {
+        return 'Build project, run build-validation integration tests, and write test results'
     }
 
-    return 'Run Pester tests and write test results'
+    return 'Run unit tests and write test results'
 }
 
 function Assert-NovaPesterAvailable {
@@ -16,7 +16,7 @@ function Assert-NovaPesterAvailable {
     param()
 
     if (-not (Get-Module -Name Pester -ListAvailable)) {
-        Stop-NovaOperation -Message 'The module Pester must be installed for Test-NovaBuild to run. Install Pester 5.7.1 and try again.' -ErrorId 'Nova.Dependency.PesterDependencyMissing' -Category ResourceUnavailable -TargetObject 'Pester'
+        Stop-NovaOperation -Message 'The module Pester must be installed to run Nova tests. Install Pester 5.7.1 and try again.' -ErrorId 'Nova.Dependency.PesterDependencyMissing' -Category ResourceUnavailable -TargetObject 'Pester'
     }
 }
 
@@ -30,10 +30,17 @@ function Get-NovaTestWorkflowContext {
     Test-ProjectSchema | Out-Null
     Assert-NovaPesterAvailable
     $projectInfo = Get-NovaProjectInfo
+    $workflowProfile = Get-NovaTestWorkflowProfile -TestOption $TestOption
     $pesterConfig = New-PesterConfiguration -Hashtable $projectInfo.Pester
-    Initialize-NovaPesterCoverageConfiguration -PesterConfig $pesterConfig -ProjectInfo $projectInfo
+    if ($workflowProfile.CoverageEnabled) {
+        Initialize-NovaPesterCoverageConfiguration -PesterConfig $pesterConfig -ProjectInfo $projectInfo
+    } else {
+        Disable-NovaPesterCoverageConfiguration -PesterConfig $pesterConfig
+    }
 
-    $pesterConfig.Run.Path = Get-NovaPesterRunPath -ProjectInfo $projectInfo
+    $pesterConfig.Run.Path = @(
+        Get-NovaPesterRunPath -ProjectInfo $projectInfo -IncludePattern $workflowProfile.IncludePattern -ExcludePattern $workflowProfile.ExcludePattern
+    )
     $pesterConfig.Run.PassThru = $true
     $pesterConfig.Run.Exit = $true
     $pesterConfig.Run.Throw = $true
@@ -41,13 +48,14 @@ function Get-NovaTestWorkflowContext {
     $pesterConfig.Filter.ExcludeTag = Get-NovaTestOptionValue -TestOption $TestOption -Name ExcludeTagFilter
     Initialize-NovaPesterExecutionConfiguration -PesterConfig $pesterConfig -BoundParameters $BoundParameters -OutputVerbosity (Get-NovaTestOptionValue -TestOption $TestOption -Name OutputVerbosity) -OutputRenderMode (Get-NovaTestOptionValue -TestOption $TestOption -Name OutputRenderMode)
 
-    $testResultPath = Get-NovaPesterTestResultPath -ProjectRoot $projectInfo.ProjectRoot
-    $buildRequested = [bool](Get-NovaTestOptionValue -TestOption $TestOption -Name Build)
+    $testResultPath = Get-NovaPesterTestResultPath -ProjectRoot $projectInfo.ProjectRoot -FileName $workflowProfile.TestResultFileName
 
     return [pscustomobject]@{
-        BuildRequested = $buildRequested
+        BuildRequested = $workflowProfile.BuildRequested
+        CommandName = $workflowProfile.CommandName
         OverrideWarningRequested = $BoundParameters.ContainsKey('OverrideWarning') -and [bool]$BoundParameters.OverrideWarning
         ProjectInfo = $projectInfo
+        PesterSettings = Get-NovaTestWorkflowPesterConfiguration -ProjectPesterSettings $projectInfo.Pester -CoverageEnabled:$workflowProfile.CoverageEnabled
         PesterConfig = $pesterConfig
         TestResultPath = $testResultPath
         TestResultDirectory = Split-Path -Parent $testResultPath
@@ -55,7 +63,7 @@ function Get-NovaTestWorkflowContext {
         TestResultReportWriter = Get-Command -Name Write-NovaPesterTestResultReport -CommandType Function -ErrorAction Stop
         WorkflowParams = Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:($BoundParameters.ContainsKey('WhatIf') -and [bool]$BoundParameters.WhatIf)
         Target = $testResultPath
-        Operation = Get-NovaTestWorkflowOperation -BuildRequested:$buildRequested
+        Operation = Get-NovaTestWorkflowOperation -TestMode $workflowProfile.Mode
     }
 }
 
@@ -71,6 +79,68 @@ function Get-NovaTestOptionValue {
     }
 
     return $null
+}
+
+function Get-NovaTestWorkflowProfile {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][hashtable]$TestOption
+    )
+
+    $testMode = Get-NovaTestWorkflowMode -TestOption $TestOption
+    if ($testMode -eq 'BuildValidation') {
+        return [pscustomobject]@{
+            Mode = $testMode
+            BuildRequested = $true
+            CommandName = 'Test-NovaBuild'
+            CoverageEnabled = $false
+            IncludePattern = '*.Integration.Tests.ps1'
+            ExcludePattern = @()
+            TestResultFileName = 'TestResults.xml'
+        }
+    }
+
+    return [pscustomobject]@{
+        Mode = $testMode
+        BuildRequested = $false
+        CommandName = 'Invoke-NovaTest'
+        CoverageEnabled = $true
+        IncludePattern = '*.Tests.ps1'
+        ExcludePattern = @('*.Integration.Tests.ps1')
+        TestResultFileName = 'UnitTestResults.xml'
+    }
+}
+
+function Get-NovaTestWorkflowMode {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][hashtable]$TestOption
+    )
+
+    $requestedMode = Get-NovaTestOptionValue -TestOption $TestOption -Name TestMode
+    if ([string]::IsNullOrWhiteSpace([string]$requestedMode)) {
+        return 'Unit'
+    }
+
+    return [string]$requestedMode
+}
+
+function Get-NovaTestWorkflowPesterConfiguration {
+    [CmdletBinding()]
+    param(
+        [AllowNull()][object]$ProjectPesterSettings,
+        [Parameter(Mandatory)][bool]$CoverageEnabled
+    )
+
+    if ($CoverageEnabled) {
+        return $ProjectPesterSettings
+    }
+
+    return [pscustomobject]@{
+        CodeCoverage = [pscustomobject]@{
+            Enabled = $false
+        }
+    }
 }
 
 function Get-NovaConfiguredPesterCoveragePercentTarget {
@@ -130,6 +200,24 @@ function Initialize-NovaPesterCoverageConfiguration {
     $resolvedCoveragePath = @(Get-NovaResolvedPesterCoveragePath -ProjectInfo $ProjectInfo)
     if ($resolvedCoveragePath.Count -gt 0) {
         $PesterConfig.CodeCoverage.Path = $resolvedCoveragePath
+    }
+}
+
+function Disable-NovaPesterCoverageConfiguration {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Mutates PesterConfiguration state, not user-facing resources. ShouldProcess is not appropriate here.')]
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object]$PesterConfig
+    )
+
+    if ($PesterConfig.PSObject.Properties.Name -contains 'CodeCoverage') {
+        if ($PesterConfig.CodeCoverage.PSObject.Properties.Name -contains 'Enabled') {
+            $PesterConfig.CodeCoverage.Enabled = $false
+        }
+
+        if ($PesterConfig.CodeCoverage.PSObject.Properties.Name -contains 'Path') {
+            $PesterConfig.CodeCoverage.Path = @()
+        }
     }
 }
 

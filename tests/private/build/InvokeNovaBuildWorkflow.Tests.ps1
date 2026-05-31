@@ -43,12 +43,18 @@ Describe 'Invoke-NovaBuildWorkflow' {
                 $Status -eq 'Checking update notifications' -and $PercentComplete -eq 94
             }
             Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
-            Assert-MockCalled Write-Message -Times 3
+            Assert-MockCalled Write-Message -Times 5
             Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
                 $Text -eq 'Built Nova module: NovaModuleTools' -and $color -eq 'Green'
             }
             Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-                $Text -eq 'Next step: Test-NovaBuild'
+                $Text -eq 'Next steps:'
+            }
+            Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+                $Text -eq 'Invoke-NovaTest'
+            }
+            Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+                $Text -eq 'Test-NovaBuild'
             }
         } finally {
             Remove-Variable -Name steps -Scope Global -ErrorAction SilentlyContinue

@@ -71,7 +71,7 @@ Describe 'Invoke-NovaModuleInitializationWorkflow' {
         Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
     }
 
-    It 'suggests Test-NovaBuild as the next step for the example scaffold' {
+    It 'suggests unit and build-validation tests as the next steps for the example scaffold' {
         Mock Initialize-NovaModuleScaffold {}
         Mock Write-NovaModuleProjectJson {}
         Mock Write-NovaVsCodeSettings {}
@@ -88,8 +88,7 @@ Describe 'Invoke-NovaModuleInitializationWorkflow' {
         Invoke-NovaModuleInitializationWorkflow -WorkflowContext $exampleContext
 
         Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $InputObject -eq 'Test-NovaBuild'
-        }
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$InputObject -eq 'Invoke-NovaTest'}
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$InputObject -eq 'Test-NovaBuild'}
     }
 }

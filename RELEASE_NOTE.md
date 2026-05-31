@@ -8,6 +8,9 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 - `nova init` now injects a `"$schema"` property into new projects pointing to the hosted versioned JSON schema, enabling VS Code IntelliSense, autocomplete, and hover descriptions while editing `project.json`.
     - `nova init` also writes `.vscode/settings.json` mapping `project.json` to the schema URL so VS Code trusts it automatically — no manual "Allow" step required.
+- Added `Invoke-NovaTest` as the dedicated PowerShell unit-test command.
+    - `% nova test` now maps to `Invoke-NovaTest`.
+    - Unit-test NUnit results are now written to `artifacts/UnitTestResults.xml`.
 
 ### Changed
 
@@ -15,6 +18,10 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
     - Use `-Installed` for the installed current project/module version.
     - Use `-InstalledNovaVersion` for the installed `NovaModuleTools` version.
 - `Update-NovaModuleTool` now suggests `Get-NovaProjectInfo -InstalledNovaVersion` after a successful self-update.
+- `Test-NovaBuild` is now the build-validation integration-test command instead of the combined default test entry point.
+    - `% nova test --build` and `% nova test -b` now map to `Test-NovaBuild`.
+    - Build-validation NUnit results continue to use `artifacts/TestResults.xml`.
+- Repository and CI quality loops now run `Invoke-NovaTest` before `Test-NovaBuild` when tests are enabled.
 
 ### Deprecated
 

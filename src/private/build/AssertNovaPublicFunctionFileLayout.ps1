@@ -56,7 +56,7 @@ function Format-NovaPublicFunctionFileValidationMessage {
 
     $messageLines += @(
         ''
-        'Affected commands: Invoke-NovaBuild, nova build, Test-NovaBuild -Build, nova test --build/-b, New-NovaModulePackage, nova package (--skip-tests/-s), Publish-NovaModule, nova publish (--skip-tests), Invoke-NovaRelease, nova release (--skip-tests/-s).'
+        'Affected commands: Invoke-NovaBuild, nova build, Invoke-NovaTest, nova test, Test-NovaBuild, nova test --build/-b, New-NovaModulePackage, nova package (--skip-tests/-s), Publish-NovaModule, nova publish (--skip-tests), Invoke-NovaRelease, nova release (--skip-tests/-s).'
         'Fix the file layout or continue intentionally with -OverrideWarning / --override-warning / -o.'
     )
 

@@ -99,7 +99,7 @@
                     <li><strong><code>Package</code></strong> controls package creation and optional raw HTTP upload
                         defaults.
                     </li>
-                    <li><strong><code>Pester</code></strong> controls the test run configuration used by <code>Test-NovaBuild</code>.
+                    <li><strong><code>Pester</code></strong> controls the test run configuration used by <code>Invoke-NovaTest</code> and <code>Test-NovaBuild</code>.
                     </li>
                 </ol>
                 <div class="notice">
@@ -621,8 +621,8 @@
 
             <section class="content-section" id="pester">
                 <h2><code>Pester</code> settings</h2>
-                <p>NovaModuleTools passes your <code>Pester</code> settings into the test run configuration used by
-                    <code>Test-NovaBuild</code>.</p>
+                <p>NovaModuleTools passes your <code>Pester</code> settings into the managed test run configuration used by
+                    <code>Invoke-NovaTest</code> and <code>Test-NovaBuild</code>.</p>
                 <div class="table-scroll">
                     <table>
                         <thead>
@@ -644,7 +644,7 @@
                             <td><code>Pester.TestResult.OutputFormat</code></td>
                             <td>Passed through by the current project template and examples.</td>
                             <td><code>NUnitXml</code></td>
-                            <td>Determines the result format written to <code>artifacts/TestResults.xml</code>.</td>
+                            <td>Determines the result format written to the managed NUnit result artifacts.</td>
                         </tr>
                         <tr>
                             <td><code>Pester.CodeCoverage.Enabled</code></td>
@@ -686,7 +686,7 @@
                             <td><code>Pester.Output.Verbosity</code></td>
                             <td>Controls Pester console verbosity.</td>
                             <td><code>Detailed</code> in the current project template</td>
-                            <td>Affects what you see during <code>Test-NovaBuild</code> and <code>% nova test</code>.
+                            <td>Affects what you see during <code>Invoke-NovaTest</code>, <code>Test-NovaBuild</code>, and <code>% nova test</code>.
                             </td>
                         </tr>
                         </tbody>
@@ -696,7 +696,7 @@
                     the explicit default source globs shown above. The minimal scaffold keeps
                     <code>Enabled=false</code>, while the packaged example scaffold sets <code>Enabled=true</code> so
                     coverage works against <code>src/**/*.ps1</code> immediately. At runtime,
-                    <code>Test-NovaBuild</code> also lets you override verbosity and render mode temporarily with
+                    <code>Invoke-NovaTest</code> and <code>Test-NovaBuild</code> both let you override verbosity and render mode temporarily with
                     <code>-OutputVerbosity</code> and <code>-OutputRenderMode</code>.</p>
                 <p>When you enable coverage, Nova writes JaCoCo output to <code>artifacts/coverage.xml</code> and fails
                     the test workflow if the measured percentage is lower than

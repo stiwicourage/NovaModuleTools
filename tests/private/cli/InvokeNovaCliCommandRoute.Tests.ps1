@@ -40,6 +40,30 @@ Describe 'Invoke-NovaCliParsedCommand' {
     }
 }
 
+Describe 'Invoke-NovaCliTestRouteCommand' {
+    It 'routes plain nova test to Invoke-NovaTest' {
+        Mock ConvertFrom-NovaTestCliArgument { @{TagFilter = @('fast')} }
+        Mock Invoke-NovaTest { param([string[]]$TagFilter, [switch]$WhatIf) "unit:$($TagFilter -join ','):$($WhatIf.IsPresent)" }
+        Mock Test-NovaBuild {}
+
+        $result = Invoke-NovaCliTestRouteCommand -InvocationContext (New-TestContext -Arguments @('--tag', 'fast') -MutatingCommonParameters @{WhatIf = $true})
+
+        $result | Should -Be 'unit:fast:True'
+        Assert-MockCalled Test-NovaBuild -Times 0
+    }
+
+    It 'routes nova test --build to Test-NovaBuild without forwarding the Build switch' {
+        Mock ConvertFrom-NovaTestCliArgument { @{Build = $true; OverrideWarning = $true} }
+        Mock Test-NovaBuild { param([switch]$OverrideWarning, [switch]$WhatIf) "integration:$($OverrideWarning.IsPresent):$($WhatIf.IsPresent)" }
+        Mock Invoke-NovaTest {}
+
+        $result = Invoke-NovaCliTestRouteCommand -InvocationContext (New-TestContext -Arguments @('--build') -MutatingCommonParameters @{WhatIf = $true})
+
+        $result | Should -Be 'integration:True:True'
+        Assert-MockCalled Invoke-NovaTest -Times 0
+    }
+}
+
 Describe 'Read-NovaCliCapturedOutput' {
     It 'separates warning records from result' {
         $warn = [System.Management.Automation.WarningRecord]::new('hi')
@@ -162,8 +186,8 @@ Describe 'Invoke-NovaCliCommandRoute' {
         Assert-MockCalled Invoke-NovaCliParsedCommand -Times 1 -ParameterFilter {$ParserCommand -eq 'ConvertFrom-NovaBuildCliArgument' -and $ActionCommand -eq 'Invoke-NovaBuild'}
     }
 
-    It 'dispatches test through parsed command pipeline' {
-        Mock Invoke-NovaCliParsedCommand { 'tested' }
+    It 'dispatches test through the dedicated test router' {
+        Mock Invoke-NovaCliTestRouteCommand { 'tested' }
         Mock Confirm-NovaCliRoutedCommand {}
         Invoke-NovaCliCommandRoute -InvocationContext (New-TestContext -Command 'test') | Should -Be 'tested'
     }

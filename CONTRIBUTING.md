@@ -55,7 +55,7 @@ pwsh -NoLogo -NoProfile -File ./run.ps1
 
 `run.ps1` is the authoritative repository quality wrapper. It runs ScriptAnalyzer first, validates
 `CHANGELOG.md` and `RELEASE_NOTE.md`, refreshes the Agentic Copilot scaffold mirror, and then runs
-`Test-NovaBuild`.
+`Invoke-NovaTest` followed by `Test-NovaBuild`.
 
 If you are working on the CodeScene integration, the CI coverage helper writes the JaCoCo artifact that the CodeScene upload step consumes:
 
