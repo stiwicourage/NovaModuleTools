@@ -356,8 +356,10 @@ PS&gt; Invoke-NovaBuild -ContinuousIntegration</code></pre>
                             <li data-command-visibility="powershell"><strong>Cmdlet extras:</strong>
                                 <code>Invoke-NovaTest</code> supports <code>-TagFilter</code>,
                                 <code>-ExcludeTagFilter</code>, <code>-OutputVerbosity</code>, and
-                                <code>-OutputRenderMode</code>. <code>Test-NovaBuild</code> supports the same options
-                                plus <code>-OverrideWarning</code>.</li>
+                                <code>-OutputRenderMode</code>, and the guarded
+                                <code>-PesterConfigurationOverride</code> hook for <code>Run.Container</code>.
+                                <code>Test-NovaBuild</code> supports the same output options plus
+                                <code>-OverrideWarning</code>.</li>
                         </ul>
                         <div class="surface-example" data-command-example>
                             <div class="surface-example__meta">
@@ -373,7 +375,10 @@ PS&gt; Invoke-NovaBuild -ContinuousIntegration</code></pre>
                             <div class="surface-example__surface" data-command-surface="powershell">
                                 <pre><code>PS&gt; Invoke-NovaTest
 PS&gt; Test-NovaBuild
-PS&gt; Invoke-NovaTest -TagFilter unit,fast</code></pre>
+PS&gt; Invoke-NovaTest -TagFilter unit,fast
+PS&gt; $credential = Get-Credential
+PS&gt; $container = New-PesterContainer -Path 'tests/public/PublishNovaModule.Tests.ps1' -Data @{ Credential = $credential }
+PS&gt; Invoke-NovaTest -PesterConfigurationOverride @{ Run = @{ Container = @($container) } }</code></pre>
                             </div>
                         </div>
                         <p><a class="text-link" href="./core-workflows.html#test">See the test workflow</a></p>

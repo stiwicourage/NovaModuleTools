@@ -34,12 +34,25 @@ Describe 'Invoke-NovaTest' {
     }
 
     It 'forwards unit-test options to the workflow context' {
-        Invoke-NovaTest -OverrideWarning -TagFilter 'fast' -ExcludeTagFilter 'integration' -OutputVerbosity 'Detailed'
+        $override = @{
+            Run = @{
+                Container = @(
+                    [pscustomobject]@{
+                        Type = 'File'
+                        Item = '/proj/tests/Example.Tests.ps1'
+                        Data = @{ Credential = 'placeholder' }
+                    }
+                )
+            }
+        }
+
+        Invoke-NovaTest -OverrideWarning -TagFilter 'fast' -ExcludeTagFilter 'integration' -OutputVerbosity 'Detailed' -PesterConfigurationOverride $override
 
         $script:testOption.TestMode | Should -Be 'Unit'
         $script:testOption.TagFilter | Should -Be @('fast')
         $script:testOption.ExcludeTagFilter | Should -Be @('integration')
         $script:testOption.OutputVerbosity | Should -Be 'Detailed'
+        $script:testOption.PesterConfigurationOverride | Should -Be $override
         $script:boundParameters.OverrideWarning | Should -BeTrue
         $script:shouldRun | Should -BeTrue
     }

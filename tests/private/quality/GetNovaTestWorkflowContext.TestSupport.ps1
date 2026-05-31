@@ -23,7 +23,15 @@ function Get-NovaPesterTestResultPath {
 
     return (Join-Path $ProjectRoot $FileName)
 }
-function Initialize-NovaPesterExecutionConfiguration {param($PesterConfig, $BoundParameters, $OutputVerbosity, $OutputRenderMode)}
+function Initialize-NovaPesterExecutionConfiguration {
+    param($PesterConfig, $BoundParameters, $ExecutionOption)
+
+    $script:lastExecutionConfigurationRequest = [pscustomobject]@{
+        PesterConfig = $PesterConfig
+        BoundParameters = $BoundParameters
+        ExecutionOption = $ExecutionOption
+    }
+}
 function Get-NovaShouldProcessForwardingParameter {param([switch]$WhatIfEnabled) return @{}}
 function Write-NovaPesterTestResultArtifact {}
 function Write-NovaPesterTestResultReport {}

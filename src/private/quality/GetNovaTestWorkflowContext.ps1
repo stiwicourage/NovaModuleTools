@@ -47,8 +47,12 @@ function Get-NovaTestWorkflowContext {
     $pesterConfig.Run.Throw = $true
     $pesterConfig.Filter.Tag = Get-NovaTestOptionValue -TestOption $TestOption -Name TagFilter
     $pesterConfig.Filter.ExcludeTag = Get-NovaTestOptionValue -TestOption $TestOption -Name ExcludeTagFilter
-    Initialize-NovaPesterExecutionConfiguration -PesterConfig $pesterConfig -BoundParameters $BoundParameters -OutputVerbosity (Get-NovaTestOptionValue -TestOption $TestOption -Name OutputVerbosity) -OutputRenderMode (Get-NovaTestOptionValue -TestOption $TestOption -Name OutputRenderMode)
-
+    Initialize-NovaPesterExecutionConfiguration -PesterConfig $pesterConfig -BoundParameters $BoundParameters -ExecutionOption @{
+        PesterConfigurationOverride = Get-NovaTestOptionValue -TestOption $TestOption -Name PesterConfigurationOverride
+        ProjectRoot = $projectInfo.ProjectRoot
+        OutputVerbosity = Get-NovaTestOptionValue -TestOption $TestOption -Name OutputVerbosity
+        OutputRenderMode = Get-NovaTestOptionValue -TestOption $TestOption -Name OutputRenderMode
+    }
     $testResultPath = Get-NovaPesterTestResultPath -ProjectRoot $projectInfo.ProjectRoot -FileName $workflowProfile.TestResultFileName
 
     return [pscustomobject]@{

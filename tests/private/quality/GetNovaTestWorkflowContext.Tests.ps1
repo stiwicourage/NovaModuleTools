@@ -9,6 +9,7 @@ Describe 'Get-NovaTestWorkflowContext' {
     BeforeEach {
         $script:lastRunPathRequest = $null
         $script:lastResultPathRequest = $null
+        $script:lastExecutionConfigurationRequest = $null
 
         Mock Test-ProjectSchema {}
         Mock Get-Module {[pscustomobject]@{Name = 'Pester'}} -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
@@ -103,6 +104,42 @@ Describe 'Get-NovaTestWorkflowContext' {
             'src/private/quality/GetGamma.ps1'
             'src/classes/NovaThing.ps1'
         )
+    }
+
+    It 'forwards the guarded Pester configuration override to the execution configuration initializer' {
+        $pesterConfig = & $script:getPesterConfig
+        $projectInfo = & $script:getProjectInfo -PesterSettings ([ordered]@{})
+        $containerOverride = [pscustomobject]@{
+            Type = 'File'
+            Item = (Join-Path $projectInfo.ProjectRoot 'tests/Example.Tests.ps1')
+            Data = @{ Credential = 'placeholder' }
+        }
+        $override = @{
+            Run = @{
+                Container = @($containerOverride)
+            }
+        }
+
+        Mock Get-NovaProjectInfo {$projectInfo}
+        Mock New-PesterConfiguration {$pesterConfig}
+
+        $null = Get-NovaTestWorkflowContext -TestOption @{
+            TestMode = 'Unit'
+            OutputVerbosity = 'Diagnostic'
+            OutputRenderMode = 'Ansi'
+            PesterConfigurationOverride = $override
+        } -BoundParameters @{}
+
+        $script:lastExecutionConfigurationRequest.ExecutionOption.Keys | Sort-Object | Should -Be @(
+            'OutputRenderMode'
+            'OutputVerbosity'
+            'PesterConfigurationOverride'
+            'ProjectRoot'
+        )
+        $script:lastExecutionConfigurationRequest.ExecutionOption.ProjectRoot | Should -Be $projectInfo.ProjectRoot
+        $script:lastExecutionConfigurationRequest.ExecutionOption.OutputVerbosity | Should -Be 'Diagnostic'
+        $script:lastExecutionConfigurationRequest.ExecutionOption.OutputRenderMode | Should -Be 'Ansi'
+        $script:lastExecutionConfigurationRequest.ExecutionOption.PesterConfigurationOverride | Should -Be $override
     }
 }
 

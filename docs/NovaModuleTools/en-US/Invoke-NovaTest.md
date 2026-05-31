@@ -21,8 +21,9 @@ Runs the NovaModuleTools unit-test workflow for the current project.
 
 ```text
 PS> Invoke-NovaTest [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>]
- [[-OutputVerbosity] <string>] [[-OutputRenderMode] <string>] [-OverrideWarning]
- [-WhatIf] [-Confirm] [<CommonParameters>]
+ [[-OutputVerbosity] <string>] [[-OutputRenderMode] <string>]
+ [[-PesterConfigurationOverride] <hashtable>] [-OverrideWarning] [-WhatIf]
+ [-Confirm] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -36,6 +37,8 @@ The unit-test workflow writes NUnit XML to `artifacts/UnitTestResults.xml`.
 When `Pester.CodeCoverage.Enabled` is `true`, Nova also writes JaCoCo coverage to `artifacts/coverage.xml` and fails the run when the measured percentage is lower than `Pester.CodeCoverage.CoveragePercentTarget`.
 
 Use `Test-NovaBuild` when you need the separate build-validation integration flow that runs against the built module output.
+
+Use `-PesterConfigurationOverride` only when you need runtime-only unit-test data injection through file-backed `New-PesterContainer -Path` objects. In v1, Nova accepts only `Run.Container` and still keeps test discovery, output files, coverage, and required execution flags under Nova control.
 
 Use `-OverrideWarning` only when you intentionally want to bypass Nova's public-file export guard for the current unit-test run.
 
@@ -78,12 +81,22 @@ Overrides the Pester console output settings for the current unit-test run.
 ### EXAMPLE 5
 
 ```text
+PS> $credential = Get-Credential
+PS> $container = New-PesterContainer -Path 'tests/public/PublishNovaModule.Tests.ps1' -Data @{ Credential = $credential }
+PS> Invoke-NovaTest -PesterConfigurationOverride @{ Run = @{ Container = @($container) } }
+```
+
+Runs the standard Nova unit-test discovery set while injecting a runtime-only `PSCredential` into the selected test file through `Run.Container`.
+
+### EXAMPLE 6
+
+```text
 PS> Invoke-NovaTest -OverrideWarning
 ```
 
 Runs the unit-test workflow while explicitly bypassing Nova's public-file export guard for this invocation.
 
-### EXAMPLE 6
+### EXAMPLE 7
 
 ```text
 PS> Invoke-NovaTest -WhatIf
@@ -184,6 +197,27 @@ AcceptedValues:
 HelpMessage: ''
 ```
 
+### -PesterConfigurationOverride
+
+Advanced Pester configuration override for the current unit-test invocation. In v1, Nova accepts only `Run.Container`, and each container must be a file-backed `New-PesterContainer -Path` entry that matches a unit-test file already discovered by Nova.
+
+```yaml
+Type: System.Collections.Hashtable
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 4
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### -OverrideWarning
 
 Bypasses Nova's public-file export guard for this unit-test invocation.
@@ -269,5 +303,5 @@ Returns the Pester result object from the managed unit-test run.
 
 ## RELATED LINKS
 
-[Test-NovaBuild](Test-NovaBuild.md)
-[Invoke-NovaBuild](Invoke-NovaBuild.md)
+- [Test-NovaBuild](./Test-NovaBuild.md)
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)
