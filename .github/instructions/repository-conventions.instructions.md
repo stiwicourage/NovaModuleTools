@@ -29,7 +29,7 @@ Canonical rule source for cross-cutting NovaModuleTools conventions that apply t
 Use the smallest validation set that proves the change, then run the repository quality loop before finishing code work:
 
 - local quality loop: `pwsh -NoLogo -NoProfile -File ./run.ps1`
-- test validation: `Test-NovaBuild`
+- test validation: `Invoke-NovaTest` for unit-test validation, then `Test-NovaBuild` for build-validation integration coverage
 - analyzer only: `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
 - CI-parity coverage flow: `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts`
 

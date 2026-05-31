@@ -28,6 +28,7 @@ The companion instruction file is `.github/instructions/code-quality-matrix.inst
 - `tests/*Architecture*.Tests.ps1`
 - the repository quality loop, when present
 - `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
+- `Invoke-NovaTest`
 - `Test-NovaBuild`
 
 ## Guideline order and precedence
@@ -67,7 +68,7 @@ Follow these steps for any non-trivial PowerShell change.
 1. Read the changed function and surrounding file. Note where it sits in `src/public/`, `src/private/<domain>/`, or `scripts/`.
 2. For each new or heavily changed function, walk the checklist below in order.
 3. If a step requires a refactor, make it the smallest structural step that fixes the specific finding. Do not bundle unrelated cleanup.
-4. After meaningful steps, run the repository quality loop when present (typically analyzer → build → `Test-NovaBuild`).
+4. After meaningful steps, run the repository quality loop when present (typically analyzer → build → `Invoke-NovaTest` → `Test-NovaBuild`).
 5. Before handoff, normalize every changed text file to exactly one trailing newline.
 
 ### Step 1 — Short units (≤ 15 lines)
@@ -112,7 +113,8 @@ Refactor options in PowerShell:
   ```powershell
   $script:NovaCommandMap = @{
       build    = { param($Args) Invoke-NovaBuild @Args }
-      test     = { param($Args) Test-NovaBuild @Args }
+      test     = { param($Args) Invoke-NovaTest @Args }
+      testBuild = { param($Args) Test-NovaBuild @Args }
       package  = { param($Args) New-NovaPackage @Args }
   }
 
@@ -201,7 +203,7 @@ Use parameter sets only for genuinely different calling shapes, not to hide 8 pa
 
 - Add or update one source-mirrored `tests/<area>/<Name>.Tests.ps1` for every changed `src/**/*.ps1` file.
 - Cover happy path plus the meaningful unhappy/invalid/boundary cases that the change introduces.
-- Validate with `Test-NovaBuild`. Do not call `Invoke-Pester` directly.
+- Validate with `Invoke-NovaTest` for unit behavior and `Test-NovaBuild` for build-validation integration behavior. Do not call `Invoke-Pester` directly.
 - For full rules, follow the `pester-testing` skill and `.github/instructions/testing-policy.instructions.md`.
 
 ### Step 10 — Clean code
@@ -229,5 +231,6 @@ Run this short pass before handoff on every changed source file:
 
 - the repository quality loop, when present
 - `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` when iterating quickly on PowerShell changes
-- `Test-NovaBuild` for behavior validation
+- `Invoke-NovaTest` for unit behavior validation
+- `Test-NovaBuild` for build-validation integration behavior
 

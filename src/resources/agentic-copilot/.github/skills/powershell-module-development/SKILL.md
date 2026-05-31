@@ -35,12 +35,14 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 - Follow the repository's PowerShell style rules: 4-space indentation, same-line opening braces, restrained blank lines, full cmdlet names, and readable operator spacing.
 - Follow `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth. Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and the repository quality loop, when present, and use direct `Invoke-ScriptAnalyzer` only for focused local checks or deliberate analyzer-tooling work.
 - Keep ScriptAnalyzer strict: do not add excluded rules, suppression attributes, or settings that hide analyzer findings.
-- Keep local quality checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild` when the project defines a combined wrapper.
+- Keep local quality checks ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Invoke-NovaTest`, then `Test-NovaBuild` when the project defines a combined wrapper.
 - If the repository quality loop or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before handoff instead of just reporting the failure.
 - Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline with no extra blank lines at the end.
 - Add or update valid PlatyPS-compatible help under `docs/{{ProjectName}}/en-US/` when public commands or public classes change. Always build and import the dist module first (`Import-Module ./dist/{{ProjectName}}/{{ProjectName}}.psd1 -Force`) before running `New-MarkdownCommandHelp` or `Update-MarkdownCommandHelp`, so PlatyPS writes the module name — not the command name — into `external help file` and `Module Name`. Use `Test-MarkdownCommandHelp` to validate structure before handoff instead of writing plain Markdown from scratch.
 - For every new public `src/public/*.ps1` file, create the matching help file immediately in the same change.
 - Add or update the source-mirrored Pester test file for every changed `src/**/*.ps1` file.
+- For public commands, keep unit coverage in `tests/public/<Command>.Tests.ps1` and keep per-command integration ownership in `tests/public/<Command>.Integration.Tests.ps1` when built-module behavior itself needs validation.
+- For destructive or environment-coupled public commands, prefer safe `-WhatIf` integration coverage when that still proves `ShouldProcess`, routing, and output behavior.
 
 ## Common pitfalls
 
@@ -62,6 +64,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 
 ## Verification
 
-- `Test-NovaBuild` for the changed behavior
+- `Invoke-NovaTest` for unit-level behavior changes
+- `Test-NovaBuild` when the change needs built-module or integration validation
 - `tests/*Architecture*.Tests.ps1` implications checked
 - the repository quality loop, when present

@@ -31,6 +31,7 @@ BeforeAll {
             DeveloperSkill = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/skills/powershell-module-development/SKILL.md') -Raw
             PesterSkill = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/skills/pester-testing/SKILL.md') -Raw
             ImplementPrompt = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/prompts/implement-issue.prompt.md') -Raw
+            ImproveCoveragePrompt = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/prompts/improve-test-coverage.prompt.md') -Raw
             ReviewPrompt = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/prompts/review-change.prompt.md') -Raw
             Agents = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot 'AGENTS.md') -Raw
             Contributing = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot 'CONTRIBUTING.md') -Raw
@@ -90,7 +91,8 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.RepositoryConventions | Should -Match 'src/private/` files expose at most one externally called function per file'
         $content.RepositoryConventions | Should -Match 'file name matches the function name'
         $content.RepositoryConventions | Should -Match 'review every changed or created text file and ensure it ends with exactly one trailing newline'
-        $content.RepositoryConventions | Should -Match 'test validation: `Test-NovaBuild`'
+        $content.RepositoryConventions | Should -Match 'local quality loop: use the repository quality wrapper when one exists; otherwise run ScriptAnalyzer, build, `Invoke-NovaTest`, and `Test-NovaBuild` in the documented project order'
+        $content.RepositoryConventions | Should -Match 'test validation: `Invoke-NovaTest` for unit-test validation, then `Test-NovaBuild` for build-validation integration coverage'
         $content.RepositoryConventions | Should -Match 'Invoke-ScriptAnalyzerCI\.ps1'
         $content.RepositoryConventions | Should -Match 'Conventional Commit format'
     }
@@ -185,34 +187,52 @@ Describe 'Agentic Copilot scaffold sync' {
     It 'documents Nova-managed project test guidance' {
         $content = & $script:getAgenticScaffoldGuidanceContent
 
-        $content.RepositoryConventions | Should -Match 'test validation: `Test-NovaBuild`'
+        $content.RepositoryConventions | Should -Match 'test validation: `Invoke-NovaTest` for unit-test validation, then `Test-NovaBuild` for build-validation integration coverage'
+        $content.RepositoryConventions | Should -Match 'local quality loop: use the repository quality wrapper when one exists; otherwise run ScriptAnalyzer, build, `Invoke-NovaTest`, and `Test-NovaBuild` in the documented project order'
         $content.RepositoryConventions | Should -Not -Match 'Invoke-Pester -Path'
 
-        $content.TestingPolicy | Should -Match 'Use `Invoke-NovaTest` for unit-test validation and `Test-NovaBuild` for build-validation integration coverage'
+        $content.TestingPolicy | Should -Match '`Invoke-NovaTest` is the unit-test entrypoint and `Test-NovaBuild` is the build-validation integration-test entrypoint'
         $content.TestingPolicy | Should -Match 'Integration tests may import `dist/`'
         $content.TestingPolicy | Should -Match '\*\.Integration\.Tests\.ps1'
+        $content.TestingPolicy | Should -Match 'tests/public/<Command>\.Integration\.Tests\.ps1'
+        $content.TestingPolicy | Should -Match '-WhatIf'
         $content.TestingPolicy | Should -Match 'Do not validate with direct `Invoke-Pester`'
         $content.TestingPolicy | Should -Match 'normal path and the meaningful unhappy, invalid, or boundary cases'
         $content.TestingPolicy | Should -Match 'mocks or stubs'
         $content.TestingPolicy | Should -Match 'isolated and order-independent'
         $content.TestingPolicy | Should -Not -Match 'Invoke-Pester -Path'
 
+        $content.PesterSkill | Should -Match 'Invoke-NovaTest'
         $content.PesterSkill | Should -Match 'Test-NovaBuild'
+        $content.PesterSkill | Should -Match 'tests/public/<Command>\.Integration\.Tests\.ps1'
         $content.PesterSkill | Should -Match 'Do not validate with direct `Invoke-Pester`'
         $content.PesterSkill | Should -Match 'normal, boundary, and unhappy paths'
         $content.PesterSkill | Should -Match 'mocks/stubs'
         $content.PesterSkill | Should -Not -Match 'Invoke-Pester -Path'
 
-        $content.DeveloperSkill | Should -Match '`Test-NovaBuild` for the changed behavior'
-        $content.DeveloperAgent | Should -Match 'Validate Nova-managed project tests through `Test-NovaBuild`'
-        $content.TestEngineerAgent | Should -Match 'Use `Test-NovaBuild` as the test entrypoint'
+        $content.DeveloperSkill | Should -Match '`Invoke-NovaTest` for unit-level behavior changes'
+        $content.DeveloperSkill | Should -Match '`Test-NovaBuild` when the change needs built-module or integration validation'
+        $content.DeveloperSkill | Should -Match 'tests/public/<Command>\.Integration\.Tests\.ps1'
+        $content.DeveloperSkill | Should -Match '-WhatIf'
+        $content.DeveloperAgent | Should -Match 'Validate Nova-managed project tests through `Invoke-NovaTest` for unit validation and `Test-NovaBuild` for build-validation integration validation'
+        $content.DeveloperAgent | Should -Match 'tests/public/<Command>\.Integration\.Tests\.ps1'
+        $content.DeveloperAgent | Should -Match '-WhatIf'
+        $content.TestEngineerAgent | Should -Match 'Use `Invoke-NovaTest` as the unit-test entrypoint and `Test-NovaBuild` as the build-validation integration-test entrypoint'
         $content.TestEngineerAgent | Should -Match 'testing-policy\.instructions\.md'
-        $content.ReviewerAgent | Should -Match 'bypasses `Test-NovaBuild` with direct `Invoke-Pester`'
-        $content.ImplementPrompt | Should -Match 'Validate Nova-managed project tests through `Test-NovaBuild`'
-        $content.ReviewPrompt | Should -Match 'bypasses `Test-NovaBuild` with direct `Invoke-Pester`'
+        $content.ReviewerAgent | Should -Match 'tests/public/<Command>\.Integration\.Tests\.ps1'
+        $content.ReviewerAgent | Should -Match 'bypasses `Invoke-NovaTest` or `Test-NovaBuild` with direct `Invoke-Pester`'
+        $content.ImplementPrompt | Should -Match 'Validate Nova-managed project tests through `Invoke-NovaTest` for unit validation and `Test-NovaBuild` for build-validation integration validation'
+        $content.ImplementPrompt | Should -Match 'tests/public/<Command>\.Integration\.Tests\.ps1'
+        $content.ImplementPrompt | Should -Match '-WhatIf'
+        $content.ReviewPrompt | Should -Match 'bypasses `Invoke-NovaTest` or `Test-NovaBuild` with direct `Invoke-Pester`'
+        $content.ImproveCoveragePrompt | Should -Match 'tests/public/<Command>\.Integration\.Tests\.ps1'
+        $content.ImproveCoveragePrompt | Should -Match '-WhatIf'
 
-        $content.Contributing | Should -Match 'Use `Invoke-NovaTest` for unit validation and `Test-NovaBuild` for build-validation integration runs'
+        $content.Contributing | Should -Match 'use `Invoke-NovaTest` for unit validation and `Test-NovaBuild` for build-validation integration runs'
+        $content.Contributing | Should -Match 'tests/public/<Command>\.Integration\.Tests\.ps1'
         $content.Readme | Should -Match 'Use `Invoke-NovaTest` for unit validation and `Test-NovaBuild` for build-validation integration runs'
+        $content.Readme | Should -Match 'tests/public/<Command>\.Integration\.Tests\.ps1'
+        $content.Readme | Should -Match '-WhatIf'
     }
 
     It 'documents proper PSScriptAnalyzer usage guidance' {

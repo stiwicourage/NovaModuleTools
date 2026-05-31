@@ -104,6 +104,10 @@ PS> Test-NovaBuild
 % nova test -b
 ```
 
+- `Invoke-NovaTest` is the unit-test entrypoint. Keep public command unit ownership in `tests/public/<Command>.Tests.ps1`.
+- `Test-NovaBuild` is the build-validation integration-test entrypoint. Keep per-command public integration ownership in `tests/public/<Command>.Integration.Tests.ps1` when the built command behavior itself needs coverage.
+- For destructive or environment-coupled commands, prefer safe `-WhatIf` integration coverage when that still proves `ShouldProcess` wiring and command behavior.
+
 NovaModuleTools can self-update the installed module from PowerShell or the `nova` CLI launcher.
 
 - Stable self-updates are always available.
