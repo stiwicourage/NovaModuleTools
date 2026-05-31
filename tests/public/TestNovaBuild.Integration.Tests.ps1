@@ -26,4 +26,22 @@ Describe 'Test-NovaBuild integration' {
             }
         } | Should -Throw '*does not contain any build-validation integration tests matching ''*.Integration.Tests.ps1''*Use Invoke-NovaTest for unit tests and Test-NovaBuild for build-validation integration tests.*'
     }
+
+    It 'passes for a scaffolded example whose project name differs from the packaged template name' {
+        $exampleProjectRoot = Join-Path $script:projectRoot 'src/resources/example'
+        $scenarioRoot = Join-Path $TestDrive 'renamed-build-validation-example'
+        $projectJsonPath = Join-Path $scenarioRoot 'project.json'
+        $null = New-Item -ItemType Directory -Path $scenarioRoot -Force
+        Copy-Item -Path (Join-Path $exampleProjectRoot '*') -Destination $scenarioRoot -Recurse -Force
+
+        $projectData = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json -AsHashtable
+        $projectData.ProjectName = 'BuildValidationExample'
+        $projectData | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $projectJsonPath
+
+        {
+            Invoke-NovaPublicCommandIntegrationInLocation -Path $scenarioRoot -ScriptBlock {
+                Test-NovaBuild
+            }
+        } | Should -Not -Throw
+    }
 }

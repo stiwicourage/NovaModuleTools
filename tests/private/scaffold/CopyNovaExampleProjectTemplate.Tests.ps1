@@ -40,10 +40,14 @@ Describe 'Copy-NovaExampleProjectTemplate' {
         Copy-NovaExampleProjectTemplate -DestinationPath $destination.FullName
 
         $projectJson = Get-Content -LiteralPath (Join-Path $destination 'project.json') -Raw | ConvertFrom-Json -AsHashtable
+        $integrationTestContent = Get-Content -LiteralPath (Join-Path $destination 'tests/public/Get-ExampleGreeting.Integration.Tests.ps1') -Raw
 
         $projectJson.Pester.CodeCoverage.Enabled | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $destination 'tests/public/Get-ExampleGreeting.Tests.ps1') | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $destination 'tests/public/Get-ExampleGreeting.Integration.Tests.ps1') | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $destination 'tests/private/Get-ExampleConfiguration.Tests.ps1') | Should -BeTrue
+        $integrationTestContent | Should -Match 'project\.json'
+        $integrationTestContent | Should -Match 'ProjectName'
+        $integrationTestContent | Should -Match '\$script:moduleName'
     }
 }
