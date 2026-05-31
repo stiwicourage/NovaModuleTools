@@ -14,6 +14,9 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Fixed
 
+- `Test-NovaBuild` and `% nova test -b` now stop with a clear Nova-native error when a project has no `*.Integration.Tests.ps1` files, and the message now explains where build-validation tests belong plus when to use `Invoke-NovaTest` instead.
+- The packaged example scaffold now includes a minimal build-validation integration test that imports the built module and checks `Get-ExampleGreeting`, so `nova init -e` projects can pass `Test-NovaBuild`.
+
 ### Security
 
 ## [3.2.0] - 2026-05-31
@@ -259,4 +262,3 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ## [0.0.4] - 2024-06-25
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
-

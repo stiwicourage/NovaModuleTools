@@ -43,6 +43,7 @@ Describe 'Copy-NovaExampleProjectTemplate' {
 
         $projectJson.Pester.CodeCoverage.Enabled | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $destination 'tests/public/Get-ExampleGreeting.Tests.ps1') | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $destination 'tests/public/Get-ExampleGreeting.Integration.Tests.ps1') | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $destination 'tests/private/Get-ExampleConfiguration.Tests.ps1') | Should -BeTrue
     }
 }

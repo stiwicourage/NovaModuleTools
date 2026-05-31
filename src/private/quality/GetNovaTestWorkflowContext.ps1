@@ -39,9 +39,11 @@ function Get-NovaTestWorkflowContext {
         $pesterConfig.CodeCoverage.CoveragePercentTarget = $coverageConfiguration.CoveragePercentTarget
     }
 
-    $pesterConfig.Run.Path = @(
+    $runPath = @(
         Get-NovaPesterRunPath -ProjectInfo $projectInfo -IncludePattern $workflowProfile.IncludePattern -ExcludePattern $workflowProfile.ExcludePattern
     )
+    Assert-NovaDiscoveredTestPath -RunPath $runPath -ProjectInfo $projectInfo -WorkflowProfile $workflowProfile
+    $pesterConfig.Run.Path = $runPath
     $pesterConfig.Run.PassThru = $true
     $pesterConfig.Run.Exit = $true
     $pesterConfig.Run.Throw = $true
@@ -70,6 +72,29 @@ function Get-NovaTestWorkflowContext {
         Target = $testResultPath
         Operation = Get-NovaTestWorkflowOperation -TestMode $workflowProfile.Mode
     }
+}
+
+function Assert-NovaDiscoveredTestPath {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$RunPath,
+        [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
+        [Parameter(Mandatory)][pscustomobject]$WorkflowProfile
+    )
+
+    if ($WorkflowProfile.Mode -ne 'BuildValidation' -or $RunPath.Count -gt 0) {
+        return
+    }
+
+    $expectedPath = Join-Path $ProjectInfo.TestsDir 'public/Get-CommandName.Integration.Tests.ps1'
+    $message = @(
+        "The current project does not contain any build-validation integration tests matching '$($WorkflowProfile.IncludePattern)'."
+        'Test-NovaBuild expects build-validation tests under the tests folder, for example tests/public/Get-CommandName.Integration.Tests.ps1.'
+        'Add at least one *.Integration.Tests.ps1 file, then rerun Test-NovaBuild.'
+        'Use Invoke-NovaTest for unit tests and Test-NovaBuild for build-validation integration tests.'
+    ) -join ' '
+
+    Stop-NovaOperation -Message $message -ErrorId 'Nova.Workflow.BuildValidationTestsMissing' -Category ObjectNotFound -TargetObject $expectedPath
 }
 
 function Get-NovaTestOptionValue {
