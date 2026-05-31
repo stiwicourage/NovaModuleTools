@@ -38,7 +38,7 @@ Use this file when changing `src/public/`, `src/private/`, or PowerShell build/r
 - Follow `.github/instructions/psscriptanalyzer.instructions.md` as the ScriptAnalyzer workflow source of truth. Use the repository analyzer wrapper for normal runs and reuse repository-approved settings when invoking `Invoke-ScriptAnalyzer` directly on a focused path.
 - When public command help changes, follow `.github/instructions/platyps-help.instructions.md` and use `New-MarkdownCommandHelp`, `Update-MarkdownCommandHelp`, and `Test-MarkdownCommandHelp` instead of hand-authoring the help structure.
 - Do not add PSScriptAnalyzer `ExcludeRule`, `ExcludeRules`, suppression attributes, or generated settings that hide analyzer findings. Fix the rule violation instead.
-- Keep local quality wrappers ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Test-NovaBuild`.
+- Keep local quality wrappers ordered as ScriptAnalyzer first, then `Invoke-NovaBuild`, then `Invoke-NovaTest`, then `Test-NovaBuild`.
 - If `run.ps1` or `Invoke-ScriptAnalyzerCI.ps1` reports ScriptAnalyzer findings, fix them before treating the change as complete.
 
 ## Formatting rules

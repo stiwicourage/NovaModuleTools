@@ -111,6 +111,7 @@ function Get-NovaAgenticCopilotScaffoldNextStepLine {
     return @(
         'Next steps:'
         'Review AGENTS.md and CONTRIBUTING.md'
+        'Invoke-NovaTest'
         'Test-NovaBuild'
     )
 }

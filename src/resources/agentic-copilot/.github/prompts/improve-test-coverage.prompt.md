@@ -14,12 +14,14 @@ Improve changed-code coverage in {{ProjectName}} without lowering maintainabilit
 6. Follow `.github/instructions/psscriptanalyzer.instructions.md` when test code or test helpers change. Prefer `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` for repo-standard analyzer runs, and use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repo-approved settings.
 7. Add the smallest test that proves the missing behavior.
 8. If setup is duplicated, refactor the tests before adding more assertions.
-9. Re-run `Test-NovaBuild`, then the repository quality loop if code changed. Do not validate a Nova-managed project with direct `Invoke-Pester`.
+9. Re-run `Invoke-NovaTest` for unit coverage, then `Test-NovaBuild` when build-validation integration ownership changed, then the repository quality loop if code changed. Do not validate a Nova-managed project with direct `Invoke-Pester`.
 10. Recheck quality tooling coverage or maintainability if that was the original failure.
 
 ## Repository-specific reminders
 
 - Many tests expect a built `dist/{{ProjectName}}` module.
-- The CI coverage flow writes `artifacts/pester-coverage.cobertura.xml`.
-- Use `Test-NovaBuild` as the project test entrypoint; direct `Invoke-Pester` can miss Nova-specific strict-mode behavior.
+- The CI coverage flow writes `artifacts/coverage.xml`.
+- Use `Invoke-NovaTest` for unit coverage validation and `Test-NovaBuild` for build-validation integration coverage; direct `Invoke-Pester` can miss Nova-specific strict-mode behavior.
+- Keep public command unit coverage in `tests/public/<Command>.Tests.ps1` and per-command integration ownership in `tests/public/<Command>.Integration.Tests.ps1` when built-module behavior itself needs validation.
+- For destructive or environment-coupled public commands, prefer safe `-WhatIf` integration coverage when that still proves `ShouldProcess`, routing, and output behavior.
 - Do not "fix" coverage by weakening assertions or suppressing quality tooling warnings.

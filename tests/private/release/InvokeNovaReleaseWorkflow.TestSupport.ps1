@@ -18,10 +18,16 @@ function Invoke-NovaBuild {
     $script:buildCalls += 1
 }
 
+function Invoke-NovaTest {
+    param()
+
+    $script:unitTestCalls += 1
+}
+
 function Test-NovaBuild {
     param()
 
-    $script:testCalls += 1
+    $script:integrationTestCalls += 1
 }
 
 function Update-NovaModuleVersion {

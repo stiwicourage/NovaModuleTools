@@ -169,7 +169,7 @@
                     <strong>CI/CD shortcut:</strong>
                     <p>Use <code>-SkipTests</code>, <code>--skip-tests</code>, or <code>-s</code> when tests already
                         ran earlier in your pipeline. Nova still rebuilds before packaging; it only skips
-                        <code>Test-NovaBuild</code>.</p>
+                        <code>Invoke-NovaTest</code> and <code>Test-NovaBuild</code>.</p>
                 </div>
                 <h3>Common examples</h3>
                 <div class="surface-example" data-command-example>
@@ -435,7 +435,7 @@ PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -Cont
                     <strong>CI/CD shortcut:</strong>
                     <p>Use <code>-SkipTests</code>, <code>--skip-tests</code>, or <code>-s</code> when tests already ran
                         earlier in your pipeline. Release still runs both build steps; it only skips the pre-release
-                        <code>Test-NovaBuild</code> step.</p>
+                        <code>Invoke-NovaTest</code> and <code>Test-NovaBuild</code> steps.</p>
                 </div>
                 <h3>Examples</h3>
                 <div class="surface-example" data-command-example>

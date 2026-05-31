@@ -70,6 +70,7 @@ function Get-NovaModuleInitializationNextStepLine {
     )
 
     if ($WorkflowContext.Example) {
+        $nextSteps += 'Invoke-NovaTest'
         $nextSteps += 'Test-NovaBuild'
         return $nextSteps
     }

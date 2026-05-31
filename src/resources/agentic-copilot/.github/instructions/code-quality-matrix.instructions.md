@@ -111,7 +111,7 @@ This file tells Agentic Copilot how to shape source code from the start. Test-sp
 - How to apply in PowerShell:
     - Add or update a source-mirrored `tests/<area>/<Name>.Tests.ps1` file for every changed `src/**/*.ps1` file.
     - Cover both the happy path and the meaningful unhappy, invalid, and boundary cases that the change introduces.
-    - Use `Test-NovaBuild` as the authoritative test entrypoint in Nova-managed projects. Do not call `Invoke-Pester` directly.
+    - Use `Invoke-NovaTest` as the unit-test entrypoint and `Test-NovaBuild` as the build-validation integration-test entrypoint in Nova-managed projects. Do not call `Invoke-Pester` directly.
     - Isolate collaborators with mocks/stubs when verifying side effects or branching. Keep tests order-independent.
     - See `.github/instructions/testing-policy.instructions.md` and the `pester-testing` skill for the full testing rules.
 - Common objection: "It is too small to test." If it is too small to test, it is too small to be a change worth landing.

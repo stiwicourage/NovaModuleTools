@@ -67,7 +67,8 @@ Describe 'Invoke-NovaReleaseWorkflow' {
     BeforeEach {
         . (Join-Path $projectRoot 'src/private/release/InvokeNovaReleaseWorkflow.ps1')
         $script:buildCalls = 0
-        $script:testCalls = 0
+        $script:unitTestCalls = 0
+        $script:integrationTestCalls = 0
         $script:versionCalls = 0
         $script:restoreCalls = 0
         $script:publishCalls = 0
@@ -95,7 +96,8 @@ Describe 'Invoke-NovaReleaseWorkflow' {
         $r = Invoke-NovaReleaseWorkflow -WorkflowContext $ctx
         $r.Version | Should -Be '1.0.0'
         $script:buildCalls | Should -Be 2
-        $script:testCalls | Should -Be 1
+        $script:unitTestCalls | Should -Be 1
+        $script:integrationTestCalls | Should -Be 1
         $script:versionCalls | Should -Be 1
         $script:publishCalls | Should -Be 1
         $script:restoreCalls | Should -Be 1
@@ -133,7 +135,8 @@ Describe 'Invoke-NovaReleaseWorkflow' {
             SkipTestsRequested = $true
         }
         $null = Invoke-NovaReleaseWorkflow -WorkflowContext $ctx
-        $script:testCalls | Should -Be 0
+        $script:unitTestCalls | Should -Be 0
+        $script:integrationTestCalls | Should -Be 0
         $script:restoreCalls | Should -Be 0
         Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Publishing release to the local module path' -and $PercentComplete -eq 90

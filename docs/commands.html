@@ -339,21 +339,25 @@ PS&gt; Invoke-NovaBuild -ContinuousIntegration</code></pre>
                             <p><strong>Launcher route:</strong> <code>nova test</code></p>
                         </div>
                         <div class="surface-note" data-command-visibility="powershell">
-                            <p><strong>Cmdlet:</strong> <code>Test-NovaBuild</code></p>
+                            <p><strong>Cmdlets:</strong> <code>Invoke-NovaTest</code> for unit tests, <code>Test-NovaBuild</code> for build validation</p>
                         </div>
-                        <p>Run Pester for the current project and write results to
+                        <p>Run Nova's managed test workflows for the current project. <code>Invoke-NovaTest</code>
+                            writes unit-test results to <code>artifacts/UnitTestResults.xml</code>, and
+                            <code>Test-NovaBuild</code> writes build-validation results to
                             <code>artifacts/TestResults.xml</code>.</p>
-                        <p>If coverage is enabled in <code>project.json</code>, the same workflow also writes
-                            <code>artifacts/coverage.xml</code> and fails when measured coverage stays below the
+                        <p>If coverage is enabled in <code>project.json</code>, <code>Invoke-NovaTest</code> also
+                            writes <code>artifacts/coverage.xml</code> and fails when measured coverage stays below the
                             configured <code>CoveragePercentTarget</code>.</p>
                         <ul class="plain-list">
-                            <li><strong>Use when:</strong> you want the standard Nova test flow</li>
+                            <li><strong>Use when:</strong> you want unit tests from PowerShell or the default Nova test flow from the CLI</li>
                             <li data-command-visibility="command-line" hidden><strong>Best launcher option:</strong>
                                 <code>--build</code> rebuilds before testing
                             </li>
                             <li data-command-visibility="powershell"><strong>Cmdlet extras:</strong>
-                                <code>-Build</code>, <code>-TagFilter</code>, <code>-ExcludeTagFilter</code>,
-                                <code>-OutputVerbosity</code>, and <code>-OutputRenderMode</code></li>
+                                <code>Invoke-NovaTest</code> supports <code>-TagFilter</code>,
+                                <code>-ExcludeTagFilter</code>, <code>-OutputVerbosity</code>, and
+                                <code>-OutputRenderMode</code>. <code>Test-NovaBuild</code> supports the same options
+                                plus <code>-OverrideWarning</code>.</li>
                         </ul>
                         <div class="surface-example" data-command-example>
                             <div class="surface-example__meta">
@@ -367,9 +371,9 @@ PS&gt; Invoke-NovaBuild -ContinuousIntegration</code></pre>
 % nova test --what-if</code></pre>
                             </div>
                             <div class="surface-example__surface" data-command-surface="powershell">
-                                <pre><code>PS&gt; Test-NovaBuild
-PS&gt; Test-NovaBuild -Build
-PS&gt; Test-NovaBuild -TagFilter unit,fast</code></pre>
+                                <pre><code>PS&gt; Invoke-NovaTest
+PS&gt; Test-NovaBuild
+PS&gt; Invoke-NovaTest -TagFilter unit,fast</code></pre>
                             </div>
                         </div>
                         <p><a class="text-link" href="./core-workflows.html#test">See the test workflow</a></p>

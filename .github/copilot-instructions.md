@@ -21,7 +21,7 @@ For new or not-yet-scoped work, use the `architect` agent with `.github/prompts/
 
 - `src/public/` — public PowerShell commands; one top-level function per file, file name matches function name
 - `src/private/` — domain-grouped helpers (`build/`, `cli/`, `package/`, `quality/`, `release/`, `scaffold/`, `shared/`, `update/`); one externally called helper per file
-- `tests/` — Pester tests and shared test-support scripts
+- `tests/` — Pester tests and shared test-support scripts; public command unit tests live under `tests/public/<Command>.Tests.ps1` and per-command build-validation integration tests live under `tests/public/<Command>.Integration.Tests.ps1`
 - `scripts/build/` — local analyzer and build helpers
 - `scripts/build/ci/` — CI coverage, CodeScene, and artifact helpers
 - `.github/workflows/` — GitHub Actions CI, analyzer, dependency review, publish automation
