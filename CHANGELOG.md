@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [3.2.0] - 2026-05-31
+
+### Added
+
 - `project.json` now has a single authoritative JSON schema hosted at `https://www.novamoduletools.com/schema/v{major}/project.json`.
     - `Invoke-NovaBuild` exports the schema to `docs/schema/v{major}/project.json` during build, creating the directory when missing.
     - `nova init` injects `"$schema": "https://www.novamoduletools.com/schema/v{major}/project.json"` into every scaffolded project.
@@ -29,8 +43,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - `Test-NovaBuild` now writes build-validation NUnit output to `artifacts/TestResults.xml` without enforcing source coverage.
 - CI, release, packaging, and repository quality workflows now run `Invoke-NovaTest` before `Test-NovaBuild` when tests are not skipped.
 
-### Deprecated
-
 ### Removed
 
 - Removed boolean `Package.Latest` compat shim deprecated in 2.4.0. Setting `Package.Latest` to `true` or `false` now throws `Nova.Validation.InvalidPackageLatestPolicy` with a migration message. Use `"always"` or `"never"` instead.
@@ -45,8 +57,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - The configured Pester output still flows live so `project.json` settings such as `Pester.Output.Verbosity = "Detailed"` remain visible.
 - Progress-enabled private workflows now have stronger mirrored progress-contract tests, and the repository adds a guardrail test so future `Write-Progress` workflows cannot land without matching test ownership.
 - `Package.Types` values in `project.json` now report a human-readable validation error in VS Code instead of showing the raw regex pattern. VS Code now shows the accepted values (`NuGet`, `Zip`, `.nupkg`, `.zip`) directly in the error.
-
-### Security
 
 ## [3.1.0] - 2026-05-24
 
@@ -477,7 +487,8 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 - First release to `psgallery`
 - All basic functionality of Module is ready
 
-[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/3.1.0...HEAD
+[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/3.2.0...HEAD
+[3.2.0]: https://github.com/stiwicourage/NovaModuleTools/compare/3.1.0...3.2.0
 [3.1.0]: https://github.com/stiwicourage/NovaModuleTools/compare/3.0.1...3.1.0
 [3.0.1]: https://github.com/stiwicourage/NovaModuleTools/compare/3.0.0...3.0.1
 [3.0.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.4.0...3.0.0
@@ -499,3 +510,4 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
+
