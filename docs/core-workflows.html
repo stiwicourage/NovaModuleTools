@@ -246,7 +246,10 @@ PS&gt; Invoke-NovaBuild -ContinuousIntegration</code></pre>
 PS&gt; Test-NovaBuild
 PS&gt; Invoke-NovaTest -TagFilter unit,fast
 PS&gt; Test-NovaBuild -ExcludeTagFilter slow
-PS&gt; Invoke-NovaTest -OutputVerbosity Detailed -OutputRenderMode Ansi</code></pre>
+                        PS&gt; Invoke-NovaTest -OutputVerbosity Detailed -OutputRenderMode Ansi
+                        PS&gt; $credential = Get-Credential
+                        PS&gt; $container = New-PesterContainer -Path 'tests/public/PublishNovaModule.Tests.ps1' -Data @{ Credential = $credential }
+                        PS&gt; Invoke-NovaTest -PesterConfigurationOverride @{ Run = @{ Container = @($container) } }</code></pre>
                     </div>
                     <div class="surface-example__surface" data-command-surface="command-line" hidden>
                         <pre><code>% nova test
@@ -274,6 +277,11 @@ PS&gt; Invoke-NovaTest -OutputVerbosity Detailed -OutputRenderMode Ansi</code></
                         <code>-OutputRenderMode</code> are PowerShell cmdlet parameters, so switch to the PowerShell
                         view when you need those controls.</p>
                 </div>
+                <p data-command-visibility="powershell"><code>Invoke-NovaTest</code> also supports a guarded
+                    <code>-PesterConfigurationOverride</code> hook for runtime-only unit-test data. In v1 Nova accepts
+                    only <code>Run.Container</code>, so you can inject values such as <code>PSCredential</code> with
+                    file-backed <code>New-PesterContainer -Path</code> objects while Nova still owns discovery,
+                    coverage, result files, and the rest of the test workflow.</p>
                 <p data-command-visibility="powershell">Use <code>-WhatIf</code> if you want to preview the test run and
                     output path without creating the
                     results directory or invoking Pester.</p>

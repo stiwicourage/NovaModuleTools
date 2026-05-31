@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Added `Invoke-NovaTest` as the dedicated NovaModuleTools unit-test command.
     - `% nova test` now routes to `Invoke-NovaTest`.
     - `Invoke-NovaTest` writes unit-test NUnit output to `artifacts/UnitTestResults.xml` and remains the code-coverage entry point.
+    - `Invoke-NovaTest` now accepts a guarded `-PesterConfigurationOverride` hook for runtime-only unit-test data injection through `Run.Container`, including `PSCredential` values supplied through `New-PesterContainer -Data`.
 
 ### Changed
 

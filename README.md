@@ -107,6 +107,7 @@ PS> Test-NovaBuild
 - `Invoke-NovaTest` is the unit-test entrypoint. Keep public command unit ownership in `tests/public/<Command>.Tests.ps1`.
 - `Test-NovaBuild` is the build-validation integration-test entrypoint. Keep per-command public integration ownership in `tests/public/<Command>.Integration.Tests.ps1` when the built command behavior itself needs coverage.
 - For destructive or environment-coupled commands, prefer safe `-WhatIf` integration coverage when that still proves `ShouldProcess` wiring and command behavior.
+- `Invoke-NovaTest` also supports a PowerShell-only `-PesterConfigurationOverride` hook for runtime-only unit-test data injection. In v1 Nova accepts only `Run.Container`, so you can pass `New-PesterContainer -Path ... -Data @{ Credential = $credential }` without turning the managed test workflow into arbitrary Pester passthrough.
 
 NovaModuleTools can self-update the installed module from PowerShell or the `nova` CLI launcher.
 

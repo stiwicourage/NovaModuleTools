@@ -11,6 +11,7 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 - Added `Invoke-NovaTest` as the dedicated PowerShell unit-test command.
     - `% nova test` now maps to `Invoke-NovaTest`.
     - Unit-test NUnit results are now written to `artifacts/UnitTestResults.xml`.
+    - `Invoke-NovaTest` now supports guarded runtime-only test-data injection through `-PesterConfigurationOverride`, limited in v1 to `Run.Container` entries such as `New-PesterContainer -Data @{ Credential = $credential }`.
 
 ### Changed
 
