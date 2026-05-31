@@ -32,10 +32,11 @@ function Get-NovaTestWorkflowContext {
     $projectInfo = Get-NovaProjectInfo
     $workflowProfile = Get-NovaTestWorkflowProfile -TestOption $TestOption
     $pesterConfig = New-PesterConfiguration -Hashtable $projectInfo.Pester
-    if ($workflowProfile.CoverageEnabled) {
-        Initialize-NovaPesterCoverageConfiguration -PesterConfig $pesterConfig -ProjectInfo $projectInfo
-    } else {
-        Disable-NovaPesterCoverageConfiguration -PesterConfig $pesterConfig
+    $coverageConfiguration = Get-NovaPesterCoverageConfigurationState -ProjectInfo $projectInfo -CoverageEnabled:$workflowProfile.CoverageEnabled
+    $pesterConfig.CodeCoverage.Enabled = $coverageConfiguration.Enabled
+    $pesterConfig.CodeCoverage.Path = $coverageConfiguration.Path
+    if ($null -ne $coverageConfiguration.CoveragePercentTarget) {
+        $pesterConfig.CodeCoverage.CoveragePercentTarget = $coverageConfiguration.CoveragePercentTarget
     }
 
     $pesterConfig.Run.Path = @(
@@ -179,45 +180,40 @@ function Get-NovaConfiguredPesterCoveragePath {
     )
 }
 
-function Initialize-NovaPesterCoverageConfiguration {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Mutates PesterConfiguration state, not user-facing resources. ShouldProcess is not appropriate here.')]
+function Get-NovaPesterCoverageConfigurationState {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][object]$PesterConfig,
-        [Parameter(Mandatory)][pscustomobject]$ProjectInfo
+        [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
+        [Parameter(Mandatory)][bool]$CoverageEnabled
     )
+
+    if (-not $CoverageEnabled) {
+        return Get-NovaDisabledPesterCoverageConfiguration
+    }
 
     $codeCoverageSettings = Get-NovaPesterSettingValue -InputObject $ProjectInfo.Pester -Name 'CodeCoverage'
     if ($true -ne [bool](Get-NovaPesterSettingValue -InputObject $codeCoverageSettings -Name 'Enabled')) {
-        return
+        return Get-NovaDisabledPesterCoverageConfiguration
     }
 
     $coveragePercentTarget = Get-NovaConfiguredPesterCoveragePercentTarget -ProjectPesterSettings $ProjectInfo.Pester
-    if ($null -ne $coveragePercentTarget) {
-        $PesterConfig.CodeCoverage.CoveragePercentTarget = $coveragePercentTarget
-    }
-
     $resolvedCoveragePath = @(Get-NovaResolvedPesterCoveragePath -ProjectInfo $ProjectInfo)
-    if ($resolvedCoveragePath.Count -gt 0) {
-        $PesterConfig.CodeCoverage.Path = $resolvedCoveragePath
+
+    return [pscustomobject]@{
+        Enabled = $true
+        CoveragePercentTarget = $coveragePercentTarget
+        Path = $resolvedCoveragePath
     }
 }
 
-function Disable-NovaPesterCoverageConfiguration {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Mutates PesterConfiguration state, not user-facing resources. ShouldProcess is not appropriate here.')]
+function Get-NovaDisabledPesterCoverageConfiguration {
     [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][object]$PesterConfig
-    )
+    param()
 
-    if ($PesterConfig.PSObject.Properties.Name -contains 'CodeCoverage') {
-        if ($PesterConfig.CodeCoverage.PSObject.Properties.Name -contains 'Enabled') {
-            $PesterConfig.CodeCoverage.Enabled = $false
-        }
-
-        if ($PesterConfig.CodeCoverage.PSObject.Properties.Name -contains 'Path') {
-            $PesterConfig.CodeCoverage.Path = @()
-        }
+    return [pscustomobject]@{
+        Enabled = $false
+        CoveragePercentTarget = $null
+        Path = @()
     }
 }
 

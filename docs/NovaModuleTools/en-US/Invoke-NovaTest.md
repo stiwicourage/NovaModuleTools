@@ -21,8 +21,8 @@ Runs the NovaModuleTools unit-test workflow for the current project.
 
 ```text
 PS> Invoke-NovaTest [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>]
- [[-OutputVerbosity] <string>] [[-OutputRenderMode] <string>] [-WhatIf] [-Confirm]
- [<CommonParameters>]
+ [[-OutputVerbosity] <string>] [[-OutputRenderMode] <string>] [-OverrideWarning]
+ [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -36,6 +36,8 @@ The unit-test workflow writes NUnit XML to `artifacts/UnitTestResults.xml`.
 When `Pester.CodeCoverage.Enabled` is `true`, Nova also writes JaCoCo coverage to `artifacts/coverage.xml` and fails the run when the measured percentage is lower than `Pester.CodeCoverage.CoveragePercentTarget`.
 
 Use `Test-NovaBuild` when you need the separate build-validation integration flow that runs against the built module output.
+
+Use `-OverrideWarning` only when you intentionally want to bypass Nova's public-file export guard for the current unit-test run.
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the planned unit-test run and output paths without invoking Pester.
 
@@ -74,6 +76,14 @@ PS> Invoke-NovaTest -OutputVerbosity Detailed -OutputRenderMode Ansi
 Overrides the Pester console output settings for the current unit-test run.
 
 ### EXAMPLE 5
+
+```text
+PS> Invoke-NovaTest -OverrideWarning
+```
+
+Runs the unit-test workflow while explicitly bypassing Nova's public-file export guard for this invocation.
+
+### EXAMPLE 6
 
 ```text
 PS> Invoke-NovaTest -WhatIf
@@ -171,6 +181,27 @@ AcceptedValues:
 - Normal
 - Detailed
 - Diagnostic
+HelpMessage: ''
+```
+
+### -OverrideWarning
+
+Bypasses Nova's public-file export guard for this unit-test invocation.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
 HelpMessage: ''
 ```
 

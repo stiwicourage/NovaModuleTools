@@ -9,6 +9,10 @@ function Invoke-NovaTest {
         [string]$OutputRenderMode
     )
 
+    dynamicparam {
+        return Get-NovaDynamicOverrideWarningParameterDictionary
+    }
+
     end {
         $workflowContext = Get-NovaTestWorkflowContext -TestOption @{
             TestMode = 'Unit'

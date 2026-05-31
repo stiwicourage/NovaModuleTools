@@ -197,13 +197,51 @@ Describe 'Get-NovaConfiguredPesterCoveragePath' {
     }
 }
 
-Describe 'Disable-NovaPesterCoverageConfiguration' {
-    It 'disables coverage and clears configured paths' {
-        $pesterConfig = & $script:getPesterConfig
-        Disable-NovaPesterCoverageConfiguration -PesterConfig $pesterConfig
+Describe 'Get-NovaDisabledPesterCoverageConfiguration' {
+    It 'returns disabled coverage settings with empty paths' {
+        $result = Get-NovaDisabledPesterCoverageConfiguration
 
-        $pesterConfig.CodeCoverage.Enabled | Should -BeFalse
-        $pesterConfig.CodeCoverage.Path | Should -BeNullOrEmpty
+        $result.Enabled | Should -BeFalse
+        $result.Path | Should -BeNullOrEmpty
+        $result.CoveragePercentTarget | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Get-NovaPesterCoverageConfigurationState' {
+    It 'returns disabled coverage settings when coverage is disabled for the workflow' {
+        $projectInfo = & $script:getProjectInfo -PesterSettings ([ordered]@{
+            CodeCoverage = [ordered]@{
+                Enabled = $true
+                CoveragePercentTarget = 99
+                Path = @('src/public/*.ps1')
+            }
+        })
+
+        $result = Get-NovaPesterCoverageConfigurationState -ProjectInfo $projectInfo -CoverageEnabled:$false
+
+        $result.Enabled | Should -BeFalse
+        $result.Path | Should -BeNullOrEmpty
+        $result.CoveragePercentTarget | Should -BeNullOrEmpty
+    }
+
+    It 'returns configured coverage settings when coverage is enabled' {
+        $projectRoot = Join-Path $TestDrive 'coverage-values-project'
+        $filePath = Join-Path $projectRoot 'src/public/GetAlpha.ps1'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $filePath) -Force | Out-Null
+        Set-Content -LiteralPath $filePath -Value '# test'
+        $projectInfo = & $script:getProjectInfo -ProjectRoot $projectRoot -PesterSettings ([ordered]@{
+            CodeCoverage = [ordered]@{
+                Enabled = $true
+                CoveragePercentTarget = 99
+                Path = @('src/public/*.ps1')
+            }
+        })
+
+        $result = Get-NovaPesterCoverageConfigurationState -ProjectInfo $projectInfo -CoverageEnabled:$true
+
+        $result.Enabled | Should -BeTrue
+        $result.CoveragePercentTarget | Should -Be 99.0
+        $result.Path | Should -Be @('src/public/GetAlpha.ps1')
     }
 }
 

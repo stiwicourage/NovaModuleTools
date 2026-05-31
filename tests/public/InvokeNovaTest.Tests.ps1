@@ -2,6 +2,15 @@ BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     . (Join-Path $projectRoot 'src/public/InvokeNovaTest.ps1')
 
+    function Get-NovaDynamicOverrideWarningParameterDictionary {
+        $dictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+        $attributeCollection = [System.Collections.ObjectModel.Collection[System.Attribute]]::new()
+        $attributeCollection.Add([System.Management.Automation.ParameterAttribute]::new())
+        $runtimeParameter = [System.Management.Automation.RuntimeDefinedParameter]::new('OverrideWarning', [switch], $attributeCollection)
+        $dictionary.Add('OverrideWarning', $runtimeParameter)
+        return $dictionary
+    }
+
     function Get-NovaTestWorkflowContext {
         param($TestOption, $BoundParameters)
 
@@ -25,12 +34,13 @@ Describe 'Invoke-NovaTest' {
     }
 
     It 'forwards unit-test options to the workflow context' {
-        Invoke-NovaTest -TagFilter 'fast' -ExcludeTagFilter 'integration' -OutputVerbosity 'Detailed'
+        Invoke-NovaTest -OverrideWarning -TagFilter 'fast' -ExcludeTagFilter 'integration' -OutputVerbosity 'Detailed'
 
         $script:testOption.TestMode | Should -Be 'Unit'
         $script:testOption.TagFilter | Should -Be @('fast')
         $script:testOption.ExcludeTagFilter | Should -Be @('integration')
         $script:testOption.OutputVerbosity | Should -Be 'Detailed'
+        $script:boundParameters.OverrideWarning | Should -BeTrue
         $script:shouldRun | Should -BeTrue
     }
 

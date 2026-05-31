@@ -52,6 +52,17 @@ Describe 'Invoke-NovaCliTestRouteCommand' {
         Assert-MockCalled Test-NovaBuild -Times 0
     }
 
+    It 'forwards override-warning to Invoke-NovaTest for plain nova test' {
+        Mock ConvertFrom-NovaTestCliArgument { @{OverrideWarning = $true} }
+        Mock Invoke-NovaTest { param([switch]$OverrideWarning, [switch]$WhatIf) "unit:$($OverrideWarning.IsPresent):$($WhatIf.IsPresent)" }
+        Mock Test-NovaBuild {}
+
+        $result = Invoke-NovaCliTestRouteCommand -InvocationContext (New-TestContext -Arguments @('--override-warning') -MutatingCommonParameters @{WhatIf = $true})
+
+        $result | Should -Be 'unit:True:True'
+        Assert-MockCalled Test-NovaBuild -Times 0
+    }
+
     It 'routes nova test --build to Test-NovaBuild without forwarding the Build switch' {
         Mock ConvertFrom-NovaTestCliArgument { @{Build = $true; OverrideWarning = $true} }
         Mock Test-NovaBuild { param([switch]$OverrideWarning, [switch]$WhatIf) "integration:$($OverrideWarning.IsPresent):$($WhatIf.IsPresent)" }
