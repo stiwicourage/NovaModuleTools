@@ -246,10 +246,10 @@ PS&gt; Invoke-NovaBuild -ContinuousIntegration</code></pre>
 PS&gt; Test-NovaBuild
 PS&gt; Invoke-NovaTest -TagFilter unit,fast
 PS&gt; Test-NovaBuild -ExcludeTagFilter slow
-                        PS&gt; Invoke-NovaTest -OutputVerbosity Detailed -OutputRenderMode Ansi
-                        PS&gt; $credential = Get-Credential
-                        PS&gt; $container = New-PesterContainer -Path 'tests/public/PublishNovaModule.Tests.ps1' -Data @{ Credential = $credential }
-                        PS&gt; Invoke-NovaTest -PesterConfigurationOverride @{ Run = @{ Container = @($container) } }</code></pre>
+PS&gt; Invoke-NovaTest -OutputVerbosity Detailed -OutputRenderMode Ansi
+PS&gt; $credential = Get-Credential
+PS&gt; $container = New-PesterContainer -Path 'tests/public/PublishNovaModule.Tests.ps1' -Data @{ Credential = $credential }
+PS&gt; Invoke-NovaTest -PesterConfigurationOverride @{ Run = @{ Container = @($container) } }</code></pre>
                     </div>
                     <div class="surface-example__surface" data-command-surface="command-line" hidden>
                         <pre><code>% nova test
