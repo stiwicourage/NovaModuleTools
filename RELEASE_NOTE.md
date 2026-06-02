@@ -14,7 +14,7 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Fixed
 
-- `Test-NovaBuild` and `% nova test -b` now stop with a clear Nova-native error when a project has no `*.Integration.Tests.ps1` files, and the message now explains where build-validation tests belong plus when to use `Invoke-NovaTest` instead.
+- `Test-NovaBuild` and `% nova test -b` now complete with a visible warning when a project has no `*.Integration.Tests.ps1` files, and the guidance now explains where build-validation tests belong plus when to use `Invoke-NovaTest` instead.
 - The packaged example scaffold now includes a minimal build-validation integration test that resolves the generated project name before importing the built module and checking `Get-ExampleGreeting`, so `nova init -e` projects can pass `Test-NovaBuild`.
 
 ### Security

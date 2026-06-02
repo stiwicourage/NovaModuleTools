@@ -42,7 +42,7 @@ function Get-NovaTestWorkflowContext {
     $runPath = @(
         Get-NovaPesterRunPath -ProjectInfo $projectInfo -IncludePattern $workflowProfile.IncludePattern -ExcludePattern $workflowProfile.ExcludePattern
     )
-    Assert-NovaDiscoveredTestPath -RunPath $runPath -ProjectInfo $projectInfo -WorkflowProfile $workflowProfile
+    $testDiscoveryState = Get-NovaDiscoveredTestPathState -RunPath $runPath -ProjectInfo $projectInfo -WorkflowProfile $workflowProfile
     $pesterConfig.Run.Path = $runPath
     $pesterConfig.Run.PassThru = $true
     $pesterConfig.Run.Exit = $true
@@ -68,13 +68,15 @@ function Get-NovaTestWorkflowContext {
         TestResultDirectory = Split-Path -Parent $testResultPath
         TestResultArtifactWriter = Get-Command -Name Write-NovaPesterTestResultArtifact -CommandType Function -ErrorAction Stop
         TestResultReportWriter = Get-Command -Name Write-NovaPesterTestResultReport -CommandType Function -ErrorAction Stop
+        TestsDiscovered = $testDiscoveryState.HasDiscoveredTests
+        TestDiscoveryMessageLines = $testDiscoveryState.MessageLines
         WorkflowParams = Get-NovaShouldProcessForwardingParameter -WhatIfEnabled:($BoundParameters.ContainsKey('WhatIf') -and [bool]$BoundParameters.WhatIf)
         Target = $testResultPath
         Operation = Get-NovaTestWorkflowOperation -TestMode $workflowProfile.Mode
     }
 }
 
-function Assert-NovaDiscoveredTestPath {
+function Get-NovaDiscoveredTestPathState {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$RunPath,
@@ -83,18 +85,33 @@ function Assert-NovaDiscoveredTestPath {
     )
 
     if ($WorkflowProfile.Mode -ne 'BuildValidation' -or $RunPath.Count -gt 0) {
-        return
+        return [pscustomobject]@{
+            HasDiscoveredTests = $true
+            MessageLines = @()
+        }
     }
 
+    return [pscustomobject]@{
+        HasDiscoveredTests = $false
+        MessageLines = @(Get-NovaMissingBuildValidationTestMessageLine -ProjectInfo $ProjectInfo -WorkflowProfile $WorkflowProfile)
+    }
+}
+
+function Get-NovaMissingBuildValidationTestMessageLine {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
+        [Parameter(Mandatory)][pscustomobject]$WorkflowProfile
+    )
+
     $expectedPath = Join-Path $ProjectInfo.TestsDir 'public/Get-CommandName.Integration.Tests.ps1'
-    $message = @(
-        "The current project does not contain any build-validation integration tests matching '$($WorkflowProfile.IncludePattern)'."
-        'Test-NovaBuild expects build-validation tests under the tests folder, for example tests/public/Get-CommandName.Integration.Tests.ps1.'
+
+    return @(
+        "No build-validation integration tests matching '$($WorkflowProfile.IncludePattern)' were discovered for $( $ProjectInfo.ProjectName )."
+        "Test-NovaBuild expects build-validation tests under the tests folder, for example $expectedPath."
         'Add at least one *.Integration.Tests.ps1 file, then rerun Test-NovaBuild.'
         'Use Invoke-NovaTest for unit tests and Test-NovaBuild for build-validation integration tests.'
-    ) -join ' '
-
-    Stop-NovaOperation -Message $message -ErrorId 'Nova.Workflow.BuildValidationTestsMissing' -Category ObjectNotFound -TargetObject $expectedPath
+    )
 }
 
 function Get-NovaTestOptionValue {

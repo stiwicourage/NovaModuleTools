@@ -15,8 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- `Test-NovaBuild` and `% nova test -b` now stop with a Nova-native error when a project has no `*.Integration.Tests.ps1` files, instead of leaking the raw async Pester exception.
-    - The new guidance explains where build-validation tests belong and reminds users to keep unit tests in `Invoke-NovaTest`.
+- `Test-NovaBuild` and `% nova test -b` now complete with a visible warning when a project has no `*.Integration.Tests.ps1` files, instead of failing the build-validation flow.
+    - The guidance explains where build-validation tests belong, tells users to add at least one `*.Integration.Tests.ps1` file before rerunning `Test-NovaBuild`, and reminds users to keep unit tests in `Invoke-NovaTest`.
 - The packaged example scaffold now includes a minimal `*.Integration.Tests.ps1` file that resolves the generated `ProjectName`, imports the built module, and validates `Get-ExampleGreeting`, so `nova init -e` projects can pass `Test-NovaBuild` even after the scaffold rewrites `project.json`.
 
 ### Security
