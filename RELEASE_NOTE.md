@@ -8,6 +8,8 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Changed
 
+- The shipped Agentic Copilot scaffold now includes tighter review, release, testing, and analyzer guidance so generated projects inherit the latest workflow guardrails and validation expectations.
+
 ### Deprecated
 
 ### Removed

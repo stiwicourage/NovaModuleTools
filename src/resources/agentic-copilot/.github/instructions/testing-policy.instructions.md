@@ -13,9 +13,11 @@ Use this file when changing production code, tests, coverage behavior, or CI tes
 {{ProjectName}} is migrating tests to a 1:1 source-to-test layout per issue #208. New and migrated tests follow this loading pattern:
 
 - The test file's `BeforeAll` dot-sources **only** the `src/**/*.ps1` files it needs (the source under test plus its private collaborators that are not being mocked).
+- Dot-source a private collaborator when its real behavior is required to exercise the scenario under test. Mock a private collaborator when isolating the function under test from that collaborator's side effects or when controlling its return value is necessary for the test.
 - Tests do **not** `Import-Module $project.OutputModuleDir`.
 - Tests do **not** use `InModuleScope <ModuleName> { ... }`. Mocked functions live in the same scope as the test because they were dot-sourced into it.
 - Shared fixtures and dot-source helpers live in `tests/TestHelpers/`.
+- Changes to `tests/TestHelpers/` or `*.TestSupport.ps1` files do not require a separate mirrored test, but must be validated by running `Invoke-NovaTest` to confirm no existing tests regress. If a helper encapsulates reusable assertion logic, add inline Pester examples in a `*.Tests.ps1` file in `tests/TestHelpers/` only when the logic is non-trivial.
 - This makes `project.json` `Pester.CodeCoverage.Path = ["src/public/*.ps1", "src/private/*.ps1", "src/private/*/*.ps1", "src/private/*/*/*.ps1"]` produce real source-file coverage, including nested helper folders such as `src/private/build/manifest/` and `src/private/quality/duplicates/`, and means `Test-NovaBuild` does not require a `dist/` folder.
 
 Example:
@@ -28,13 +30,13 @@ BeforeAll {
 }
 ```
 
-Legacy tests that still use `Import-Module $project.OutputModuleDir` + `InModuleScope` can still exist while maintainers finish migrations, but the mirrored pattern itself now supports enabled repository coverage gates. Generated project templates still ship `CodeCoverage.Enabled = false` until maintainers opt into the coverage gate for their own project.
+Legacy tests that still use `Import-Module $project.OutputModuleDir` + `InModuleScope` can still exist while maintainers finish migrations, but the mirrored pattern itself now supports enabled repository coverage gates. If a changed source file has no mirrored test yet, create the mirrored test file as part of the same change. Do not add new coverage to legacy bucket files (`CoverageGaps*.Tests.ps1`, `Remaining*Coverage*.Tests.ps1`, or `*Command*.Tests.ps1`) for code that belongs in a mirrored test. Generated project templates still ship `CodeCoverage.Enabled = false` with a `90` percent target until maintainers opt into the coverage gate for their own project.
 
 ## Integration tests may import `dist/`
 
 - New mirrored unit tests should keep dot-sourcing `src/**/*.ps1` files directly.
-- Public command integration ownership lives in `tests/public/<Command>.Integration.Tests.ps1` when the purpose is validating built-module behavior, exported command shape, command wiring, or build-validation smoke coverage.
-- Cross-cutting `*.Integration.Tests.ps1` files may `Import-Module ./dist/<ModuleName>/<ModuleName>.psd1` when the behavior genuinely spans multiple source files.
+- Public command integration ownership lives in `tests/public/<Command>.Integration.Tests.ps1` when the purpose is validating the built public command's shape, exports, wiring, or build-validation smoke coverage.
+- Per-command and cross-cutting `*.Integration.Tests.ps1` files may `Import-Module ./dist/<ModuleName>/<ModuleName>.psd1` only when the scenario genuinely requires the built module because the behavior spans multiple source files or depends on the exported command surface.
 - For destructive or environment-coupled public commands, prefer safe `-WhatIf` integration coverage when that still proves `ShouldProcess`, routing, and output behavior.
 - Keep that `dist/` import limited to integration scenarios; do not use it as the default pattern for mirrored unit tests.
 
@@ -57,27 +59,42 @@ Cross-cutting files should be **named for the behavior** they validate (e.g., `*
 | `src/public/<Name>.ps1`           | `tests/public/<Name>.Integration.Tests.ps1` for built-module/public-command integration ownership |
 | `src/private/<domain>/<Name>.ps1` | `tests/private/<domain>/<Name>.Tests.ps1` |
 | `src/classes/<Name>.ps1`          | `tests/classes/<Name>.Tests.ps1`          |
+| Any other `src/**/<Name>.ps1`     | `tests/<relative-path-from-src>/<Name>.Tests.ps1` mirroring the directory structure |
 
 A non-blocking mirror status helper is available at `scripts/build/Get-TestMirrorStatus.ps1` to show which source files still lack a mirrored test.
+If the path does not fit an existing category, mirror the directory structure under `tests/` and flag it for maintainer review. If `Get-TestMirrorStatus.ps1` is unavailable or errors, manually verify that every modified `src/**/*.ps1` file has a corresponding `tests/**/*.Tests.ps1` file before marking the change complete.
 
 ## Test expectations
+
+**Scope and entrypoint**
 
 - Behavior changes require Pester coverage.
 - `Invoke-NovaTest` is the unit-test entrypoint and `Test-NovaBuild` is the build-validation integration-test entrypoint in Nova-managed projects. Do not validate with direct `Invoke-Pester`, because it can bypass Nova's build/import/StrictMode flow and disagree with what users see later.
 - Prefer the smallest supported test scope first: `Invoke-NovaTest` for unit behavior, then `Test-NovaBuild` when the change needs built-module or integration validation, before running the full quality loop.
 - For public commands, keep unit coverage in `tests/public/<Command>.Tests.ps1` and keep per-command integration ownership in `tests/public/<Command>.Integration.Tests.ps1` when the built command behavior itself needs validation.
-- For destructive or environment-coupled public commands, prefer safe `-WhatIf` integration coverage when that still proves `ShouldProcess`, routing, and output semantics.
-- Keep test names explicit about the behavior being proven.
+- Use broad guardrail, architecture, command-model, or integration tests only for behavior that genuinely spans multiple source files; do not use them as the default place for unit coverage of unrelated source files.
+
+**Isolation and helpers**
+
 - Reuse `*.TestSupport.ps1` helpers where possible.
 - For every new or changed `src/**/*.ps1` file, add or update the matching source-mirrored `.Tests.ps1` file.
 - Keep test files and helpers compatible with `project.json` `Manifest.PowerShellHostVersion`; if a project targets `5.1`, do not rely on PowerShell 7.x-only syntax, cmdlets, parameters, or APIs in the tests.
-- Cover both the normal path and the meaningful unhappy, invalid, or boundary cases that the changed behavior introduces.
-- Use mocks or stubs for collaborators when the test needs to isolate behavior or verify side effects.
+- Cover both the normal path and every distinct failure mode and boundary condition visible in the changed code's branching logic (for example null input, empty collections, out-of-range values, and each explicit error throw or early return).
+- Use mocks or stubs for any function from a different source file, or for any function that performs I/O, state mutation, or external side effects, when the test needs to isolate the behavior of the file under test.
 - Keep tests isolated and order-independent; do not rely on shared mutable state between tests.
+
+**Maintenance and readability**
+
+- Keep test names explicit about the behavior being proven.
 - Update tests when production signatures or behavior change instead of leaving stale expectations behind.
 - Keep test flows linear and easy to scan; extract setup or assertion helpers when one test starts carrying too many responsibilities.
 - Follow `.github/instructions/psscriptanalyzer.instructions.md` when PowerShell tests, test helpers, or build helpers change. Use `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` for the repo-standard analyzer run, and use direct `Invoke-ScriptAnalyzer` only for focused local checks that reuse the repo-approved settings.
-- Use broad guardrail, architecture, command-model, or integration tests only for behavior that genuinely spans multiple source files; do not use them as the default place for unit coverage of unrelated source files.
+
+Test placement decision tree:
+
+1. Does the test cover a single source file's logic? Use the mirrored `.Tests.ps1` file and dot-source `src/`.
+2. Does the test validate the built public command's shape, exports, or wiring? Use `tests/public/<Command>.Integration.Tests.ps1`; do not `Import-Module dist/` unless step 3 also applies.
+3. Does the test require the built module because the behavior genuinely spans multiple source files or depends on the exported command surface? Use an `.Integration.Tests.ps1` file and `Import-Module ./dist/<ModuleName>/<ModuleName>.psd1`.
 
 ## Repository test structure
 

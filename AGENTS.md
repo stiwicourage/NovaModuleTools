@@ -8,7 +8,13 @@ Index of repository-wide Copilot guidance for NovaModuleTools. This file is inte
 
 ## Start here
 
-For non-trivial changes, read in this order:
+Start here:
+
+1. If the work is new or not yet scoped, use the `architect` agent with `.github/prompts/design-change.prompt.md` first. The architect flow is discussion-first: clarify the request, explore options, and only finalize a scoped solution or issue draft after the discussion is done.
+2. Otherwise, identify your task type in the Task map below and follow only the prompt, agent, and instructions listed for that row.
+3. Use the reading order below only when no Task map row matches the work.
+
+For any change that adds, removes, or modifies public commands, helper functions, tests, CI workflows, or documentation, read in this order:
 
 1. `README.md`
 2. `CONTRIBUTING.md`
@@ -16,8 +22,6 @@ For non-trivial changes, read in this order:
 4. `.github/instructions/repository-conventions.instructions.md` — cross-cutting rules
 5. The topic-scoped instruction file(s) that match the paths you are touching
 6. The skill listed under that topic in the task map below
-
-For new or not-yet-scoped work, use the `architect` agent with `.github/prompts/design-change.prompt.md`. The architect flow is discussion-first: clarify the request, explore options, and only finalize a scoped solution or issue draft after the discussion is done.
 
 ## Repository map
 
@@ -46,14 +50,17 @@ The table below shows how to route work. Prompts are the task entry points; each
 | Review a change          | `review-change.prompt.md`            | `reviewer`                                  | `terminal-ux-design`, `codescene-quality`, `safeguarding-ai-generated-code`, `building-maintainable-code`, `docs-site`, `markdown-authoring`, `pester-testing`, `release-and-changelog`, `github-actions` | All `.github/instructions/*.instructions.md`                                                                       |
 | Improve test coverage    | `improve-test-coverage.prompt.md`    | `test-engineer`                             | `pester-testing`, `building-maintainable-code`, `codescene-quality`, `github-actions`, `guiding-refactoring-with-code-health`, `safeguarding-ai-generated-code`                                           | `testing-policy`, `psscriptanalyzer`                                                                               |
 | Prepare a release        | `prepare-release.prompt.md`          | `release-manager`                           | `release-and-changelog`, `markdown-authoring`                                                                                                                                                             | `release-policy`, `repository-conventions`                                                                         |
-| Fix a CI failure         | `fix-ci-failure.prompt.md`           | `powershell-developer` (or `test-engineer`) | `github-actions`, `pester-testing`                                                                                                                                                                        | `testing-policy`, `psscriptanalyzer`, `repository-conventions`                                                     |
-| Update website docs      | (no dedicated prompt — invoke agent) | `docs-site`                                 | `docs-site`, `markdown-authoring`                                                                                                                                                                         | `documentation-separation`                                                                                         |
+| Fix a CI failure         | `fix-ci-failure.prompt.md`           | `powershell-developer` when the failure is in source code or build scripts; `test-engineer` when the failure is in a Pester test file under `tests/` | `github-actions`, `pester-testing`                                                                                                                                                                        | `testing-policy`, `psscriptanalyzer`, `repository-conventions`                                                     |
+| Update website docs      | Invoke `@docs-site` directly and pass the target file path. No prompt file is required. | `docs-site`                                 | `docs-site`, `markdown-authoring`                                                                                                                                                                         | `documentation-separation`                                                                                         |
+
+If a change spans multiple task types, run each relevant flow sequentially in this order: design (if needed) → implement → test coverage → docs → release. Do not attempt to merge prompts.
 
 ## Notation
 
 - Skills referenced as `/skill-name` in agent files map 1-to-1 to the `name:` field in `.github/skills/<skill-name>/SKILL.md`. The runtime invokes them through the `skill` tool with the bare name.
 - Prompts are referenced by path. Custom prompts are not auto-loaded by the Copilot CLI; invoke them explicitly with `@.github/prompts/<name>.prompt.md`.
 - Instructions auto-load when their `applyTo:` glob matches a file in the change set.
+- If an expected instruction file does not auto-load because no file in the change set matches its `applyTo:` glob, explicitly load it with `@.github/instructions/<name>.instructions.md` before proceeding.
 
 ## Related guidance
 

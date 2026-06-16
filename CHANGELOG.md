@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- The maintained Agentic Copilot guidance shipped by Nova now uses stricter release, review, testing, and analyzer rules across prompts, skills, agents, and scaffold mirrors.
+    - The repository and scaffolded guidance now stop earlier when required guidance files or required skills are missing, keep private-helper test ownership aligned with mirrored `tests/private/<domain>/<Helper>.Tests.ps1` paths, and require analyzer fallback guidance to reuse the repository wrapper settings.
+    - The scaffold-sync guardrail test now verifies those release/review/test guidance expectations so future scaffold updates stay aligned with the maintained source files.
+
 ### Deprecated
 
 ### Removed
