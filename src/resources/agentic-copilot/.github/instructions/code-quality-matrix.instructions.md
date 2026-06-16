@@ -15,26 +15,30 @@ This file tells Agentic Copilot how to shape source code from the start. Test-sp
 ## How to apply this guidance
 
 - Use these rules when writing or reviewing `src/**/*.ps1`, `scripts/**/*.ps1`, and `reload.ps1`.
+- For script files that contain top-level imperative code without wrapping functions (`run.ps1`, `reload.ps1`, and similar entry scripts), treat each logically distinct top-level block as a unit. If any such block exceeds 15 lines, extract it into a named private helper function and call it from the script.
 - Prefer these patterns in new or heavily changed code instead of leaving cleanup for later.
+- When reviewing a file that was not authored in this session, limit findings to: (a) all violations introduced or worsened by the current change, and (b) up to three pre-existing violations ranked by the G1-G10 priority order. Do not enumerate every pre-existing violation in a legacy file; instead note the total count and recommend a dedicated refactoring task.
 - Treat the thresholds as default goals, not as opinions. Use them to decide whether a function or file should be split.
 - If a change must violate one of these rules, keep the exception narrow and explain the trade-off clearly in the handoff.
 - Favor small refactors that remove the smell at the source over comments, suppressions, or wrappers that only hide it.
 - Apply lower-level (unit) guidelines before higher-level (component) guidelines. Fix size, complexity, duplication, and interface width first; balance and component coupling become much easier afterward.
 - Every commit counts. Leave each touched file at least as healthy as you found it; that is how the codebase trends upward over time.
 
+When multiple smells are present, raise findings in this order: (1) size - G1, (2) complexity - G2, (3) duplication - G3, (4) interface width - G4, (5) separation of concerns - G5, (6) coupling - G6, (7) balance - G7, (8) codebase size - G8, (9) test coverage - G9, (10) cleanliness - G10. Do not raise a component-level finding (G5-G8) until all unit-level findings (G1-G4) in the same file have been identified.
+
 ## Guideline 1 — Write short units of code
 
-- Threshold: keep each PowerShell function body at most 15 lines, excluding the `function` line, the closing `}`, the `param(...)` block, and blank lines.
+- Threshold: count only the executable statement lines inside the function body. Exclude: the `function` declaration line, the closing `}` of the function, the entire `param(...)` block (from `param` through its closing `)`), `[CmdletBinding()]`, `begin {` / `process {` / `end {` block-delimiter lines and their closing `}` lines, and blank lines. Every other line counts as one toward the 15-line limit.
 - Why: short units are easier to read, test, reuse, and review, and they fit inside human and agent working memory.
 - How to apply in PowerShell:
-    - Extract named helper functions; in `src/private/` they may stay as sibling top-level functions in the same file when they belong together.
+    - Extract named helper functions; in `src/private/` they may stay as sibling top-level functions in the same file when they belong to that entry function.
     - Replace inline transformation chains with a helper named after its intent.
     - Move repeated setup or formatting into helpers, not into comments that mark sections.
 - Common objection: "It is one logical step." If the function still ends up over 15 lines, the step has substeps. Name them.
 
 ## Guideline 2 — Write simple units of code
 
-- Threshold: keep cyclomatic complexity at most 5, which is 4 branch points. Count `if`, `elseif`, `switch` case bodies, `-and`, `-or`, ternary `? :`, `while`, `for`, `foreach`, and `catch`.
+- Threshold: keep the condition complexity score at most 5. Score 1 point for each: `if`, `elseif`, `switch` case body, ternary `? :`, `while`, `for`, `foreach`, `catch`, `-and`, and `-or`. This is stricter than standard cyclomatic complexity; it penalizes dense boolean guards as well as branching structure.
 - Why: complex units have too many paths to test thoroughly and are the most common source of regressions.
 - How to apply in PowerShell:
     - Replace long `switch` blocks or `if`/`elseif` chains with a dispatch hashtable keyed by mode, provider, state, or kind.
@@ -44,7 +48,7 @@ This file tells Agentic Copilot how to shape source code from the start. Test-sp
 
 ## Guideline 3 — Write code once
 
-- Rule: no Type 1 clones. Any identical block of 6 or more functional lines that appears twice is a finding.
+- Rule: no Type 1 clones. Any block of 6 or more consecutive executable statement lines that is textually identical in two or more locations is a Type 1 clone finding. Exclude blank lines, comment-only lines, and `#region` / `#endregion` markers when counting.
 - Why: duplicated code drifts. Bugs fixed in one copy keep living in the other.
 - How to apply in PowerShell:
     - Extract the shared block into a helper under the correct `src/private/<domain>/` folder and call it from both sites.
@@ -54,7 +58,7 @@ This file tells Agentic Copilot how to shape source code from the start. Test-sp
 
 ## Guideline 4 — Keep unit interfaces small
 
-- Threshold: at most 4 parameters per function. `[CmdletBinding()]` common parameters do not count.
+- Threshold: at most 4 explicitly declared parameters in the `param()` block, regardless of whether they are mandatory, optional, or pipeline-bound. `[CmdletBinding()]` implicit common parameters (`Verbose`, `Debug`, `ErrorAction`, and similar) do not count. Pipeline-bound parameters declared in `param()` do count.
 - Why: long parameter lists are hard to read at the call site, hard to extend safely, and usually a sign that two or more concepts have been bundled into one function.
 - How to apply in PowerShell:
     - Group related parameters into a single `[pscustomobject]`, ordered hashtable, or small class such as a workflow context, an options object, or a request.
@@ -80,7 +84,7 @@ This file tells Agentic Copilot how to shape source code from the start. Test-sp
 - How to apply in PowerShell:
     - Route environment access, Git execution, REST calls, uploads, and self-update behavior through their approved private helpers. `tests/*Architecture*.Tests.ps1` is authoritative.
     - Hide provider-specific or platform-specific branching behind a small adapter surface so callers depend on a stable contract, not on the provider's quirks.
-    - Avoid pass-through helpers that only forward parameters to another function. Either add policy, validation, translation, or abstraction, or call the underlying function directly.
+    - A helper that exists solely to rename or re-export another function with no added policy, validation, error translation, or mock surface is a pass-through and should be removed. A helper that wraps an infrastructure call (environment, Git, HTTP, file system, and similar) to provide a stable internal contract is an adapter and is exempt from this rule even if it currently forwards parameters directly, provided it lives under the appropriate `src/private/<domain>/` adapter folder.
 - Common objection: "The adapter feels redundant." It pays off the moment the underlying call changes, gains an error mode, or needs mocking.
 
 ## Guideline 7 — Keep architecture components balanced
@@ -133,6 +137,5 @@ This file tells Agentic Copilot how to shape source code from the start. Test-sp
 ## Review expectations
 
 - Flag long mixed-responsibility functions, deep nesting, duplicated blocks, long parameter lists, pass-through helpers, provider-specific branching spread across callers, dead or commented-out code, magic values, and broad or hidden exception handling.
-- When a finding is unit-level (Guidelines 1–4), prefer raising it before component-level findings (Guidelines 5–8). The unit fix usually makes the component fix smaller.
-- When the code smell is test-specific, route that feedback through `.github/instructions/testing-policy.instructions.md` and the `pester-testing` skill instead of stretching this file to cover test-only patterns.
+- Guidelines 3 and 9 apply to test files to the extent that they address duplication and coverage requirements. For smells that are specific to Pester syntax, mock hygiene, or test-file structure beyond duplication and coverage, route feedback to `.github/instructions/testing-policy.instructions.md` and the `pester-testing` skill instead of stretching this file to cover test-only patterns.
 - For step-by-step refactoring of unhealthy files, use the `building-maintainable-code` skill for checks between steps.

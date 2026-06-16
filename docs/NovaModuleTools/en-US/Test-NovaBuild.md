@@ -35,6 +35,8 @@ This build-validation flow writes NUnit XML to `artifacts/TestResults.xml`.
 
 Unlike `Invoke-NovaTest`, this command does not enforce source-coverage targets. Use `Invoke-NovaTest` for the unit-test and code-coverage workflow, and use `Test-NovaBuild` when you need build-validation integration coverage that reflects the built module path.
 
+If the current project does not contain any `*.Integration.Tests.ps1` files, `Test-NovaBuild` stops with a Nova-native error that explains the expected naming and reminds you to use `Invoke-NovaTest` for unit tests.
+
 `-OverrideWarning` lets the nested build-validation flow continue even if the `src/public` layout guard reports zero or multiple top-level functions in a public file.
 
 With the default `BuildRecursiveFolders=true`, integration test files in nested folders under `tests` are discovered and run. Set `BuildRecursiveFolders=false` to limit discovery to top-level matching test files.

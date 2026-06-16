@@ -9,11 +9,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- The maintained Agentic Copilot guidance shipped by Nova now uses stricter release, review, testing, and analyzer rules across prompts, skills, agents, and scaffold mirrors.
+    - The repository and scaffolded guidance now stop earlier when required guidance files or required skills are missing, keep private-helper test ownership aligned with mirrored `tests/private/<domain>/<Helper>.Tests.ps1` paths, and require analyzer fallback guidance to reuse the repository wrapper settings.
+    - The scaffold-sync guardrail test now verifies those release/review/test guidance expectations so future scaffold updates stay aligned with the maintained source files.
+
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- `Test-NovaBuild` and `% nova test -b` now complete with a visible warning when a project has no `*.Integration.Tests.ps1` files, instead of failing the build-validation flow.
+    - The guidance explains where build-validation tests belong, tells users to add at least one `*.Integration.Tests.ps1` file before rerunning `Test-NovaBuild`, and reminds users to keep unit tests in `Invoke-NovaTest`.
+- The packaged example scaffold now includes a minimal `*.Integration.Tests.ps1` file that resolves the generated `ProjectName`, imports the built module, and validates `Get-ExampleGreeting`, so `nova init -e` projects can pass `Test-NovaBuild` even after the scaffold rewrites `project.json`.
 
 ### Security
 
@@ -510,4 +518,3 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-

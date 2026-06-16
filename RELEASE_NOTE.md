@@ -8,11 +8,16 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Changed
 
+- The shipped Agentic Copilot scaffold now includes tighter review, release, testing, and analyzer guidance so generated projects inherit the latest workflow guardrails and validation expectations.
+
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- `Test-NovaBuild` and `% nova test -b` now complete with a visible warning when a project has no `*.Integration.Tests.ps1` files, and the guidance now explains where build-validation tests belong plus when to use `Invoke-NovaTest` instead.
+- The packaged example scaffold now includes a minimal build-validation integration test that resolves the generated project name before importing the built module and checking `Get-ExampleGreeting`, so `nova init -e` projects can pass `Test-NovaBuild`.
 
 ### Security
 
@@ -259,4 +264,3 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ## [0.0.4] - 2024-06-25
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
-

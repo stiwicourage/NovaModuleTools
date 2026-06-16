@@ -23,7 +23,15 @@ The same underlying PowerShell code can present itself through two distinct user
 - **PowerShell cmdlet surface** — anything invoked as `Verb-Noun -Parameter` in a PowerShell session. Follow PowerShell conventions: approved verbs, `-Parameter` naming, `Write-*` streams, `Get-Help`, `-WhatIf` / `-Confirm`, pipeline-friendly output.
 - **CLI alias surface** — anything invoked as a unix-style command, including PowerShell aliases or wrapper functions that emulate a CLI (for example `nova <subcommand> --flag`). Follow CLI conventions: `--flag` / `-f`, subcommands, `--help`, predictable exit codes, `Ctrl+C` cancellation, text-stream output.
 
-Decide which surface a command exposes before applying the per-principle guidance below. A single command may be reachable through both surfaces; in that case, evaluate each surface against its own conventions instead of blending them.
+Use this evaluation protocol before applying the per-principle guidance below:
+
+1. Identify which surface the change touches: PowerShell cmdlet, CLI alias, or both.
+2. For each identified surface, work through principles 1-10 using only the guidance for that surface.
+3. Record any conflicts with Common Pitfalls and keep cmdlet and CLI evaluations as separate checklists; never merge their outputs.
+
+If the surface cannot be determined from the available context, ask the requester to clarify before applying per-surface guidance. Do not default to either surface silently.
+
+A single command may be reachable through both surfaces; in that case, evaluate each surface against its own conventions instead of blending them.
 
 ## Relevant surfaces
 
@@ -47,7 +55,7 @@ This skill is intentionally surface-based rather than path-based, so it applies 
    CLI: keep `--help` and `<command> --help` accurate and task-focused.
 3. **Show progress visually**  
    Long-running work should expose state, phases, and forward motion.  
-   PowerShell cmdlets: use `Write-Progress` when work is meaningful enough to justify it.  
+   PowerShell cmdlets: use `Write-Progress` when an operation runs longer than approximately 3 seconds or has two or more discrete, nameable phases.  
    CLI: show clear step transitions and status lines instead of silent waiting.
 4. **Create a reaction for every action**  
    Every meaningful user action should receive clear feedback.  
@@ -67,7 +75,7 @@ This skill is intentionally surface-based rather than path-based, so it applies 
    CLI: suggest the next subcommand instead of forcing the user back to docs.
 8. **Consider your options**  
    Make common cases easy with prompts, defaults, and clear required inputs.  
-   PowerShell cmdlets: use sensible defaults, parameter validation, and prompts only when the flow is intentionally interactive.  
+   PowerShell cmdlets: use sensible defaults, parameter validation, and prompts only when the cmdlet is explicitly designed for interactive use and exposes a `-Interactive` switch or equivalent; never prompt when input can arrive from the pipeline or when no TTY is detected.  
    CLI: accept explicit flags for automation, but guide the user when required context is missing.
 9. **Provide an easy way out**  
    Users need a clear cancellation and escape path.  
@@ -125,6 +133,7 @@ This skill is intentionally surface-based rather than path-based, so it applies 
 - Prevent high-cost mistakes before execution; recover clearly when prevention is not enough.
 - Keep normal-path output concise, with optional detail on demand through the appropriate verbose/help surface.
 - When a next step is common and useful, suggest it explicitly.
+- When the host is non-interactive (no TTY, CI environment variable set, or `-NonInteractive` / `--no-interactive` flag present), suppress all prompts, suppress `Write-Progress` output, and ensure the command can complete using only supplied parameters or fail with a non-zero exit code and a machine-readable error message.
 
 ## Common pitfalls
 
@@ -143,3 +152,4 @@ This skill is intentionally surface-based rather than path-based, so it applies 
 - The command uses user language, not internal implementation language.
 - The normal path is concise and scannable.
 - The user has a clear recovery path after errors and a clear exit path during risky or interactive flows.
+- For commands exposed through both surfaces, the review or generated output contains two clearly labeled sections: one for the PowerShell cmdlet surface and one for the CLI alias surface, each evaluated independently against its own conventions.

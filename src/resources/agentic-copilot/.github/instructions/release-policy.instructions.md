@@ -13,13 +13,12 @@ Use this file when changing versioning, changelog handling, package metadata, pu
 - Follow Semantic Versioning intent.
 - Treat `CHANGELOG.md` as the exhaustive release history.
 - Treat `RELEASE_NOTE.md` as the interface-focused summary for public cmdlet, CLI, configuration, and migration changes.
+- When a change qualifies for both files, write the `CHANGELOG.md` entry with full technical detail and write the `RELEASE_NOTE.md` entry as a concise consumer-facing summary; do not copy the `CHANGELOG.md` text verbatim into `RELEASE_NOTE.md`.
 - Keep `## [Unreleased]` valid and readable.
 - Use only the official Keep a Changelog section types in both files: `Added`, `Changed`, `Deprecated`, `Removed`,
-  `Fixed`, and `Security`.
+  `Fixed`, and `Security`. Under `## [Unreleased]`, `Changed` is valid for changes relative to the last released version, but not for internal iteration history of an unreleased feature that is already listed under `Added`.
 - Do not add custom section headings such as `Documentation`; place documentation-related release notes under the official type that best matches the real change.
-- If `RELEASE_NOTE.md` has no public API or workflow changes under `## [Unreleased]`, keep the exact placeholder under
-  `### Added`: `No public API or workflow changes in this release. Internal maintenance only.`
-- If `RELEASE_NOTE.md` has real release-note entries, do not keep that placeholder.
+- Under `## [Unreleased]` > `### Added` in `RELEASE_NOTE.md`: if there are no public API or workflow changes, the section must contain exactly the line `No public API or workflow changes in this release. Internal maintenance only.` and nothing else. If there is at least one real entry, remove that placeholder line entirely before adding entries.
 - Do not add compare-link footer URLs to `RELEASE_NOTE.md`.
 - For unreleased feature iterations, update the existing `Added` entry instead of adding an internal-history `Changed`
   entry.
@@ -33,14 +32,15 @@ Use this file when changing versioning, changelog handling, package metadata, pu
 
 ## Documentation rules
 
-- Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` for workflow or release changes.
+- Read `README.md` and `CONTRIBUTING.md` to check for content that must be kept consistent with the current change; update them if they describe behavior that has changed. Always update `CHANGELOG.md` and `RELEASE_NOTE.md` as specified in the versioning rules.
 - Update command help in `docs/{{ProjectName}}/en-US/` when public command behavior changes.
-- Update project docs only when end-user behavior or examples changed.
+- Update project docs only when a public cmdlet's output, parameters, default values, or documented examples change in a way visible to module consumers.
 - Use `.github/pull_request_template.md` as the authoritative structure when preparing a release summary for review.
 
 ## Agent safety rules
 
 - Do not publish, create tags, or push release commits unless the task explicitly requires it.
+- If it is unclear whether a task requires publishing, tagging, or pushing, ask for explicit confirmation before proceeding. Never infer publishing intent from context alone.
 - Do not assume a preview flow should move `latest`; check the current package and release tests first.
 - Do not change release defaults without corresponding tests and changelog entries.
 
@@ -48,4 +48,5 @@ Use this file when changing versioning, changelog handling, package metadata, pu
 
 - Validate the touched release or versioning path with targeted tests.
 - Run the repository quality loop when one exists after code changes.
+- If `./run.ps1` is not found or exits with a non-zero code, stop and report the failure with the full error output before proceeding with any further steps.
 - Re-read `.github/pull_request_template.md` before preparing release-related summaries.

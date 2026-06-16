@@ -23,7 +23,8 @@ Use this skill when changing CI workflows, artifact handling, CodeScene coverage
 - Read the whole affected workflow before editing a single step.
 - Keep artifact names and paths aligned with the scripts that produce them.
 - Treat `main` and `develop` release behavior in `Publish.yml` as deliberate and branch-specific.
-- Keep CI output human-readable in the step summary when relevant.
+- If a change must alter release behavior for both `main` and `develop` at once, explicitly justify the change for each branch independently in comments or the PR description before editing `Publish.yml`.
+- Always emit a step summary (`$GITHUB_STEP_SUMMARY`) for steps that produce test results, coverage reports, or publish outcomes. Omit summaries for purely mechanical setup steps such as checkout or dependency restore.
 
 ## Common pitfalls
 
@@ -37,3 +38,4 @@ Use this skill when changing CI workflows, artifact handling, CodeScene coverage
 - Re-run relevant local scripts when possible
 - Re-read the touched workflow and script pair together
 - Run `./run.ps1` if repo code or workflow helper scripts changed
+- If local execution of `./run.ps1` is not possible, document the untested assumption explicitly in the PR description and flag it for reviewer verification.

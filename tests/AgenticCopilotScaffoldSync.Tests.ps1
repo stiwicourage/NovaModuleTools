@@ -27,11 +27,13 @@ BeforeAll {
             DeveloperAgent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/agents/powershell-developer.agent.md') -Raw
             ReviewerAgent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/agents/reviewer.agent.md') -Raw
             TestEngineerAgent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/agents/test-engineer.agent.md') -Raw
+            ReleaseManagerAgent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/agents/release-manager.agent.md') -Raw
             TerminalUxSkill = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/skills/terminal-ux-design/SKILL.md') -Raw
             DeveloperSkill = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/skills/powershell-module-development/SKILL.md') -Raw
             PesterSkill = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/skills/pester-testing/SKILL.md') -Raw
             ImplementPrompt = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/prompts/implement-issue.prompt.md') -Raw
             ImproveCoveragePrompt = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/prompts/improve-test-coverage.prompt.md') -Raw
+            PrepareReleasePrompt = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/prompts/prepare-release.prompt.md') -Raw
             ReviewPrompt = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot '.github/prompts/review-change.prompt.md') -Raw
             Agents = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot 'AGENTS.md') -Raw
             Contributing = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot 'CONTRIBUTING.md') -Raw
@@ -123,8 +125,8 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.DeveloperSkill | Should -Match 'Keep Nova naming patterns on public commands, and give private helpers clear implementation-focused names'
         $content.DeveloperSkill | Should -Match 'Keep one externally called function per file and match the file name to that function'
         $content.DeveloperSkill | Should -Match 'do not declare functions inside functions'
-        $content.DeveloperSkill | Should -Match 'Grouping two externally called private helpers in one file'
-        $content.DeveloperSkill | Should -Match 'Before handoff, review every changed or generated text file and normalize it to exactly one trailing newline'
+        $content.DeveloperSkill | Should -Match 'Grouping two private helpers in one file when both are referenced from outside that file'
+        $content.DeveloperSkill | Should -Match 'Before handoff, review every source text file you created or modified under `src/`, `tests/`, `docs/`, and `scripts/` and normalize it to exactly one trailing newline'
         $content.DeveloperSkill | Should -Match 'PowerShell 7\.x-only'
     }
 
@@ -161,7 +163,7 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.PlatyPsHelp | Should -Match 'YAML metadata block'
         $content.PlatyPsHelp | Should -Match 'Import-MarkdownCommandHelp'
         $content.PlatyPsHelp | Should -Match 'matching command-help file in the same change'
-        $content.PlatyPsHelp | Should -Match 'SYNOPSIS`, `SYNTAX`, optional `ALIASES`, `DESCRIPTION`, `EXAMPLES`, `PARAMETERS`, `INPUTS`, `OUTPUTS`, `NOTES`, and `RELATED LINKS`'
+        $content.PlatyPsHelp | Should -Match 'SYNOPSIS`, `SYNTAX`, optional `ALIASES`, `DESCRIPTION`, `EXAMPLES`, `PARAMETERS`, `INPUTS`, `OUTPUTS`, required `NOTES`, and required `RELATED LINKS`'
 
         $content.DeveloperSkill | Should -Match 'valid PlatyPS-compatible help'
         $content.DeveloperSkill | Should -Match 'New-MarkdownCommandHelp'
@@ -197,7 +199,7 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.TestingPolicy | Should -Match 'tests/public/<Command>\.Integration\.Tests\.ps1'
         $content.TestingPolicy | Should -Match '-WhatIf'
         $content.TestingPolicy | Should -Match 'Do not validate with direct `Invoke-Pester`'
-        $content.TestingPolicy | Should -Match 'normal path and the meaningful unhappy, invalid, or boundary cases'
+        $content.TestingPolicy | Should -Match 'normal path and every distinct failure mode and boundary condition visible in the changed code''s branching logic'
         $content.TestingPolicy | Should -Match 'mocks or stubs'
         $content.TestingPolicy | Should -Match 'isolated and order-independent'
         $content.TestingPolicy | Should -Not -Match 'Invoke-Pester -Path'
@@ -210,8 +212,8 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.PesterSkill | Should -Match 'mocks/stubs'
         $content.PesterSkill | Should -Not -Match 'Invoke-Pester -Path'
 
-        $content.DeveloperSkill | Should -Match '`Invoke-NovaTest` for unit-level behavior changes'
-        $content.DeveloperSkill | Should -Match '`Test-NovaBuild` when the change needs built-module or integration validation'
+        $content.DeveloperSkill | Should -Match 'Run `Invoke-NovaTest` for any change under `src/` or `tests/`'
+        $content.DeveloperSkill | Should -Match 'Run `Test-NovaBuild` additionally when a public command signature changed, packaging or manifest metadata changed, or integration tests were added or modified'
         $content.DeveloperSkill | Should -Match 'tests/public/<Command>\.Integration\.Tests\.ps1'
         $content.DeveloperSkill | Should -Match '-WhatIf'
         $content.DeveloperAgent | Should -Match 'Validate Nova-managed project tests through `Invoke-NovaTest` for unit validation and `Test-NovaBuild` for build-validation integration validation'
@@ -241,7 +243,7 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.ScriptAnalyzer | Should -Match 'PSScriptAnalyzer is the supported static analyzer'
         $content.ScriptAnalyzer | Should -Match 'Invoke-ScriptAnalyzerCI\.ps1'
         $content.ScriptAnalyzer | Should -Match 'Invoke-ScriptAnalyzer'
-        $content.ScriptAnalyzer | Should -Match 'repository-approved analyzer settings through `-Settings`'
+        $content.ScriptAnalyzer | Should -Match 'use `-Settings` with the repository-approved settings source'
         $content.ScriptAnalyzer | Should -Match 'Invoke-ScriptAnalyzer -Fix'
         $content.ScriptAnalyzer | Should -Match 'EnableExit'
 
@@ -262,12 +264,15 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.Readme | Should -Match 'psscriptanalyzer\.instructions\.md'
     }
 
-    It 'removes run.ps1 references from generated starter guidance' {
+    It 'documents run.ps1 only as a repository quality-loop entrypoint in generated starter guidance' {
         $content = & $script:getAgenticScaffoldGuidanceContent
 
-        foreach ($value in $content.PSObject.Properties.Value) {
-            $value | Should -Not -Match 'run\.ps1'
-        }
+        $content.DeveloperAgent | Should -Match '\./run\.ps1` or `\./scripts/build/Invoke-ScriptAnalyzerCI\.ps1'
+        $content.ImplementPrompt | Should -Match 'if `run\.ps1` or `Invoke-ScriptAnalyzerCI\.ps1` reports ScriptAnalyzer findings'
+        $content.QualityMatrix | Should -Match '`run\.ps1`, `reload\.ps1`, and similar entry scripts'
+        $content.ScriptAnalyzer | Should -Match 'then `\./run\.ps1` before opening a pull request'
+        $content.CodingStandards | Should -Match 'In `run\.ps1` and any task script that runs the full quality pipeline'
+        $content.DeveloperSkill | Should -Match 'Always run `pwsh -NoLogo -NoProfile -File \./run\.ps1` as the final gate before handoff'
     }
 
     It 'documents agent and starter expectations consistently' {
@@ -276,14 +281,22 @@ Describe 'Agentic Copilot scaffold sync' {
         $content.DeveloperAgent | Should -Match 'code-quality-matrix\.instructions\.md'
         $content.DeveloperAgent | Should -Match 'Keep one externally called function per file and match the file name to that function'
         $content.DeveloperAgent | Should -Match 'must not declare nested functions'
+        $content.DeveloperAgent | Should -Match 'tests/private/<domain>/<Helper>\.Tests\.ps1'
         $content.DeveloperAgent | Should -Match 'Public/private file ownership still follows the one externally called function per file rule'
         $content.DeveloperAgent | Should -Match 'Every changed or generated text file has been checked and ends with exactly one trailing newline and no extra blank lines at the bottom'
 
         $content.TestEngineerAgent | Should -Match 'testing-policy\.instructions\.md'
+        $content.TestEngineerAgent | Should -Match 'use direct `Invoke-ScriptAnalyzer` only for focused local investigation that reuses the repository-approved settings from that wrapper'
         $content.ReviewerAgent | Should -Match 'Flag public files that do not keep exactly one top-level function'
-        $content.ReviewerAgent | Should -Match 'flag private files that group multiple externally called functions'
+        $content.ReviewerAgent | Should -Match 'flag any private file whose secondary functions are called from outside that file'
         $content.ReviewerAgent | Should -Match 'flag nested function declarations inside PowerShell functions'
         $content.ReviewerAgent | Should -Match 'code-quality-matrix\.instructions\.md'
+        $content.ReviewerAgent | Should -Match 'If any referenced `\.github/instructions/` or `\.github/skills/` file is not available in context, stop and report which file is missing before continuing'
+        $content.ReviewerAgent | Should -Match 'outside `src/`, `tests/`, `docs/`, `\.github/`, and `AGENTS\.md`'
+        $content.ReviewPrompt | Should -Match 'If a referenced instructions or skills file cannot be read, stop and report which file is missing before continuing'
+
+        $content.ReleaseManagerAgent | Should -Match 'Required skill markdown-authoring could not be loaded\. Please resolve this before continuing\.'
+        $content.PrepareReleasePrompt | Should -Match 'Required skill \[name\] could not be loaded\. Please resolve this before continuing\.'
 
         $content.Contributing | Should -Match 'keep one externally called function per file and match the file name to that function'
         $content.Contributing | Should -Match 'must not declare nested functions inside their bodies'

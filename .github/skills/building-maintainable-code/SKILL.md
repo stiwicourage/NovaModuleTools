@@ -34,6 +34,7 @@ The companion instruction file is `.github/instructions/code-quality-matrix.inst
 ## Guideline order and precedence
 
 Apply lower-level guidelines first. Unit-level structure fixes (Guidelines 1–4) usually make the component-level work (5–8) smaller and safer.
+When satisfying a lower-numbered guideline would force a violation of a higher-numbered one, resolve the higher-numbered violation immediately in the same step before moving on. If both violations cannot be resolved simultaneously, prefer the lower-numbered guideline and document the remaining finding as a follow-up task.
 
 1. Write short units of code
 2. Write simple units of code
@@ -54,7 +55,7 @@ Apply lower-level guidelines first. Unit-level structure fixes (Guidelines 1–4
 | 2 Simple units | ≤ 4 branch points per function (cyclomatic complexity ≤ 5) |
 | 3 Write once | no identical block ≥ 6 functional lines repeated anywhere |
 | 4 Small interfaces | ≤ 4 parameters per function (`[CmdletBinding()]` common parameters not counted) |
-| 5 Separate concerns | one externally called function per file, matching the file name |
+| 5 Separate concerns | one externally called function per file, matching the file name; file-local sibling helpers are allowed |
 | 6 Loose coupling | infrastructure only via approved private adapters |
 | 7 Balanced components | no `src/private/<domain>/` absorbing unrelated responsibilities |
 | 8 Small codebase | no dead/commented-out code; reuse over custom utilities |
@@ -64,11 +65,12 @@ Apply lower-level guidelines first. Unit-level structure fixes (Guidelines 1–4
 ## Implementation playbook
 
 Follow these steps for any non-trivial PowerShell change.
+If a step produces no findings, record it as "✓ No action required" and proceed to the next step. After all steps pass cleanly, confirm that the file is compliant and proceed directly to the Verification section.
 
-1. Read the changed function and surrounding file. Note where it sits in `src/public/`, `src/private/<domain>/`, or `scripts/`.
+1. Read the changed function and surrounding file. Note where it sits in `src/public/`, `src/private/<domain>/`, or `scripts/`. Files under `scripts/` follow the same 10 guidelines and thresholds as `src/` files unless a script is a thin entry-point wrapper of ≤ 10 lines, in which case only Guidelines 3, 8, and 10 are enforced.
 2. For each new or heavily changed function, walk the checklist below in order.
-3. If a step requires a refactor, make it the smallest structural step that fixes the specific finding. Do not bundle unrelated cleanup.
-4. After meaningful steps, run `./run.ps1` (analyzer → build → `Invoke-NovaTest` → `Test-NovaBuild`). For risk-bearing files, also run `code_health_review` from the `safeguarding-ai-generated-code` skill.
+3. If a step requires a refactor, make it the smallest structural step that fixes the specific finding. Do not fix issues belonging to a different guideline number than the one currently being addressed. Each commit or change should reference exactly one guideline finding.
+4. After meaningful steps, run `./run.ps1` (analyzer → build → `Invoke-NovaTest` → `Test-NovaBuild`). If `./run.ps1` exits with a non-zero code or any test fails, stop all further guideline steps, diagnose and fix the failure before continuing, and do not proceed to the next guideline step until the full pipeline is green. For any file that calls external infrastructure (`git`, web requests, file IO), modifies public API surface, or has a function body exceeding 20 lines before refactoring, also run `code_health_review` from the `safeguarding-ai-generated-code` skill.
 5. Before handoff, normalize every changed text file to exactly one trailing newline.
 
 ### Step 1 — Short units (≤ 15 lines)
@@ -77,7 +79,7 @@ Counting rule: only the body lines count. Exclude `function`, opening `{`, closi
 
 Refactor options in PowerShell:
 
-- Extract the most distinct top-of-function block into a named helper. Place it as a sibling top-level function in the same private file if it belongs to the entry function.
+- Extract the most distinct top-of-function block into a named helper. Place it as a sibling top-level function in the same private file only when it has no callers outside that file and belongs to the entry function.
 - Replace inline preparation with `Resolve-*`, `Get-*Context`, or `Build-*Request` helpers that return the prepared object.
 - Move repeated formatting into `Format-*` helpers.
 
@@ -175,10 +177,11 @@ function Invoke-NovaTestWorkflow {
 ```
 
 Use parameter sets only for genuinely different calling shapes, not to hide 8 parameters in one signature.
+After completing Steps 1–4, re-read the changed files from scratch before proceeding to Steps 5–8. Component-level findings identified before unit fixes may no longer apply or may have shifted scope.
 
 ### Step 5 — Separate concerns in modules
 
-- One externally called function per file, matching the file name.
+- One externally called function per file, matching the file name. Additional top-level functions in that file must be file-local helpers with no callers outside the file.
 - Helpers used only inside the file stay as sibling top-level functions in the same file. Never nest functions.
 - When a private file mixes lookup, mutation, formatting, validation, and transport, split it by concern.
 
@@ -202,7 +205,7 @@ Use parameter sets only for genuinely different calling shapes, not to hide 8 pa
 ### Step 9 — Automate tests
 
 - Add or update one source-mirrored `tests/<area>/<Name>.Tests.ps1` for every changed `src/**/*.ps1` file.
-- Cover happy path plus the meaningful unhappy/invalid/boundary cases that the change introduces.
+- Cover (1) the happy path, (2) every branch that returns early or throws, and (3) any input boundary explicitly referenced in the function's parameter validation or documentation comments.
 - Validate with `Invoke-NovaTest` for unit behavior and `Test-NovaBuild` for build-validation integration behavior. Do not call `Invoke-Pester` directly.
 - For full rules, follow the `pester-testing` skill and `.github/instructions/testing-policy.instructions.md`.
 

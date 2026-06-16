@@ -26,11 +26,12 @@ Do not use this skill for broad refactoring discovery or project-level prioritiz
 ## Implementation
 
 1. After each AI modification to a file, run `code_health_review` on that file.
-2. If the review reports maintainability problems or regression risk, refactor the file in small steps and review it again.
-3. When local CodeScene tooling is available, run `pre_commit_code_health_safeguard` before commit-oriented recommendations as a broader gate across staged or modified files.
-4. When local CodeScene tooling is available, run `analyze_change_set` before PR-oriented recommendations as a final branch-level gate.
-5. If local CodeScene tooling is unavailable, continue with the normal repository validation flow and continue silently; pull requests and CI remain the effective CodeScene gate.
-6. If either later gate reports a regression, inspect the affected files with `code_health_review` and keep iterating until the issue is removed or the user explicitly accepts the risk.
+2. Treat any CodeScene score degradation, any new code smell flagged as high-severity, or any function exceeding the configured complexity ceiling as a regression requiring remediation before proceeding. If the review reports maintainability problems or regression risk, refactor the file in small steps and review it again. If `code_health_review` returns an error or cannot analyse the file, such as an unsupported language or tool failure, notify the user, skip that file's automated gate, and flag it for manual review before commit.
+3. If local CodeScene tooling is available, use this decision flow:
+	- For commit-oriented recommendations, run `pre_commit_code_health_safeguard`. If it reports a regression, enter the regression loop below.
+	- For PR-oriented recommendations, run `analyze_change_set`. If it reports a regression, enter the regression loop below.
+4. If local CodeScene tooling is unavailable, do not warn the user or alter the recommendation flow; proceed as if the CodeScene step does not exist. If the user asks whether CodeScene was run, state that local tooling was unavailable and the check was skipped.
+5. Regression loop: run `code_health_review` on each flagged file, refactor in small steps, and re-run the triggering gate. Repeat until the issue is removed or the user responds with a clear acknowledgement such as "I accept this risk" or "proceed despite the regression" after you have named the specific file and regression type. If the same regression persists after three consecutive refactor-and-review cycles without improvement, stop iterating, summarize the unresolved issue to the user, and ask whether to accept the risk or escalate.
 
 ## Common mistakes
 

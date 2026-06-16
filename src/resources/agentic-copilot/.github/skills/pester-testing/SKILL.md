@@ -20,18 +20,41 @@ Use this skill when adding tests, closing coverage gaps, fixing regressions, or 
 
 ## Expected practices
 
+Use `.github/instructions/testing-policy.instructions.md` for the general test-design rules. Apply the repository-specific conventions below for file layout, import strategy, validation entrypoints, and exceptions.
+
+### General style
+
 - Match existing `Describe` / `It` naming style.
 - Prefer support helpers for repeated setup.
-- For new and migrated tests, dot-source `src/**/*.ps1` files directly in `BeforeAll`. Do not `Import-Module $project.OutputModuleDir` in mirrored unit tests, and do not use `InModuleScope {{ProjectName}} { ... }` - the function under test is already in scope after dot-sourcing.
-- Use `Invoke-NovaTest` as the unit-test entrypoint and `Test-NovaBuild` as the build-validation integration-test entrypoint in Nova-managed projects. Do not validate with direct `Invoke-Pester`, because it can miss the Nova build/import/StrictMode flow.
+- Cover normal, boundary, and unhappy paths; isolate collaborators with mocks/stubs where needed; and extract setup or assertion helpers when a test stops being easy to scan.
 - Add coverage for both happy paths and explicit warnings/errors when behavior changed.
+
+### File layout
+
 - For every new or changed `src/**/*.ps1` file, add or update one focused test file that mirrors the source path under `tests/`.
-- Keep test files and helpers compatible with `project.json` `Manifest.PowerShellHostVersion`; if a project targets `5.1`, do not introduce PowerShell 7.x-only syntax, cmdlets, parameters, or APIs in the tests.
-- Use `.github/instructions/testing-policy.instructions.md` as the test-design source of truth. Cover normal, boundary, and unhappy paths; isolate collaborators with mocks/stubs where needed; and extract setup or assertion helpers when a test stops being easy to scan.
-- Keep shared setup in `tests/TestHelpers/` or `*TestSupport.ps1`; do not hide unrelated source-file coverage in broad catch-all test files.
 - Public command unit tests belong in `tests/public/<Command>.Tests.ps1`; public command integration ownership belongs in `tests/public/<Command>.Integration.Tests.ps1` when the built-module behavior itself needs coverage.
+- Private function tests belong in `tests/private/<RelativePath>.Tests.ps1`, mirroring the source path under `src/private/`. For example, a test for `src/private/quality/Initialize-NovaPesterCoverageConfiguration.ps1` belongs in `tests/private/quality/Initialize-NovaPesterCoverageConfiguration.Tests.ps1`.
+- Keep shared setup in `tests/TestHelpers/` or `*TestSupport.ps1`; do not hide unrelated source-file coverage in broad catch-all test files.
+
+### Import strategy
+
+- For new and migrated tests, dot-source `src/**/*.ps1` files directly in `BeforeAll`. Do not `Import-Module $project.OutputModuleDir` in mirrored unit tests, and do not use `InModuleScope {{ProjectName}} { ... }` - the function under test is already in scope after dot-sourcing.
+- If you encounter an existing test file that uses `Import-Module $project.OutputModuleDir` or `InModuleScope {{ProjectName}}`, migrate it to the dot-source pattern as part of the same change. If migration is out of scope for the current task, add a TODO comment in that test file and note it in your final handoff.
+
+### Validation entrypoints
+
+- Use `Invoke-NovaTest` as the unit-test entrypoint and `Test-NovaBuild` as the build-validation integration-test entrypoint in Nova-managed projects. Do not validate with direct `Invoke-Pester`, because it can miss the Nova build/import/StrictMode flow.
+
+### Version compatibility
+
+- Keep test files and helpers compatible with `project.json` `Manifest.PowerShellHostVersion`.
+- If a project targets `5.1`, do not introduce PowerShell 7.x-only syntax, cmdlets, parameters, or APIs in the tests.
+- If a project targets PowerShell 7.x or later, 7.x syntax and APIs are permitted. Always match the minimum version declared in `Manifest.PowerShellHostVersion` and avoid syntax requiring a higher version than declared.
+
+### Coverage exceptions
+
 - For destructive or environment-coupled public commands, prefer safe `-WhatIf` integration coverage when that still proves command wiring, `ShouldProcess`, and output semantics.
-- If a mirrored test is not practical because the behavior is genuinely cross-cutting, document the reason in the handoff and point to the owning integration or guardrail test.
+- If a mirrored test is not practical because the behavior is genuinely cross-cutting, add a brief comment at the top of the owning test file that explains why a mirrored test is not practical and which integration or guardrail test provides coverage instead.
 
 ## Mirrored layout example
 

@@ -25,12 +25,15 @@ Do not use this skill when the task is to rank project-wide priorities. Use Code
 ## Implementation
 
 1. Run `code_health_review` on the target file.
+If `code_health_review` returns no significant structural findings, report this to the user and do not proceed with refactoring unless the user provides a specific goal beyond the measured findings.
 2. Record the current `code_health_score` so the refactoring starts from a measurable baseline.
+If `code_health_review` or `code_health_score` returns an error or no data, inform the user immediately and do not proceed with any refactoring steps until a valid baseline can be established.
 3. Identify the highest-leverage structural problems, such as excessive responsibilities, deep nesting, low cohesion, or hard-to-follow control flow.
 4. Propose 3 to 5 small structural refactor steps, not a single rewrite.
-5. After each meaningful step, re-run `code_health_review` to see whether the targeted structural problems were reduced.
+5. After each of the proposed refactor steps is implemented, re-run `code_health_review` to see whether the targeted structural problems were reduced.
+If `code_health_review` shows new structural issues introduced by the step, or if `code_health_score` has not improved, pause and explain the regression to the user before proceeding. Do not continue to the next step until the user confirms how to proceed.
 6. Use `code_health_score` as the compact checkpoint to confirm directional improvement across iterations.
-7. Stop only when the targeted structural issues are substantially reduced and the score has measurably improved, or when the user explicitly accepts a partial uplift.
+7. Stop only when the targeted structural issues are reduced by at least half as measured by the number of flagged structural issues in `code_health_review` and the score has improved by at least 0.5 points on the `code_health_score`, or when the user explicitly accepts a partial uplift.
 
 ## Common mistakes
 

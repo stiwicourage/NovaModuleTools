@@ -13,6 +13,11 @@ function Invoke-NovaTestWorkflow {
     try {
         Invoke-NovaTestWorkflowBuildStep -WorkflowContext $WorkflowContext -Activity $progressActivity -WhatIfEnabled:$whatIfEnabled
 
+        if (-not (Test-NovaTestWorkflowHasDiscoveredTest -WorkflowContext $WorkflowContext)) {
+            Write-NovaTestWorkflowNoTestsDiscoveredResult -WorkflowContext $WorkflowContext
+            return
+        }
+
         if (-not $shouldRunWorkflow) {
             Write-NovaTestWorkflowPreviewResult -WorkflowContext $WorkflowContext -WhatIfEnabled:$whatIfEnabled
             return
@@ -56,6 +61,23 @@ function Write-NovaTestWorkflowPreviewResult {
     }
 
     Write-NovaTestWorkflowResult -WorkflowContext $WorkflowContext -WhatIfEnabled
+}
+
+function Write-NovaTestWorkflowNoTestsDiscoveredResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext
+    )
+
+    $messageLines = @(Get-NovaPropertyValue -InputObject $WorkflowContext -Name 'TestDiscoveryMessageLines')
+    if ($messageLines.Count -eq 0) {
+        return
+    }
+
+    Write-Warning $messageLines[0]
+    foreach ($line in $messageLines | Select-Object -Skip 1) {
+        Write-Message $line
+    }
 }
 
 function Invoke-NovaTestWorkflowExecution {
@@ -530,6 +552,19 @@ function Get-NovaTestWorkflowNextStepLine {
         'Next step:'
         'Publish-NovaModule -Local'
     )
+}
+
+function Test-NovaTestWorkflowHasDiscoveredTest {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext
+    )
+
+    if ($WorkflowContext.PSObject.Properties.Name -notcontains 'TestsDiscovered') {
+        return $true
+    }
+
+    return [bool]$WorkflowContext.TestsDiscovered
 }
 
 function Test-NovaTestWorkflowBuildRequested {

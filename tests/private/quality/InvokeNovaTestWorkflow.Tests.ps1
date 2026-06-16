@@ -8,6 +8,7 @@ BeforeAll {
 Describe 'Invoke-NovaTestWorkflow' {
     BeforeEach {
         Mock Write-Message {}
+        Mock Write-Warning {}
         Mock Write-Progress {}
         Mock Invoke-NovaPesterWithSuppressedProgress {[pscustomobject]@{Result = 'Passed'}}
     }
@@ -286,6 +287,34 @@ Describe 'Invoke-NovaTestWorkflow' {
         }
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Run Invoke-NovaTest without -WhatIf when you are ready to execute the test workflow.'
+        }
+    }
+
+    It 'warns and skips execution when no build-validation integration tests were discovered' {
+        $workflowContext = New-NovaInvokeNovaTestWorkflowContext -Option @{
+            BuildRequested = $true
+            CommandName = 'Test-NovaBuild'
+        }
+        $workflowContext | Add-Member -NotePropertyName TestsDiscovered -NotePropertyValue $false
+        $workflowContext | Add-Member -NotePropertyName TestDiscoveryMessageLines -NotePropertyValue @(
+            "No build-validation integration tests matching '*.Integration.Tests.ps1' were discovered for NovaModuleTools."
+            'Test-NovaBuild expects build-validation tests under the tests folder, for example /tmp/nova-project/tests/public/Get-CommandName.Integration.Tests.ps1.'
+            'Add at least one *.Integration.Tests.ps1 file, then rerun Test-NovaBuild.'
+            'Use Invoke-NovaTest for unit tests and Test-NovaBuild for build-validation integration tests.'
+        )
+        Mock Invoke-NovaBuild {}
+        Mock Invoke-NovaPesterWithSuppressedProgress {}
+
+        { Invoke-NovaTestWorkflow -WorkflowContext $workflowContext } | Should -Not -Throw
+
+        Should -Invoke Invoke-NovaBuild -Times 1
+        Should -Invoke Invoke-NovaPesterWithSuppressedProgress -Times 0
+        Should -Invoke Write-Warning -Times 1 -ParameterFilter {
+            $Message -eq "No build-validation integration tests matching '*.Integration.Tests.ps1' were discovered for NovaModuleTools."
+        }
+        Assert-MockCalled Write-Message -Times 3
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+            $Text -eq 'Use Invoke-NovaTest for unit tests and Test-NovaBuild for build-validation integration tests.'
         }
     }
 

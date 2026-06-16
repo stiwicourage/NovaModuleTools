@@ -17,6 +17,8 @@ Use this file when creating or updating command help under `docs/NovaModuleTools
 
 1. Build and import the dist module before generating or updating help files. This ensures PlatyPS picks up the correct module name for both the `Module Name` and `external help file` metadata fields.
 
+        If `Invoke-NovaBuild` or `Import-Module` fails, stop and resolve the build error before proceeding. Do not run `New-MarkdownCommandHelp` or `Update-MarkdownCommandHelp` without a successfully imported dist module, as the resulting help files will have incorrect `external help file` values that break the Nova build.
+
 ```powershell
 Invoke-NovaBuild
 Import-Module ./dist/NovaModuleTools/NovaModuleTools.psd1 -Force
@@ -26,17 +28,18 @@ Import-Module ./dist/NovaModuleTools/NovaModuleTools.psd1 -Force
 
 ```powershell
 $newMarkdownHelp = @{
-    CommandInfo  = Get-Command -Module 'NovaModuleTools'
-    OutputFolder = './docs'
-    WithModulePage = $true
-    Force = $true
+        CommandInfo    = Get-Command -Module 'NovaModuleTools'
+        OutputFolder   = './docs'
+        WithModulePage = $false
+        Force          = $true
 }
 New-MarkdownCommandHelp @newMarkdownHelp
 ```
 
 3. Every new public entry point must add its matching command-help file in the same change. A new `src/public/<CommandName>.ps1` file is not done until `docs/NovaModuleTools/en-US/<CommandName>.md` exists.
-4. Keep the resulting command-help files under `docs/NovaModuleTools/en-US/` before handoff. If you generate files in a staging folder first, move the command-help markdown files into the repository's locale folder before you finish.
-5. For existing command help, refresh syntax and parameter metadata with `Update-MarkdownCommandHelp` instead of editing the generated YAML structure by hand.
+4. When a public entry point is removed, delete its matching command-help file in the same change. A removed `src/public/<CommandName>.ps1` is not done until `docs/NovaModuleTools/en-US/<CommandName>.md` is also deleted and any `RELATED LINKS` pointing to it in other help files are updated or removed.
+5. Keep the resulting command-help files under `docs/NovaModuleTools/en-US/` before handoff. If you generate files in a staging folder first, move all generated command-help markdown files (per-command files and the module page, if generated) into `docs/NovaModuleTools/en-US/` before you finish.
+6. For existing command help, refresh syntax and parameter metadata with `Update-MarkdownCommandHelp` instead of editing the generated YAML structure by hand.
 
 ```powershell
 Measure-PlatyPSMarkdown -Path ./docs/NovaModuleTools/en-US/*.md |
@@ -44,7 +47,7 @@ Measure-PlatyPSMarkdown -Path ./docs/NovaModuleTools/en-US/*.md |
         Update-MarkdownCommandHelp -Path {$_.FilePath}
 ```
 
-6. Validate the final help with `Test-MarkdownCommandHelp -DetailView`, and inspect `Import-MarkdownCommandHelp` diagnostics when the structure or build result is unclear.
+7. Validate the final help with `Test-MarkdownCommandHelp -DetailView`, and inspect `Import-MarkdownCommandHelp` diagnostics when the structure or build result is unclear.
 
 ```powershell
 Test-MarkdownCommandHelp -Path ./docs/NovaModuleTools/en-US/*.md -DetailView
@@ -53,27 +56,37 @@ Import-MarkdownCommandHelp -Path ./docs/NovaModuleTools/en-US/<CommandName>.md |
         Select-Object -ExpandProperty Diagnostics
 ```
 
-7. Remember the build path: Nova effectively runs `Measure-PlatyPSMarkdown | Import-MarkdownCommandHelp | Export-MamlCommandHelp`. If your help files fail that path, the help is not done yet.
-8. `-WithModulePage` is optional. Nova build consumes the command-help markdown files; a module page can exist, but it does not replace per-command help.
+8. If `Test-MarkdownCommandHelp` reports any failures, or if `Import-MarkdownCommandHelp` returns non-empty Diagnostics with severity Error or Warning, fix the reported issues and re-run both validation commands before considering the help file done. Do not hand off a file that fails either check.
+9. Remember the build path: Nova effectively runs `Measure-PlatyPSMarkdown | Import-MarkdownCommandHelp | Export-MamlCommandHelp`. If your help files fail that path, the help is not done yet.
+10. `-WithModulePage` is optional. Nova build consumes the command-help markdown files; a module page can exist, but it does not replace per-command help.
 
 ## Required format
 
 - Files under `docs/NovaModuleTools/en-US/` must be valid PlatyPS command-help markdown, not plain project prose.
 - Start new help files from a PlatyPS-generated skeleton or from an existing valid help file that already matches the repository's help shape.
 - Keep one command-help file per public entry point, and match the markdown file name to the command name.
+
+### YAML metadata rules
+
+- Build-breaking constraint: the `external help file` field must always use the module name, not the command name: `NovaModuleTools-Help.xml`. The `Module Name` field must match the project name. When both fields use the module name, Nova build produces a single `<ModuleName>-Help.xml` under `dist/<ModuleName>/en-US/`. If either field contains a command name instead, the build produces per-command XML files and the module manifest cannot find its help.
 - Keep the YAML metadata block at the top of every help file, delimited by `---`.
 - Keep the metadata aligned with the command being documented. At minimum, preserve the same metadata keys used by the repository's existing valid help files, including `document type`, `external help file`, `HelpUri`, `Locale`, `Module Name`, `ms.date`, `PlatyPS schema version`, and `title`.
-- The `external help file` field must always use the module name, not the command name: `NovaModuleTools-Help.xml`. The `Module Name` field must match the project name. When both fields use the module name, Nova build produces a single `<ModuleName>-Help.xml` under `dist/<ModuleName>/en-US/`. If either field contains a command name instead, the build produces per-command XML files and the module manifest cannot find its help.
 - Keep the H1 title equal to the exact command name.
-- Preserve the standard PlatyPS section order with uppercase H2 headers: `SYNOPSIS`, `SYNTAX`, optional `ALIASES`, `DESCRIPTION`, `EXAMPLES`, `PARAMETERS`, `INPUTS`, `OUTPUTS`, `NOTES`, and `RELATED LINKS`.
-- In `## RELATED LINKS`, use only a bulleted list of Markdown links. Do not use bare URLs or backticked command names as list items.
-- Prefer relative links to sibling command-help files when the related topic has a matching file in `docs/NovaModuleTools/en-US/`, for example `[Invoke-NovaBuild](./Invoke-NovaBuild.md)`.
-- Do not use GitHub blob URLs in shipped command help. If a relative command-help link is not suitable after PlatyPS validation, use the related topic's `novamoduletools.com` `HelpUri` instead.
+
+### Section structure rules
+
+- Preserve the standard PlatyPS section order with uppercase H2 headers: `SYNOPSIS`, `SYNTAX`, optional `ALIASES`, `DESCRIPTION`, `EXAMPLES`, `PARAMETERS`, `INPUTS`, `OUTPUTS`, required `NOTES`, and required `RELATED LINKS`.
+- `## NOTES` and `## RELATED LINKS` headers are required even when the sections are empty.
 - Keep at least one example under `## EXAMPLES`.
 - Keep parameter sections as `### -ParameterName` blocks with the PlatyPS-generated YAML metadata code block.
-- Only hand-edit parameter metadata when PlatyPS cannot infer it correctly, especially `DefaultValue` and `SupportsWildcards`.
-- `## NOTES` and `## RELATED LINKS` headers are required even when the sections are empty.
 - Do not add ad hoc sections or reorder the required sections.
+
+### Links and examples rules
+
+- In `## RELATED LINKS`, use only a bulleted list of Markdown links. Do not use bare URLs or backticked command names as list items.
+- Prefer relative links to sibling command-help files when the related topic has a matching file in `docs/NovaModuleTools/en-US/`, for example `[Invoke-NovaBuild](./Invoke-NovaBuild.md)`.
+- Do not use GitHub blob URLs in shipped command help. If a relative command-help link is not suitable after PlatyPS validation, use the `HelpUri` value from the YAML metadata block of the related topic's command-help file instead, for example `https://novamoduletools.com/docs/en-US/Get-Something`.
+- Only hand-edit parameter metadata when the PlatyPS-generated value is factually wrong, for example when `DefaultValue` is blank or `none` but the command has a documented default, or when `SupportsWildcards` is `false` but the parameter does accept wildcards.
 - If content is still incomplete, keep placeholder text inside a valid PlatyPS skeleton rather than collapsing the file into generic Markdown.
 
 ## Authoring guidance
@@ -96,3 +109,4 @@ Import-MarkdownCommandHelp -Path ./docs/NovaModuleTools/en-US/<CommandName>.md |
 - Reviewers should flag any new public entry point that does not add its matching command-help file in the same change.
 - Reviewers should flag `RELATED LINKS` entries that use GitHub blob URLs, plain URLs, or bare/backticked command names instead of Markdown links.
 - Treat build errors from `Import-MarkdownCommandHelp` as a sign that the file is not valid PlatyPS help yet.
+- If `Test-MarkdownCommandHelp` reports failures, or if `Import-MarkdownCommandHelp` returns Diagnostics with severity Error or Warning, reviewers should require those issues to be fixed and both validation commands to be re-run before handoff.
