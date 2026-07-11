@@ -29,7 +29,7 @@ Describe 'Invoke-NovaModuleUpdateNotification' {
 
         Invoke-NovaModuleUpdateNotification
 
-        Assert-MockCalled Write-NovaAvailableModuleUpdateWarning -Times 1 -Exactly -ParameterFilter {
+        Should -Invoke Write-NovaAvailableModuleUpdateWarning -Times 1 -Exactly -ParameterFilter {
             $CurrentVersion -eq '1.0.0' -and $AvailableVersion -eq '1.1.0' -and -not $Prerelease
         }
     }
@@ -48,7 +48,7 @@ Describe 'Invoke-NovaModuleUpdateNotification' {
         Mock Write-NovaAvailableModuleUpdateWarning {throw 'should stay silent'}
 
         {Invoke-NovaModuleUpdateNotification} | Should -Not -Throw
-        Assert-MockCalled Write-NovaAvailableModuleUpdateWarning -Times 0
+        Should -Invoke Write-NovaAvailableModuleUpdateWarning -Times 0
     }
 
     It 'warns about a newer prerelease when prerelease notifications are enabled and a prerelease update is available' {
@@ -74,7 +74,7 @@ Describe 'Invoke-NovaModuleUpdateNotification' {
 
         Invoke-NovaModuleUpdateNotification
 
-        Assert-MockCalled Write-NovaAvailableModuleUpdateWarning -Times 1 -Exactly -ParameterFilter {
+        Should -Invoke Write-NovaAvailableModuleUpdateWarning -Times 1 -Exactly -ParameterFilter {
             $CurrentVersion -eq '1.0.0' -and $AvailableVersion -eq '1.2.0-preview' -and $Prerelease
         }
     }

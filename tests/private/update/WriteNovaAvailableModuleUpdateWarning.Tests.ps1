@@ -9,7 +9,7 @@ Describe 'Write-NovaAvailableModuleUpdateWarning' {
         Mock Get-NovaModuleReleaseNotesUri { $null }
         Mock Write-Warning {}
         Write-NovaAvailableModuleUpdateWarning -CurrentVersion '1.0.0' -AvailableVersion '1.1.0'
-        Assert-MockCalled Write-Warning -Times 1 -ParameterFilter {
+        Should -Invoke Write-Warning -Times 1 -ParameterFilter {
             $Message -match 'newer NovaModuleTools release' -and
             $Message -match 'Current: 1\.0\.0' -and
             $Message -match 'Available: 1\.1\.0' -and
@@ -23,7 +23,7 @@ Describe 'Write-NovaAvailableModuleUpdateWarning' {
         Mock Get-NovaModuleReleaseNotesUri { $null }
         Mock Write-Warning {}
         Write-NovaAvailableModuleUpdateWarning -CurrentVersion '1.0.0' -AvailableVersion '1.1.0-beta1' -Prerelease
-        Assert-MockCalled Write-Warning -Times 1 -ParameterFilter {
+        Should -Invoke Write-Warning -Times 1 -ParameterFilter {
             $Message -match 'newer NovaModuleTools prerelease' -and
             $Message -match '-AllowPrerelease' -and
             $Message -match 'Set-NovaUpdateNotificationPreference -DisablePrereleaseNotifications'
@@ -34,7 +34,7 @@ Describe 'Write-NovaAvailableModuleUpdateWarning' {
         Mock Get-NovaModuleReleaseNotesUri { 'https://example.com/notes' }
         Mock Write-Warning {}
         Write-NovaAvailableModuleUpdateWarning -CurrentVersion '1.0.0' -AvailableVersion '1.1.0'
-        Assert-MockCalled Write-Warning -Times 1 -ParameterFilter {
+        Should -Invoke Write-Warning -Times 1 -ParameterFilter {
             $Message -match 'Release notes: https://example\.com/notes'
         }
     }

@@ -1,4 +1,4 @@
-function Get-NovaPublicCommandIntegrationProjectInfo {
+function global:Get-NovaPublicCommandIntegrationProjectInfo {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot
@@ -10,7 +10,7 @@ function Get-NovaPublicCommandIntegrationProjectInfo {
     }
 }
 
-function Import-NovaPublicCommandIntegrationModule {
+function global:Import-NovaPublicCommandIntegrationModule {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot
@@ -22,7 +22,7 @@ function Import-NovaPublicCommandIntegrationModule {
     return Import-NovaBuiltModuleForCi -ProjectRoot $ProjectRoot -ProjectInfo $projectInfo
 }
 
-function Invoke-NovaPublicCommandIntegrationInLocation {
+function global:Invoke-NovaPublicCommandIntegrationInLocation {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$Path,
@@ -37,7 +37,7 @@ function Invoke-NovaPublicCommandIntegrationInLocation {
     }
 }
 
-function Invoke-NovaPublicCommandIntegrationInProjectRoot {
+function global:Invoke-NovaPublicCommandIntegrationInProjectRoot {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot,

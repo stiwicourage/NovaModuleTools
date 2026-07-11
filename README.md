@@ -298,8 +298,8 @@ Notes:
 - if `project.json` sets `Pester.CodeCoverage.CoveragePercentTarget`, `Invoke-NovaTest` fails when the measured coverage percentage is lower than that configured target
 - this repository currently enables coverage with a `99` percent target; the template and packaged example
   `project.json` files ship the same JaCoCo configuration shape with `Enabled=false` and a `90` percent opt-in target
-- make sure `Pester 5.7.1` is available before running `Invoke-NovaTest` or `Test-NovaBuild`
-- the published `NovaModuleTools` manifest also declares `Pester 5.7.1`, so installed end-user workflows can still resolve that dependency automatically
+- make sure `Pester 6.0.0` or newer is available before running `Invoke-NovaTest` or `Test-NovaBuild`
+- the published `NovaModuleTools` manifest now declares `Pester 6.0.0`, so installed end-user workflows and repository validation align on the same supported dependency major version
 
 ### Create a package artifact
 
@@ -640,7 +640,7 @@ Responsibilities currently covered by the release pipeline include:
 - publishing to PowerShell Gallery
 - preparing the next prerelease version on `develop`
 
-The workflow now uses `KeepAChangelog` for changelog release moves, creates annotated git tags named directly from the release version, and bootstraps the local PSResourceGet repository store before calling `Publish-NovaModule`. The shared CI installer also installs `Pester 5.7.1` explicitly before it installs prerelease gallery modules so test workflows do not rely on transitive manifest dependency resolution.
+The workflow now uses `KeepAChangelog` for changelog release moves, creates annotated git tags named directly from the release version, and bootstraps the local PSResourceGet repository store before calling `Publish-NovaModule`. The shared CI installer also installs `Pester 6.0.0` explicitly before it installs prerelease gallery modules so test workflows do not rely on transitive manifest dependency resolution.
 
 ### Where NovaModuleTools cmdlets fit
 

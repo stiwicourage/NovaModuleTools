@@ -8,22 +8,22 @@ Describe 'Confirm-NovaCliRoutedCommand' {
     It 'does nothing when CliConfirmEnabled is false' {
         Mock Confirm-NovaCliCommandAction {}
         Confirm-NovaCliRoutedCommand -InvocationContext (New-TestContext -CliConfirmEnabled $false) -Command 'build'
-        Assert-MockCalled Confirm-NovaCliCommandAction -Times 0
+        Should -Invoke Confirm-NovaCliCommandAction -Times 0
     }
     It 'does nothing when WhatIfEnabled is true' {
         Mock Confirm-NovaCliCommandAction {}
         Confirm-NovaCliRoutedCommand -InvocationContext (New-TestContext -CliConfirmEnabled $true -WhatIfEnabled $true) -Command 'build'
-        Assert-MockCalled Confirm-NovaCliCommandAction -Times 0
+        Should -Invoke Confirm-NovaCliCommandAction -Times 0
     }
     It 'does nothing when command is not mutating' {
         Mock Confirm-NovaCliCommandAction {}
         Confirm-NovaCliRoutedCommand -InvocationContext (New-TestContext -CliConfirmEnabled $true) -Command 'info'
-        Assert-MockCalled Confirm-NovaCliCommandAction -Times 0
+        Should -Invoke Confirm-NovaCliCommandAction -Times 0
     }
     It 'invokes confirmation otherwise' {
         Mock Confirm-NovaCliCommandAction {}
         Confirm-NovaCliRoutedCommand -InvocationContext (New-TestContext -CliConfirmEnabled $true) -Command 'build'
-        Assert-MockCalled Confirm-NovaCliCommandAction -Times 1
+        Should -Invoke Confirm-NovaCliCommandAction -Times 1
     }
 }
 
@@ -49,7 +49,7 @@ Describe 'Invoke-NovaCliTestRouteCommand' {
         $result = Invoke-NovaCliTestRouteCommand -InvocationContext (New-TestContext -Arguments @('--tag', 'fast') -MutatingCommonParameters @{WhatIf = $true})
 
         $result | Should -Be 'unit:fast:True'
-        Assert-MockCalled Test-NovaBuild -Times 0
+        Should -Invoke Test-NovaBuild -Times 0
     }
 
     It 'forwards override-warning to Invoke-NovaTest for plain nova test' {
@@ -60,7 +60,7 @@ Describe 'Invoke-NovaCliTestRouteCommand' {
         $result = Invoke-NovaCliTestRouteCommand -InvocationContext (New-TestContext -Arguments @('--override-warning') -MutatingCommonParameters @{WhatIf = $true})
 
         $result | Should -Be 'unit:True:True'
-        Assert-MockCalled Test-NovaBuild -Times 0
+        Should -Invoke Test-NovaBuild -Times 0
     }
 
     It 'routes nova test --build to Test-NovaBuild without forwarding the Build switch' {
@@ -71,7 +71,7 @@ Describe 'Invoke-NovaCliTestRouteCommand' {
         $result = Invoke-NovaCliTestRouteCommand -InvocationContext (New-TestContext -Arguments @('--build') -MutatingCommonParameters @{WhatIf = $true})
 
         $result | Should -Be 'integration:True:True'
-        Assert-MockCalled Invoke-NovaTest -Times 0
+        Should -Invoke Invoke-NovaTest -Times 0
     }
 }
 
@@ -115,7 +115,7 @@ Describe 'Write-NovaCliCapturedWarning' {
     It 'writes Write-Warning for each non-empty warning' {
         Mock Write-Warning {}
         Write-NovaCliCapturedWarning -WarningMessages @('a','b')
-        Assert-MockCalled Write-Warning -Times 2
+        Should -Invoke Write-Warning -Times 2
     }
 }
 
@@ -128,7 +128,7 @@ Describe 'Invoke-NovaCliBumpCommand' {
         Mock Write-Warning {}
         $r = Invoke-NovaCliBumpCommand -InvocationContext (New-TestContext)
         $r | Should -Be 'bumped'
-        Assert-MockCalled Write-Warning -Times 1
+        Should -Invoke Write-Warning -Times 1
     }
 }
 
@@ -153,7 +153,7 @@ Describe 'Invoke-NovaCliNotificationRouteCommand' {
     It 'delegates to Invoke-NovaCliNotificationCommand' {
         Mock Invoke-NovaCliNotificationCommand {}
         Invoke-NovaCliNotificationRouteCommand -InvocationContext (New-TestContext -Command 'notification')
-        Assert-MockCalled Invoke-NovaCliNotificationCommand -Times 1
+        Should -Invoke Invoke-NovaCliNotificationCommand -Times 1
     }
 }
 
@@ -194,7 +194,7 @@ Describe 'Invoke-NovaCliCommandRoute' {
         Mock Invoke-NovaCliParsedCommand { 'built' }
         Mock Confirm-NovaCliRoutedCommand {}
         Invoke-NovaCliCommandRoute -InvocationContext (New-TestContext -Command 'build') | Should -Be 'built'
-        Assert-MockCalled Invoke-NovaCliParsedCommand -Times 1 -ParameterFilter {$ParserCommand -eq 'ConvertFrom-NovaBuildCliArgument' -and $ActionCommand -eq 'Invoke-NovaBuild'}
+        Should -Invoke Invoke-NovaCliParsedCommand -Times 1 -ParameterFilter {$ParserCommand -eq 'ConvertFrom-NovaBuildCliArgument' -and $ActionCommand -eq 'Invoke-NovaBuild'}
     }
 
     It 'dispatches test through the dedicated test router' {

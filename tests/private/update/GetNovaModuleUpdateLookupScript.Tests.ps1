@@ -15,7 +15,7 @@ Describe 'Get-NovaModuleUpdateLookupScript' {
             $script = Get-NovaModuleUpdateLookupScript
 
             $script | Should -Match 'param\(\$name\)'
-            Assert-MockCalled Get-ResourceFilePath -Times 1 -ParameterFilter {
+            Should -Invoke Get-ResourceFilePath -Times 1 -ParameterFilter {
                 $FileName -eq 'update/ModuleUpdateLookup.ps1.txt'
             }
         } finally {

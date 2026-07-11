@@ -34,7 +34,7 @@ Describe 'Confirm-NovaPrereleaseModuleUpdate' {
 
         Confirm-NovaPrereleaseModuleUpdate -Cmdlet $script:fakeCmdlet -CurrentVersion '1.0.0' -TargetVersion '2.0.0-beta1' | Out-Null
 
-        Assert-MockCalled Get-NovaPrereleaseModuleUpdateConfirmationPrompt -Times 1 -ParameterFilter {
+        Should -Invoke Get-NovaPrereleaseModuleUpdateConfirmationPrompt -Times 1 -ParameterFilter {
             $CurrentVersion -eq '1.0.0' -and $TargetVersion -eq '2.0.0-beta1'
         }
     }

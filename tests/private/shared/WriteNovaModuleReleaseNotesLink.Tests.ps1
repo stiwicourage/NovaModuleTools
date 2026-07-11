@@ -30,7 +30,7 @@ Describe 'Write-NovaModuleReleaseNotesLink' {
 
         Write-NovaModuleReleaseNotesLink -Module ([pscustomobject]@{})
 
-        Assert-MockCalled Write-Host -Times 1 -ParameterFilter {
+        Should -Invoke Write-Host -Times 1 -ParameterFilter {
             $args -contains 'Release notes: https://example/notes' -or $Object -eq 'Release notes: https://example/notes'
         }
     }
@@ -41,6 +41,6 @@ Describe 'Write-NovaModuleReleaseNotesLink' {
 
         Write-NovaModuleReleaseNotesLink -Module ([pscustomobject]@{})
 
-        Assert-MockCalled Write-Host -Times 0
+        Should -Invoke Write-Host -Times 0
     }
 }

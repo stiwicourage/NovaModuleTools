@@ -31,8 +31,8 @@ Describe 'Get-NovaModuleInitializationWorkflowContext' {
 
             $global:steps -join ',' | Should -Be 'notification,questions'
             $result.Target | Should -Be '/tmp/base/NovaContext'
-            Assert-MockCalled Invoke-NovaModuleUpdateNotificationSafely -Times 1
-            Assert-MockCalled Read-NovaModuleAnswerSet -Times 1
+            Should -Invoke Invoke-NovaModuleUpdateNotificationSafely -Times 1
+            Should -Invoke Read-NovaModuleAnswerSet -Times 1
         } finally {
             Remove-Variable -Name steps -Scope Global -ErrorAction SilentlyContinue
         }

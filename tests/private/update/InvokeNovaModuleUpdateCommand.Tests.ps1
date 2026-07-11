@@ -36,6 +36,6 @@ Describe 'Invoke-NovaModuleUpdateCommand' {
         $result.Splatted | Should -BeTrue
         $result.Name | Should -Be 'NovaModuleTools'
         $result.AllowPrerelease | Should -BeTrue
-        Assert-MockCalled Update-Module -Times 1
+        Should -Invoke Update-Module -Times 1
     }
 }

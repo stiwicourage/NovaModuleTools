@@ -54,13 +54,13 @@ Describe 'Get-ProjectScriptFile' {
 
         $null = Get-ProjectScriptFile -ProjectInfo $info
 
-        Assert-MockCalled Get-OrderedScriptFileForDirectory -Times 1 -ParameterFilter {
+        Should -Invoke Get-OrderedScriptFileForDirectory -Times 1 -ParameterFilter {
             $Directory -like '*public' -and -not $Recurse
         }
-        Assert-MockCalled Get-OrderedScriptFileForDirectory -Times 1 -ParameterFilter {
+        Should -Invoke Get-OrderedScriptFileForDirectory -Times 1 -ParameterFilter {
             $Directory -like '*classes' -and $Recurse
         }
-        Assert-MockCalled Get-OrderedScriptFileForDirectory -Times 1 -ParameterFilter {
+        Should -Invoke Get-OrderedScriptFileForDirectory -Times 1 -ParameterFilter {
             $Directory -like '*private' -and $Recurse
         }
     }

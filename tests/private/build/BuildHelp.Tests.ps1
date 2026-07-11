@@ -128,7 +128,7 @@ Describe 'Build-Help' {
         Mock Get-NovaHelpBuildContext {}
         Mock Export-NovaGeneratedHelp {}
         { Build-Help -ProjectInfo ([pscustomobject]@{}) } | Should -Not -Throw
-        Assert-MockCalled Assert-NovaPlatyPSAvailable -Times 0
+        Should -Invoke Assert-NovaPlatyPSAvailable -Times 0
     }
 
     It 'handles PlatyPS help export when context is <Name>' -ForEach @(
@@ -146,7 +146,7 @@ Describe 'Build-Help' {
             Mock Get-NovaHelpBuildContext { $script:buildHelpContext }
             Mock Export-NovaGeneratedHelp {}
             Build-Help -ProjectInfo ([pscustomobject]@{})
-            Assert-MockCalled Export-NovaGeneratedHelp -Times $ExpectedExportCalls
+            Should -Invoke Export-NovaGeneratedHelp -Times $ExpectedExportCalls
         } finally { Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue }
     }
 }

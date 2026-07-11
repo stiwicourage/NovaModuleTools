@@ -18,6 +18,6 @@ Describe 'Get-NovaBuildProjectInfo' {
         $result = Get-NovaBuildProjectInfo -ProjectInfo $null
 
         $result.ProjectRoot | Should -Be '/from-fallback'
-        Assert-MockCalled Get-NovaProjectInfo -Times 1
+        Should -Invoke Get-NovaProjectInfo -Times 1
     }
 }

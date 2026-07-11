@@ -19,7 +19,7 @@ Describe 'Test-ProjectSchema' {
 
     It 'validates project.json against Schema-Project.json and returns true' {
         Test-ProjectSchema | Should -BeTrue
-        Assert-MockCalled Get-ResourceFilePath -Times 1 -ParameterFilter {$FileName -eq 'Schema-Project.json'}
+        Should -Invoke Get-ResourceFilePath -Times 1 -ParameterFilter {$FileName -eq 'Schema-Project.json'}
     }
 
     It 'translates Test-Json failures into Stop-NovaOperation' {

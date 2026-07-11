@@ -81,13 +81,13 @@ Describe 'Assert-NovaPublicFunctionFileLayout' {
         Mock Get-NovaInvalidPublicFunctionFileList { @([pscustomobject]@{FilePath='x.ps1'; FunctionNameList=@('A','B')}) }
         Mock Write-Warning {}
         { Assert-NovaPublicFunctionFileLayout -ProjectInfo ([pscustomobject]@{PublicDir='src/public'}) } | Should -Throw -ErrorId 'Nova.Validation.PublicFunctionFileLayoutInvalid'
-        Assert-MockCalled Write-Warning -Times 1
+        Should -Invoke Write-Warning -Times 1
     }
 
     It 'warns and continues when OverrideWarningRequested' {
         Mock Get-NovaInvalidPublicFunctionFileList { @([pscustomobject]@{FilePath='x.ps1'; FunctionNameList=@('A','B')}) }
         Mock Write-Warning {}
         { Assert-NovaPublicFunctionFileLayout -ProjectInfo ([pscustomobject]@{PublicDir='src/public'}) -OverrideWarningRequested } | Should -Not -Throw
-        Assert-MockCalled Write-Warning -Times 1
+        Should -Invoke Write-Warning -Times 1
     }
 }

@@ -8,7 +8,6 @@ function Stop-NovaOperation {
     throw $errorRecord
 }
 function Invoke-NovaBuild {}
-function Invoke-NovaPester {param($Configuration)}
 function Get-NovaBuildCommandParameterMap {param($WorkflowParams, [switch]$OverrideWarningRequested) return @{}}
 function Write-Message {param([string]$Text, [string]$color)}
 function Write-Progress {param([string]$Activity, [string]$Status, [int]$PercentComplete, [switch]$Completed)}

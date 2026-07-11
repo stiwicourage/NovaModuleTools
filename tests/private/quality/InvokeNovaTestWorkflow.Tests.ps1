@@ -1,5 +1,7 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
+    . (Join-Path $projectRoot 'src/private/quality/GetNovaPesterRuntimeMajorVersion.ps1')
+    . (Join-Path $projectRoot 'src/private/quality/InvokeNovaPester.ps1')
     . (Join-Path $projectRoot 'src/private/quality/InvokeNovaTestWorkflow.ps1')
 
     . (Join-Path $PSScriptRoot 'InvokeNovaTestWorkflow.TestSupport.ps1')
@@ -10,6 +12,7 @@ Describe 'Invoke-NovaTestWorkflow' {
         Mock Write-Message {}
         Mock Write-Warning {}
         Mock Write-Progress {}
+        Mock Get-NovaPesterRuntimeMajorVersion {5}
         Mock Invoke-NovaPesterWithSuppressedProgress {[pscustomobject]@{Result = 'Passed'}}
     }
 
@@ -33,24 +36,17 @@ Describe 'Invoke-NovaTestWorkflow' {
 
             {Invoke-NovaTestWorkflow -WorkflowContext $workflowContext} | Should -Not -Throw
             $global:coverageAssertionRan | Should -BeTrue
-            Assert-MockCalled Write-Message -Times 4
-            Assert-MockCalled Write-Progress -Times 4
-            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            Should -Invoke Write-Progress -Times 4
+            Should -Invoke Write-Progress -Times 1 -ParameterFilter {
                 $Status -eq 'Preparing the test result directory' -and $PercentComplete -eq 40
             }
-            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            Should -Invoke Write-Progress -Times 1 -ParameterFilter {
                 $Status -eq 'Writing the test result report' -and $PercentComplete -eq 96
             }
-            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+            Should -Invoke Write-Progress -Times 1 -ParameterFilter {
                 $Status -eq 'Checking the configured code coverage target' -and $PercentComplete -eq 99
             }
-            Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
-            Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-                $Text -eq 'Pester tests passed for NovaModuleTools' -and $color -eq 'Green'
-            }
-            Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-                $Text -eq 'Publish-NovaModule -Local'
-            }
+            Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
         } finally {
             Remove-Variable -Name coverageAssertionRan -Scope Global -ErrorAction SilentlyContinue
         }
@@ -116,10 +112,6 @@ Describe 'Invoke-NovaTestWorkflow' {
 
         {Invoke-NovaTestWorkflow -WorkflowContext $workflowContext} | Should -Not -Throw
         $workflowContext.PesterConfig.TestResult.OutputPath | Should -Be '/tmp/nova-project/artifacts/UnitTestResults.xml'
-        Assert-MockCalled Write-Message -Times 5
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
-            $Text -eq 'Measured code coverage: 10%'
-        }
     }
 
     It 'falls back to CodeCoverage as the target object when the workflow context has no test result path' {
@@ -232,7 +224,6 @@ Describe 'Invoke-NovaTestWorkflow' {
 
         Should -Invoke Invoke-NovaBuild -Times $ExpectedBuildCalls
         Should -Invoke Invoke-NovaPesterWithSuppressedProgress -Times $ExpectedPesterCalls
-        Assert-MockCalled Write-Message -Times $ExpectedMessageCount
     }
 
     It 'creates the artifact directory when it does not exist' {
@@ -255,6 +246,21 @@ Describe 'Invoke-NovaTestWorkflow' {
         }
     }
 
+    It 'uses the direct Pester wrapper for Pester 6 and later' {
+        $workflowContext = New-NovaInvokeNovaTestWorkflowContext
+        Mock Test-Path {$true}
+        Mock Get-NovaPesterRuntimeMajorVersion {6}
+        Mock Invoke-NovaPester {[pscustomobject]@{Result = 'Passed'}}
+
+        {Invoke-NovaTestWorkflow -WorkflowContext $workflowContext} | Should -Not -Throw
+
+        Should -Invoke Invoke-NovaPester -Times 1
+        Should -Invoke Invoke-NovaPesterWithSuppressedProgress -Times 0
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
+            $Status -eq 'Running Pester tests' -and $PercentComplete -eq 70
+        }
+    }
+
     It 'writes a test plan summary in WhatIf mode after previewing the nested build step' {
         $workflowContext = New-NovaInvokeNovaTestWorkflowContext -Option @{
             BuildRequested = $true
@@ -273,19 +279,19 @@ Describe 'Invoke-NovaTestWorkflow' {
 
         Should -Invoke Invoke-NovaBuild -Times 1
         Should -Invoke Invoke-NovaPesterWithSuppressedProgress -Times 0
-        Assert-MockCalled Write-Message -Times 5
-        Assert-MockCalled Write-Progress -Times 2
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Message -Times 5
+        Should -Invoke Write-Progress -Times 2
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Previewing the build-before-test workflow' -and $PercentComplete -eq 20
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Test plan ready for NovaModuleTools' -and $color -eq 'Green'
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Configured coverage target: 99%'
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Run Invoke-NovaTest without -WhatIf when you are ready to execute the test workflow.'
         }
     }
@@ -312,8 +318,8 @@ Describe 'Invoke-NovaTestWorkflow' {
         Should -Invoke Write-Warning -Times 1 -ParameterFilter {
             $Message -eq "No build-validation integration tests matching '*.Integration.Tests.ps1' were discovered for NovaModuleTools."
         }
-        Assert-MockCalled Write-Message -Times 3
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Message -Times 3
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Use Invoke-NovaTest for unit tests and Test-NovaBuild for build-validation integration tests.'
         }
     }

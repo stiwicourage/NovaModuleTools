@@ -22,10 +22,10 @@ Describe 'Invoke-NovaModuleSelfUpdate' {
 
         $result = Invoke-NovaModuleSelfUpdate -ModuleName 'NovaModuleTools' -AllowPrerelease
 
-        Assert-MockCalled Get-NovaModuleUpdateParameterMap -Times 1 -ParameterFilter {
+        Should -Invoke Get-NovaModuleUpdateParameterMap -Times 1 -ParameterFilter {
             $ModuleName -eq 'NovaModuleTools' -and $AllowPrereleaseRequested -eq $true
         }
-        Assert-MockCalled Invoke-NovaModuleUpdateCommand -Times 1
+        Should -Invoke Invoke-NovaModuleUpdateCommand -Times 1
         $result.Parameters.AllowPrerelease | Should -BeTrue
     }
 
@@ -35,7 +35,7 @@ Describe 'Invoke-NovaModuleSelfUpdate' {
 
         Invoke-NovaModuleSelfUpdate | Out-Null
 
-        Assert-MockCalled Get-NovaModuleUpdateParameterMap -Times 1 -ParameterFilter {
+        Should -Invoke Get-NovaModuleUpdateParameterMap -Times 1 -ParameterFilter {
             $ModuleName -eq 'NovaModuleTools' -and $AllowPrereleaseRequested -eq $false
         }
     }

@@ -79,14 +79,14 @@ Describe 'Invoke-NovaPublishWorkflow' {
         $script:validationCalls | Should -Be 1
         $script:publishCalls | Should -Be 1
         $script:localImportCalls | Should -Be 0
-        Assert-MockCalled Write-Progress -Times 3
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 3
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Building and testing publish output' -and $PercentComplete -eq 35
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Publishing to repository PSGallery' -and $PercentComplete -eq 75
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
         $script:messages.Count | Should -Be 4
         ($script:messages | Where-Object {$_.Text -eq 'Published Nova module: NovaModuleTools' -and $_.Color -eq 'Green'}).Count | Should -Be 1
         ($script:messages | Where-Object {$_.Text -eq 'Find-Module NovaModuleTools -Repository PSGallery'}).Count | Should -Be 1
@@ -114,14 +114,14 @@ Describe 'Invoke-NovaPublishWorkflow' {
         Invoke-NovaPublishWorkflow -WorkflowContext $ctx -ShouldRun
         $script:localImportCalls | Should -Be 1
         $script:ciImportCalls | Should -Be 1
-        Assert-MockCalled Write-Progress -Times 5
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 5
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Importing the published local module' -and $PercentComplete -eq 90
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Refreshing the current session with the built module' -and $PercentComplete -eq 98
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
         $script:messages.Count | Should -Be 7
         ($script:messages | Where-Object {$_.Text -eq 'Pre-publish tests were skipped for this run.'}).Count | Should -Be 1
         ($script:messages | Where-Object {$_.Text -eq 'The published local module is loaded from /m/Mod.psd1.'}).Count | Should -Be 1
@@ -150,10 +150,10 @@ Describe 'Invoke-NovaPublishWorkflow' {
         $script:localImportCalls | Should -Be 0
         $script:ciImportCalls | Should -Be 0
         $script:messages.Count | Should -Be 4
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Previewing publish to repository PSGallery' -and $PercentComplete -eq 75
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
         ($script:messages | Where-Object {$_.Text -eq 'Publish plan ready for NovaModuleTools' -and $_.Color -eq 'Green'}).Count | Should -Be 1
         ($script:messages | Where-Object {$_.Text -eq 'Run Publish-NovaModule without -WhatIf when you are ready to publish the module.'}).Count | Should -Be 1
     }

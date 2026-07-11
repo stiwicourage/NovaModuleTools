@@ -13,7 +13,7 @@ Describe 'Write-NovaUpdateNotificationPreference' {
 
         Write-NovaUpdateNotificationPreference -PrereleaseNotificationsEnabled $false
 
-        Assert-MockCalled Write-NovaJsonFileData -Times 1 -ParameterFilter {
+        Should -Invoke Write-NovaJsonFileData -Times 1 -ParameterFilter {
             $LiteralPath -eq '/expected/path/settings.json' -and
             $Value.PrereleaseNotificationsEnabled -eq $false
         }

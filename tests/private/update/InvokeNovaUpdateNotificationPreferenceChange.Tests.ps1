@@ -43,15 +43,15 @@ Describe 'Invoke-NovaUpdateNotificationPreferenceChange' {
         }
         $status = Invoke-NovaUpdateNotificationPreferenceChange -WorkflowContext $workflowContext -ShouldRun
 
-        Assert-MockCalled Write-NovaUpdateNotificationPreference -Times 1 -ParameterFilter {
+        Should -Invoke Write-NovaUpdateNotificationPreference -Times 1 -ParameterFilter {
             $PrereleaseNotificationsEnabled -eq $false
         }
-        Assert-MockCalled Get-NovaUpdateNotificationPreferenceStatus -Times 1
-        Assert-MockCalled Write-Message -Times 4
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Get-NovaUpdateNotificationPreferenceStatus -Times 1
+        Should -Invoke Write-Message -Times 4
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Prerelease self-updates are now disabled.' -and $color -eq 'Green'
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Get-NovaUpdateNotificationPreference'
         }
         $status.PrereleaseNotificationsEnabled | Should -BeFalse
@@ -70,13 +70,13 @@ Describe 'Invoke-NovaUpdateNotificationPreferenceChange' {
 
         $status = Invoke-NovaUpdateNotificationPreferenceChange -WorkflowContext $workflowContext
 
-        Assert-MockCalled Write-NovaUpdateNotificationPreference -Times 0
-        Assert-MockCalled Get-NovaUpdateNotificationPreferenceStatus -Times 0
-        Assert-MockCalled Write-Message -Times 4
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-NovaUpdateNotificationPreference -Times 0
+        Should -Invoke Get-NovaUpdateNotificationPreferenceStatus -Times 0
+        Should -Invoke Write-Message -Times 4
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Notification preference plan ready: prerelease self-updates enabled' -and $color -eq 'Green'
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Run Set-NovaUpdateNotificationPreference -EnablePrereleaseNotifications without -WhatIf when you are ready to store the preference.'
         }
         $status | Should -BeNullOrEmpty

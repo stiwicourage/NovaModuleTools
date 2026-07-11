@@ -12,7 +12,7 @@ Describe 'Get-NovaModuleAgenticCopilotTemplateRoot' {
         $root = Get-NovaModuleAgenticCopilotTemplateRoot
 
         $root | Should -Be (Split-Path -Parent '/resources/agentic-copilot/AGENTS.md')
-        Assert-MockCalled Get-ResourceFilePath -Times 1 -ParameterFilter {
+        Should -Invoke Get-ResourceFilePath -Times 1 -ParameterFilter {
             $FileName -like '*agentic-copilot*AGENTS.md'
         }
     }

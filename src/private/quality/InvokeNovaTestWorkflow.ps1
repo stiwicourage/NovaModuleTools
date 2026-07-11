@@ -9,6 +9,9 @@ function Invoke-NovaTestWorkflow {
     $whatIfEnabled = Test-NovaWhatIfWorkflowContext -WorkflowContext $WorkflowContext
     $testResult = $null
     $shouldRunWorkflow = Test-NovaTestWorkflowShouldRun -WorkflowContext $WorkflowContext -BoundParameters $PSBoundParameters -ShouldRun:$ShouldRun
+    $messageWriter = (Get-Command -Name Write-Message -CommandType Function -ErrorAction Stop).ScriptBlock
+    $propertyReader = (Get-Command -Name Get-NovaPropertyValue -CommandType Function -ErrorAction Stop).ScriptBlock
+    $coverageFormatter = (Get-Command -Name Format-NovaCoveragePercentValue -CommandType Function -ErrorAction Stop).ScriptBlock
 
     try {
         Invoke-NovaTestWorkflowBuildStep -WorkflowContext $WorkflowContext -Activity $progressActivity -WhatIfEnabled:$whatIfEnabled
@@ -28,7 +31,47 @@ function Invoke-NovaTestWorkflow {
         Write-Progress -Activity $progressActivity -Completed
     }
 
-    Write-NovaTestWorkflowResult -WorkflowContext $WorkflowContext -TestResult $testResult
+    & $messageWriter "Pester tests passed for $( $WorkflowContext.ProjectInfo.ProjectName )" -color Green
+    & $messageWriter "Results file: $( $WorkflowContext.TestResultPath )"
+
+    $pesterSettings = & $propertyReader -InputObject $WorkflowContext -Name 'PesterSettings'
+    if ($null -eq $pesterSettings) {
+        $projectInfo = & $propertyReader -InputObject $WorkflowContext -Name 'ProjectInfo'
+        $pesterSettings = & $propertyReader -InputObject $projectInfo -Name 'Pester'
+    }
+
+    $coveragePercentTarget = $null
+    $codeCoverageSettings = & $propertyReader -InputObject $pesterSettings -Name 'CodeCoverage'
+    if ($true -eq [bool](& $propertyReader -InputObject $codeCoverageSettings -Name 'Enabled')) {
+        $configuredCoveragePercentTarget = & $propertyReader -InputObject $codeCoverageSettings -Name 'CoveragePercentTarget'
+        if ($null -ne $configuredCoveragePercentTarget -and -not [string]::IsNullOrWhiteSpace([string]$configuredCoveragePercentTarget)) {
+            $coveragePercentTarget = [double]$configuredCoveragePercentTarget
+        }
+    }
+
+    $coverageMessage = $null
+    $codeCoverage = & $propertyReader -InputObject $testResult -Name 'CodeCoverage'
+    $coveragePercent = & $propertyReader -InputObject $codeCoverage -Name 'CoveragePercent'
+    if ($null -ne $coveragePercent -and -not [string]::IsNullOrWhiteSpace([string]$coveragePercent)) {
+        $formattedCoverage = & $coverageFormatter -Value ([double]$coveragePercent)
+        if ($null -eq $coveragePercentTarget) {
+            $coverageMessage = "Measured code coverage: $formattedCoverage%"
+        } else {
+            $formattedTarget = & $coverageFormatter -Value $coveragePercentTarget
+            $coverageMessage = "Measured code coverage: $formattedCoverage% (target: $formattedTarget%)"
+        }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($coverageMessage)) {
+        & $messageWriter $coverageMessage
+    }
+
+    foreach ($line in @(
+        'Next step:'
+        'Publish-NovaModule -Local'
+    )) {
+        & $messageWriter $line
+    }
 }
 
 function Invoke-NovaTestWorkflowBuildStep {
@@ -93,14 +136,10 @@ function Invoke-NovaTestWorkflowExecution {
 
     $WorkflowContext.PesterConfig.TestResult.OutputPath = $WorkflowContext.TestResultPath
     $coverageTargetAssertion = Get-NovaCoverageTargetAssertionScriptBlock -WorkflowContext $WorkflowContext
-    $testProgressContext = [pscustomobject]@{
-        Activity = $Activity
-        StartPercentComplete = 70
-        EndPercentComplete = 94
-    }
-    $testResult = Invoke-NovaPesterWithSuppressedProgress -Configuration $WorkflowContext.PesterConfig -ProgressContext $testProgressContext
+    $testResult = Get-NovaTestWorkflowPesterResult -WorkflowContext $WorkflowContext -Activity $Activity
 
-    Invoke-NovaTestWorkflowStep -Activity $Activity -Status 'Writing the test result report' -PercentComplete 96 -Action {
+    Write-Progress -Activity $Activity -Status 'Writing the test result report' -PercentComplete 96
+    & {
         & $WorkflowContext.TestResultArtifactWriter.ScriptBlock -TestResult $testResult -OutputPath $WorkflowContext.TestResultPath -ReportWriter $WorkflowContext.TestResultReportWriter.ScriptBlock
     }
 
@@ -108,11 +147,33 @@ function Invoke-NovaTestWorkflowExecution {
         Stop-NovaOperation -Message (Get-NovaTestWorkflowFailureMessage -WorkflowContext $WorkflowContext) -ErrorId 'Nova.Workflow.TestRunFailed' -Category InvalidOperation -TargetObject $WorkflowContext.TestResultPath
     }
 
-    Invoke-NovaTestWorkflowStep -Activity $Activity -Status 'Checking the configured code coverage target' -PercentComplete 99 -Action {
+    Write-Progress -Activity $Activity -Status 'Checking the configured code coverage target' -PercentComplete 99
+    & {
         & $coverageTargetAssertion -WorkflowContext $WorkflowContext -TestResult $testResult
     }
 
     return $testResult
+}
+
+function Get-NovaTestWorkflowPesterResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
+        [Parameter(Mandatory)][string]$Activity
+    )
+
+    if ((Get-NovaPesterRuntimeMajorVersion) -ge 6) {
+        return Invoke-NovaTestWorkflowStep -Activity $Activity -Status 'Running Pester tests' -PercentComplete 70 -Action {
+            Invoke-NovaPester -Configuration $WorkflowContext.PesterConfig
+        }
+    }
+
+    $testProgressContext = [pscustomobject]@{
+        Activity = $Activity
+        StartPercentComplete = 70
+        EndPercentComplete = 94
+    }
+    return Invoke-NovaPesterWithSuppressedProgress -Configuration $WorkflowContext.PesterConfig -ProgressContext $testProgressContext
 }
 
 function Invoke-NovaTestWorkflowStep {

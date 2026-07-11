@@ -12,7 +12,7 @@ Describe 'Get-NovaUpdateSettingsFilePath' {
         $path = Get-NovaUpdateSettingsFilePath
 
         $path | Should -Match 'settings\.json$'
-        Assert-MockCalled Get-NovaSettingsDirectoryPath -Times 1 -ParameterFilter {
+        Should -Invoke Get-NovaSettingsDirectoryPath -Times 1 -ParameterFilter {
             $ApplicationName -eq 'NovaModuleTools'
         }
     }

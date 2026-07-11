@@ -15,7 +15,7 @@ Describe 'Assert-NovaModuleQuestionAnswerValid' {
         Mock Stop-NovaOperation {throw 'should not be called'}
 
         {Assert-NovaModuleQuestionAnswerValid -Question $script:question -Value 'NovaThing'} | Should -Not -Throw
-        Assert-MockCalled Stop-NovaOperation -Times 0
+        Should -Invoke Stop-NovaOperation -Times 0
     }
 
     It 'stops the operation when the validator reports a failure' {
@@ -30,7 +30,7 @@ Describe 'Assert-NovaModuleQuestionAnswerValid' {
         Mock Stop-NovaOperation {throw "$Message ($ErrorId)"}
 
         {Assert-NovaModuleQuestionAnswerValid -Question $script:question -Value 'bad name'} | Should -Throw '*invalid name*'
-        Assert-MockCalled Stop-NovaOperation -Times 1 -ParameterFilter {
+        Should -Invoke Stop-NovaOperation -Times 1 -ParameterFilter {
             $Message -eq 'invalid name' -and $ErrorId -eq 'Nova.Validation.ProjectName'
         }
     }

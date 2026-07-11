@@ -59,8 +59,8 @@ Describe 'Get-NovaProjectInfoResult' {
         $info = Get-NovaProjectInfoResult -WorkflowContext $script:context
         $info.Manifest.Author | Should -Be 'Alice'
         $info.Package.Id | Should -Be 'Pkg'
-        Assert-MockCalled Get-NovaResolvedProjectManifestSettings -Times 1
-        Assert-MockCalled Get-NovaResolvedProjectPackageSettings -Times 1
+        Should -Invoke Get-NovaResolvedProjectManifestSettings -Times 1
+        Should -Invoke Get-NovaResolvedProjectPackageSettings -Times 1
     }
 
     It 'invokes Get-ProjectPreamble and stores the result' {

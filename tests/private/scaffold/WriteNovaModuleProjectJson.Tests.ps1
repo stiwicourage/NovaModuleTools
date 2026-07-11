@@ -1,5 +1,8 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
+    function Get-NovaScaffoldModuleVersion {
+        $null
+    }
     . (Join-Path $projectRoot 'src/private/scaffold/WriteNovaModuleProjectJson.ps1')
     function Get-NovaModuleProjectTemplatePath {param([switch]$Example) '/template/project.json'}
     function Read-ProjectJsonData {param($ProjectJsonPath) @{
@@ -66,6 +69,7 @@ Describe 'Write-NovaModuleProjectJson' {
 
             Set-Content -LiteralPath $psm1 -Value @"
 `$script:capturedData = `$null
+function Get-NovaScaffoldModuleVersion { [version]'3.1.0' }
 function Get-NovaModuleProjectTemplatePath { param([switch]`$Example) '/template/project.json' }
 function Read-ProjectJsonData { param(`$ProjectJsonPath)
     @{ ProjectName='X'; Description='X'; Version='0.0.1'

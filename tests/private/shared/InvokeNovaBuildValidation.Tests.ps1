@@ -22,9 +22,9 @@ Describe 'Invoke-NovaBuildValidation' {
 
         Invoke-NovaBuildValidation -WorkflowContext $context
 
-        Assert-MockCalled Invoke-NovaBuild -Times 1
-        Assert-MockCalled Invoke-NovaTest -Times 1
-        Assert-MockCalled Test-NovaBuild -Times 1
+        Should -Invoke Invoke-NovaBuild -Times 1
+        Should -Invoke Invoke-NovaTest -Times 1
+        Should -Invoke Test-NovaBuild -Times 1
     }
 
     It 'skips both test commands when SkipTestsRequested is true' {
@@ -32,8 +32,8 @@ Describe 'Invoke-NovaBuildValidation' {
 
         Invoke-NovaBuildValidation -WorkflowContext $context
 
-        Assert-MockCalled Invoke-NovaBuild -Times 1
-        Assert-MockCalled Invoke-NovaTest -Times 0
-        Assert-MockCalled Test-NovaBuild -Times 0
+        Should -Invoke Invoke-NovaBuild -Times 1
+        Should -Invoke Invoke-NovaTest -Times 0
+        Should -Invoke Test-NovaBuild -Times 0
     }
 }

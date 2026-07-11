@@ -49,7 +49,7 @@ Describe 'Invoke-NovaCliNativeConsoleReadKey' {
         $result = Invoke-NovaCliNativeConsoleReadKey
 
         $result.KeyChar | Should -Be 'R'
-        Assert-MockCalled Get-NovaCliNativeConsoleReadKeyReader -Times 1 -Exactly
+        Should -Invoke Get-NovaCliNativeConsoleReadKeyReader -Times 1 -Exactly
     }
 }
 
@@ -99,14 +99,14 @@ Describe 'Get-NovaCliCommandPromptKey' {
         Mock Write-Host {}
         Mock Read-NovaCliPromptKey { [char]'X' }
         Get-NovaCliCommandPromptKey -Message 'go?' | Should -Be 'N'
-        Assert-MockCalled Read-NovaCliPromptKey -Times 0
+        Should -Invoke Read-NovaCliPromptKey -Times 0
     }
     It 'falls back to console prompt when no configured response' {
         Mock Get-NovaCliConfirmResponseKey { $null }
         Mock Write-Host {}
         Mock Read-NovaCliPromptKey { [char]'A' }
         Get-NovaCliCommandPromptKey -Message 'go?' | Should -Be 'A'
-        Assert-MockCalled Read-NovaCliPromptKey -Times 1
+        Should -Invoke Read-NovaCliPromptKey -Times 1
     }
 }
 
@@ -152,6 +152,6 @@ Describe 'Confirm-NovaCliCommandAction' {
         }
         Mock Write-Host {}
         { Confirm-NovaCliCommandAction -Command 'build' } | Should -Not -Throw
-        Assert-MockCalled Get-NovaCliCommandPromptKey -Times 3
+        Should -Invoke Get-NovaCliCommandPromptKey -Times 3
     }
 }

@@ -5,7 +5,7 @@ function Write-NovaVsCodeSettings {
         [Parameter(Mandatory)][string]$ProjectRoot
     )
 
-    $moduleVersion = $ExecutionContext.SessionState.Module.Version
+    $moduleVersion = Get-NovaScaffoldModuleVersion
     if ($null -eq $moduleVersion) { return }
 
     $schemaUrl = "https://www.novamoduletools.com/schema/v$($moduleVersion.Major)/project.json"

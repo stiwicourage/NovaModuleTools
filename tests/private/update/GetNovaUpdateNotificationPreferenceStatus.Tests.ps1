@@ -18,7 +18,7 @@ Describe 'Get-NovaUpdateNotificationPreferenceStatus' {
         $status.PrereleaseNotificationsEnabled | Should -BeFalse
         $status.StableReleaseNotificationsEnabled | Should -BeTrue
         $status.SettingsPath | Should -Be '/some/path/settings.json'
-        Assert-MockCalled Write-Verbose -Times 1 -ParameterFilter {
+        Should -Invoke Write-Verbose -Times 1 -ParameterFilter {
             $Message -eq 'Prerelease self-updates are disabled. Stable self-updates remain available. Settings file: /some/path/settings.json'
         }
     }
@@ -33,7 +33,7 @@ Describe 'Get-NovaUpdateNotificationPreferenceStatus' {
 
         $status.PrereleaseNotificationsEnabled | Should -BeTrue
         $status.SettingsPath | Should -Be '/some/path/settings.json'
-        Assert-MockCalled Write-Verbose -Times 1 -ParameterFilter {
+        Should -Invoke Write-Verbose -Times 1 -ParameterFilter {
             $Message -eq 'No settings file was found at /some/path/settings.json. Using the default setting: prerelease self-updates are enabled. Stable self-updates remain available. Use Set-NovaUpdateNotificationPreference to store a different preference.'
         }
     }

@@ -16,7 +16,7 @@ function Assert-NovaPesterAvailable {
     param()
 
     if (-not (Get-Module -Name Pester -ListAvailable)) {
-        Stop-NovaOperation -Message 'The module Pester must be installed to run Nova tests. Install Pester 5.7.1 and try again.' -ErrorId 'Nova.Dependency.PesterDependencyMissing' -Category ResourceUnavailable -TargetObject 'Pester'
+        Stop-NovaOperation -Message 'The module Pester must be installed to run Nova tests. Install Pester 6.0.0 or newer and try again.' -ErrorId 'Nova.Dependency.PesterDependencyMissing' -Category ResourceUnavailable -TargetObject 'Pester'
     }
 }
 

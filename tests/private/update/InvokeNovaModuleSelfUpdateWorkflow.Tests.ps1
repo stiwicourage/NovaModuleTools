@@ -26,7 +26,7 @@ Describe 'Invoke-NovaModuleSelfUpdateOrStop' {
     It 'calls Invoke-NovaModuleSelfUpdate with module name and prerelease flag' {
         Mock Invoke-NovaModuleSelfUpdate {}
         Invoke-NovaModuleSelfUpdateOrStop -Plan ([pscustomobject]@{ModuleName='Nova'; UsedAllowPrerelease=$true})
-        Assert-MockCalled Invoke-NovaModuleSelfUpdate -Times 1 -ParameterFilter {$ModuleName -eq 'Nova' -and $AllowPrerelease}
+        Should -Invoke Invoke-NovaModuleSelfUpdate -Times 1 -ParameterFilter {$ModuleName -eq 'Nova' -and $AllowPrerelease}
     }
     It 'wraps update failures in a Nova.Dependency.ModuleSelfUpdateFailed error' {
         Mock Invoke-NovaModuleSelfUpdate {throw 'gallery offline'}
@@ -75,8 +75,8 @@ Describe 'Invoke-NovaModuleSelfUpdateWorkflow' {
         $result = Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext ([pscustomobject]@{Plan=$plan; WorkflowParams=@{}}) -ShouldRun:$false
         $result.Updated | Should -BeFalse
         $result.ReleaseNotesUri | Should -BeNull
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'NovaModuleTools is already up to date.' -and $color -eq 'Green'}
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Current version: 1.0.0'}
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {$Text -eq 'NovaModuleTools is already up to date.' -and $color -eq 'Green'}
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {$Text -eq 'Current version: 1.0.0'}
         Should -Invoke Invoke-NovaModuleSelfUpdate -Times 0
     }
 
@@ -99,10 +99,10 @@ Describe 'Invoke-NovaModuleSelfUpdateWorkflow' {
         $result = Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext ([pscustomobject]@{Plan=$plan; WorkflowParams=@{WhatIf=$true}}) -ShouldRun:$false
 
         $result.ReleaseNotesUri | Should -BeNull
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Self-update plan ready for NovaModuleTools' -and $color -eq 'Green'}
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Target version: 1.1.0'}
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Repository: PSGallery'}
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Run Update-NovaModuleTool without -WhatIf when you are ready to install version 1.1.0.'}
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {$Text -eq 'Self-update plan ready for NovaModuleTools' -and $color -eq 'Green'}
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {$Text -eq 'Target version: 1.1.0'}
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {$Text -eq 'Repository: PSGallery'}
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {$Text -eq 'Run Update-NovaModuleTool without -WhatIf when you are ready to install version 1.1.0.'}
         Should -Invoke Invoke-NovaModuleSelfUpdate -Times 0
     }
 
@@ -124,7 +124,7 @@ Describe 'Invoke-NovaModuleSelfUpdateWorkflow' {
         $result = Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext ([pscustomobject]@{Plan=$plan; WorkflowParams=@{}}) -ShouldRun:$false
 
         $result.Cancelled | Should -BeTrue
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Self-update cancelled for NovaModuleTools.' -and $color -eq 'Blue'}
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {$Text -eq 'Self-update cancelled for NovaModuleTools.' -and $color -eq 'Blue'}
         Should -Invoke Invoke-NovaModuleSelfUpdate -Times 0
     }
 
@@ -148,15 +148,15 @@ Describe 'Invoke-NovaModuleSelfUpdateWorkflow' {
 
         $result.Updated | Should -BeTrue
         $result.ReleaseNotesUri | Should -Be 'https://example.com/n'
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Installing version 1.1.0' -and $PercentComplete -eq 80
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Reading release notes from the updated module' -and $PercentComplete -eq 95
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Updated NovaModuleTools to version 1.1.0.' -and $color -eq 'Green'}
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Get-NovaProjectInfo -InstalledNovaVersion'}
-        Assert-MockCalled Write-Progress -Times 3
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {$Text -eq 'Updated NovaModuleTools to version 1.1.0.' -and $color -eq 'Green'}
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {$Text -eq 'Get-NovaProjectInfo -InstalledNovaVersion'}
+        Should -Invoke Write-Progress -Times 3
     }
 }

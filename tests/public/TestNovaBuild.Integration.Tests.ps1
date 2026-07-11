@@ -1,16 +1,23 @@
+. (Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) 'tests/TestHelpers/PublicCommandIntegration.ps1')
+
 BeforeAll {
     $script:projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-    . (Join-Path $script:projectRoot 'tests/TestHelpers/PublicCommandIntegration.ps1')
     Import-NovaPublicCommandIntegrationModule -ProjectRoot $script:projectRoot | Out-Null
 }
 
 Describe 'Test-NovaBuild integration' {
     It 'supports WhatIf from the built module' {
-        {
-            Invoke-NovaPublicCommandIntegrationInProjectRoot -ProjectRoot $script:projectRoot -ScriptBlock {
-                Test-NovaBuild -WhatIf
-            }
-        } | Should -Not -Throw
+        $thrown = $null
+        Push-Location -LiteralPath $script:projectRoot
+        try {
+            Test-NovaBuild -WhatIf
+        } catch {
+            $thrown = $_
+        } finally {
+            Pop-Location
+        }
+
+        $thrown | Should -BeNullOrEmpty
     }
 
     It 'warns with actionable guidance when the current project has no build-validation tests' {
@@ -20,10 +27,11 @@ Describe 'Test-NovaBuild integration' {
         Copy-Item -Path (Join-Path $exampleProjectRoot '*') -Destination $scenarioRoot -Recurse -Force
         Remove-Item -LiteralPath (Join-Path $scenarioRoot 'tests/public/Get-ExampleGreeting.Integration.Tests.ps1') -Force
 
-        $warnings = & {
-            Invoke-NovaPublicCommandIntegrationInLocation -Path $scenarioRoot -ScriptBlock {
-                Test-NovaBuild 3>&1
-            }
+        Push-Location -LiteralPath $scenarioRoot
+        try {
+            $warnings = Test-NovaBuild 3>&1
+        } finally {
+            Pop-Location
         }
 
         $warningMessages = @(
@@ -46,10 +54,16 @@ Describe 'Test-NovaBuild integration' {
         $projectData.ProjectName = 'BuildValidationExample'
         $projectData | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $projectJsonPath
 
-        {
-            Invoke-NovaPublicCommandIntegrationInLocation -Path $scenarioRoot -ScriptBlock {
-                Test-NovaBuild
-            }
-        } | Should -Not -Throw
+        $thrown = $null
+        Push-Location -LiteralPath $scenarioRoot
+        try {
+            Test-NovaBuild | Out-Null
+        } catch {
+            $thrown = $_
+        } finally {
+            Pop-Location
+        }
+
+        $thrown | Should -BeNullOrEmpty
     }
 }

@@ -6,3 +6,4 @@ function Invoke-NovaPester {
 
     return Invoke-Pester -Configuration $Configuration
 }
+

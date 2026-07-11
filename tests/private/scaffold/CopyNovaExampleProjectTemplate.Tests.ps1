@@ -30,7 +30,7 @@ Describe 'Copy-NovaExampleProjectTemplate' {
         Test-Path -LiteralPath (Join-Path $script:destination 'project.json') | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $script:destination 'src/example.ps1') | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $script:destination 'tests/public/example.tests.ps1') | Should -BeTrue
-        Assert-MockCalled Get-NovaModuleProjectTemplatePath -Times 1 -ParameterFilter {$Example.IsPresent}
+        Should -Invoke Get-NovaModuleProjectTemplatePath -Times 1 -ParameterFilter {$Example.IsPresent}
     }
 
     It 'copies the packaged example template with source-mirrored tests and enabled coverage defaults' {

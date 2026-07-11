@@ -24,26 +24,26 @@ Describe 'Invoke-NovaModuleInitializationWorkflow' {
 
         Invoke-NovaModuleInitializationWorkflow -WorkflowContext $script:context
 
-        Assert-MockCalled Initialize-NovaModuleScaffold -Times 1
-        Assert-MockCalled Write-NovaModuleProjectJson -Times 1
-        Assert-MockCalled Write-NovaVsCodeSettings -Times 1 -ParameterFilter { $ProjectRoot -eq '/tmp/DemoModule' }
-        Assert-MockCalled Initialize-NovaModuleAgenticCopilotScaffold -Times 0
-        Assert-MockCalled Write-Progress -Times 4
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Initialize-NovaModuleScaffold -Times 1
+        Should -Invoke Write-NovaModuleProjectJson -Times 1
+        Should -Invoke Write-NovaVsCodeSettings -Times 1 -ParameterFilter {$ProjectRoot -eq '/tmp/DemoModule'}
+        Should -Invoke Initialize-NovaModuleAgenticCopilotScaffold -Times 0
+        Should -Invoke Write-Progress -Times 4
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Creating scaffold files' -and $PercentComplete -eq 25
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Writing project.json' -and $PercentComplete -eq 60
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Writing VS Code settings' -and $PercentComplete -eq 75
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
-        Assert-MockCalled Write-Message -Times 4
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Message -Times 4
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $InputObject -eq 'Created Nova module scaffold: DemoModule' -and $color -eq 'Green'
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $InputObject -eq 'Invoke-NovaBuild'
         }
     }
@@ -63,12 +63,12 @@ Describe 'Invoke-NovaModuleInitializationWorkflow' {
         }
         Invoke-NovaModuleInitializationWorkflow -WorkflowContext $contextWithAgentic
 
-        Assert-MockCalled Initialize-NovaModuleAgenticCopilotScaffold -Times 1
-        Assert-MockCalled Write-Progress -Times 5
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Initialize-NovaModuleAgenticCopilotScaffold -Times 1
+        Should -Invoke Write-Progress -Times 5
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Applying Agentic Copilot starter' -and $PercentComplete -eq 85
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
     }
 
     It 'suggests unit and build-validation tests as the next steps for the example scaffold' {
@@ -87,8 +87,8 @@ Describe 'Invoke-NovaModuleInitializationWorkflow' {
 
         Invoke-NovaModuleInitializationWorkflow -WorkflowContext $exampleContext
 
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$InputObject -eq 'Invoke-NovaTest'}
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$InputObject -eq 'Test-NovaBuild'}
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {$InputObject -eq 'Invoke-NovaTest'}
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {$InputObject -eq 'Test-NovaBuild'}
     }
 }

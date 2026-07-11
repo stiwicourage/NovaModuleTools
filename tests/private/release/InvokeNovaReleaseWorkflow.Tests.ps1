@@ -101,26 +101,26 @@ Describe 'Invoke-NovaReleaseWorkflow' {
         $script:versionCalls | Should -Be 1
         $script:publishCalls | Should -Be 1
         $script:restoreCalls | Should -Be 1
-        Assert-MockCalled Write-Progress -Times 6
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 6
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Building the current project state' -and $PercentComplete -eq 15
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Running pre-release tests' -and $PercentComplete -eq 35
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Updating the project version' -and $PercentComplete -eq 55
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Rebuilding release output' -and $PercentComplete -eq 75
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Publishing release to repository PSGallery' -and $PercentComplete -eq 90
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Refreshing the current session with the built module' -and $PercentComplete -eq 98
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
         $script:messages.Count | Should -Be 5
         ($script:messages | Where-Object {$_.Text -eq 'Released Nova module: NovaModuleTools 1.0.0' -and $_.Color -eq 'Green'}).Count | Should -Be 1
         ($script:messages | Where-Object {$_.Text -eq 'Get-NovaProjectInfo -Version'}).Count | Should -Be 1
@@ -138,10 +138,10 @@ Describe 'Invoke-NovaReleaseWorkflow' {
         $script:unitTestCalls | Should -Be 0
         $script:integrationTestCalls | Should -Be 0
         $script:restoreCalls | Should -Be 0
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Publishing release to the local module path' -and $PercentComplete -eq 90
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
         ($script:messages | Where-Object {$_.Text -eq 'Pre-release tests were skipped for this run.'}).Count | Should -Be 1
         ($script:messages | Where-Object {$_.Text -eq 'Get-NovaProjectInfo -Installed'}).Count | Should -Be 1
     }
@@ -159,13 +159,13 @@ Describe 'Invoke-NovaReleaseWorkflow' {
         $null = Invoke-NovaReleaseWorkflow -WorkflowContext $ctx
 
         $script:restoreCalls | Should -Be 0
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Planning the next release version' -and $PercentComplete -eq 55
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Previewing publish to repository PSGallery' -and $PercentComplete -eq 90
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
         ($script:messages | Where-Object {$_.Text -eq 'Release plan ready for NovaModuleTools -> 1.0.0' -and $_.Color -eq 'Green'}).Count | Should -Be 1
         ($script:messages | Where-Object {$_.Text -eq 'Run Invoke-NovaRelease without -WhatIf when you are ready to apply the release.'}).Count | Should -Be 1
     }

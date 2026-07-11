@@ -91,7 +91,7 @@ Describe 'Invoke-NovaAgenticCopilotScaffoldWorkflow' {
             ScaffoldPolicy = [pscustomobject]@{}
         })
 
-        Assert-MockCalled Initialize-NovaModuleAgenticCopilotScaffold -Times 0
+        Should -Invoke Initialize-NovaModuleAgenticCopilotScaffold -Times 0
     }
 
     It 'confirms, applies, and announces when ShouldRun is true' {
@@ -107,24 +107,24 @@ Describe 'Invoke-NovaAgenticCopilotScaffoldWorkflow' {
 
         Invoke-NovaAgenticCopilotScaffoldWorkflow -WorkflowContext $workflowContext -ShouldRun
 
-        Assert-MockCalled Confirm-NovaAgenticCopilotScaffoldWarning -Times 1
-        Assert-MockCalled Initialize-NovaModuleAgenticCopilotScaffold -Times 1
-        Assert-MockCalled Write-Progress -Times 3
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Confirm-NovaAgenticCopilotScaffoldWarning -Times 1
+        Should -Invoke Initialize-NovaModuleAgenticCopilotScaffold -Times 1
+        Should -Invoke Write-Progress -Times 3
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Confirming overwrite warning' -and $PercentComplete -eq 20
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Refreshing managed scaffold files' -and $PercentComplete -eq 75
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
-        Assert-MockCalled Write-Message -Times 6
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Message -Times 6
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Message -eq 'Agentic Copilot scaffold applied to Demo' -and $color -eq 'Green'
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Message -eq 'Invoke-NovaTest'
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Message -eq 'Test-NovaBuild'
         }
     }

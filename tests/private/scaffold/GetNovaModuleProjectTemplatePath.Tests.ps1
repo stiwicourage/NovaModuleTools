@@ -12,7 +12,7 @@ Describe 'Get-NovaModuleProjectTemplatePath' {
         $path = Get-NovaModuleProjectTemplatePath
 
         $path | Should -Be '/resources/ProjectTemplate.json'
-        Assert-MockCalled Get-ResourceFilePath -Times 1 -ParameterFilter {
+        Should -Invoke Get-ResourceFilePath -Times 1 -ParameterFilter {
             $FileName -eq 'ProjectTemplate.json'
         }
     }
@@ -23,7 +23,7 @@ Describe 'Get-NovaModuleProjectTemplatePath' {
         $path = Get-NovaModuleProjectTemplatePath -Example
 
         $path | Should -Match 'example.+project\.json$'
-        Assert-MockCalled Get-ResourceFilePath -Times 1 -ParameterFilter {
+        Should -Invoke Get-ResourceFilePath -Times 1 -ParameterFilter {
             $FileName -like 'example*project.json'
         }
     }

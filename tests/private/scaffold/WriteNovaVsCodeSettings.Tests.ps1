@@ -1,5 +1,8 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
+    function Get-NovaScaffoldModuleVersion {
+        $null
+    }
     . (Join-Path $projectRoot 'src/private/scaffold/WriteNovaVsCodeSettings.ps1')
 }
 
@@ -23,13 +26,16 @@ Describe 'Write-NovaVsCodeSettings' {
             New-Item -ItemType Directory -Path $script:modDir -Force | Out-Null
             $psm1 = Join-Path $script:modDir 'NovaVsCodeTestMod.psm1'
             $psd1 = Join-Path $script:modDir 'NovaVsCodeTestMod.psd1'
-            Set-Content -LiteralPath $psm1 -Value ". `"$srcFile`""
+            Set-Content -LiteralPath $psm1 -Value @"
+function Get-NovaScaffoldModuleVersion { [version]'3.1.0' }
+. "$srcFile"
+"@
             New-ModuleManifest -Path $psd1 -RootModule 'NovaVsCodeTestMod.psm1' `
                 -ModuleVersion '3.1.0' -FunctionsToExport @('Write-NovaVsCodeSettings') -Author 'Test'
             # Deviation from testing-policy: Import-Module -Global and InModuleScope are required
-            # because $ExecutionContext.SessionState.Module.Version is $null when dot-sourced,
-            # causing Write-NovaVsCodeSettings to return early as a no-op. A real module context
-            # is the only way to exercise the positive paths. See the same pattern in
+            # because the positive path now depends on Get-NovaScaffoldModuleVersion returning
+            # a real module version. A real module context keeps that behavior deterministic
+            # under both Pester 5 and Pester 6. See the same pattern in
             # WriteNovaModuleProjectJson.Tests.ps1.
             Import-Module $psd1 -Force -Global
         }

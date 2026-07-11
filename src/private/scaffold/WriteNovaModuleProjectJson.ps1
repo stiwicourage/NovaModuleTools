@@ -18,7 +18,7 @@ function Write-NovaModuleProjectJson {
         $jsonData.Manifest.GUID = (New-Guid).GUID
     }
 
-    $moduleVersion = $ExecutionContext.SessionState.Module.Version
+    $moduleVersion = Get-NovaScaffoldModuleVersion
     if ($null -ne $moduleVersion) {
         $majorVersion = $moduleVersion.Major
         $jsonData['$schema'] = "https://www.novamoduletools.com/schema/v$majorVersion/project.json"

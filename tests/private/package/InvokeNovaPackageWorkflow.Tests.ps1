@@ -21,11 +21,11 @@ Describe 'Invoke-NovaPackageWorkflow' {
         })
         $script:validated | Should -BeTrue
         Should -Invoke Invoke-NovaPackageArtifactCreation -Times 0
-        Assert-MockCalled Write-Progress -Times 2
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 2
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Building and testing package input' -and $PercentComplete -eq 30
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
         $result | Should -BeNullOrEmpty
     }
 
@@ -39,16 +39,16 @@ Describe 'Invoke-NovaPackageWorkflow' {
             Target = '/p/Demo.1.0.0.nupkg'
         }) -ShouldRun
         Should -Invoke Invoke-NovaPackageArtifactCreation -Times 1
-        Assert-MockCalled Write-Progress -Times 3
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 3
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Creating package artifacts' -and $PercentComplete -eq 85
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
-        Assert-MockCalled Write-Message -Times 3
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Message -Times 3
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Created 1 package artifact for Demo' -and $color -eq 'Green'
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Deploy-NovaPackage'
         }
         @($result).Count | Should -Be 1
@@ -63,15 +63,15 @@ Describe 'Invoke-NovaPackageWorkflow' {
         })
 
         $script:validated | Should -BeTrue
-        Assert-MockCalled Write-Message -Times 3
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
+        Should -Invoke Write-Message -Times 3
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {
             $Status -eq 'Building package input with tests skipped' -and $PercentComplete -eq 30
         }
-        Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Progress -Times 1 -ParameterFilter {$Completed}
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Package plan ready for Demo' -and $color -eq 'Green'
         }
-        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
+        Should -Invoke Write-Message -Times 1 -ParameterFilter {
             $Text -eq 'Run New-NovaModulePackage without -WhatIf when you are ready to create the package artifacts.'
         }
         $result | Should -BeNullOrEmpty

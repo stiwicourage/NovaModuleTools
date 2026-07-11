@@ -14,8 +14,8 @@ Describe 'Invoke-NovaModuleUpdateLookup' {
         $result = Invoke-NovaModuleUpdateLookup -ModuleName 'NovaModuleTools' -AllowPrereleaseNotifications $true -TimeoutMilliseconds 2000 -LookupScript '# custom'
 
         $result | Should -Be 'forwarded'
-        Assert-MockCalled Get-NovaModuleUpdateLookupScript -Times 0
-        Assert-MockCalled Invoke-NovaPowerShellScriptWithTimeout -Times 1 -ParameterFilter {
+        Should -Invoke Get-NovaModuleUpdateLookupScript -Times 0
+        Should -Invoke Invoke-NovaPowerShellScriptWithTimeout -Times 1 -ParameterFilter {
             $Script -eq '# custom' -and
             $ArgumentList.Count -eq 2 -and
             $ArgumentList[0] -eq 'NovaModuleTools' -and
@@ -30,8 +30,8 @@ Describe 'Invoke-NovaModuleUpdateLookup' {
 
         Invoke-NovaModuleUpdateLookup -ModuleName 'NovaModuleTools' -AllowPrereleaseNotifications $false | Out-Null
 
-        Assert-MockCalled Get-NovaModuleUpdateLookupScript -Times 1
-        Assert-MockCalled Invoke-NovaPowerShellScriptWithTimeout -Times 1 -ParameterFilter {
+        Should -Invoke Get-NovaModuleUpdateLookupScript -Times 1
+        Should -Invoke Invoke-NovaPowerShellScriptWithTimeout -Times 1 -ParameterFilter {
             $Script -eq '# bundled'
         }
     }

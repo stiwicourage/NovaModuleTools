@@ -32,8 +32,8 @@ Describe 'Copy-ProjectResource' {
 
         Copy-ProjectResource
 
-        Assert-MockCalled Copy-ProjectResourceContentToModuleRoot -Times 0
-        Assert-MockCalled Copy-ProjectResourceFolderToOutputModuleDir -Times 0
+        Should -Invoke Copy-ProjectResourceContentToModuleRoot -Times 0
+        Should -Invoke Copy-ProjectResourceFolderToOutputModuleDir -Times 0
     }
 
     It 'returns silently when the resource folder is empty' {
@@ -41,8 +41,8 @@ Describe 'Copy-ProjectResource' {
 
         Copy-ProjectResource
 
-        Assert-MockCalled Copy-ProjectResourceContentToModuleRoot -Times 0
-        Assert-MockCalled Copy-ProjectResourceFolderToOutputModuleDir -Times 0
+        Should -Invoke Copy-ProjectResourceContentToModuleRoot -Times 0
+        Should -Invoke Copy-ProjectResourceFolderToOutputModuleDir -Times 0
     }
 
     It 'flattens resources when CopyResourcesToModuleRoot is true' {
@@ -50,14 +50,14 @@ Describe 'Copy-ProjectResource' {
 
         Copy-ProjectResource
 
-        Assert-MockCalled Copy-ProjectResourceContentToModuleRoot -Times 1
-        Assert-MockCalled Copy-ProjectResourceFolderToOutputModuleDir -Times 0
+        Should -Invoke Copy-ProjectResourceContentToModuleRoot -Times 1
+        Should -Invoke Copy-ProjectResourceFolderToOutputModuleDir -Times 0
     }
 
     It 'copies the resource folder when CopyResourcesToModuleRoot is false' {
         Copy-ProjectResource
 
-        Assert-MockCalled Copy-ProjectResourceFolderToOutputModuleDir -Times 1
-        Assert-MockCalled Copy-ProjectResourceContentToModuleRoot -Times 0
+        Should -Invoke Copy-ProjectResourceFolderToOutputModuleDir -Times 1
+        Should -Invoke Copy-ProjectResourceContentToModuleRoot -Times 0
     }
 }

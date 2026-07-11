@@ -10,6 +10,6 @@ Describe 'Invoke-NovaModuleUpdateNotificationSafely' {
         Mock Invoke-NovaModuleUpdateNotification {throw 'network issue'}
 
         {Invoke-NovaModuleUpdateNotificationSafely} | Should -Not -Throw
-        Assert-MockCalled Invoke-NovaModuleUpdateNotification -Times 1
+        Should -Invoke Invoke-NovaModuleUpdateNotification -Times 1
     }
 }

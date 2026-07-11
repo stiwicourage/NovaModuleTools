@@ -75,8 +75,8 @@ Describe 'Get-NovaCliInvocationContext' {
         $result.HelpRequest.View | Should -Be 'Short'
         $result.WhatIfEnabled | Should -BeTrue
         $result.CliConfirmEnabled | Should -BeFalse
-        Assert-MockCalled Get-NovaCliForwardingParameterSet -Times 1 -ParameterFilter {-not $IncludeShouldProcess}
-        Assert-MockCalled Get-NovaCliForwardingParameterSet -Times 1 -ParameterFilter {$IncludeShouldProcess}
+        Should -Invoke Get-NovaCliForwardingParameterSet -Times 1 -ParameterFilter {-not $IncludeShouldProcess}
+        Should -Invoke Get-NovaCliForwardingParameterSet -Times 1 -ParameterFilter {$IncludeShouldProcess}
     }
 
     It 'routes to argument routing state when no help request' {
@@ -99,8 +99,8 @@ Describe 'Get-NovaCliInvocationContext' {
         $result.Command | Should -Be 'build'
         $result.CliConfirmEnabled | Should -BeTrue
         $result.CommonParameters.Verbose | Should -BeTrue
-        Assert-MockCalled Get-NovaCliArgumentRoutingState -Times 1
-        Assert-MockCalled Merge-NovaCliParameterSet -Times 1
+        Should -Invoke Get-NovaCliArgumentRoutingState -Times 1
+        Should -Invoke Merge-NovaCliParameterSet -Times 1
     }
 
     It 'honors -WhatIfEnabled even when routing state does not request it' {
