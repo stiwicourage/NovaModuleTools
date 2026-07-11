@@ -16,6 +16,7 @@ function Get-CiModuleInstallOption {
     if ($Name -eq 'Pester') {
         return [pscustomobject]@{
             RequiredVersion = '5.7.1'
+            MaximumVersion = '5.10.0'
             AllowPrerelease = $false
         }
     }

@@ -14,7 +14,8 @@
     "RequiredModules": [
       {
         "ModuleName": "Pester",
-        "ModuleVersion": "5.7.1"
+        "ModuleVersion": "5.7.1",
+        "MaximumVersion": "5.10.0"
       },
       {
         "ModuleName": "Microsoft.PowerShell.PlatyPS",
