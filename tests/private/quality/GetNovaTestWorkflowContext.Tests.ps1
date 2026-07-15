@@ -14,6 +14,9 @@ Describe 'Get-NovaTestWorkflowContext' {
 
         Mock Test-ProjectSchema {}
         Mock Get-Module {
+            @()
+        } -ParameterFilter {$Name -eq 'Pester' -and -not $ListAvailable}
+        Mock Get-Module {
             @(
                 [pscustomobject]@{Name = 'Pester'; Version = [version]'5.10.0'}
             )
@@ -74,6 +77,31 @@ Describe 'Get-NovaTestWorkflowContext' {
         $result.PesterModuleSpecification.SelectedVersion | Should -Be ([version]'5.10.0')
         $result.PesterConfig.PesterModuleSpecification.SelectedVersion | Should -Be ([version]'5.10.0')
         $result.PesterModuleSpecification.FullyQualifiedName.RequiredVersion | Should -Be '5.10.0'
+    }
+
+    It 'reuses the already loaded supported Pester version instead of switching versions mid-session' {
+        $pesterConfig = New-TestPesterConfig
+        $projectInfo = New-TestProjectInfo -PesterSettings ([ordered]@{})
+
+        Mock Get-NovaProjectInfo {$projectInfo}
+        Mock New-PesterConfiguration {$pesterConfig}
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.7.1'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and -not $ListAvailable}
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.8.0'}
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.7.1'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
+
+        $result = Get-NovaTestWorkflowContext -TestOption @{TestMode = 'Unit'} -BoundParameters @{}
+
+        $result.PesterModuleSpecification.SelectedVersion | Should -Be ([version]'5.7.1')
+        $result.PesterModuleSpecification.FullyQualifiedName.RequiredVersion | Should -Be '5.7.1'
+        Assert-MockCalled Import-Module -Times 1 -ParameterFilter {$FullyQualifiedName.RequiredVersion -eq '5.7.1' -and $Force}
     }
 
     It 'configures build-validation execution with coverage disabled and integration-only test discovery' {
@@ -250,6 +278,9 @@ Describe 'Get-NovaDiscoveredTestPathState' {
 Describe 'Assert-NovaPesterAvailable' {
     BeforeEach {
         $script:lastImportModuleRequest = $null
+        Mock Get-Module {
+            @()
+        } -ParameterFilter {$Name -eq 'Pester' -and -not $ListAvailable}
         Mock Import-Module {
             $script:lastImportModuleRequest = [pscustomobject]@{
                 FullyQualifiedName = $PSBoundParameters.FullyQualifiedName
@@ -297,8 +328,28 @@ Describe 'Assert-NovaPesterAvailable' {
 }
 
 Describe 'Get-NovaSupportedPesterModuleSpecification' {
+    It 'reuses the loaded supported Pester version before considering higher installed versions' {
+        $projectInfo = New-TestProjectInfo -PesterSettings ([ordered]@{})
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.7.1'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and -not $ListAvailable}
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.10.0'}
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.7.1'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
+
+        $result = Get-NovaSupportedPesterModuleSpecification -ProjectInfo $projectInfo
+
+        $result.SelectedVersion | Should -Be ([version]'5.7.1')
+    }
+
     It 'selects the highest installed version inside Nova''s supported Pester range' {
         $projectInfo = New-TestProjectInfo -PesterSettings ([ordered]@{})
+        Mock Get-Module {@()} -ParameterFilter {$Name -eq 'Pester' -and -not $ListAvailable}
         Mock Get-Module {
             @(
                 [pscustomobject]@{Name = 'Pester'; Version = [version]'5.10.1'}
@@ -321,6 +372,7 @@ Describe 'Get-NovaSupportedPesterModuleSpecification' {
             Pester = [ordered]@{}
             Manifest = [ordered]@{RequiredModules = @()}
         }
+        Mock Get-Module {@()} -ParameterFilter {$Name -eq 'Pester' -and -not $ListAvailable}
         Mock Get-Module {
             @(
                 [pscustomobject]@{Name = 'Pester'; Version = [version]'5.7.1'}

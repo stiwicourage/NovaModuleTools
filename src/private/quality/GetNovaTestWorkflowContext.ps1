@@ -29,7 +29,11 @@ function Get-NovaSupportedPesterModuleSpecification {
     )
 
     $moduleRequirement = Get-NovaPesterModuleRequirement -ProjectInfo $ProjectInfo
-    $availableModule = @(Get-AvailableNovaPesterModule -ModuleRequirement $moduleRequirement)
+    $availableModule = @(Get-LoadedNovaPesterModule -ModuleRequirement $moduleRequirement)
+    if ($availableModule.Count -eq 0) {
+        $availableModule = @(Get-AvailableNovaPesterModule -ModuleRequirement $moduleRequirement)
+    }
+
     if ($availableModule.Count -eq 0) {
         Stop-NovaOperation -Message (Get-NovaPesterDependencyMessage -ModuleRequirement $moduleRequirement) -ErrorId 'Nova.Dependency.PesterDependencyMissing' -Category ResourceUnavailable -TargetObject 'Pester'
     }
@@ -132,6 +136,19 @@ function Get-AvailableNovaPesterModule {
 
     return @(
     Get-Module -Name Pester -ListAvailable |
+            Where-Object {Test-NovaPesterModuleVersionSupported -Version $_.Version -ModuleRequirement $ModuleRequirement} |
+            Sort-Object Version -Descending
+    )
+}
+
+function Get-LoadedNovaPesterModule {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$ModuleRequirement
+    )
+
+    return @(
+    Get-Module -Name Pester |
             Where-Object {Test-NovaPesterModuleVersionSupported -Version $_.Version -ModuleRequirement $ModuleRequirement} |
             Sort-Object Version -Descending
     )

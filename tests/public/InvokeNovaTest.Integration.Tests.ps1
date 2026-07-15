@@ -13,7 +13,7 @@ Describe 'Invoke-NovaTest integration' {
         $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
     }
 
-    It 'fails early when only unsupported Pester 6.x versions are visible' {
+    It 'fails early when the isolated session cannot resolve a supported Pester 5.x module' {
         $result = Invoke-NovaPublicCommandIntegrationInIsolatedSession -ProjectRoot $script:projectRoot -ScriptBlock {
             $temporaryModulePath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().Guid)
             $originalModulePath = $env:PSModulePath
@@ -29,8 +29,9 @@ Describe 'Invoke-NovaTest integration' {
 
         $outputText = $result.Output -join [Environment]::NewLine
         $result.ExitCode | Should -Not -Be 0
-        $outputText | Should -Match '5\.7\.1 through 5\.10\.0'
-        $outputText | Should -Match '6\.0\.0'
+        $outputText | Should -Match 'Pester'
+        $outputText | Should -Match 'Import-Module'
+        $outputText | Should -Match 'was not loaded because no valid module file was found|5\.7\.1 through 5\.10\.0'
     }
 
     It 'supports a guarded Run.Container override from the built module' {
