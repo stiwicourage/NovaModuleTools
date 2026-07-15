@@ -408,6 +408,18 @@ Describe 'Get-NovaSupportedPesterModuleSpecification' {
     }
 }
 
+Describe 'Get-NovaPesterVersionText' {
+    It 'returns the default value when the requested setting is empty' {
+        $moduleInfo = [pscustomobject]@{
+            ModuleVersion = ''
+        }
+
+        $result = Get-NovaPesterVersionText -InputObject $moduleInfo -Name 'ModuleVersion' -DefaultValue '5.7.1'
+
+        $result | Should -Be '5.7.1'
+    }
+}
+
 Describe 'Test-NovaPesterModuleVersionSupported' {
     It 'accepts only versions inside Nova''s supported Pester range' {
         $moduleRequirement = Get-NovaPesterModuleRequirement -ProjectInfo (New-TestProjectInfo -PesterSettings ([ordered]@{}))
@@ -422,6 +434,14 @@ Describe 'Test-NovaPesterModuleVersionSupported' {
             $actual = Test-NovaPesterModuleVersionSupported -Version ([version]$case.Version) -ModuleRequirement $moduleRequirement
             $actual | Should -Be $case.Expected -Because $case.Version
         }
+    }
+
+    It 'returns false when the candidate version is null' {
+        $moduleRequirement = Get-NovaPesterModuleRequirement -ProjectInfo (New-TestProjectInfo -PesterSettings ([ordered]@{}))
+
+        $result = Test-NovaPesterModuleVersionSupported -Version $null -ModuleRequirement $moduleRequirement
+
+        $result | Should -BeFalse
     }
 }
 
