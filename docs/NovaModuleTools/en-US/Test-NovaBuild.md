@@ -31,11 +31,13 @@ PS> Test-NovaBuild [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>]
 
 `Test-NovaBuild` reads the Pester configuration from `project.json`, discovers the build-validation integration tests for the current project, and runs the managed Nova test workflow against the built-module validation surface.
 
+Nova resolves a supported installed `Pester` version from `5.7.1` through `5.10.0` for the managed test workflow and stops with a clear dependency error when only unsupported `Pester 6.x` versions are available.
+
 This build-validation flow writes NUnit XML to `artifacts/TestResults.xml`.
 
 Unlike `Invoke-NovaTest`, this command does not enforce source-coverage targets. Use `Invoke-NovaTest` for the unit-test and code-coverage workflow, and use `Test-NovaBuild` when you need build-validation integration coverage that reflects the built module path.
 
-If the current project does not contain any `*.Integration.Tests.ps1` files, `Test-NovaBuild` stops with a Nova-native error that explains the expected naming and reminds you to use `Invoke-NovaTest` for unit tests.
+If the current project does not contain any `*.Integration.Tests.ps1` files, `Test-NovaBuild` writes an actionable warning that explains the expected naming and reminds you to use `Invoke-NovaTest` for unit tests.
 
 `-OverrideWarning` lets the nested build-validation flow continue even if the `src/public` layout guard reports zero or multiple top-level functions in a public file.
 
@@ -271,5 +273,5 @@ Returns the Pester result object from the managed build-validation run.
 
 ## RELATED LINKS
 
-[Invoke-NovaTest](Invoke-NovaTest.md)
-[Invoke-NovaBuild](Invoke-NovaBuild.md)
+- [Invoke-NovaTest](./Invoke-NovaTest.md)
+- [Invoke-NovaBuild](./Invoke-NovaBuild.md)

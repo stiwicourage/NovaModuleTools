@@ -6,11 +6,32 @@ BeforeAll {
 
 Describe 'Test-NovaBuild integration' {
     It 'supports WhatIf from the built module' {
-        {
-            Invoke-NovaPublicCommandIntegrationInProjectRoot -ProjectRoot $script:projectRoot -ScriptBlock {
+        $result = Invoke-NovaPublicCommandIntegrationInIsolatedSession -ProjectRoot $script:projectRoot -ScriptBlock {
+            Test-NovaBuild -WhatIf
+        }
+
+        $result.ExitCode | Should -Be 0 -Because (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output)
+    }
+
+    It 'fails early when the isolated session cannot resolve a supported Pester 5.x module' {
+        $result = Invoke-NovaPublicCommandIntegrationInIsolatedSession -ProjectRoot $script:projectRoot -ScriptBlock {
+            $temporaryModulePath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().Guid)
+            $originalModulePath = $env:PSModulePath
+            try {
+                New-NovaPublicCommandIntegrationPesterModule -BasePath $temporaryModulePath -Version '6.0.0' | Out-Null
+                $env:PSModulePath = $temporaryModulePath
                 Test-NovaBuild -WhatIf
+            } finally {
+                $env:PSModulePath = $originalModulePath
+                Remove-Item -LiteralPath $temporaryModulePath -Recurse -Force -ErrorAction SilentlyContinue
             }
-        } | Should -Not -Throw
+        }
+
+        $outputText = Get-NovaPublicCommandIntegrationOutputText -Output $result.Output -NormalizeWhitespace
+        $result.ExitCode | Should -Not -Be 0
+        $outputText | Should -Match 'Pester'
+        $outputText | Should -Match 'Import-Module'
+        $outputText | Should -Match 'was not loaded because no valid module file was found|5\.7\.1 through 5\.10\.0'
     }
 
     It 'warns with actionable guidance when the current project has no build-validation tests' {
@@ -20,19 +41,12 @@ Describe 'Test-NovaBuild integration' {
         Copy-Item -Path (Join-Path $exampleProjectRoot '*') -Destination $scenarioRoot -Recurse -Force
         Remove-Item -LiteralPath (Join-Path $scenarioRoot 'tests/public/Get-ExampleGreeting.Integration.Tests.ps1') -Force
 
-        $warnings = & {
-            Invoke-NovaPublicCommandIntegrationInLocation -Path $scenarioRoot -ScriptBlock {
-                Test-NovaBuild 3>&1
-            }
+        $result = Invoke-NovaPublicCommandIntegrationInIsolatedSession -ProjectRoot $script:projectRoot -Path $scenarioRoot -ScriptBlock {
+            Test-NovaBuild 3>&1
         }
 
-        $warningMessages = @(
-            $warnings |
-                Where-Object {$_ -is [System.Management.Automation.WarningRecord]} |
-                ForEach-Object Message
-        )
-
-        $warningMessages | Should -Contain "No build-validation integration tests matching '*.Integration.Tests.ps1' were discovered for NovaExampleModule."
+        $result.ExitCode | Should -Be 0 -Because (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output)
+        (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output -NormalizeWhitespace) | Should -Match "No build-validation integration tests matching '\*\.Integration\.Tests\.ps1' were discovered for NovaExampleModule\."
     }
 
     It 'passes for a scaffolded example whose project name differs from the packaged template name' {
@@ -46,10 +60,10 @@ Describe 'Test-NovaBuild integration' {
         $projectData.ProjectName = 'BuildValidationExample'
         $projectData | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $projectJsonPath
 
-        {
-            Invoke-NovaPublicCommandIntegrationInLocation -Path $scenarioRoot -ScriptBlock {
-                Test-NovaBuild
-            }
-        } | Should -Not -Throw
+        $result = Invoke-NovaPublicCommandIntegrationInIsolatedSession -ProjectRoot $script:projectRoot -Path $scenarioRoot -ScriptBlock {
+            Test-NovaBuild
+        }
+
+        $result.ExitCode | Should -Be 0 -Because (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output)
     }
 }

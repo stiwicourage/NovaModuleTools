@@ -10,15 +10,29 @@ Describe 'Get-NovaTestWorkflowContext' {
         $script:lastRunPathRequest = $null
         $script:lastResultPathRequest = $null
         $script:lastExecutionConfigurationRequest = $null
+        $script:lastImportModuleRequest = $null
 
         Mock Test-ProjectSchema {}
-        Mock Get-Module {[pscustomobject]@{Name = 'Pester'}} -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
+        Mock Get-Module {
+            @()
+        } -ParameterFilter {$Name -eq 'Pester' -and -not $ListAvailable}
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.10.0'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
+        Mock Import-Module {
+            $script:lastImportModuleRequest = [pscustomobject]@{
+                FullyQualifiedName = $PSBoundParameters.FullyQualifiedName
+                Force = $PSBoundParameters.Force
+            }
+        }
         Mock Get-Command {[pscustomobject]@{ScriptBlock = {}}} -ParameterFilter {$CommandType -eq 'Function'}
     }
 
     It 'configures unit-test execution with coverage enabled and integration tests excluded' {
-        $pesterConfig = & $script:getPesterConfig
-        $projectInfo = & $script:getProjectInfo -PesterSettings ([ordered]@{
+        $pesterConfig = New-TestPesterConfig
+        $projectInfo = New-TestProjectInfo -PesterSettings ([ordered]@{
             CodeCoverage = [ordered]@{
                 Enabled = $true
                 CoveragePercentTarget = 99
@@ -33,16 +47,66 @@ Describe 'Get-NovaTestWorkflowContext' {
         $result.BuildRequested | Should -BeFalse
         $result.CommandName | Should -Be 'Invoke-NovaTest'
         $result.PesterConfig.CodeCoverage.CoveragePercentTarget | Should -Be 99
+        $result.PesterConfig.PesterModuleSpecification.SelectedVersion | Should -Be ([version]'5.10.0')
+        $result.PesterModuleSpecification.SelectedVersion | Should -Be ([version]'5.10.0')
         $result.PesterSettings.CodeCoverage.Enabled | Should -BeTrue
         $script:lastRunPathRequest.IncludePattern | Should -Be '*.Tests.ps1'
         $script:lastRunPathRequest.ExcludePattern | Should -Be @('*.Integration.Tests.ps1')
         $script:lastResultPathRequest.FileName | Should -Be 'UnitTestResults.xml'
+        $result.PesterModuleSpecification.FullyQualifiedName.ModuleName | Should -Be 'Pester'
+        $result.PesterModuleSpecification.FullyQualifiedName.RequiredVersion | Should -Be '5.10.0'
         $result.Operation | Should -Be 'Run unit tests and write test results'
     }
 
+    It 'selects the highest supported Pester 5.x version when Pester 6 is also installed' {
+        $pesterConfig = New-TestPesterConfig
+        $projectInfo = New-TestProjectInfo -PesterSettings ([ordered]@{})
+
+        Mock Get-NovaProjectInfo {$projectInfo}
+        Mock New-PesterConfiguration {$pesterConfig}
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'6.0.0'}
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.10.0'}
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.7.1'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
+
+        $result = Get-NovaTestWorkflowContext -TestOption @{TestMode = 'Unit'} -BoundParameters @{}
+
+        $result.PesterModuleSpecification.SelectedVersion | Should -Be ([version]'5.10.0')
+        $result.PesterConfig.PesterModuleSpecification.SelectedVersion | Should -Be ([version]'5.10.0')
+        $result.PesterModuleSpecification.FullyQualifiedName.RequiredVersion | Should -Be '5.10.0'
+    }
+
+    It 'reuses the already loaded supported Pester version instead of switching versions mid-session' {
+        $pesterConfig = New-TestPesterConfig
+        $projectInfo = New-TestProjectInfo -PesterSettings ([ordered]@{})
+
+        Mock Get-NovaProjectInfo {$projectInfo}
+        Mock New-PesterConfiguration {$pesterConfig}
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.7.1'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and -not $ListAvailable}
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.8.0'}
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.7.1'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
+
+        $result = Get-NovaTestWorkflowContext -TestOption @{TestMode = 'Unit'} -BoundParameters @{}
+
+        $result.PesterModuleSpecification.SelectedVersion | Should -Be ([version]'5.7.1')
+        $result.PesterModuleSpecification.FullyQualifiedName.RequiredVersion | Should -Be '5.7.1'
+        Assert-MockCalled Import-Module -Times 1 -ParameterFilter {$FullyQualifiedName.RequiredVersion -eq '5.7.1' -and $Force}
+    }
+
     It 'configures build-validation execution with coverage disabled and integration-only test discovery' {
-        $pesterConfig = & $script:getPesterConfig
-        $projectInfo = & $script:getProjectInfo -PesterSettings ([ordered]@{
+        $pesterConfig = New-TestPesterConfig
+        $projectInfo = New-TestProjectInfo -PesterSettings ([ordered]@{
             CodeCoverage = [ordered]@{
                 Enabled = $true
                 CoveragePercentTarget = 99
@@ -67,8 +131,8 @@ Describe 'Get-NovaTestWorkflowContext' {
     }
 
     It 'returns a skip state with actionable guidance when build-validation tests are missing' {
-        $pesterConfig = & $script:getPesterConfig
-        $projectInfo = & $script:getProjectInfo -PesterSettings ([ordered]@{})
+        $pesterConfig = New-TestPesterConfig
+        $projectInfo = New-TestProjectInfo -PesterSettings ([ordered]@{})
 
         Mock Get-NovaProjectInfo {$projectInfo}
         Mock New-PesterConfiguration {$pesterConfig}
@@ -96,8 +160,8 @@ Describe 'Get-NovaTestWorkflowContext' {
             Set-Content -LiteralPath $filePath -Value '# test'
         }
 
-        $pesterConfig = & $script:getPesterConfig
-        $projectInfo = & $script:getProjectInfo -ProjectRoot $projectRoot -PesterSettings ([ordered]@{
+        $pesterConfig = New-TestPesterConfig
+        $projectInfo = New-TestProjectInfo -ProjectRoot $projectRoot -PesterSettings ([ordered]@{
             CodeCoverage = [ordered]@{
                 Enabled = $true
                 Path = @(
@@ -123,8 +187,8 @@ Describe 'Get-NovaTestWorkflowContext' {
     }
 
     It 'forwards the guarded Pester configuration override to the execution configuration initializer' {
-        $pesterConfig = & $script:getPesterConfig
-        $projectInfo = & $script:getProjectInfo -PesterSettings ([ordered]@{})
+        $pesterConfig = New-TestPesterConfig
+        $projectInfo = New-TestProjectInfo -PesterSettings ([ordered]@{})
         $containerOverride = [pscustomobject]@{
             Type = 'File'
             Item = (Join-Path $projectInfo.ProjectRoot 'tests/Example.Tests.ps1')
@@ -212,14 +276,172 @@ Describe 'Get-NovaDiscoveredTestPathState' {
 }
 
 Describe 'Assert-NovaPesterAvailable' {
-    It 'stops with Nova.Dependency.PesterDependencyMissing when Pester is missing' {
-        Mock Get-Module {@()} -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
-        {Assert-NovaPesterAvailable} | Should -Throw
+    BeforeEach {
+        $script:lastImportModuleRequest = $null
+        Mock Get-Module {
+            @()
+        } -ParameterFilter {$Name -eq 'Pester' -and -not $ListAvailable}
+        Mock Import-Module {
+            $script:lastImportModuleRequest = [pscustomobject]@{
+                FullyQualifiedName = $PSBoundParameters.FullyQualifiedName
+                Force = $PSBoundParameters.Force
+            }
+        }
     }
 
-    It 'returns silently when Pester is available' {
-        Mock Get-Module {@([pscustomobject]@{Name = 'Pester'})} -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
-        {Assert-NovaPesterAvailable} | Should -Not -Throw
+    It 'stops with Nova.Dependency.PesterDependencyMissing when Pester is missing' {
+        Mock Get-Module {@()} -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
+        {Assert-NovaPesterAvailable -ProjectInfo (New-TestProjectInfo -PesterSettings ([ordered]@{}))} | Should -Throw
+    }
+
+    It 'stops when only unsupported Pester 6.x versions are installed' {
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'6.0.0'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
+
+        $thrown = $null
+        try {
+            Assert-NovaPesterAvailable -ProjectInfo (New-TestProjectInfo -PesterSettings ([ordered]@{}))
+        } catch {
+            $thrown = $_
+        }
+
+        $thrown | Should -Not -BeNullOrEmpty
+        $thrown | Should -Match '5.7.1 through 5.10.0'
+        $thrown | Should -Match '6.0.0'
+    }
+
+    It 'returns the selected supported Pester specification when Pester is available' {
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.10.0'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
+
+        $result = Assert-NovaPesterAvailable -ProjectInfo (New-TestProjectInfo -PesterSettings ([ordered]@{}))
+
+        $result.SelectedVersion | Should -Be ([version]'5.10.0')
+        $result.FullyQualifiedName.RequiredVersion | Should -Be '5.10.0'
+    }
+}
+
+Describe 'Get-NovaSupportedPesterModuleSpecification' {
+    It 'reuses the loaded supported Pester version before considering higher installed versions' {
+        $projectInfo = New-TestProjectInfo -PesterSettings ([ordered]@{})
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.7.1'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and -not $ListAvailable}
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.10.0'}
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.7.1'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
+
+        $result = Get-NovaSupportedPesterModuleSpecification -ProjectInfo $projectInfo
+
+        $result.SelectedVersion | Should -Be ([version]'5.7.1')
+    }
+
+    It 'selects the highest installed version inside Nova''s supported Pester range' {
+        $projectInfo = New-TestProjectInfo -PesterSettings ([ordered]@{})
+        Mock Get-Module {@()} -ParameterFilter {$Name -eq 'Pester' -and -not $ListAvailable}
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.10.1'}
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.8.0'}
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.10.0'}
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.7.1'}
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.7.0'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
+
+        $result = Get-NovaSupportedPesterModuleSpecification -ProjectInfo $projectInfo
+
+        $result.MinimumVersion | Should -Be ([version]'5.7.1')
+        $result.MaximumVersion | Should -Be ([version]'5.10.0')
+        $result.SelectedVersion | Should -Be ([version]'5.10.0')
+    }
+
+    It 'falls back to the default supported Pester range when the manifest does not declare Pester' {
+        $projectInfo = [pscustomobject]@{
+            Pester = [ordered]@{}
+            Manifest = [ordered]@{RequiredModules = @()}
+        }
+        Mock Get-Module {@()} -ParameterFilter {$Name -eq 'Pester' -and -not $ListAvailable}
+        Mock Get-Module {
+            @(
+                [pscustomobject]@{Name = 'Pester'; Version = [version]'5.7.1'}
+            )
+        } -ParameterFilter {$Name -eq 'Pester' -and $ListAvailable}
+
+        $result = Get-NovaSupportedPesterModuleSpecification -ProjectInfo $projectInfo
+
+        $result.MinimumVersion | Should -Be ([version]'5.7.1')
+        $result.MaximumVersion | Should -Be ([version]'5.10.0')
+        $result.SelectedVersion | Should -Be ([version]'5.7.1')
+    }
+
+    It 'stops when project.json declares a wider Pester range than Nova supports' {
+        $projectInfo = New-TestProjectInfo -PesterSettings ([ordered]@{}) -ManifestRequiredModules @(
+            [ordered]@{
+                ModuleName = 'Pester'
+                ModuleVersion = '5.7.1'
+                MaximumVersion = '6.0.0'
+            }
+        )
+
+        $thrown = $null
+        try {
+            $null = Get-NovaSupportedPesterModuleSpecification -ProjectInfo $projectInfo
+        } catch {
+            $thrown = $_
+        }
+
+        $thrown | Should -Not -BeNullOrEmpty
+        $thrown | Should -Match '5.7.1 through 5.10.0'
+        $thrown | Should -Match 'project.json declares Pester from 5.7.1 through 6.0.0'
+    }
+}
+
+Describe 'Get-NovaPesterVersionText' {
+    It 'returns the default value when the requested setting is empty' {
+        $moduleInfo = [pscustomobject]@{
+            ModuleVersion = ''
+        }
+
+        $result = Get-NovaPesterVersionText -InputObject $moduleInfo -Name 'ModuleVersion' -DefaultValue '5.7.1'
+
+        $result | Should -Be '5.7.1'
+    }
+}
+
+Describe 'Test-NovaPesterModuleVersionSupported' {
+    It 'accepts only versions inside Nova''s supported Pester range' {
+        $moduleRequirement = Get-NovaPesterModuleRequirement -ProjectInfo (New-TestProjectInfo -PesterSettings ([ordered]@{}))
+        $cases = @(
+            [pscustomobject]@{Version = '5.7.0'; Expected = $false}
+            [pscustomobject]@{Version = '5.7.1'; Expected = $true}
+            [pscustomobject]@{Version = '5.10.0'; Expected = $true}
+            [pscustomobject]@{Version = '5.10.1'; Expected = $false}
+        )
+
+        foreach ($case in $cases) {
+            $actual = Test-NovaPesterModuleVersionSupported -Version ([version]$case.Version) -ModuleRequirement $moduleRequirement
+            $actual | Should -Be $case.Expected -Because $case.Version
+        }
+    }
+
+    It 'returns false when the candidate version is null' {
+        $moduleRequirement = Get-NovaPesterModuleRequirement -ProjectInfo (New-TestProjectInfo -PesterSettings ([ordered]@{}))
+
+        $result = Test-NovaPesterModuleVersionSupported -Version $null -ModuleRequirement $moduleRequirement
+
+        $result | Should -BeFalse
     }
 }
 
@@ -304,7 +526,7 @@ Describe 'Get-NovaDisabledPesterCoverageConfiguration' {
 
 Describe 'Get-NovaPesterCoverageConfigurationState' {
     It 'returns disabled coverage settings when coverage is disabled for the workflow' {
-        $projectInfo = & $script:getProjectInfo -PesterSettings ([ordered]@{
+        $projectInfo = New-TestProjectInfo -PesterSettings ([ordered]@{
             CodeCoverage = [ordered]@{
                 Enabled = $true
                 CoveragePercentTarget = 99
@@ -324,7 +546,7 @@ Describe 'Get-NovaPesterCoverageConfigurationState' {
         $filePath = Join-Path $projectRoot 'src/public/GetAlpha.ps1'
         New-Item -ItemType Directory -Path (Split-Path -Parent $filePath) -Force | Out-Null
         Set-Content -LiteralPath $filePath -Value '# test'
-        $projectInfo = & $script:getProjectInfo -ProjectRoot $projectRoot -PesterSettings ([ordered]@{
+        $projectInfo = New-TestProjectInfo -ProjectRoot $projectRoot -PesterSettings ([ordered]@{
             CodeCoverage = [ordered]@{
                 Enabled = $true
                 CoveragePercentTarget = 99
