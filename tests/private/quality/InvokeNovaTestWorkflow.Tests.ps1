@@ -354,7 +354,16 @@ Describe 'Invoke-NovaPesterWithSuppressedProgress' {
             $script:outputCallCount += 1
         }
 
-        $result = Invoke-NovaPesterWithSuppressedProgress -Configuration ([pscustomobject]@{}) -ProgressContext ([pscustomobject]@{
+        $configuration = [pscustomobject]@{
+            PesterModuleSpecification = [pscustomobject]@{
+                FullyQualifiedName = @{
+                    ModuleName = 'Pester'
+                    RequiredVersion = '5.10.0'
+                }
+            }
+        }
+
+        $result = Invoke-NovaPesterWithSuppressedProgress -Configuration $configuration -ProgressContext ([pscustomobject]@{
             Activity = 'Running Nova test workflow'
             StartPercentComplete = 70
             EndPercentComplete = 94
@@ -362,7 +371,10 @@ Describe 'Invoke-NovaPesterWithSuppressedProgress' {
         })
 
         $result.Result | Should -Be 'Passed'
-        Should -Invoke Get-NovaPesterExecution -Times 1
+        Should -Invoke Get-NovaPesterExecution -Times 1 -ParameterFilter {
+            $ModuleSpecification.FullyQualifiedName.ModuleName -eq 'Pester' -and
+                    $ModuleSpecification.FullyQualifiedName.RequiredVersion -eq '5.10.0'
+        }
         Should -Invoke Wait-NovaPesterExecution -Times 3
         Should -Invoke Write-NovaPesterExecutionOutput -Times 3
         Should -Invoke Receive-NovaPesterExecutionResult -Times 1
@@ -565,7 +577,12 @@ Describe 'Get-NovaPesterExecution' {
     It 'returns an execution object with the expected initial properties' {
         $execution = $null
         try {
-            $execution = Get-NovaPesterExecution -Configuration ([pscustomobject]@{})
+            $execution = Get-NovaPesterExecution -Configuration ([pscustomobject]@{}) -ModuleSpecification ([pscustomobject]@{
+                FullyQualifiedName = @{
+                    ModuleName = 'Pester'
+                    RequiredVersion = '5.10.0'
+                }
+            })
             $execution.PowerShell | Should -Not -BeNullOrEmpty
             $execution.AsyncResult | Should -Not -BeNullOrEmpty
             $execution.CompletedTestCount | Should -Be 0
@@ -573,6 +590,11 @@ Describe 'Get-NovaPesterExecution' {
             $execution.TotalTestCount | Should -BeNullOrEmpty
             $execution.LastProgressStatus | Should -BeNullOrEmpty
             $execution.LastProgressPercentComplete | Should -BeNullOrEmpty
+
+            $commands = $execution.PowerShell.Commands.Commands
+            $commands.Count | Should -Be 1
+            $commands[0].Parameters[1].Value.ModuleName | Should -Be 'Pester'
+            $commands[0].Parameters[1].Value.RequiredVersion | Should -Be '5.10.0'
         } finally {
             if ($null -ne $execution -and $null -ne $execution.PowerShell) {
                 $execution.PowerShell.Dispose()

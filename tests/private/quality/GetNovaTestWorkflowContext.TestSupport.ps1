@@ -1,7 +1,20 @@
-function Test-ProjectSchema {param($Name) }
-function Stop-NovaOperation {param($Message, $ErrorId, $Category, $TargetObject) throw $Message}
-function Get-NovaProjectInfo {}
-function New-PesterConfiguration {param($Hashtable)}
+function Test-ProjectSchema {
+    param($Name)
+}
+
+function Stop-NovaOperation {
+    param($Message, $ErrorId, $Category, $TargetObject)
+
+    throw $Message
+}
+
+function Get-NovaProjectInfo {
+}
+
+function New-PesterConfiguration {
+    param($Hashtable)
+}
+
 function Get-NovaPesterRunPath {
     param($ProjectInfo, $IncludePattern, $ExcludePattern)
 
@@ -32,12 +45,20 @@ function Initialize-NovaPesterExecutionConfiguration {
         ExecutionOption = $ExecutionOption
     }
 }
-function Get-NovaShouldProcessForwardingParameter {param([switch]$WhatIfEnabled) return @{}}
-function Write-NovaPesterTestResultArtifact {}
-function Write-NovaPesterTestResultReport {}
+function Get-NovaShouldProcessForwardingParameter {
+    param([switch]$WhatIfEnabled)
 
-$script:getPesterConfig = {
-    [pscustomobject]@{
+    return @{}
+}
+
+function Write-NovaPesterTestResultArtifact {
+}
+
+function Write-NovaPesterTestResultReport {
+}
+
+function New-TestPesterConfig {
+    return [pscustomobject]@{
         Run = [pscustomobject]@{Path = $null; PassThru = $false; Exit = $false; Throw = $false}
         Filter = [pscustomobject]@{Tag = @(); ExcludeTag = @()}
         Output = [pscustomobject]@{Verbosity = 'Detailed'; RenderMode = 'Auto'}
@@ -46,14 +67,29 @@ $script:getPesterConfig = {
     }
 }
 
-$script:getProjectInfo = {
+function New-TestProjectInfo {
     param(
         [Parameter(Mandatory)][object]$PesterSettings,
+        [AllowNull()][object[]]$ManifestRequiredModules = $null,
         [string]$ProjectRoot = (Join-Path $TestDrive 'nova-project')
     )
 
-    [pscustomobject]@{
+    $requiredModules = $ManifestRequiredModules
+    if ($null -eq $requiredModules) {
+        $requiredModules = @(
+            [ordered]@{
+                ModuleName = 'Pester'
+                ModuleVersion = '5.7.1'
+                MaximumVersion = '5.10.0'
+            }
+        )
+    }
+
+    return [pscustomobject]@{
         Pester = $PesterSettings
+        Manifest = [ordered]@{
+            RequiredModules = @($requiredModules)
+        }
         BuildRecursiveFolders = $true
         TestsDir = (Join-Path $ProjectRoot 'tests')
         ProjectRoot = $ProjectRoot

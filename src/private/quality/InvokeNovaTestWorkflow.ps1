@@ -153,7 +153,8 @@ function Invoke-NovaPesterWithSuppressedProgress {
         $heartbeatMilliseconds = 2000
     }
 
-    $execution = Get-NovaPesterExecution -Configuration $Configuration
+    $moduleSpecification = Get-NovaPropertyValue -InputObject $Configuration -Name 'PesterModuleSpecification'
+    $execution = Get-NovaPesterExecution -Configuration $Configuration -ModuleSpecification $moduleSpecification
     try {
         Write-NovaTestWorkflowPesterProgress -Execution $execution -ProgressContext $ProgressContext
         while (-not (Wait-NovaPesterExecution -Execution $execution -TimeoutMilliseconds $HeartbeatMilliseconds)) {
@@ -323,13 +324,19 @@ function Write-NovaPesterHostInformationMessage {
 function Get-NovaPesterExecution {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][object]$Configuration
+        [Parameter(Mandatory)][object]$Configuration,
+        [AllowNull()][object]$ModuleSpecification
     )
 
     $powershell = [powershell]::Create()
     $command = @'
-param($Configuration)
-Import-Module Pester -ErrorAction Stop
+param($Configuration, $ModuleSpecification)
+if ($null -ne $ModuleSpecification) {
+    Import-Module -FullyQualifiedName $ModuleSpecification -Force -ErrorAction Stop
+}
+else {
+    Import-Module Pester -ErrorAction Stop
+}
 $previousProgressPreference = $global:ProgressPreference
 $global:ProgressPreference = 'SilentlyContinue'
 try {
@@ -338,7 +345,12 @@ try {
     $global:ProgressPreference = $previousProgressPreference
 }
 '@
-    $null = $powershell.AddScript($command).AddArgument($Configuration)
+    $moduleImportSpecification = $null
+    if ($null -ne $ModuleSpecification) {
+        $moduleImportSpecification = Get-NovaPropertyValue -InputObject $ModuleSpecification -Name 'FullyQualifiedName'
+    }
+
+    $null = $powershell.AddScript($command).AddArgument($Configuration).AddArgument($moduleImportSpecification)
 
     return [pscustomobject]@{
         PowerShell = $powershell

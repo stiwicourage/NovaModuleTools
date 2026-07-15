@@ -32,6 +32,8 @@ PS> Invoke-NovaTest [[-TagFilter] <string[]>] [[-ExcludeTagFilter] <string[]>]
 
 `Invoke-NovaTest` reads the Pester configuration from `project.json`, discovers the repository unit-test files, and runs the managed Nova test workflow without rebuilding the project first.
 
+Nova resolves a supported installed `Pester` version from `5.7.1` through `5.10.0` for the managed test workflow and stops with a clear dependency error when only unsupported `Pester 6.x` versions are available.
+
 The unit-test workflow writes NUnit XML to `artifacts/UnitTestResults.xml`.
 
 When `Pester.CodeCoverage.Enabled` is `true`, Nova also writes JaCoCo coverage to `artifacts/coverage.xml` and fails the run when the measured percentage is lower than `Pester.CodeCoverage.CoveragePercentTarget`.
