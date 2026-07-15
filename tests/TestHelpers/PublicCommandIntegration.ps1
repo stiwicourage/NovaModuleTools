@@ -47,6 +47,22 @@ function Invoke-NovaPublicCommandIntegrationInProjectRoot {
     return Invoke-NovaPublicCommandIntegrationInLocation -Path $ProjectRoot -ScriptBlock $ScriptBlock
 }
 
+function Get-NovaPublicCommandIntegrationOutputText {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][object[]]$Output,
+        [switch]$NormalizeWhitespace
+    )
+
+    $text = @($Output) -join [Environment]::NewLine
+    $text = [regex]::Replace($text, '\x1B\[[0-?]*[ -/]*[@-~]', '')
+    if ($NormalizeWhitespace) {
+        $text = [regex]::Replace($text, '\s+', ' ')
+    }
+
+    return $text.Trim()
+}
+
 function Invoke-NovaPublicCommandIntegrationInIsolatedSession {
     [CmdletBinding()]
     param(

@@ -10,7 +10,7 @@ Describe 'Test-NovaBuild integration' {
             Test-NovaBuild -WhatIf
         }
 
-        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
+        $result.ExitCode | Should -Be 0 -Because (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output)
     }
 
     It 'fails early when the isolated session cannot resolve a supported Pester 5.x module' {
@@ -27,7 +27,7 @@ Describe 'Test-NovaBuild integration' {
             }
         }
 
-        $outputText = $result.Output -join [Environment]::NewLine
+        $outputText = Get-NovaPublicCommandIntegrationOutputText -Output $result.Output -NormalizeWhitespace
         $result.ExitCode | Should -Not -Be 0
         $outputText | Should -Match 'Pester'
         $outputText | Should -Match 'Import-Module'
@@ -45,8 +45,8 @@ Describe 'Test-NovaBuild integration' {
             Test-NovaBuild 3>&1
         }
 
-        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
-        ($result.Output -join [Environment]::NewLine) | Should -Match "No build-validation integration tests matching '\*\.Integration\.Tests\.ps1' were discovered for NovaExampleModule\."
+        $result.ExitCode | Should -Be 0 -Because (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output)
+        (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output -NormalizeWhitespace) | Should -Match "No build-validation integration tests matching '\*\.Integration\.Tests\.ps1' were discovered for NovaExampleModule\."
     }
 
     It 'passes for a scaffolded example whose project name differs from the packaged template name' {
@@ -64,6 +64,6 @@ Describe 'Test-NovaBuild integration' {
             Test-NovaBuild
         }
 
-        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
+        $result.ExitCode | Should -Be 0 -Because (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output)
     }
 }

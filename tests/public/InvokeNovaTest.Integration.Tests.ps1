@@ -10,7 +10,7 @@ Describe 'Invoke-NovaTest integration' {
             Invoke-NovaTest -WhatIf
         }
 
-        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
+        $result.ExitCode | Should -Be 0 -Because (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output)
     }
 
     It 'fails early when the isolated session cannot resolve a supported Pester 5.x module' {
@@ -27,7 +27,7 @@ Describe 'Invoke-NovaTest integration' {
             }
         }
 
-        $outputText = $result.Output -join [Environment]::NewLine
+        $outputText = Get-NovaPublicCommandIntegrationOutputText -Output $result.Output -NormalizeWhitespace
         $result.ExitCode | Should -Not -Be 0
         $outputText | Should -Match 'Pester'
         $outputText | Should -Match 'Import-Module'
@@ -44,7 +44,7 @@ Describe 'Invoke-NovaTest integration' {
             }
         }
 
-        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
+        $result.ExitCode | Should -Be 0 -Because (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output)
     }
 
     It 'rejects non-file Run.Container overrides from the built module' {
@@ -62,7 +62,7 @@ Describe 'Invoke-NovaTest integration' {
         }
 
         $result.ExitCode | Should -Not -Be 0
-        ($result.Output -join [Environment]::NewLine) | Should -Match 'ScriptBlock and other container types are not supported'
+        (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output -NormalizeWhitespace) | Should -Match 'ScriptBlock and other container types are not supported'
     }
 
     It 'rejects unsupported override shapes from the built module' {
@@ -75,6 +75,6 @@ Describe 'Invoke-NovaTest integration' {
         }
 
         $result.ExitCode | Should -Not -Be 0
-        ($result.Output -join [Environment]::NewLine) | Should -Match 'Unsupported override path: Run.Path'
+        (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output -NormalizeWhitespace) | Should -Match 'Unsupported override path: Run.Path'
     }
 }
