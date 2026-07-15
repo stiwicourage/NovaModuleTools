@@ -16,29 +16,58 @@ function Copy-NovaModuleToolsArtifactIfPresent {
     }
 }
 
+function ConvertTo-NovaSingleQuotedPowerShellLiteral {
+    param(
+        [Parameter(Mandatory)][string]$Value
+    )
+
+    return "'$($Value.Replace("'", "''") )'"
+}
+
+function Get-NovaModuleToolsValidationCommand {
+    param(
+        [Parameter(Mandatory)][string]$BuiltModulePath,
+        [Parameter(Mandatory)][string]$CommandName,
+        [string[]]$ExcludeTag = @()
+    )
+
+    $commandLine = $CommandName
+    if (@($ExcludeTag).Count -gt 0) {
+        $excludeTagLiteral = @($ExcludeTag | ForEach-Object {ConvertTo-NovaSingleQuotedPowerShellLiteral -Value ([string]$_)}) -join ', '
+        $commandLine += " -ExcludeTagFilter @($excludeTagLiteral)"
+    }
+
+    return "Import-Module $( ConvertTo-NovaSingleQuotedPowerShellLiteral -Value $BuiltModulePath ) -Force -ErrorAction Stop; $commandLine"
+}
+
+function Invoke-NovaModuleToolsFreshValidationCommand {
+    param(
+        [Parameter(Mandatory)][string]$Command
+    )
+
+    & pwsh -NoLogo -NoProfile -Command $Command
+    if ($LASTEXITCODE -ne 0) {
+        throw "Validation command failed: $Command"
+    }
+}
+
 $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..' '..' '..')).Path
 Set-Location $repoRoot
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 
 Import-Module NovaModuleTools -ErrorAction Stop
 
+$projectInfo = Get-NovaProjectInfo
 Invoke-NovaBuild
-
-$projectInfo = Get-NovaProjectInfo
-$builtModulePath = $projectInfo.OutputModuleDir
-Remove-Module $projectInfo.ProjectName -ErrorAction SilentlyContinue
-Import-Module $builtModulePath -Force
-$projectInfo = Get-NovaProjectInfo
+$builtModulePath = Join-Path $projectInfo.OutputModuleDir "$( $projectInfo.ProjectName ).psd1"
 
 $novaModuleToolsTestFailed = $false
 try {
-    if (@($ExcludeTag).Count -gt 0) {
-        Invoke-NovaTest -ExcludeTagFilter $ExcludeTag
-        Test-NovaBuild -ExcludeTagFilter $ExcludeTag
-    } else {
-        Invoke-NovaTest
-        Test-NovaBuild
-    }
+    $unitTestCommand = Get-NovaModuleToolsValidationCommand -BuiltModulePath $builtModulePath -CommandName 'Invoke-NovaTest' -ExcludeTag $ExcludeTag
+    Invoke-NovaModuleToolsFreshValidationCommand -Command $unitTestCommand
+
+    $buildValidationCommand = Get-NovaModuleToolsValidationCommand -BuiltModulePath $builtModulePath -CommandName 'Test-NovaBuild' -ExcludeTag $ExcludeTag
+    Invoke-NovaModuleToolsFreshValidationCommand -Command $buildValidationCommand
 } catch {
     $novaModuleToolsTestFailed = $true
     Write-Warning "Nova test workflow failed: $( $_.Exception.Message )"

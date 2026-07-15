@@ -37,7 +37,7 @@ Describe 'Invoke-NovaModuleToolsCI' {
         $projectRoot = Join-Path $TestDrive 'project'
         $outputDirectory = Join-Path $TestDrive 'artifacts-out'
         $callLogPath = Join-Path $TestDrive 'call-log.txt'
-        $excludeTagLogPath = Join-Path $TestDrive 'exclude-tags.txt'
+        $commandLogPath = Join-Path $TestDrive 'commands.txt'
         $unitResultPath = Join-Path $projectRoot 'artifacts/UnitTestResults.xml'
         $integrationResultPath = Join-Path $projectRoot 'artifacts/TestResults.xml'
 
@@ -64,24 +64,24 @@ function Get-NovaProjectInfo {
     }
 }
 
-function Remove-Module {
+function pwsh {
     [CmdletBinding()]
-    param([string]`$Name)
-}
+    param(
+        [switch]`$NoLogo,
+        [switch]`$NoProfile,
+        [string]`$Command
+    )
 
-function Invoke-NovaTest {
-    [CmdletBinding()]
-    param([string[]]`$ExcludeTagFilter)
+    Add-Content -LiteralPath '$commandLogPath' -Value `$Command
+    if (`$Command -match 'Invoke-NovaTest') {
+        Add-Content -LiteralPath '$callLogPath' -Value 'Invoke-NovaTest'
+    }
 
-    Add-Content -LiteralPath '$callLogPath' -Value 'Invoke-NovaTest'
-    Set-Content -LiteralPath '$excludeTagLogPath' -Value (`$ExcludeTagFilter -join ',') -Encoding utf8
-}
+    if (`$Command -match 'Test-NovaBuild') {
+        Add-Content -LiteralPath '$callLogPath' -Value 'Test-NovaBuild'
+    }
 
-function Test-NovaBuild {
-    [CmdletBinding()]
-    param([string[]]`$ExcludeTagFilter)
-
-    Add-Content -LiteralPath '$callLogPath' -Value 'Test-NovaBuild'
+    `$global:LASTEXITCODE = 0
 }
 
 & '$script:novaModuleToolsCiScriptPath' -OutputDirectory '$outputDirectory' -ExcludeTag 'slow','integration'
@@ -90,7 +90,10 @@ function Test-NovaBuild {
 
         $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
         (Get-Content -LiteralPath $callLogPath) | Should -Be @('Invoke-NovaTest', 'Test-NovaBuild')
-        (Get-Content -LiteralPath $excludeTagLogPath -Raw).Trim() | Should -Be 'slow,integration'
+        $commands = Get-Content -LiteralPath $commandLogPath
+        $commands | Should -HaveCount 2
+        $commands[0] | Should -Match "Import-Module '.*/dist/NovaModuleTools/NovaModuleTools\.psd1' -Force -ErrorAction Stop; Invoke-NovaTest -ExcludeTagFilter @\('slow', 'integration'\)"
+        $commands[1] | Should -Match "Import-Module '.*/dist/NovaModuleTools/NovaModuleTools\.psd1' -Force -ErrorAction Stop; Test-NovaBuild -ExcludeTagFilter @\('slow', 'integration'\)"
         (Get-Content -LiteralPath (Join-Path $outputDirectory 'novamoduletools-unit-nunit.xml') -Raw).Trim() | Should -Be '<unit-test-results />'
         (Get-Content -LiteralPath (Join-Path $outputDirectory 'novamoduletools-integration-nunit.xml') -Raw).Trim() | Should -Be '<integration-test-results />'
     }
@@ -122,16 +125,21 @@ function Get-NovaProjectInfo {
     }
 }
 
-function Remove-Module {
+function pwsh {
     [CmdletBinding()]
-    param([string]`$Name)
-}
+    param(
+        [switch]`$NoLogo,
+        [switch]`$NoProfile,
+        [string]`$Command
+    )
 
-function Invoke-NovaTest {
-    throw 'boom'
-}
+    if (`$Command -match 'Invoke-NovaTest') {
+        `$global:LASTEXITCODE = 1
+        return
+    }
 
-function Test-NovaBuild {}
+    `$global:LASTEXITCODE = 0
+}
 
 & '$script:novaModuleToolsCiScriptPath' -OutputDirectory '$outputDirectory'
 "@
@@ -139,7 +147,7 @@ function Test-NovaBuild {}
         $outputText = $result.Output -join [Environment]::NewLine
 
         $result.ExitCode | Should -Be 1
-        $outputText | Should -Match 'Nova test workflow failed: boom'
+        $outputText | Should -Match 'Nova test workflow failed: Validation command failed: .*Invoke-NovaTest'
         (Get-Content -LiteralPath (Join-Path $outputDirectory 'novamoduletools-unit-nunit.xml') -Raw).Trim() | Should -Be '<failed-unit-test-results />'
         Test-Path -LiteralPath (Join-Path $outputDirectory 'novamoduletools-integration-nunit.xml') | Should -BeFalse
     }
