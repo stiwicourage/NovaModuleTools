@@ -298,8 +298,9 @@ Notes:
 - if `project.json` sets `Pester.CodeCoverage.CoveragePercentTarget`, `Invoke-NovaTest` fails when the measured coverage percentage is lower than that configured target
 - this repository currently enables coverage with a `99` percent target; the template and packaged example
   `project.json` files ship the same JaCoCo configuration shape with `Enabled=false` and a `90` percent opt-in target
-- make sure `Pester 5.7.1` is available before running `Invoke-NovaTest` or `Test-NovaBuild`
-- the published `NovaModuleTools` manifest also declares `Pester 5.7.1`, so installed end-user workflows can still resolve that dependency automatically
+- make sure a supported `Pester` version from `5.7.1` through `5.10.0` is available before running `Invoke-NovaTest` or `Test-NovaBuild`
+- Nova resolves and imports a compatible installed `Pester 5.x` version for the managed test workflow and does not run tests with `Pester 6.x`
+- the published `NovaModuleTools` manifest declares `Pester` with `ModuleVersion = 5.7.1` and `MaximumVersion = 5.10.0`, so installed end-user workflows can still resolve that supported dependency range automatically
 
 ### Create a package artifact
 
@@ -640,7 +641,7 @@ Responsibilities currently covered by the release pipeline include:
 - publishing to PowerShell Gallery
 - preparing the next prerelease version on `develop`
 
-The workflow now uses `KeepAChangelog` for changelog release moves, creates annotated git tags named directly from the release version, and bootstraps the local PSResourceGet repository store before calling `Publish-NovaModule`. The shared CI installer also installs `Pester 5.7.1` explicitly before it installs prerelease gallery modules so test workflows do not rely on transitive manifest dependency resolution.
+The workflow now uses `KeepAChangelog` for changelog release moves, creates annotated git tags named directly from the release version, and bootstraps the local PSResourceGet repository store before calling `Publish-NovaModule`. The shared CI installer also installs `Pester 5.7.1` explicitly before it installs prerelease gallery modules so test workflows stay on Nova's supported `Pester 5.x` range and do not rely on transitive manifest dependency resolution.
 
 ### Where NovaModuleTools cmdlets fit
 

@@ -10,8 +10,18 @@ Describe 'Update-NovaModuleTool integration' {
     }
 
     It 'supports WhatIf from the built module' {
-        {
+        $thrown = $null
+
+        try {
             Update-NovaModuleTool -WhatIf | Out-Null
-        } | Should -Not -Throw
+        } catch {
+            $thrown = $_
+        }
+
+        if ($null -eq $thrown) {
+            return
+        }
+
+        $thrown.Exception.Message | Should -Be 'Unable to determine a NovaModuleTools update candidate. Try again when the PowerShell Gallery is reachable.'
     }
 }

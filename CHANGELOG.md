@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- `Invoke-NovaTest`, `Test-NovaBuild`, and `% nova test` now resolve and import a supported installed `Pester` version from `5.7.1` through `5.10.0` instead of using an unsupported `Pester 6.x` installation automatically.
+    - Nova test workflows now fail early with a clear dependency error when only unsupported `Pester 6.x` versions are available.
+
 ### Security
 
 ## [3.3.0] - 2026-06-16

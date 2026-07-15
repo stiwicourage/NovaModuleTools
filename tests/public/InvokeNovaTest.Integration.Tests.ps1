@@ -6,48 +6,74 @@ BeforeAll {
 
 Describe 'Invoke-NovaTest integration' {
     It 'supports WhatIf from the built module' {
-        {
-            Invoke-NovaPublicCommandIntegrationInProjectRoot -ProjectRoot $script:projectRoot -ScriptBlock {
+        $result = Invoke-NovaPublicCommandIntegrationInIsolatedSession -ProjectRoot $script:projectRoot -ScriptBlock {
+            Invoke-NovaTest -WhatIf
+        }
+
+        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
+    }
+
+    It 'fails early when only unsupported Pester 6.x versions are visible' {
+        $result = Invoke-NovaPublicCommandIntegrationInIsolatedSession -ProjectRoot $script:projectRoot -ScriptBlock {
+            $temporaryModulePath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().Guid)
+            $originalModulePath = $env:PSModulePath
+            try {
+                New-NovaPublicCommandIntegrationPesterModule -BasePath $temporaryModulePath -Version '6.0.0' | Out-Null
+                $env:PSModulePath = $temporaryModulePath
                 Invoke-NovaTest -WhatIf
+            } finally {
+                $env:PSModulePath = $originalModulePath
+                Remove-Item -LiteralPath $temporaryModulePath -Recurse -Force -ErrorAction SilentlyContinue
             }
-        } | Should -Not -Throw
+        }
+
+        $outputText = $result.Output -join [Environment]::NewLine
+        $result.ExitCode | Should -Not -Be 0
+        $outputText | Should -Match '5\.7\.1 through 5\.10\.0'
+        $outputText | Should -Match '6\.0\.0'
     }
 
     It 'supports a guarded Run.Container override from the built module' {
-        {
-            Invoke-NovaPublicCommandIntegrationInProjectRoot -ProjectRoot $script:projectRoot -ScriptBlock {
-                $container = New-PesterContainer -Path 'tests/public/InvokeNovaTest.Tests.ps1' -Data @{ Name = 'runtime-value' }
-                Invoke-NovaTest -WhatIf -PesterConfigurationOverride @{
-                    Run = @{
-                        Container = @($container)
-                    }
+        $result = Invoke-NovaPublicCommandIntegrationInIsolatedSession -ProjectRoot $script:projectRoot -ScriptBlock {
+            $container = New-PesterContainer -Path 'tests/public/InvokeNovaTest.Tests.ps1' -Data @{Name = 'runtime-value'}
+            Invoke-NovaTest -WhatIf -PesterConfigurationOverride @{
+                Run = @{
+                    Container = @($container)
                 }
             }
-        } | Should -Not -Throw
+        }
+
+        $result.ExitCode | Should -Be 0 -Because ($result.Output -join [Environment]::NewLine)
     }
 
     It 'rejects non-file Run.Container overrides from the built module' {
-        {
-            Invoke-NovaPublicCommandIntegrationInProjectRoot -ProjectRoot $script:projectRoot -ScriptBlock {
-                $container = New-PesterContainer -ScriptBlock {}
-                Invoke-NovaTest -WhatIf -PesterConfigurationOverride @{
-                    Run = @{
-                        Container = @($container)
-                    }
+        $result = Invoke-NovaPublicCommandIntegrationInIsolatedSession -ProjectRoot $script:projectRoot -ScriptBlock {
+            $container = [pscustomobject]@{
+                Type = 'ScriptBlock'
+                Item = $null
+                Data = @{}
+            }
+            Invoke-NovaTest -WhatIf -PesterConfigurationOverride @{
+                Run = @{
+                    Container = @($container)
                 }
             }
-        } | Should -Throw '*ScriptBlock and other container types are not supported*'
+        }
+
+        $result.ExitCode | Should -Not -Be 0
+        ($result.Output -join [Environment]::NewLine) | Should -Match 'ScriptBlock and other container types are not supported'
     }
 
     It 'rejects unsupported override shapes from the built module' {
-        {
-            Invoke-NovaPublicCommandIntegrationInProjectRoot -ProjectRoot $script:projectRoot -ScriptBlock {
-                Invoke-NovaTest -WhatIf -PesterConfigurationOverride @{
-                    Run = @{
-                        Path = @('tests/public/InvokeNovaTest.Tests.ps1')
-                    }
+        $result = Invoke-NovaPublicCommandIntegrationInIsolatedSession -ProjectRoot $script:projectRoot -ScriptBlock {
+            Invoke-NovaTest -WhatIf -PesterConfigurationOverride @{
+                Run = @{
+                    Path = @('tests/public/InvokeNovaTest.Tests.ps1')
                 }
             }
-        } | Should -Throw '*Unsupported override path: Run.Path*'
+        }
+
+        $result.ExitCode | Should -Not -Be 0
+        ($result.Output -join [Environment]::NewLine) | Should -Match 'Unsupported override path: Run.Path'
     }
 }
