@@ -18,6 +18,12 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Security
 
+## [3.3.1] - 2026-07-15
+
+### Fixed
+
+- `Invoke-NovaTest`, `Test-NovaBuild`, and `% nova test` now stay on Nova's supported `Pester 5.x` range and stop with a clear error instead of trying to run with an installed `Pester 6.x` version.
+
 ## [3.3.0] - 2026-06-16
 
 ### Changed
