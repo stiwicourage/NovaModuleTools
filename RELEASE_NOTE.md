@@ -14,6 +14,7 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Fixed
 
+- `Update-NovaModuleTool` and `% nova update` now keep self-update failure details and recovery guidance on separate terminal lines so the error is easier to scan.
 - `Invoke-NovaTest`, `Test-NovaBuild`, and `% nova test` now stay on Nova's supported `Pester 5.x` range and stop with a clear error instead of trying to run with an installed `Pester 6.x` version.
 
 ### Security
