@@ -22,6 +22,17 @@ Describe 'Complete-NovaModuleSelfUpdateResult' {
     }
 }
 
+Describe 'Get-NovaModuleSelfUpdateFailureMessage' {
+    It 'splits failure details and recovery guidance across separate lines' {
+        $message = Get-NovaModuleSelfUpdateFailureMessage -FailureDetail 'gallery offline'
+
+        $message | Should -Be (@(
+            'NovaModuleTools self-update failed: gallery offline'
+            'Confirm that the PowerShell Gallery is reachable and that this session can update installed modules, then rerun the self-update command.'
+        ) -join [Environment]::NewLine)
+    }
+}
+
 Describe 'Invoke-NovaModuleSelfUpdateOrStop' {
     It 'calls Invoke-NovaModuleSelfUpdate with module name and prerelease flag' {
         Mock Invoke-NovaModuleSelfUpdate {}
@@ -39,7 +50,7 @@ Describe 'Invoke-NovaModuleSelfUpdateOrStop' {
 
         $thrown | Should -Not -BeNullOrEmpty
         $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.ModuleSelfUpdateFailed'
-        $thrown.Exception.Message | Should -Be 'NovaModuleTools self-update failed: gallery offline Confirm that the PowerShell Gallery is reachable and that this session can update installed modules, then rerun Update-NovaModuleTool.'
+        $thrown.Exception.Message | Should -Be (Get-NovaModuleSelfUpdateFailureMessage -FailureDetail 'gallery offline')
     }
 }
 

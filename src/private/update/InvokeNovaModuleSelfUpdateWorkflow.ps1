@@ -1,3 +1,15 @@
+function Get-NovaModuleSelfUpdateFailureMessage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$FailureDetail
+    )
+
+    return @(
+        "NovaModuleTools self-update failed: $FailureDetail"
+        'Confirm that the PowerShell Gallery is reachable and that this session can update installed modules, then rerun the self-update command.'
+    ) -join [Environment]::NewLine
+}
+
 function Invoke-NovaModuleSelfUpdateOrStop {
     [CmdletBinding()]
     param(
@@ -7,7 +19,7 @@ function Invoke-NovaModuleSelfUpdateOrStop {
     try {
         $null = Invoke-NovaModuleSelfUpdate -ModuleName $Plan.ModuleName -AllowPrerelease:$Plan.UsedAllowPrerelease
     } catch {
-        $message = "NovaModuleTools self-update failed: $( $_.Exception.Message ) Confirm that the PowerShell Gallery is reachable and that this session can update installed modules, then rerun Update-NovaModuleTool."
+        $message = Get-NovaModuleSelfUpdateFailureMessage -FailureDetail $_.Exception.Message
         Stop-NovaOperation -Message $message -ErrorId 'Nova.Dependency.ModuleSelfUpdateFailed' -Category InvalidOperation -TargetObject $Plan.ModuleName
     }
 }
