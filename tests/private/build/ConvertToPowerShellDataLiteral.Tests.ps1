@@ -48,6 +48,12 @@ Describe 'ConvertTo-PowerShellDataLiteral' {
         ConvertTo-PowerShellDataLiteral -Value 3.5 | Should -Be '3.5'
     }
 
+    It 'serializes unsupported scalar values as quoted strings' {
+        $version = [version]'1.2.3'
+
+        ConvertTo-PowerShellDataLiteral -Value $version | Should -Be "'1.2.3'"
+    }
+
     It 'serializes empty objects' {
         ConvertTo-PowerShellDataLiteral -Value ([ordered]@{}) | Should -Be '@{}'
     }
@@ -95,5 +101,11 @@ Describe 'ConvertTo-PowerShellDataLiteral' {
         $result = ConvertTo-PowerShellDataLiteral -Value $value
 
         $result.IndexOf("'b' = 2") | Should -BeLessThan $result.IndexOf("'a' = 1")
+    }
+
+    It 'throws for unsupported collection values' {
+        $queue = [System.Collections.Queue]::new()
+
+        { Get-PowerShellCollectionBlockDescriptor -Value $queue } | Should -Throw 'Unsupported PowerShell data collection type*'
     }
 }

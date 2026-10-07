@@ -74,3 +74,67 @@ Describe 'Update-ManifestPrivateData' {
             Should -Throw -ErrorId 'Nova.Configuration.ManifestPrivateDataReservedKey'
     }
 }
+
+Describe 'Get-GeneratedManifestPsData' {
+    It 'returns null when the manifest has no PrivateData' {
+        $manifest = [pscustomobject]@{
+            PrivateData = $null
+        }
+
+        Get-GeneratedManifestPsData -Manifest $manifest | Should -BeNullOrEmpty
+    }
+
+    It 'converts object-based PSData into an ordered dictionary' {
+        $manifest = [pscustomobject]@{
+            PrivateData = [pscustomobject]@{
+                PSData = [pscustomobject]@{
+                    Tags = @('Example')
+                    ReleaseNotes = 'https://example.test/release'
+                }
+            }
+        }
+
+        $result = Get-GeneratedManifestPsData -Manifest $manifest
+
+        $result | Should -BeOfType ([System.Collections.Specialized.OrderedDictionary])
+        $result.Tags | Should -Be @('Example')
+        $result.ReleaseNotes | Should -Be 'https://example.test/release'
+    }
+}
+
+Describe 'Get-ManifestPsDataDictionary' {
+    It 'returns null when PSData is null' {
+        Get-ManifestPsDataDictionary -PSData $null | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Get-ManifestHashtableEntryAst' {
+    It 'throws when the generated manifest cannot be parsed' {
+        $invalidManifestPath = Join-Path $TestDrive 'Invalid.psd1'
+        Set-Content -LiteralPath $invalidManifestPath -Value '@{ PrivateData = ' -NoNewline
+
+        { Get-ManifestHashtableEntryAst -ManifestPath $invalidManifestPath -Name 'PrivateData' } |
+            Should -Throw -ErrorId 'Nova.Dependency.ModuleManifestParsingFailed'
+    }
+
+    It 'throws when the generated manifest is missing the requested top-level entry' {
+        $manifestPath = Join-Path $TestDrive 'MissingEntry.psd1'
+        Set-Content -LiteralPath $manifestPath -Value "@{`n    RootModule = 'Demo.psm1'`n}" -NoNewline
+
+        { Get-ManifestHashtableEntryAst -ManifestPath $manifestPath -Name 'PrivateData' } |
+            Should -Throw -ErrorId 'Nova.Dependency.ModuleManifestPrivateDataMissing'
+    }
+}
+
+Describe 'Get-TopLevelManifestHashtableAst' {
+    It 'throws when the parsed file does not contain a top-level hashtable' {
+        $scriptPath = Join-Path $TestDrive 'NoHashtable.ps1'
+        Set-Content -LiteralPath $scriptPath -Value "'plain text'" -NoNewline
+        $tokens = $null
+        $parseErrors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
+
+        { Get-TopLevelManifestHashtableAst -Ast $ast } |
+            Should -Throw -ErrorId 'Nova.Dependency.ModuleManifestParsingFailed'
+    }
+}
