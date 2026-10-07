@@ -113,7 +113,7 @@
                     <strong>Schema coverage.</strong>
                     <p>The unified JSON schema covers all documented fields including
                         <code>Manifest.ReleaseNotes</code>, <code>Manifest.LicenseUri</code>,
-                        <code>Manifest.IconUri</code>, and <code>Pester.TestResult.OutputFormat</code>. VS Code picks
+                        <code>Manifest.IconUri</code>, <code>Manifest.PrivateData</code>, and <code>Pester.TestResult.OutputFormat</code>. VS Code picks
                         up the schema automatically when the <code>$schema</code> field is present in
                         <code>project.json</code>.</p>
                 </div>
@@ -142,7 +142,13 @@
     "Tags": ["Example", "NovaModuleTools", "PowerShell"],
     "ProjectUri": "https://www.novamoduletools.com/",
     "ReleaseNotes": "https://www.novamoduletools.com/release-notes.html",
-    "LicenseUri": "https://www.novamoduletools.com/license.html"
+    "LicenseUri": "https://www.novamoduletools.com/license.html",
+    "PrivateData": {
+      "ExampleProduct": {
+        "Enabled": true,
+        "ApiVersion": "1"
+      }
+    }
   },
   "Package": {
     "Id": "NovaExampleModule",
@@ -372,12 +378,41 @@
                                 publicly.
                             </td>
                         </tr>
+                        <tr>
+                            <td><code>PrivateData</code></td>
+                            <td>No</td>
+                            <td>Adds arbitrary consumer-defined metadata to the manifest <code>PrivateData</code> hashtable.</td>
+                            <td>Nova serializes this data itself so arbitrary property names and nested objects, arrays, booleans, numbers, strings, and <code>null</code> values remain valid PowerShell data in the generated manifest.</td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
                 <p class="tiny-note">If <code>Tags</code>, <code>ProjectUri</code>, <code>ReleaseNotes</code>, or <code>LicenseUri</code>
                     are omitted, packaging still succeeds. The corresponding package metadata fields are simply left
                     out.</p>
+                <p>Use <code>Manifest.PrivateData</code> for arbitrary module metadata. Nova keeps the standard PowerShell-generated
+                    <code>PrivateData.PSData</code> metadata and merges your configured keys into the same top-level
+                    <code>PrivateData</code> hashtable. Property names remain consumer-defined, so keys such as
+                    <code>Example Product</code>, <code>Feature-Flag</code>, or <code>123abc</code> are serialized safely.</p>
+                <p class="tiny-note">Nova validates the rewritten manifest by re-importing the generated
+                    <code>.psd1</code>. PowerShell's own <code>Test-ModuleManifest</code> cmdlet can still reject
+                    consumer-defined top-level <code>PrivateData</code> entries even when the manifest is valid
+                    PowerShell data, so Nova treats the data-file import round-trip as the compatibility check for
+                    custom metadata.</p>
+                <pre><code>{
+  "Manifest": {
+    "PrivateData": {
+      "Example Product": {
+        "Feature-Flag": true,
+        "ApiVersion": "1",
+        "RetryCount": 3,
+        "Nested Data": {
+          "Mode": "Test"
+        }
+      }
+    }
+  }
+}</code></pre>
             </section>
 
             <section class="content-section" id="package">

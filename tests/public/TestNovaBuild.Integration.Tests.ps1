@@ -66,4 +66,70 @@ Describe 'Test-NovaBuild integration' {
 
         $result.ExitCode | Should -Be 0 -Because (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output)
     }
+
+    It 'builds a manifest that preserves structured Manifest.PrivateData and generated PSData' {
+        $exampleProjectRoot = Join-Path $script:projectRoot 'src/resources/example'
+        $scenarioRoot = Join-Path $TestDrive 'private-data-build-validation'
+        $projectJsonPath = Join-Path $scenarioRoot 'project.json'
+        $integrationTestPath = Join-Path $scenarioRoot 'tests/public/ManifestPrivateData.Integration.Tests.ps1'
+        $null = New-Item -ItemType Directory -Path $scenarioRoot -Force
+        Copy-Item -Path (Join-Path $exampleProjectRoot '*') -Destination $scenarioRoot -Recurse -Force
+
+        $projectData = Get-Content -LiteralPath $projectJsonPath -Raw | ConvertFrom-Json -AsHashtable
+        $projectData.Manifest.Tags = @('Example')
+        $projectData.Manifest.PrivateData = [ordered]@{
+            'Example Product' = [ordered]@{
+                'Feature-Flag' = $true
+                ApiVersion = '1'
+                RetryCount = 3
+                'Nested Data' = [ordered]@{
+                    Mode = 'Test'
+                }
+                Values = @('one', 'two')
+                "Owner's Choice" = 'ready'
+                '123abc' = $null
+            }
+        }
+        $projectData | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $projectJsonPath
+
+        Set-Content -LiteralPath $integrationTestPath -Value @'
+BeforeAll {
+    $projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+    $projectFile = Join-Path $projectRoot 'project.json'
+    $projectData = Get-Content -LiteralPath $projectFile -Raw | ConvertFrom-Json -AsHashtable
+    $script:moduleName = [string]$projectData.ProjectName
+    $script:manifestPath = Join-Path $projectRoot "dist/$($script:moduleName)/$($script:moduleName).psd1"
+    $script:manifest = Import-PowerShellDataFile -LiteralPath $script:manifestPath
+}
+
+Describe 'Manifest.PrivateData integration' {
+    It 'preserves native structured values in the generated manifest' {
+        $script:manifest.PrivateData['Example Product']['Feature-Flag'] | Should -BeTrue
+        $script:manifest.PrivateData['Example Product'].ApiVersion | Should -Be '1'
+        $script:manifest.PrivateData['Example Product'].RetryCount | Should -Be 3
+        $script:manifest.PrivateData['Example Product']['Nested Data'].Mode | Should -Be 'Test'
+        $script:manifest.PrivateData['Example Product'].Values | Should -Be @('one', 'two')
+        $script:manifest.PrivateData['Example Product']["Owner's Choice"] | Should -Be 'ready'
+        $script:manifest.PrivateData['Example Product']['123abc'] | Should -BeNullOrEmpty
+    }
+
+    It 'preserves generated PSData alongside custom PrivateData' {
+        $script:manifest.PrivateData.PSData.Tags | Should -Be @('Example')
+    }
+
+    It 'writes a manifest that remains importable after the PrivateData rewrite' {
+        $content = Get-Content -LiteralPath $script:manifestPath -Raw
+
+        $script:manifest.PrivateData.PSData.Tags | Should -Be @('Example')
+        $content | Should -Match "'Example Product' = @\{"
+    }
+}
+'@
+
+        $result = Invoke-NovaPublicCommandIntegrationInIsolatedSession -ProjectRoot $script:projectRoot -Path $scenarioRoot -ScriptBlock {
+            Test-NovaBuild
+        }
+
+        $result.ExitCode | Should -Be 0 -Because (Get-NovaPublicCommandIntegrationOutputText -Output $result.Output)
+    }
 }

@@ -6,6 +6,10 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Added
 
+- `project.json` now supports `Manifest.PrivateData` for arbitrary consumer-defined module manifest metadata.
+    - Nova still uses `New-ModuleManifest` for the standard manifest flow, but now serializes structured `PrivateData` itself so nested values remain valid in the generated `.psd1`.
+    - Generated manifests preserve both `PrivateData.PSData` and custom `Manifest.PrivateData` entries, and reject reserved-key collisions instead of overwriting manifest metadata silently.
+
 ### Changed
 
 ### Deprecated
@@ -279,4 +283,3 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ## [0.0.4] - 2024-06-25
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
-
