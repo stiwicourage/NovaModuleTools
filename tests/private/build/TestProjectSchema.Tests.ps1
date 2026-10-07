@@ -27,4 +27,58 @@ Describe 'Test-ProjectSchema' {
 
         {Test-ProjectSchema} | Should -Throw
     }
+
+    It 'accepts project.json when Manifest.PrivateData is omitted' {
+        $schemaPath = Join-Path $projectRoot 'src/resources/Schema-Project.json'
+        $projectJsonPath = Join-Path $TestDrive 'project-no-private-data.json'
+        Set-Content -LiteralPath $projectJsonPath -Value @'
+{
+  "ProjectName": "Demo",
+  "Description": "Demo module",
+  "Version": "1.0.0",
+  "Manifest": {
+    "Author": "Nova",
+    "PowerShellHostVersion": "7.4",
+    "GUID": "11111111-1111-1111-1111-111111111111"
+  }
+}
+'@
+
+        Test-Json -Path $projectJsonPath -Schema (Get-Content -LiteralPath $schemaPath -Raw) | Should -BeTrue
+    }
+
+    It 'accepts project.json when Manifest.PrivateData contains arbitrary nested data' {
+        $schemaPath = Join-Path $projectRoot 'src/resources/Schema-Project.json'
+        $projectJsonPath = Join-Path $TestDrive 'project-private-data.json'
+        Set-Content -LiteralPath $projectJsonPath -Value @'
+{
+  "ProjectName": "Demo",
+  "Description": "Demo module",
+  "Version": "1.0.0",
+  "Manifest": {
+    "Author": "Nova",
+    "PowerShellHostVersion": "7.4",
+    "GUID": "11111111-1111-1111-1111-111111111111",
+    "PrivateData": {
+      "ExampleProduct": {
+        "Enabled": true,
+        "ApiVersion": "1",
+        "RetryCount": 3,
+        "Nested": {
+          "Mode": "Test"
+        },
+        "Values": [
+          "one",
+          "two"
+        ],
+        "Nothing": null,
+        "EmptyObject": {}
+      }
+    }
+  }
+}
+'@
+
+        Test-Json -Path $projectJsonPath -Schema (Get-Content -LiteralPath $schemaPath -Raw) | Should -BeTrue
+    }
 }

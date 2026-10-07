@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `project.json` now supports `Manifest.PrivateData` for arbitrary consumer-defined manifest metadata.
+    - Nova still uses `New-ModuleManifest` for the standard manifest flow, but now serializes structured `PrivateData` itself so nested objects, arrays, booleans, numbers, strings, and `null` values survive in the generated `.psd1`.
+    - Generated manifests now preserve both PowerShell/Nova-managed `PrivateData.PSData` metadata and custom `Manifest.PrivateData` entries, and reject reserved-key collisions instead of overwriting `PSData` silently.
+
 ### Changed
 
 ### Deprecated
@@ -541,4 +545,3 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-

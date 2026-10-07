@@ -6,34 +6,9 @@ function Build-Manifest {
 
     Write-Verbose 'Building psd1 data file Manifest'
     $data = Get-NovaBuildProjectInfo -ProjectInfo $ProjectInfo
-
-    $PubFunctionFiles = @(Get-ChildItem -Path $data.PublicDir -Filter *.ps1)
-    $functionToExport = @()
-    $aliasToExport = @()
-    foreach ($pubFunctionFile in $PubFunctionFiles) {
-        $functionToExport += Get-FunctionNameFromFile -filePath $pubFunctionFile.FullName
-        $aliasToExport += Get-AliasInFunctionFromFile -filePath $pubFunctionFile.FullName
-    }
-
-    ## Import Format.ps1xml (if any)
-    $FormatsToProcess = @()
-    Get-ChildItem -Path $data.ResourcesDir -File -Filter '*Format.ps1xml' -ErrorAction SilentlyContinue | ForEach-Object {
-        if ($data.CopyResourcesToModuleRoot) {
-            $FormatsToProcess += $_.Name
-        } else {
-            $FormatsToProcess += Join-Path -Path 'resources' -ChildPath $_.Name
-        }
-    }
-
-    ## Import Types.ps1xml1 (if any)
-    $TypesToProcess = @()
-    Get-ChildItem -Path $data.ResourcesDir -File -Filter '*Types.ps1xml' -ErrorAction SilentlyContinue | ForEach-Object {
-        if ($data.CopyResourcesToModuleRoot) {
-            $TypesToProcess += $_.Name
-        } else {
-            $TypesToProcess += Join-Path -Path 'resources' -ChildPath $_.Name
-        }
-    }
+    $exportDefinition = Get-ManifestExportDefinition -PublicDir $data.PublicDir
+    $formatFiles = Get-ManifestResourceFilePath -ResourcesDir $data.ResourcesDir -CopyResourcesToModuleRoot:$data.CopyResourcesToModuleRoot -Filter '*Format.ps1xml'
+    $typeFiles = Get-ManifestResourceFilePath -ResourcesDir $data.ResourcesDir -CopyResourcesToModuleRoot:$data.CopyResourcesToModuleRoot -Filter '*Types.ps1xml'
 
     $ManfiestAllowedParams = (Get-Command New-ModuleManifest).Parameters.Keys
     Assert-ManifestSchema -Manifest $data.Manifest -AllowedParameter $ManfiestAllowedParams
@@ -41,12 +16,12 @@ function Build-Manifest {
     $ParmsManifest = @{
         Path = $data.ManifestFilePSD1
         Description = $data.Description
-        FunctionsToExport = $functionToExport
-        AliasesToExport = $aliasToExport
+        FunctionsToExport = $exportDefinition.FunctionToExport
+        AliasesToExport = $exportDefinition.AliasToExport
         RootModule = "$( $data.ProjectName ).psm1"
         ModuleVersion = [version]$sv
-        FormatsToProcess = $FormatsToProcess
-        TypesToProcess = $TypesToProcess
+        FormatsToProcess = $formatFiles
+        TypesToProcess = $typeFiles
     }
 
     ## Release lable
@@ -54,18 +29,88 @@ function Build-Manifest {
         $ParmsManifest['Prerelease'] = $sv.PreReleaseLabel
     }
 
-    # Accept only valid Manifest Parameters
-    $data.Manifest.Keys | ForEach-Object {
-        if ($ManfiestAllowedParams -contains $_) {
-            if ($data.Manifest.$_) {
-                $ParmsManifest.add($_, $data.Manifest.$_)
-            }
-        }
-    }
+    Add-AllowedManifestParameterEntry -ManifestParameters $ParmsManifest -Manifest $data.Manifest -AllowedParameter $ManfiestAllowedParams
 
     try {
         New-ModuleManifest @ParmsManifest
     } catch {
         Stop-NovaOperation -Message ('Failed to create Manifest: {0}' -f $_.Exception.Message) -ErrorId 'Nova.Dependency.ModuleManifestCreationFailed' -Category OpenError -TargetObject $data.ManifestFilePSD1
+    }
+
+    if ($data.Manifest.Contains('PrivateData') -and $data.Manifest['PrivateData'] -is [System.Collections.IDictionary]) {
+        Update-ManifestPrivateData -ManifestPath $data.ManifestFilePSD1 -PrivateData $data.Manifest['PrivateData']
+        Assert-GeneratedManifestPrivateDataCanBeImported -ManifestPath $data.ManifestFilePSD1
+    }
+}
+
+function Assert-GeneratedManifestPrivateDataCanBeImported {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ManifestPath
+    )
+
+    try {
+        $null = Import-PowerShellDataFile -LiteralPath $ManifestPath -ErrorAction Stop
+    } catch {
+        Stop-NovaOperation -Message ('Generated manifest contains invalid PrivateData: {0}' -f $_.Exception.Message) -ErrorId 'Nova.Dependency.ModuleManifestPrivateDataValidationFailed' -Category InvalidData -TargetObject $ManifestPath
+    }
+}
+
+function Get-ManifestExportDefinition {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$PublicDir
+    )
+
+    $functionToExport = @()
+    $aliasToExport = @()
+    foreach ($publicFunctionFile in @(Get-ChildItem -Path $PublicDir -Filter *.ps1)) {
+        $functionToExport += Get-FunctionNameFromFile -filePath $publicFunctionFile.FullName
+        $aliasToExport += Get-AliasInFunctionFromFile -filePath $publicFunctionFile.FullName
+    }
+
+    return [pscustomobject]@{
+        FunctionToExport = $functionToExport
+        AliasToExport = $aliasToExport
+    }
+}
+
+function Get-ManifestResourceFilePath {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ResourcesDir,
+        [Parameter(Mandatory)][string]$Filter,
+        [switch]$CopyResourcesToModuleRoot
+    )
+
+    $resourceFilePath = @()
+    Get-ChildItem -Path $ResourcesDir -File -Filter $Filter -ErrorAction SilentlyContinue | ForEach-Object {
+        if ($CopyResourcesToModuleRoot) {
+            $resourceFilePath += $_.Name
+            return
+        }
+
+        $resourceFilePath += Join-Path -Path 'resources' -ChildPath $_.Name
+    }
+
+    return $resourceFilePath
+}
+
+function Add-AllowedManifestParameterEntry {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][hashtable]$ManifestParameters,
+        [Parameter(Mandatory)][System.Collections.IDictionary]$Manifest,
+        [Parameter(Mandatory)][string[]]$AllowedParameter
+    )
+
+    foreach ($name in $Manifest.Keys) {
+        if ($name -eq 'PrivateData' -or $AllowedParameter -notcontains $name) {
+            continue
+        }
+
+        if ($Manifest.$name) {
+            $ManifestParameters.add($name, $Manifest.$name)
+        }
     }
 }

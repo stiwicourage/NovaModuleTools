@@ -85,6 +85,11 @@
           "type": "string",
           "description": "Sets the copyright string in the module manifest."
         },
+        "PrivateData": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Arbitrary consumer-defined module metadata serialized into the generated manifest PrivateData hashtable."
+        },
         "RequiredModules": {
           "type": "array",
           "description": "Lists modules that must be imported before this module. Each entry is either a module name string or a module-specification object.",

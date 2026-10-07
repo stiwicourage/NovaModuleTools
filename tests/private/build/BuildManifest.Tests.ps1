@@ -1,6 +1,8 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/build/BuildManifest.ps1')
+    . (Join-Path $projectRoot 'src/private/build/UpdateManifestPrivateData.ps1')
+    . (Join-Path $projectRoot 'src/private/build/ConvertToPowerShellDataLiteral.ps1')
     . (Join-Path $projectRoot 'src/private/build/manifest/GetFunctionNameFromFile.ps1')
     . (Join-Path $projectRoot 'src/private/build/manifest/GetAliasNameFromFunction.ps1')
     . (Join-Path $projectRoot 'src/private/build/manifest/AssertManifestSchema.ps1')
@@ -72,6 +74,72 @@ Describe 'Build-Manifest' {
         Build-Manifest -ProjectInfo ([pscustomobject]@{})
         $manifest = Import-PowerShellDataFile -Path $script:ctx.ManifestFilePSD1
         $manifest.PrivateData.PSData.Prerelease | Should -Be 'beta1'
+    }
+
+    It 'merges generated PSData and configured Manifest.PrivateData into the generated manifest' {
+        $script:ctx.Manifest = @{
+            Author = 'Me'
+            Tags = @('Example')
+            PrivateData = [ordered]@{
+                'Example Product' = [ordered]@{
+                    'Feature-Flag' = $true
+                    ApiVersion = '1'
+                    RetryCount = 3
+                    'Nested Data' = [ordered]@{
+                        Mode = 'Test'
+                    }
+                    Values = @('one', 'two')
+                }
+            }
+        }
+        Mock Get-NovaBuildProjectInfo { $script:ctx }
+        Mock Assert-ManifestSchema {}
+
+        Build-Manifest -ProjectInfo ([pscustomobject]@{})
+
+        $manifest = Import-PowerShellDataFile -Path $script:ctx.ManifestFilePSD1
+        $manifest.PrivateData.PSData.Tags | Should -Be @('Example')
+        $manifest.PrivateData['Example Product']['Feature-Flag'] | Should -BeTrue
+        $manifest.PrivateData['Example Product'].ApiVersion | Should -Be '1'
+        $manifest.PrivateData['Example Product'].RetryCount | Should -Be 3
+        $manifest.PrivateData['Example Product']['Nested Data'].Mode | Should -Be 'Test'
+        $manifest.PrivateData['Example Product'].Values | Should -Be @('one', 'two')
+    }
+
+    It 'stops with friendly error when rewritten PrivateData leaves an invalid manifest' {
+        $script:ctx.Manifest = @{
+            Author = 'Me'
+            PrivateData = [ordered]@{
+                ExampleProduct = [ordered]@{
+                    Enabled = $true
+                }
+            }
+        }
+        Mock Get-NovaBuildProjectInfo { $script:ctx }
+        Mock Assert-ManifestSchema {}
+        Mock Update-ManifestPrivateData {}
+        Mock Import-PowerShellDataFile -ParameterFilter {$LiteralPath -eq $script:ctx.ManifestFilePSD1} {
+            throw [System.Exception]::new('invalid data file')
+        }
+
+        { Build-Manifest -ProjectInfo ([pscustomobject]@{}) } |
+            Should -Throw -ErrorId 'Nova.Dependency.ModuleManifestPrivateDataValidationFailed'
+    }
+
+    It 'throws when configured Manifest.PrivateData collides with PSData' {
+        $script:ctx.Manifest = @{
+            Author = 'Me'
+            PrivateData = @{
+                PSData = @{
+                    ExampleProduct = 'bad'
+                }
+            }
+        }
+        Mock Get-NovaBuildProjectInfo { $script:ctx }
+        Mock Assert-ManifestSchema {}
+
+        { Build-Manifest -ProjectInfo ([pscustomobject]@{}) } |
+            Should -Throw -ErrorId 'Nova.Configuration.ManifestPrivateDataReservedKey'
     }
 
     It 'stops with friendly error when New-ModuleManifest fails' {
