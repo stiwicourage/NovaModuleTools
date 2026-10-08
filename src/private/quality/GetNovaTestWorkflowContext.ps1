@@ -214,6 +214,7 @@ function Get-NovaTestWorkflowContext {
     $coverageConfiguration = Get-NovaPesterCoverageConfigurationState -ProjectInfo $projectInfo -CoverageEnabled:$workflowProfile.CoverageEnabled
     $pesterConfig.CodeCoverage.Enabled = $coverageConfiguration.Enabled
     $pesterConfig.CodeCoverage.Path = $coverageConfiguration.Path
+    $pesterConfig.CodeCoverage.OutputPath = Resolve-NovaPesterProjectPath -ProjectRoot $projectInfo.ProjectRoot -Path (Get-NovaPesterPathOptionValue -InputObject (Get-NovaPesterSettingValue -InputObject $pesterConfig.CodeCoverage -Name 'OutputPath'))
     if ($null -ne $coverageConfiguration.CoveragePercentTarget) {
         $pesterConfig.CodeCoverage.CoveragePercentTarget = $coverageConfiguration.CoveragePercentTarget
     }
@@ -469,7 +470,7 @@ function Get-NovaPesterCoverageFile {
         [Parameter(Mandatory)][string]$ProjectRoot
     )
 
-    $resolvedProjectRoot = (Resolve-Path -LiteralPath $ProjectRoot -ErrorAction Stop).Path
+    $resolvedProjectRoot = [System.IO.Path]::GetFullPath($ProjectRoot)
     foreach ($file in (Get-ChildItem -LiteralPath $resolvedProjectRoot -Recurse -File | Sort-Object FullName)) {
         [pscustomobject]@{
             FullPath = ConvertTo-NovaCoveragePathString -Path $file.FullName
@@ -489,10 +490,47 @@ function Add-NovaResolvedCoveragePath {
     $patternVariant = @(Get-NovaCoveragePathPatternVariant -Pattern $Pattern)
 
     foreach ($file in $CoverageFile) {
-        if ((Test-NovaCoveragePathMatch -CoverageFile $file -Pattern $patternVariant) -and -not $ResolvedPath.Contains($file.RelativePath)) {
-            $ResolvedPath.Add($file.RelativePath)
+        if ((Test-NovaCoveragePathMatch -CoverageFile $file -Pattern $patternVariant) -and -not $ResolvedPath.Contains($file.FullPath)) {
+            $ResolvedPath.Add($file.FullPath)
         }
     }
+}
+
+function Resolve-NovaPesterProjectPath {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ProjectRoot,
+        [AllowNull()][string]$Path
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return $null
+    }
+
+    $resolvedProjectRoot = [System.IO.Path]::GetFullPath($ProjectRoot)
+    if ([System.IO.Path]::IsPathRooted($Path)) {
+        return [System.IO.Path]::GetFullPath($Path)
+    }
+
+    return [System.IO.Path]::GetFullPath($Path, $resolvedProjectRoot)
+}
+
+function Get-NovaPesterPathOptionValue {
+    [CmdletBinding()]
+    param(
+        [AllowNull()][object]$InputObject
+    )
+
+    if ($null -eq $InputObject) {
+        return $null
+    }
+
+    $value = Get-NovaPesterSettingValue -InputObject $InputObject -Name 'Value'
+    if ($null -ne $value) {
+        return [string]$value
+    }
+
+    return [string]$InputObject
 }
 
 function Test-NovaCoveragePathMatch {

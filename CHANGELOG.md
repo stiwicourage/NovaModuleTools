@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- `Invoke-NovaTest` now resolves Pester coverage paths and coverage-report output against the selected Nova project root instead of the PowerShell process's original working directory.
+    - Unit-test runs now keep coverage measurement, coverage thresholds, and generated test artifacts aligned with the project you selected through `Set-Location`, including when you switch between sibling projects in one PowerShell session.
+
 ### Security
 
 ## [3.4.0] - 2026-10-07
