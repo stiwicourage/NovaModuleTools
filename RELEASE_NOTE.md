@@ -14,9 +14,13 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Fixed
 
-- `Invoke-NovaTest` now keeps coverage measurement, coverage thresholds, and generated test artifacts aligned with the selected project root even when you switch between sibling projects with `Set-Location` in the same PowerShell session.
-
 ### Security
+
+## [3.4.1] - 2026-10-08
+
+### Fixed
+
+- `Invoke-NovaTest` now keeps coverage measurement, coverage thresholds, and generated test artifacts aligned with the selected project root even when you switch between sibling projects with `Set-Location` in the same PowerShell session.
 
 ## [3.4.0] - 2026-10-07
 
@@ -290,3 +294,4 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ## [0.0.4] - 2024-06-25
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
+

@@ -15,10 +15,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+### Security
+
+## [3.4.1] - 2026-10-08
+
+### Fixed
+
 - `Invoke-NovaTest` now resolves Pester coverage paths and coverage-report output against the selected Nova project root instead of the PowerShell process's original working directory.
     - Unit-test runs now keep coverage measurement, coverage thresholds, and generated test artifacts aligned with the project you selected through `Set-Location`, including when you switch between sibling projects in one PowerShell session.
-
-### Security
 
 ## [3.4.0] - 2026-10-07
 
@@ -525,7 +529,8 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 - First release to `psgallery`
 - All basic functionality of Module is ready
 
-[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.0...HEAD
+[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.1...HEAD
+[3.4.1]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.0...3.4.1
 [3.4.0]: https://github.com/stiwicourage/NovaModuleTools/compare/3.3.1...3.4.0
 [3.3.1]: https://github.com/stiwicourage/NovaModuleTools/compare/3.3.0...3.3.1
 [3.3.0]: https://github.com/stiwicourage/NovaModuleTools/compare/3.2.0...3.3.0
@@ -551,3 +556,4 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
+
