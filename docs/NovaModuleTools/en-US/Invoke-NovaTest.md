@@ -38,6 +38,8 @@ The unit-test workflow writes NUnit XML to `artifacts/UnitTestResults.xml`.
 
 When `Pester.CodeCoverage.Enabled` is `true`, Nova also writes JaCoCo coverage to `artifacts/coverage.xml` and fails the run when the measured percentage is lower than `Pester.CodeCoverage.CoveragePercentTarget`.
 
+Nova resolves test discovery, coverage inputs, and generated test artifacts from the selected project root for the current invocation, so `Set-Location` between sibling projects does not require a new PowerShell process.
+
 Use `Test-NovaBuild` when you need the separate build-validation integration flow that runs against the built module output.
 
 Use `-PesterConfigurationOverride` only when you need runtime-only unit-test data injection through file-backed `New-PesterContainer -Path` objects. In v1, Nova accepts only `Run.Container` and still keeps test discovery, output files, coverage, and required execution flags under Nova control.

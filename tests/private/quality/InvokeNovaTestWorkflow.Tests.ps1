@@ -16,7 +16,7 @@ Describe 'Invoke-NovaTestWorkflow' {
     It 'uses the pre-resolved coverage assertion after the Pester run' {
         $global:coverageAssertionRan = $false
         $workflowContext = [pscustomobject]@{
-            ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'; Pester = [ordered]@{}}
+            ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'; ProjectRoot = '/tmp/nova-project'; Pester = [ordered]@{}}
             TestResultDirectory = '/tmp/nova-project/artifacts'
             CommandName = 'Invoke-NovaTest'
             TestResultPath = '/tmp/nova-project/artifacts/UnitTestResults.xml'
@@ -45,6 +45,9 @@ Describe 'Invoke-NovaTestWorkflow' {
                 $Status -eq 'Checking the configured code coverage target' -and $PercentComplete -eq 99
             }
             Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
+            Assert-MockCalled Invoke-NovaPesterWithSuppressedProgress -Times 1 -ParameterFilter {
+                $ProjectRoot -eq '/tmp/nova-project'
+            }
             Assert-MockCalled Write-Message -Times 1 -ParameterFilter {
                 $Text -eq 'Pester tests passed for NovaModuleTools' -and $color -eq 'Green'
             }

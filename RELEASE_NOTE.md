@@ -14,6 +14,8 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Fixed
 
+- `Invoke-NovaTest` now keeps coverage measurement, coverage thresholds, and generated test artifacts aligned with the selected project root even when you switch between sibling projects with `Set-Location` in the same PowerShell session.
+
 ### Security
 
 ## [3.4.0] - 2026-10-07
@@ -27,7 +29,6 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 ### Fixed
 
 - `Update-NovaModuleTool` and `% nova update` now keep self-update failure details and recovery guidance on separate terminal lines so the error is easier to scan.
-- `Invoke-NovaTest`, `Test-NovaBuild`, and `% nova test` now stay on Nova's supported `Pester 5.x` range and stop with a clear error instead of trying to run with an installed `Pester 6.x` version.
 
 ## [3.3.1] - 2026-07-15
 
@@ -108,7 +109,7 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Fixed
 
-- PowerShell command help `RELATED LINKS` now use valid help-topic.
+- PowerShell command help `RELATED LINKS` now use valid help-topic links instead of broken or non-help targets.
 
 ## [3.0.1] - 2026-05-18
 
@@ -289,4 +290,3 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ## [0.0.4] - 2024-06-25
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
-

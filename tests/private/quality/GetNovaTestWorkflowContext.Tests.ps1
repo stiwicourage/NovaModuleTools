@@ -47,6 +47,7 @@ Describe 'Get-NovaTestWorkflowContext' {
         $result.BuildRequested | Should -BeFalse
         $result.CommandName | Should -Be 'Invoke-NovaTest'
         $result.PesterConfig.CodeCoverage.CoveragePercentTarget | Should -Be 99
+        $result.PesterConfig.CodeCoverage.OutputPath | Should -Be ([System.IO.Path]::Join($projectInfo.ProjectRoot, 'artifacts/coverage.xml'))
         $result.PesterConfig.PesterModuleSpecification.SelectedVersion | Should -Be ([version]'5.10.0')
         $result.PesterModuleSpecification.SelectedVersion | Should -Be ([version]'5.10.0')
         $result.PesterSettings.CodeCoverage.Enabled | Should -BeTrue
@@ -146,7 +147,7 @@ Describe 'Get-NovaTestWorkflowContext' {
         $result.TestDiscoveryMessageLines[3] | Should -Be 'Use Invoke-NovaTest for unit tests and Test-NovaBuild for build-validation integration tests.'
     }
 
-    It 'expands configured coverage paths into concrete project-relative source files' {
+    It 'expands configured coverage paths into concrete source files rooted at the selected project' {
         $projectRoot = Join-Path $TestDrive 'coverage-project'
         foreach ($relativePath in @(
             'src/public/GetAlpha.ps1'
@@ -178,12 +179,13 @@ Describe 'Get-NovaTestWorkflowContext' {
         $result = Get-NovaTestWorkflowContext -TestOption @{TestMode = 'Unit'} -BoundParameters @{}
 
         $result.PesterConfig.CodeCoverage.Path | Should -Be @(
-            'src/public/GetAlpha.ps1'
-            'src/private/GetBeta.ps1'
-            'src/private/quality/duplicates/GetDelta.ps1'
-            'src/private/quality/GetGamma.ps1'
-            'src/classes/NovaThing.ps1'
+            (Join-Path $projectRoot 'src/public/GetAlpha.ps1')
+            (Join-Path $projectRoot 'src/private/GetBeta.ps1')
+            (Join-Path $projectRoot 'src/private/quality/duplicates/GetDelta.ps1')
+            (Join-Path $projectRoot 'src/private/quality/GetGamma.ps1')
+            (Join-Path $projectRoot 'src/classes/NovaThing.ps1')
         )
+        $result.PesterConfig.CodeCoverage.OutputPath | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts/coverage.xml'))
     }
 
     It 'forwards the guarded Pester configuration override to the execution configuration initializer' {
@@ -272,6 +274,29 @@ Describe 'Get-NovaDiscoveredTestPathState' {
         $result.HasDiscoveredTests | Should -BeFalse
         $result.MessageLines[0] | Should -Be "No build-validation integration tests matching '*.Integration.Tests.ps1' were discovered for NovaProject."
         $result.MessageLines[1] | Should -Be 'Test-NovaBuild expects build-validation tests under the tests folder, for example /tmp/project/tests/public/Get-CommandName.Integration.Tests.ps1.'
+    }
+}
+
+Describe 'Resolve-NovaPesterProjectPath' {
+    It 'returns null when the requested path is blank' {
+        Resolve-NovaPesterProjectPath -ProjectRoot $TestDrive -Path $null | Should -BeNullOrEmpty
+        Resolve-NovaPesterProjectPath -ProjectRoot $TestDrive -Path '   ' | Should -BeNullOrEmpty
+    }
+
+    It 'returns an absolute path unchanged when the requested path is already rooted' {
+        $absolutePath = [System.IO.Path]::GetFullPath((Join-Path $TestDrive 'artifacts/coverage.xml'))
+
+        Resolve-NovaPesterProjectPath -ProjectRoot (Join-Path $TestDrive 'project-root') -Path $absolutePath | Should -Be $absolutePath
+    }
+}
+
+Describe 'Get-NovaPesterPathOptionValue' {
+    It 'returns null when no option object was provided' {
+        Get-NovaPesterPathOptionValue -InputObject $null | Should -BeNullOrEmpty
+    }
+
+    It 'falls back to the input string when the object has no Value property' {
+        Get-NovaPesterPathOptionValue -InputObject 'artifacts/coverage.xml' | Should -Be 'artifacts/coverage.xml'
     }
 }
 
@@ -558,7 +583,7 @@ Describe 'Get-NovaPesterCoverageConfigurationState' {
 
         $result.Enabled | Should -BeTrue
         $result.CoveragePercentTarget | Should -Be 99.0
-        $result.Path | Should -Be @('src/public/GetAlpha.ps1')
+        $result.Path | Should -Be @((Join-Path $projectRoot 'src/public/GetAlpha.ps1'))
     }
 }
 

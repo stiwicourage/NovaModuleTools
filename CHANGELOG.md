@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- `Invoke-NovaTest` now resolves Pester coverage paths and coverage-report output against the selected Nova project root instead of the PowerShell process's original working directory.
+    - Unit-test runs now keep coverage measurement, coverage thresholds, and generated test artifacts aligned with the project you selected through `Set-Location`, including when you switch between sibling projects in one PowerShell session.
+
 ### Security
 
 ## [3.4.0] - 2026-10-07
@@ -28,10 +31,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - `Update-NovaModuleTool` and `% nova update` now split self-update failure details and recovery guidance across separate terminal lines, so long dependency errors stay readable instead of wrapping mid-sentence.
-- `Invoke-NovaTest`, `Test-NovaBuild`, and `% nova test` now resolve and import a supported installed `Pester` version from `5.7.1` through `5.10.0` instead of using an unsupported `Pester 6.x` installation automatically.
-    - Nova test workflows now fail early with a clear dependency error when only unsupported `Pester 6.x` versions are available.
-- Nova test workflows now reuse an already loaded supported `Pester 5.x` version in the current PowerShell session before selecting a different installed version.
-    - Repository CI no longer trips the `Pester` assembly loader by importing a gallery-installed `NovaModuleTools` module, building the local module, and then switching to another supported `Pester` version in the same session.
 
 ## [3.3.1] - 2026-07-15
 
@@ -552,4 +551,3 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-

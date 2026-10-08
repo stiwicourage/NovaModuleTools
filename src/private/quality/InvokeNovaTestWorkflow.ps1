@@ -98,7 +98,7 @@ function Invoke-NovaTestWorkflowExecution {
         StartPercentComplete = 70
         EndPercentComplete = 94
     }
-    $testResult = Invoke-NovaPesterWithSuppressedProgress -Configuration $WorkflowContext.PesterConfig -ProgressContext $testProgressContext
+    $testResult = Invoke-NovaPesterWithSuppressedProgress -Configuration $WorkflowContext.PesterConfig -ProgressContext $testProgressContext -ProjectRoot $WorkflowContext.ProjectInfo.ProjectRoot
 
     Invoke-NovaTestWorkflowStep -Activity $Activity -Status 'Writing the test result report' -PercentComplete 96 -Action {
         & $WorkflowContext.TestResultArtifactWriter.ScriptBlock -TestResult $testResult -OutputPath $WorkflowContext.TestResultPath -ReportWriter $WorkflowContext.TestResultReportWriter.ScriptBlock
@@ -145,7 +145,8 @@ function Invoke-NovaPesterWithSuppressedProgress {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][object]$Configuration,
-        [Parameter(Mandatory)][pscustomobject]$ProgressContext
+        [Parameter(Mandatory)][pscustomobject]$ProgressContext,
+        [string]$ProjectRoot
     )
 
     $heartbeatMilliseconds = Get-NovaPropertyValue -InputObject $ProgressContext -Name 'HeartbeatMilliseconds'
@@ -154,7 +155,7 @@ function Invoke-NovaPesterWithSuppressedProgress {
     }
 
     $moduleSpecification = Get-NovaPropertyValue -InputObject $Configuration -Name 'PesterModuleSpecification'
-    $execution = Get-NovaPesterExecution -Configuration $Configuration -ModuleSpecification $moduleSpecification
+    $execution = Get-NovaPesterExecution -Configuration $Configuration -ModuleSpecification $moduleSpecification -ProjectRoot $ProjectRoot
     try {
         Write-NovaTestWorkflowPesterProgress -Execution $execution -ProgressContext $ProgressContext
         while (-not (Wait-NovaPesterExecution -Execution $execution -TimeoutMilliseconds $HeartbeatMilliseconds)) {
@@ -325,32 +326,18 @@ function Get-NovaPesterExecution {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][object]$Configuration,
-        [AllowNull()][object]$ModuleSpecification
+        [AllowNull()][object]$ModuleSpecification,
+        [string]$ProjectRoot
     )
 
     $powershell = [powershell]::Create()
-    $command = @'
-param($Configuration, $ModuleSpecification)
-if ($null -ne $ModuleSpecification) {
-    Import-Module -FullyQualifiedName $ModuleSpecification -Force -ErrorAction Stop
-}
-else {
-    Import-Module Pester -ErrorAction Stop
-}
-$previousProgressPreference = $global:ProgressPreference
-$global:ProgressPreference = 'SilentlyContinue'
-try {
-    Invoke-Pester -Configuration $Configuration
-} finally {
-    $global:ProgressPreference = $previousProgressPreference
-}
-'@
+    $command = Get-NovaPesterExecutionScript
     $moduleImportSpecification = $null
     if ($null -ne $ModuleSpecification) {
         $moduleImportSpecification = Get-NovaPropertyValue -InputObject $ModuleSpecification -Name 'FullyQualifiedName'
     }
 
-    $null = $powershell.AddScript($command).AddArgument($Configuration).AddArgument($moduleImportSpecification)
+    $null = $powershell.AddScript($command).AddArgument($Configuration).AddArgument($moduleImportSpecification).AddArgument($ProjectRoot)
 
     return [pscustomobject]@{
         PowerShell = $powershell
@@ -361,6 +348,35 @@ try {
         LastProgressStatus = $null
         LastProgressPercentComplete = $null
     }
+}
+
+function Get-NovaPesterExecutionScript {
+    [CmdletBinding()]
+    param()
+
+    return @'
+param($Configuration, $ModuleSpecification, $ProjectRoot)
+if ($null -ne $ModuleSpecification) {
+    Import-Module -FullyQualifiedName $ModuleSpecification -Force -ErrorAction Stop
+}
+else {
+    Import-Module Pester -ErrorAction Stop
+}
+$enteredProjectRoot = -not [string]::IsNullOrWhiteSpace($ProjectRoot)
+if ($enteredProjectRoot) {
+    Push-Location -LiteralPath $ProjectRoot
+}
+$previousProgressPreference = $global:ProgressPreference
+$global:ProgressPreference = 'SilentlyContinue'
+try {
+    Invoke-Pester -Configuration $Configuration
+} finally {
+    $global:ProgressPreference = $previousProgressPreference
+    if ($enteredProjectRoot) {
+        Pop-Location
+    }
+}
+'@
 }
 
 function Wait-NovaPesterExecution {

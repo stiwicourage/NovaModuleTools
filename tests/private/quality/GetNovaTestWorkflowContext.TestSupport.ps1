@@ -24,7 +24,7 @@ function Get-NovaPesterRunPath {
         ExcludePattern = $ExcludePattern
     }
 
-    return @('tests/Example.Tests.ps1')
+    return @(Join-Path $ProjectInfo.ProjectRoot 'tests/Example.Tests.ps1')
 }
 function Get-NovaPesterTestResultPath {
     param($ProjectRoot, $FileName)
@@ -63,7 +63,12 @@ function New-TestPesterConfig {
         Filter = [pscustomobject]@{Tag = @(); ExcludeTag = @()}
         Output = [pscustomobject]@{Verbosity = 'Detailed'; RenderMode = 'Auto'}
         TestResult = [pscustomobject]@{Enabled = $true; OutputPath = $null}
-        CodeCoverage = [pscustomobject]@{Enabled = $true; CoveragePercentTarget = 80; Path = $null}
+        CodeCoverage = [pscustomobject]@{
+            Enabled = $true
+            CoveragePercentTarget = 80
+            OutputPath = [pscustomobject]@{Value = 'artifacts/coverage.xml'}
+            Path = $null
+        }
     }
 }
 
