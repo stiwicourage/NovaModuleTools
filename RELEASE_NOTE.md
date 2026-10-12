@@ -14,10 +14,14 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Fixed
 
+### Security
+
+## [3.4.2] - 2026-10-12
+
+### Fixed
+
 - `Update-NovaModuleVersion`, `% nova bump`, and `Invoke-NovaRelease` now keep an exact stable `1.0.0` on `1.0.0` for the first stable release, even when the detected history is fix, feature, or breaking-change based.
     - Preview bumps from exact stable `1.0.0` still move to `1.0.1-preview`.
-
-### Security
 
 ## [3.4.1] - 2026-10-08
 
@@ -297,3 +301,4 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ## [0.0.4] - 2024-06-25
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
+
