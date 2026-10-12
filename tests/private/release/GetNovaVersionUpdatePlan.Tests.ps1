@@ -53,11 +53,45 @@ Describe 'Get-NovaVersionPartForUpdatePlan' {
     }
 }
 
+Describe 'Test-NovaVersionShouldPreserveInitialStableReleaseTarget' {
+    It 'returns true for exact stable 1.0.0 without preview mode' {
+        Test-NovaVersionShouldPreserveInitialStableReleaseTarget -CurrentVersion ([semver]'1.0.0') | Should -BeTrue
+    }
+
+    It 'returns false when preview mode is requested' {
+        Test-NovaVersionShouldPreserveInitialStableReleaseTarget -CurrentVersion ([semver]'1.0.0') -PreviewRelease | Should -BeFalse
+    }
+
+    It 'returns false when the current version is already a prerelease' {
+        Test-NovaVersionShouldPreserveInitialStableReleaseTarget -CurrentVersion ([semver]'1.0.0-preview01') | Should -BeFalse
+    }
+}
+
 Describe 'Get-NovaVersionUpdatePlan' {
     It 'returns a plan with project file and new version' {
         $info = [pscustomobject]@{ProjectJSON='/project.json'; Version='1.2.3'}
         $plan = Get-NovaVersionUpdatePlan -ProjectInfo $info -Label Patch
         $plan.ProjectFile | Should -Be '/project.json'
         $plan.NewVersion.ToString() | Should -Be '1.2.4'
+    }
+
+    It 'keeps exact stable 1.0.0 regardless of inferred release label' -ForEach @(
+        @{ Scenario = 'fix commits'; Label = 'Patch' }
+        @{ Scenario = 'feature commits'; Label = 'Minor' }
+        @{ Scenario = 'breaking commits'; Label = 'Major' }
+    ) {
+        $info = [pscustomobject]@{ProjectJSON='/project.json'; Version='1.0.0'}
+
+        $plan = Get-NovaVersionUpdatePlan -ProjectInfo $info -Label $Label
+
+        $plan.NewVersion.ToString() | Should -Be '1.0.0' -Because "$Scenario should respect a manually selected initial stable release target"
+    }
+
+    It 'keeps preview mode on the next patch preview track for exact stable 1.0.0' {
+        $info = [pscustomobject]@{ProjectJSON='/project.json'; Version='1.0.0'}
+
+        $plan = Get-NovaVersionUpdatePlan -ProjectInfo $info -Label Major -PreviewRelease
+
+        $plan.NewVersion.ToString() | Should -Be '1.0.1-preview'
     }
 }

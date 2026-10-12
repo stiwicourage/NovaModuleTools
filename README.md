@@ -245,10 +245,11 @@ These switches keep the behavior explicit and opt-in:
 - `Update-NovaModuleVersion -ContinuousIntegration` also falls back to a patch bump when the current `HEAD` already matches the latest tag, so release automation can seed the next prerelease line without requiring an extra commit first
 - `Update-NovaModuleVersion` and `% nova bump` now stop when Git-based bump inference is unavailable, unless you explicitly opt in to the Patch fallback with `-OverrideWarning` / `--override-warning` / `-o` for a non-git example/template flow
 - `Update-NovaModuleVersion` and `% nova bump` treat stable `0.y.z` versions as the SemVer initial-development phase, so breaking-change bumps stay on the `0.y.z` line by planning the next minor version instead of jumping to `1.0.0`
+- `Update-NovaModuleVersion`, `% nova bump`, and `Invoke-NovaRelease` keep an exact stable `1.0.0` at `1.0.0` for the first stable release, even when the inferred history is Patch, Minor, or Major
 - `Publish-NovaModule -ContinuousIntegration` restores the built module after publish completes
 - `Invoke-NovaRelease -ContinuousIntegration` forwards that CI intent through the nested build/bump boundaries and then restores the built module again after publish
 
-When the current stable version is still `0.y.z`, Nova also prints one warning that major version zero is still the initial-development line and that `1.0.0` must be set manually once the software is stable. Preview bumps keep their current behavior and are not remapped by this rule.
+When the current stable version is still `0.y.z`, Nova also prints one warning that major version zero is still the initial-development line and that `1.0.0` must be set manually once the software is stable. After you intentionally set the stable project version to exact `1.0.0`, Nova treats that value as the first stable release target, so the next stable bump still resolves to `1.0.0` even when the detected history is Patch, Minor, or Major. Preview bumps keep their current behavior and are not remapped by this rule.
 
 Useful local helper:
 

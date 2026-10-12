@@ -36,7 +36,9 @@ The release label is inferred from the commit set:
 - `Minor` for `feat:` commits
 - `Patch` for `fix:` commits and all other cases
 
-When the current stable version is still on `0.y.z` and the inferred label is `Major`, Nova keeps the release on the initial-development line and plans the next minor version instead of jumping straight to `1.0.0`. The result still reports the detected `Major` label so you can see that the commit set contained a breaking change, and Nova prints guidance about manually setting `1.0.0` once the software is stable. With `-Preview`, stable versions still enter the next patch preview track instead of applying semantic history inference to the semantic core.
+When the current stable version is still on `0.y.z` and the inferred label is `Major`, Nova keeps the release on the initial-development line and plans the next minor version instead of jumping straight to `1.0.0`. The result still reports the detected `Major` label so you can see that the commit set contained a breaking change, and Nova prints guidance about manually setting `1.0.0` once the software is stable.
+
+When the current stable version is exactly `1.0.0`, Nova treats that as the manually selected initial stable release target. Fix, feature, and breaking-change histories still report their detected labels, but the planned stable release stays `1.0.0` instead of auto-advancing to `1.0.1`, `1.1.0`, or `2.0.0`. With `-Preview`, stable versions still enter the next patch preview track instead of applying semantic history inference to the semantic core.
 
 When Git tags exist, only commits since the latest tag are considered. If Git-based inference is unavailable because the project path is not inside a Git repository, the command stops with a clear warning/error instead of silently presenting an inferred-looking patch result. Use `-OverrideWarning` only when you intentionally want that Patch fallback, for example in example/template flows outside Git.
 
@@ -168,6 +170,21 @@ CommitCount: 34
 Shows how stable `0.y.z` bumps still warn that `1.0.0` must be set manually when the API becomes stable, while breaking-change commits on that line continue to plan the next minor version instead of jumping straight to `1.0.0`. The plan output also keeps both the detected and applied release labels visible.
 
 ### EXAMPLE 10
+
+```text
+PS> Update-NovaModuleVersion -WhatIf
+
+What if: Performing the operation "Update module version using Major release label" on target "project.json".
+
+PreviousVersion: 1.0.0
+NewVersion: 1.0.0
+Label: Major
+CommitCount: 34
+```
+
+Shows how an exact stable `1.0.0` remains the selected first stable release target even when the inferred commit history contains a breaking change. Fix and feature histories behave the same way until that first stable release has been published and the project version moves beyond `1.0.0`.
+
+### EXAMPLE 11
 
 ```text
 PS> Update-NovaModuleVersion -Path ./src/resources/example -OverrideWarning -WhatIf

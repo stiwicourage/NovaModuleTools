@@ -172,6 +172,15 @@ PS&gt; Get-NovaProjectInfo -InstalledNovaVersion</code></pre>
                 <pre><code>0.0.1 + Patch -> 0.0.2
 0.1.0 + Minor -> 0.2.0
 0.1.0 + Major -> 0.2.0</code></pre>
+                <p>Once you intentionally set the stable project version to exact <code>1.0.0</code>, Nova treats that
+                    value as the first stable release target. Fix, feature, and breaking-change histories still report
+                    their detected semantic labels, but the selected stable release remains <code>1.0.0</code> instead
+                    of auto-advancing to <code>1.0.1</code>, <code>1.1.0</code>, or <code>2.0.0</code>. Preview mode
+                    still starts the next patch preview track from that same stable target.</p>
+                <pre><code>1.0.0 + Patch -> 1.0.0
+1.0.0 + Minor -> 1.0.0
+1.0.0 + Major -> 1.0.0
+1.0.0 + Major + -Preview -> 1.0.1-preview</code></pre>
                 <p>When Git tags exist, Nova uses commits since the latest tag. When Git-based inference is unavailable
                     because the project path is not inside a Git repository, Nova stops instead of silently presenting a
                     normal-looking patch result. Use <code>-OverrideWarning</code> or the CLI form <code>% nova bump

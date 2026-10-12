@@ -57,6 +57,10 @@ function Get-NovaVersionPartForUpdatePlan {
         [switch]$PreviewRelease
     )
 
+    if (Test-NovaVersionShouldPreserveInitialStableReleaseTarget -CurrentVersion $CurrentVersion -PreviewRelease:$PreviewRelease) {
+        return Get-NovaVersionPartObject -CurrentVersion $CurrentVersion
+    }
+
     if ($PreviewRelease) {
         if (-not [string]::IsNullOrWhiteSpace($CurrentVersion.PreReleaseLabel)) {
             return Get-NovaVersionPartObject -CurrentVersion $CurrentVersion
@@ -66,4 +70,22 @@ function Get-NovaVersionPartForUpdatePlan {
     }
 
     return Get-NovaVersionPartForLabel -CurrentVersion $CurrentVersion -Label $Label
+}
+
+function Test-NovaVersionShouldPreserveInitialStableReleaseTarget {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][semver]$CurrentVersion,
+        [switch]$PreviewRelease
+    )
+
+    if ($PreviewRelease) {
+        return $false
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($CurrentVersion.PreReleaseLabel)) {
+        return $false
+    }
+
+    return $CurrentVersion.Major -eq 1 -and $CurrentVersion.Minor -eq 0 -and $CurrentVersion.Patch -eq 0
 }
