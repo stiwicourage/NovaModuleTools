@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Git-enabled Nova Init projects now receive `chore: Initial commit` after all scaffold files are generated.
+    - Only generated, non-ignored files are staged, and verification hooks are bypassed for that commit only so hooks requiring an existing `HEAD` do not block the first commit.
+    - Existing repositories, including enclosing and unborn repositories, are never automatically staged or committed. Git configuration and hooks are preserved; nothing is pushed.
+    - Missing Git identity or fully ignored generated files produce actionable warnings instead of fabricated identity or an empty commit.
+
 ### Changed
 
 ### Deprecated
@@ -565,4 +570,3 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-

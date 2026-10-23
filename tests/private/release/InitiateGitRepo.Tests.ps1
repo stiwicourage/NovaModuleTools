@@ -5,7 +5,7 @@ BeforeAll {
     . (Join-Path $PSScriptRoot 'InitiateGitRepo.TestSupport.ps1')
 }
 
-Describe 'New-InitiateGitRepo' {
+Describe 'New-InitiateGitRepo' -Tag 'NovaInitGit' {
     BeforeEach {
         $script:dir = Join-Path ([System.IO.Path]::GetTempPath()) ([guid]::NewGuid())
         New-Item -ItemType Directory -Path $script:dir | Out-Null
@@ -40,6 +40,18 @@ Describe 'New-InitiateGitRepo' {
         Mock Invoke-NovaGitCommand {return [pscustomobject]@{ExitCode=0; Output=@()}}
         $verbose = New-InitiateGitRepo -DirectoryPath $script:dir -Confirm:$false -Verbose 4>&1
         @($verbose | Where-Object Message -EQ 'Git repository initialized successfully').Count | Should -Be 1
+    }
+
+    It 'returns ownership confirmation only when this invocation initialized the repository' {
+        Mock Invoke-NovaGitCommand { return [pscustomobject]@{ ExitCode = 0; Output = @() } }
+
+        New-InitiateGitRepo -DirectoryPath $script:dir -PassThru -Confirm:$false | Should -BeTrue
+    }
+
+    It 'does not confirm ownership when an existing repository prevents initialization' {
+        $null = New-Item -ItemType Directory -Path (Join-Path $script:dir '.git')
+
+        New-InitiateGitRepo -DirectoryPath $script:dir -PassThru -WarningAction SilentlyContinue | Should -BeNullOrEmpty
     }
 }
 

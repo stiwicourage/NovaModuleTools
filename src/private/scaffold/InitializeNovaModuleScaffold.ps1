@@ -21,8 +21,6 @@ function Initialize-NovaModuleScaffold {
 
     if ($Answer.EnableGit -eq 'Yes') {
         Update-NovaGitIgnore -ProjectRoot $Paths.Project -Confirm:$false
-        Write-Message 'Initializing Git repository'
-        New-InitiateGitRepo -DirectoryPath $Paths.Project
     }
 }
 

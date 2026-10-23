@@ -24,6 +24,12 @@ function Invoke-NovaModuleInitializationWorkflow {
                 Initialize-NovaModuleAgenticCopilotScaffold -Answer $WorkflowContext.AnswerSet -ProjectRoot $WorkflowContext.Layout.Project -Example:$WorkflowContext.Example
             }
         }
+
+        if ($WorkflowContext.AnswerSet.EnableGit -eq 'Yes') {
+            Invoke-NovaModuleInitializationStep -Activity $progressActivity -Status 'Initializing Git and creating the initial commit' -PercentComplete 95 -Action {
+                Complete-ScaffoldGitRepository -WorkflowContext $WorkflowContext
+            }
+        }
     } finally {
         Write-Progress -Activity $progressActivity -Completed
     }

@@ -1,10 +1,10 @@
 ---
 document type: cmdlet
 external help file: NovaModuleTools-Help.xml
-HelpUri: 'https://www.novamoduletools.com/core-workflows.html#scaffold'
+HelpUri: https://www.novamoduletools.com/core-workflows.html#scaffold
 Locale: en-US
 Module Name: NovaModuleTools
-ms.date: 04/25/2026
+ms.date: 10.23.2026
 PlatyPS schema version: 2024-05-01
 title: Initialize-NovaModule
 ---
@@ -20,8 +20,10 @@ Creates a new NovaModuleTools project scaffold through an interactive prompt flo
 ### __AllParameterSets
 
 ```text
-PS> Initialize-NovaModule [-Path <string>] [-Example] [-WhatIf] [-Confirm] [<CommonParameters>]
+Initialize-NovaModule [-Path <string>] [-Example] [-WhatIf] [-Confirm]
 ```
+
+## ALIASES
 
 ## DESCRIPTION
 
@@ -35,6 +37,10 @@ The command collects project details interactively, including the module name, d
 `run.ps1` must be fixed before handoff, explicit PSScriptAnalyzer workflow guidance for `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`, `./run.ps1`, and focused `Invoke-ScriptAnalyzer` usage, explicit public/private PowerShell file ownership rules, best-effort source/helper-script maintainability guidance plus separate test-design guidance delivered through Agentic Copilot files, a generated `scripts/build/Test-TextFileFormatting.ps1` helper plus `tests/TextFileFormatting.Tests.ps1` when project tests are enabled so trailing blank-line violations fail the project test flow, explicit valid-PlatyPS help guidance for `docs/<ProjectName>/en-US/*.md` that uses `New-MarkdownCommandHelp`, `Update-MarkdownCommandHelp`, and `Test-MarkdownCommandHelp`, and a strict file-ending rule for changed or generated text files. For the standard scaffold, the interactive flow also includes optional basic Pester support.
 
 If you enter an invalid answer during the interactive flow, `Initialize-NovaModule` reports the validation problem immediately and retries that prompt before it continues to the next question.
+
+When Git is enabled, Nova finishes generating all project files, including the optional Agentic Copilot files, before initializing the repository. Git's configured initialization templates and hook configuration remain in effect. Nova stages only generated files that are not ignored, creates the first commit with `git commit --no-verify -m "chore: Initial commit"`, and verifies that `HEAD` resolves. Verification hooks are bypassed for this initial commit only; hooks are not permanently disabled, Git configuration is not overwritten, and nothing is pushed.
+
+Nova never automatically stages or commits in an existing repository, including an enclosing repository or one without a first commit. An existing project folder is still rejected. If Git identity is unavailable, Nova warns with guidance to configure `user.name` and `user.email` and commit manually; the scaffold and hooks are preserved. If every generated file is ignored, Nova warns instead of creating an empty commit.
 
 Use this command when you want to start a new module in the NovaModuleTools structure without hand-creating the project layout.
 
@@ -83,15 +89,16 @@ Shows what the example-based scaffold flow would create without writing files.
 
 ## PARAMETERS
 
-### -Path
+### -Confirm
 
-Base directory where the new project folder will be created.
+Prompts you for confirmation before running the cmdlet.
 
 ```yaml
-Type: System.String
-DefaultValue: (Get-Location).Path
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
 SupportsWildcards: false
-Aliases: []
+Aliases:
+- cf
 ParameterSets:
 - Name: (All)
   Position: Named
@@ -125,9 +132,54 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
+### -Path
+
+Base directory where the new project folder will be created.
+
+```yaml
+Type: System.String
+DefaultValue: (Get-Location).Path
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -WhatIf
+
+Runs the command in a mode that only reports what would happen without performing the actions.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- wi
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### CommonParameters
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, -WarningVariable, -WhatIf, and -Confirm. For more information, see
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS

@@ -154,6 +154,16 @@ PS&gt; Initialize-NovaModule -Example -Path ~/Work</code></pre>
                     <code>CodeCoverage</code> disabled until you opt in, while the packaged example scaffold enables it
                     by default so <code>Test-NovaBuild</code> can measure <code>src/**/*.ps1</code> without requiring a
                     prior build.</p>
+                <p>With Git enabled, Nova finishes generating the project before initializing a new repository and
+                    creating <code>chore: Initial commit</code>. Only generated, non-ignored files are staged.
+                    Verification hooks are bypassed for this first commit so hooks that require an existing
+                    <code>HEAD</code> cannot block it; configured Git templates and hooks remain in place for later
+                    commits. Nova does not overwrite Git configuration or push anything.</p>
+                <p>Nova never automatically stages or commits in an existing repository, including an enclosing
+                    repository or one with no commits yet. An existing project folder is still rejected.
+                    If Git identity is missing, the files and hooks are preserved and a warning asks you to configure
+                    <code>user.name</code> and <code>user.email</code> before committing manually.
+                    No empty commit is created if all generated files are ignored.</p>
                 <p>When you answer <code>Yes</code>, Nova also asks for a short project name used in generated guidance
                     placeholders such as <code>Invoke-&lt;ShortName&gt;*</code>. For NovaModuleTools the short name is
                     <code>Nova</code>, but it could also have been <code>NMT</code>.</p>

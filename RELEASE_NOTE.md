@@ -6,6 +6,8 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Added
 
+- Git-enabled `% nova init` projects now start with `chore: Initial commit`, bypassing verification hooks once so hooks that require `HEAD` can work afterward. Existing repositories are not automatically committed; missing Git identity leaves the project intact with recovery guidance.
+
 ### Changed
 
 ### Deprecated
@@ -301,4 +303,3 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ## [0.0.4] - 2024-06-25
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
-

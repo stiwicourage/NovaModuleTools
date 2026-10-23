@@ -2,7 +2,8 @@ function New-InitiateGitRepo {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [Parameter(Mandatory = $true)]
-        [string]$DirectoryPath
+        [string]$DirectoryPath,
+        [switch]$PassThru
     )
 
     if (-not (Test-NovaGitCommandAvailable)) {
@@ -30,6 +31,9 @@ function New-InitiateGitRepo {
     }
 
     Write-Verbose 'Git repository initialized successfully'
+    if ($PassThru) {
+        return $true
+    }
 }
 
 function Get-NovaGitInitializationFailureMessage {
