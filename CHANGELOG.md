@@ -15,11 +15,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+### Security
+
+## [3.4.2] - 2026-10-12
+
+### Fixed
+
 - `Update-NovaModuleVersion`, `% nova bump`, and `Invoke-NovaRelease` now preserve an exact stable `1.0.0` as the first stable release target instead of auto-advancing it from inferred fix, feature, or breaking-change history.
     - Once you manually select `1.0.0` in `project.json`, Nova still reports the detected semantic label, but the next stable release stays `1.0.0`.
     - Preview bumps from exact stable `1.0.0` still enter the next patch preview track as `1.0.1-preview`.
-
-### Security
 
 ## [3.4.1] - 2026-10-08
 
@@ -533,7 +537,8 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 - First release to `psgallery`
 - All basic functionality of Module is ready
 
-[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.1...HEAD
+[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.2...HEAD
+[3.4.2]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.1...3.4.2
 [3.4.1]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.0...3.4.1
 [3.4.0]: https://github.com/stiwicourage/NovaModuleTools/compare/3.3.1...3.4.0
 [3.3.1]: https://github.com/stiwicourage/NovaModuleTools/compare/3.3.0...3.3.1
@@ -560,3 +565,4 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
+
