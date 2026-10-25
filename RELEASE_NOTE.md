@@ -16,6 +16,8 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Fixed
 
+- `% nova publish -l -s` and local release now use numeric version directories, for example `Modules/Gerber/0.1.1/` for `0.1.1-preview`. Republishing replaces only that numeric version, preserves other versions and legacy flat files, and local publish loads the exact newly published manifest. Custom paths still mean the modules root; existing flat installations are not automatically removed.
+
 ### Security
 
 ## [3.4.2] - 2026-10-12

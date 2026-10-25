@@ -617,6 +617,8 @@ The normal repository workflow is:
 
 When you test local publish behavior during development, remember that `Publish-NovaModule -Local` reloads the published module from the local install directory into the current PowerShell session. Re-import `dist/` if your next step depends on the built-but-unpublished output instead.
 
+For isolated publication checks, pass a disposable modules root with `-ModuleDirectoryPath`. Nova appends `<ProjectName>/<ModuleVersion>/`, reading the numeric version from the built manifest, and imports that exact manifest after publishing. Only the same numeric version is replaced; sibling versions and legacy flat files remain untouched. Local release uses the rebuilt manifest after its version bump.
+
 The CI helper flow also produces a JaCoCo coverage artifact that the CodeScene workflow gate and upload steps consume.
 
 ### Release automation

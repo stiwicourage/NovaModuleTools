@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Local publish and local release now install into `<ModulesRoot>/<ProjectName>/<ModuleVersion>/` using the authoritative built manifest's numeric version, including two-, three-, and four-component versions.
+    - Prerelease labels remain in `PrivateData.PSData.Prerelease`; only the same numeric version directory is replaced. Other numeric versions and legacy flat files are preserved without automatic cleanup.
+    - Local publish resolves activation after build/publication, and local release resolves its destination from the rebuilt manifest after a version bump rather than stale project metadata. Invalid or missing built manifest versions fail before destination mutation.
+
 ### Security
 
 ## [3.4.2] - 2026-10-12

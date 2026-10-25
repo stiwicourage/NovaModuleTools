@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: 'https://www.novamoduletools.com/packaging-and-delivery.html#publish'
 Locale: en-US
 Module Name: NovaModuleTools
-  ms.date: 04/26/2026
+ms.date: 10/25/2026
 PlatyPS schema version: 2024-05-01
 title: Publish-NovaModule
 ---
@@ -29,13 +29,17 @@ PS> Publish-NovaModule [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <st
 PS> Publish-NovaModule [-Repository] <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [-OverrideWarning] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
+## ALIASES
+
 ## DESCRIPTION
 
 `Publish-NovaModule` runs the normal NovaModuleTools build and test flow, then publishes the built module.
 
-Use `-SkipTests` when tests already ran earlier in your pipeline and you only want to skip `Test-NovaBuild` for this publish run. `Invoke-NovaBuild` still runs before the publish step.
+Use `-SkipTests` when tests already ran earlier in your pipeline and you want to skip both `Invoke-NovaTest` and `Test-NovaBuild` for this publish run. `Invoke-NovaBuild` still runs before the publish step.
 
 Use local mode when you want to copy the built module into a module directory on the current machine. After a successful local publish, the command reloads the published module from that local install path into the active PowerShell session so the newly published module is ready to use immediately.
+
+The destination is a modules root: Nova installs into `<ModulesRoot>/<ProjectName>/<ModuleVersion>/`, using the numeric `ModuleVersion` from the built manifest, not a cached project version. Prerelease labels remain in `PrivateData.PSData.Prerelease`; `1.2.3-preview` therefore installs into `1.2.3/`. Publishing replaces only that numeric version directory. Other installed versions and legacy flat files are preserved; Nova does not automatically clean up a flat installation. Missing or malformed built manifests and invalid numeric versions fail before destination content is changed.
 
 Use repository mode when you want to publish the built module to a registered PowerShell repository such as
 `PSGallery`.
@@ -67,7 +71,7 @@ Builds, tests, and copies the module to the default local module path. When the 
 PS> Publish-NovaModule -Local -ModuleDirectoryPath ~/Modules
 ```
 
-Builds, tests, and copies the module to a custom local directory. When the copy succeeds, the published module is imported from `~/Modules/<ProjectName>/<ProjectName>.psd1`.
+Builds, tests, and copies the module to a custom modules root. When the copy succeeds, the published module is imported from `~/Modules/<ProjectName>/<ModuleVersion>/<ProjectName>.psd1`.
 
 ### EXAMPLE 3
 
@@ -99,7 +103,7 @@ Runs the normal build-validation flow, then previews the local publish target di
 PS> Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -SkipTests
 ```
 
-Builds and publishes the module to `PSGallery` without re-running `Test-NovaBuild`.
+Builds and publishes the module to `PSGallery` without re-running `Invoke-NovaTest` or `Test-NovaBuild`.
 
 ### EXAMPLE 7
 
@@ -155,7 +159,7 @@ HelpMessage: ''
 
 ### -ModuleDirectoryPath
 
-Custom destination directory for local publishing.
+Custom modules root for local publishing. Nova appends `<ProjectName>/<ModuleVersion>/`; do not pass an individual module or version directory.
 
 ```yaml
 Type: System.String
@@ -201,7 +205,7 @@ HelpMessage: ''
 
 ### -SkipTests
 
-Skip `Test-NovaBuild` for this publish run. `Invoke-NovaBuild` still runs before the publish step.
+Skip `Invoke-NovaTest` and `Test-NovaBuild` for this publish run. `Invoke-NovaBuild` still runs before the publish step.
 
 This option is mainly intended for CI/CD flows where tests already passed earlier in the pipeline.
 

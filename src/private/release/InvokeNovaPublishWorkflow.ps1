@@ -73,6 +73,8 @@ function Invoke-NovaPublishWorkflow {
 
         if ($shouldImportPublishedLocalModule) {
             Invoke-NovaPublishWorkflowStep -Activity $progressActivity -Status 'Importing the published local module' -PercentComplete 90 -Action {
+                $WorkflowContext.LocalPublishActivation.ManifestPath = Get-NovaPublishedLocalManifestPath -PublishInvocation $WorkflowContext.PublishInvocation
+                $resolvedResult.LocalManifestPath = $WorkflowContext.LocalPublishActivation.ManifestPath
                 $null = & $WorkflowContext.LocalPublishActivation.ImportAction -ProjectName $WorkflowContext.PublishInvocation.Parameters.ProjectInfo.ProjectName -ManifestPath $WorkflowContext.LocalPublishActivation.ManifestPath
             }
             $importedLocalModule = $true

@@ -12,17 +12,11 @@ function Publish-NovaBuiltModuleToDirectory {
         return
     }
 
-    if (-not (Test-Path -LiteralPath $ModuleDirectoryPath -PathType Container)) {
-        New-Item -Path $ModuleDirectoryPath -ItemType Directory -Force | Out-Null
+    $versionDirectory = Get-NovaLocalPublishVersionDirectory -ProjectInfo $ProjectInfo -ModuleDirectoryPath $ModuleDirectoryPath
+    if (Test-Path -LiteralPath $versionDirectory) {
+        Remove-Item -LiteralPath $versionDirectory -Recurse -Force -ErrorAction Stop
     }
 
-    $oldModule = Join-Path -Path $ModuleDirectoryPath -ChildPath $ProjectInfo.ProjectName
-    if (Test-Path -LiteralPath $oldModule) {
-        $savedProgressPreference = $ProgressPreference
-        $ProgressPreference = 'SilentlyContinue'
-        Remove-Item -LiteralPath $oldModule -Recurse -Force
-        $ProgressPreference = $savedProgressPreference
-    }
-
-    Copy-Item -Path $ProjectInfo.OutputModuleDir -Destination $ModuleDirectoryPath -Recurse -ErrorAction Stop
+    New-Item -Path (Split-Path -Parent $versionDirectory) -ItemType Directory -Force | Out-Null
+    Copy-Item -LiteralPath $ProjectInfo.OutputModuleDir -Destination $versionDirectory -Recurse -ErrorAction Stop
 }
