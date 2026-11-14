@@ -14,8 +14,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- GitBook now opens on a dedicated NovaModuleTools overview and separates generated PowerShell reference content from links to user guides, release notes, source code, and security guidance.
-
 ### Deprecated
 
 ### Removed

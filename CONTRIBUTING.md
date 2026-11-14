@@ -102,8 +102,6 @@ Documentation ownership is intentionally split:
 - GitHub repository docs are for contributors and maintainers
 - GitHub Pages content under `docs/*.html` is for end users
 - command-help markdown under `docs/<ProjectName>/` (for this repo `docs/NovaModuleTools/en-US/`) is build input
-- GitBook navigation pages under `docs/gitbook/` direct readers to authoritative documentation without duplicating it
-- `gitbook-docs.yaml` owns the GitBook site structure, spaces, and external resource links
 - markdown elsewhere under `docs/` is allowed for non-help documentation because the build ignores it
 
 Keep CLI and cmdlet documentation clearly separated:
