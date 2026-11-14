@@ -12,10 +12,11 @@ This README is the single developer-documentation entry point for the repository
 
 ## Documentation split
 
-| Audience                     | Location          | Purpose                                                   |
-|------------------------------|-------------------|-----------------------------------------------------------|
-| Contributors and maintainers | GitHub repository | Build, test, debug, document, and release NovaModuleTools |
-| End users                    | GitHub Pages      | Install NovaModuleTools and follow guided usage workflows |
+| Audience                     | Location          | Purpose                                                    |
+|------------------------------|-------------------|------------------------------------------------------------|
+| Contributors and maintainers | GitHub repository | Build, test, debug, document, and release NovaModuleTools  |
+| End users                    | GitHub Pages      | Install NovaModuleTools and follow guided usage workflows  |
+| PowerShell reference users   | GitBook           | Browse generated module and cmdlet help with site navigation |
 
 ## Table of contents
 
@@ -24,6 +25,7 @@ This README is the single developer-documentation entry point for the repository
 - [Repository structure and ownership](#repository-structure-and-ownership)
 - [CI/CD and release automation](#cicd-and-release-automation)
 - [Documentation ownership rules](#documentation-ownership-rules)
+- [PowerShell reference on GitBook](#powershell-reference-on-gitbook)
 - [End-user docs on GitHub Pages](#end-user-docs-on-github-pages)
 - [License](#license)
 
@@ -671,8 +673,15 @@ When you change CI, build, or release behavior:
 - Keep contributor workflow, architecture, and automation documentation in `README.md`
 - Keep `CONTRIBUTING.md` focused on contribution expectations and review checklist items
 - Keep `docs/<ProjectName>/**/*.md` focused on command-help source material for the current project
+- Keep `docs/gitbook/` focused on GitBook navigation pages that point readers to authoritative documentation
 - Keep `docs/*.html` focused on end-user guides
 - Do not duplicate the same workflow or setup prose across multiple contributor documents
+
+## PowerShell reference on GitBook
+
+### [NovaModuleTools GitBook](https://nova-31.gitbook.io/nova-docs)
+
+GitBook provides a navigable entry point to the generated PowerShell reference and links to the authoritative user guides, release notes, source repository, and security policy.
 
 ## End-user docs on GitHub Pages
 
