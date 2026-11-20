@@ -5,6 +5,7 @@ BeforeAll {
     function Test-GitRepositoryIsAvailable {param($ProjectRoot) return $true}
     function Invoke-NovaGitCommand {param($ProjectRoot, $Arguments) return [pscustomobject]@{ExitCode=0; Output=@()}}
     function Get-NovaGitCommandOutputText {param($Result) return ($Result.Output -join "`n")}
+    function Get-NovaLatestVersionTagResult {param($ProjectRoot) return [pscustomobject]@{ExitCode=128; Output=@()}}
 }
 
 Describe 'Get-GitCommitMessageForVersionBump' {
@@ -18,6 +19,17 @@ Describe 'Get-GitCommitMessageForVersionBump' {
         Mock Invoke-NovaGitCommand {return [pscustomobject]@{ExitCode=0; Output=@('feat: a','body','--END-COMMIT--','fix: b','--END-COMMIT--')}}
         $messages = Get-GitCommitMessageForVersionBump -ProjectRoot '/proj'
         @($messages).Count | Should -BeGreaterThan 0
+    }
+
+    It 'reads commits since the latest version tag' {
+        Mock Get-NovaLatestVersionTagResult {return [pscustomobject]@{ExitCode=0; Output=@('v1.0.0')}}
+        Mock Invoke-NovaGitCommand {return [pscustomobject]@{ExitCode=0; Output=@('fix: b','--END-COMMIT--')}}
+
+        $null = Get-GitCommitMessageForVersionBump -ProjectRoot '/proj'
+
+        Should -Invoke Get-NovaLatestVersionTagResult -ParameterFilter {$ProjectRoot -eq '/proj'} -Times 1 -Exactly
+        Should -Invoke Invoke-NovaGitCommand -ParameterFilter {$Arguments -contains 'v1.0.0..HEAD'} -Times 1 -Exactly
+        Should -Invoke Invoke-NovaGitCommand -ParameterFilter {$Arguments -contains 'describe'} -Times 0 -Exactly
     }
 }
 

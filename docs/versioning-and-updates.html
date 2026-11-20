@@ -157,7 +157,9 @@ PS&gt; Get-NovaProjectInfo -InstalledNovaVersion</code></pre>
                     next semantic version based on Git history.</p>
                 <h3>How Nova chooses the bump label</h3>
                 <ul class="plain-list">
-                    <li><strong>Major</strong> for breaking changes</li>
+                    <li><strong>Major</strong> for breaking changes: a <code>!</code> after the commit type, such as
+                        <code>feat!:</code>, or an uppercase <code>BREAKING CHANGE:</code> /
+                        <code>BREAKING-CHANGE:</code> footer at the start of a line</li>
                     <li><strong>Minor</strong> for <code>feat:</code> commits</li>
                     <li><strong>Patch</strong> for <code>fix:</code> commits and all other cases</li>
                 </ul>
@@ -181,7 +183,8 @@ PS&gt; Get-NovaProjectInfo -InstalledNovaVersion</code></pre>
 1.0.0 + Minor -> 1.0.0
 1.0.0 + Major -> 1.0.0
 1.0.0 + Major + -Preview -> 1.0.1-preview</code></pre>
-                <p>When Git tags exist, Nova uses commits since the latest tag. When Git-based inference is unavailable
+                <p>When version tags exist, Nova uses commits since the latest version tag. Only tags that look like
+                    semantic versions, such as <code>1.2.3</code> or <code>v1.2.3</code>, count; other tags are ignored. When Git-based inference is unavailable
                     because the project path is not inside a Git repository, Nova stops instead of silently presenting a
                     normal-looking patch result. Use <code>-OverrideWarning</code> or the CLI form <code>% nova bump
                         --override-warning</code> / <code>% nova bump -o</code> only when you intentionally want that

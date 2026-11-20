@@ -16,6 +16,7 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Fixed
 
+- `% nova bump`, `Update-NovaModuleVersion`, and `Invoke-NovaRelease` only treat a `!` after the commit type or an uppercase `BREAKING CHANGE:` / `BREAKING-CHANGE:` footer as a breaking change, and only semantic-version tags such as `1.2.3` or `v1.2.3` start the commit range.
 - `% nova publish -l -s` and local release now use numeric version directories, for example `Modules/Gerber/0.1.1/` for `0.1.1-preview`. Republishing replaces only that numeric version, preserves other versions and legacy flat files, and local publish loads the exact newly published manifest. Custom paths still mean the modules root; existing flat installations are not automatically removed.
 
 ### Security

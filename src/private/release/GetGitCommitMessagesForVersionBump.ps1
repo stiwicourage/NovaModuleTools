@@ -9,7 +9,7 @@ function Get-GitCommitMessageForVersionBump {
     }
 
     $format = '%s%n%b%n--END-COMMIT--'
-    $lastTagResult = Invoke-NovaGitCommand -ProjectRoot $ProjectRoot -Arguments @('describe', '--tags', '--abbrev=0')
+    $lastTagResult = Get-NovaLatestVersionTagResult -ProjectRoot $ProjectRoot
     $logResult = Get-NovaVersionBumpCommitLogResult -ProjectRoot $ProjectRoot -Format $format -LastTagResult $lastTagResult
     return @(ConvertFrom-NovaVersionBumpCommitLogResult -Result $logResult)
 }

@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Version bump label inference now follows the Conventional Commits specification for breaking changes.
+    - `BREAKING CHANGE:` and `BREAKING-CHANGE:` footers must be uppercase and start a line, so prose such as `docs: explain why this is not a breaking change` no longer triggers a major bump.
+    - `BREAKING-CHANGE:` footers are now recognized as breaking changes.
+- `Update-NovaModuleVersion`, `% nova bump`, and `Invoke-NovaRelease` now only use tags that look like semantic versions, such as `1.2.3` or `v1.2.3`, as the start of the commit range. Other tags, such as `deploy-marker`, no longer hide earlier commits from label inference or the no-commits-since-tag check.
 - Local publish and local release now install into `<ModulesRoot>/<ProjectName>/<ModuleVersion>/` using the authoritative built manifest's numeric version, including two-, three-, and four-component versions.
     - Prerelease labels remain in `PrivateData.PSData.Prerelease`; only the same numeric version directory is replaced. Other numeric versions and legacy flat files are preserved without automatic cleanup.
     - Local publish resolves activation after build/publication, and local release resolves its destination from the rebuilt manifest after a version bump rather than stale project metadata. Invalid or missing built manifest versions fail before destination mutation.
