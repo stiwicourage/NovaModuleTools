@@ -257,8 +257,11 @@ PS&gt; Update-NovaModuleVersion -ContinuousIntegration</code></pre>
                 <h3>What self-update does</h3>
                 <ol class="plain-list plain-list--ordered">
                     <li>Read the stored prerelease preference.</li>
+                    <li>Load <code>PSModuleUpdate</code>, and install it for the current user the first time if it is
+                        missing.</li>
                     <li>Resolve the best eligible update candidate from PowerShell Gallery.</li>
-                    <li>Apply the update if one is available.</li>
+                    <li>Stage, verify, and activate the update with <code>PSModuleUpdate</code> if one is available,
+                        keeping the scope of the installed module.</li>
                     <li>Print the release notes link after a successful update.</li>
                 </ol>
                 <div class="surface-example" data-command-example>
@@ -276,7 +279,10 @@ PS&gt; Update-NovaModuleTools</code></pre>
                     </div>
                 </div>
                 <p>If no newer version is available, <code>% nova update</code> prints a friendly “You're up to date!”
-                    message together with the installed NovaModuleTools version.</p>
+                    message together with the installed NovaModuleTools version. If the newer version is already
+                    installed but not loaded, Nova tells you to restart PowerShell.</p>
+                <p>When NovaModuleTools is installed for all users, run the update from an elevated PowerShell session.
+                    Build and init update notifications never load <code>PSModuleUpdate</code>.</p>
                 <div class="table-scroll">
                     <table>
                         <thead>

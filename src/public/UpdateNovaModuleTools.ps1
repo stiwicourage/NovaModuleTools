@@ -3,6 +3,7 @@ function Update-NovaModuleTool {
     [Alias('Update-NovaModuleTools')]
     param()
 
+    Import-NovaPSModuleUpdateDependency -Cmdlet $PSCmdlet
     $workflowContext = Get-NovaModuleSelfUpdateWorkflowContext -WorkflowParams @{WhatIf = [bool]$WhatIfPreference}
     $plan = $workflowContext.Plan
     if ($plan.IsPrereleaseTarget -and -not $WhatIfPreference) {

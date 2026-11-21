@@ -10,6 +10,8 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Changed
 
+- `Update-NovaModuleTool` and `% nova update` now install updates through `PSModuleUpdate`, which verifies the new version before activating it and keeps the installed scope. The first run installs `PSModuleUpdate` for the current user when missing; all-users installs need an elevated session. Update warnings now suggest `Update-NovaModuleTool`.
+
 ### Deprecated
 
 ### Removed

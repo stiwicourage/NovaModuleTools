@@ -136,6 +136,8 @@ Update notification preferences use one shared settings location:
 
 `Update-NovaModuleTool` (and its `Update-NovaModuleTools` alias), CLI:`% nova update` use that stored prerelease preference to decide whether prerelease self-updates are eligible. When prerelease self-updates are disabled, self-update stays on stable releases. When they are enabled, self-update may target a prerelease, but it asks for explicit confirmation before proceeding and defaults that prerelease prompt to `No`, so pressing Enter cancels the update.
 
+Self-update installs through the `PSModuleUpdate` module, which stages and verifies the new version before it activates it. The first self-update installs `PSModuleUpdate` for the current user when it is missing. Installs for all users need an elevated PowerShell session.
+
 Successful `Update-NovaModuleTool`, CLI:`% nova update`, and `Install-NovaCli` runs print the release notes link from the installed module manifest. When `Invoke-NovaBuild` detects a newer `NovaModuleTools` version after a build, the update warning also includes that same release notes link.
 
 To inspect the current project version, the installed version of the current project module, or the installed

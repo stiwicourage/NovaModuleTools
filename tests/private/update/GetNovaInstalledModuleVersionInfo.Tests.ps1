@@ -16,6 +16,7 @@ Describe 'Get-NovaInstalledModuleVersionInfo' {
         $info.Version | Should -Be '1.2.3'
         $info.SemanticVersion | Should -Be ([semver]'1.2.3')
         $info.IsPrerelease | Should -BeFalse
+        $info.Module | Should -Be $module
     }
 
     It 'flags prerelease versions through the prerelease label' {

@@ -187,7 +187,7 @@ After completing Steps 1–4, re-read the changed files from scratch before proc
 
 ### Step 6 — Loose component coupling
 
-- Direct `git`, `Invoke-WebRequest`, `Update-Module`, `$env:*`, file IO calls belong only inside their approved private helpers. `tests/*Architecture*.Tests.ps1` is the authoritative boundary.
+- Direct `git`, `Invoke-WebRequest`, `Install-PSModuleUpdate`, `$env:*`, file IO calls belong only inside their approved private helpers. `tests/*Architecture*.Tests.ps1` is the authoritative boundary.
 - Hide provider-specific branching behind a small adapter surface.
 - Drop pass-through helpers that only forward parameters and add nothing.
 

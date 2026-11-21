@@ -22,6 +22,6 @@ Describe 'Update-NovaModuleTool integration' {
             return
         }
 
-        $thrown.Exception.Message | Should -Be 'Unable to determine a NovaModuleTools update candidate. Try again when the PowerShell Gallery is reachable.'
+        ($thrown.FullyQualifiedErrorId -split ',')[0] | Should -BeIn @('Nova.Dependency.PSModuleUpdateUnavailable', 'Nova.Dependency.ModuleSelfUpdateCandidateUnavailable')
     }
 }

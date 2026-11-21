@@ -24,33 +24,44 @@ Describe 'Complete-NovaModuleSelfUpdateResult' {
 
 Describe 'Get-NovaModuleSelfUpdateFailureMessage' {
     It 'splits failure details and recovery guidance across separate lines' {
-        $message = Get-NovaModuleSelfUpdateFailureMessage -FailureDetail 'gallery offline'
+        $message = Get-NovaModuleSelfUpdateFailureMessage -FailureDetail 'gallery offline' -Scope 'CurrentUser'
 
         $message | Should -Be (@(
             'NovaModuleTools self-update failed: gallery offline'
             'Confirm that the PowerShell Gallery is reachable and that this session can update installed modules, then rerun the self-update command.'
         ) -join [Environment]::NewLine)
     }
+
+    It 'tells all-users installations to rerun the update from an elevated session' {
+        $message = Get-NovaModuleSelfUpdateFailureMessage -FailureDetail 'access denied' -Scope 'AllUsers'
+
+        $message | Should -Be (@(
+            'NovaModuleTools self-update failed: access denied'
+            'Confirm that the PowerShell Gallery is reachable and that this session can update installed modules, then rerun the self-update command.'
+            'NovaModuleTools is installed for all users. Rerun Update-NovaModuleTool from an elevated PowerShell session (Run as Administrator on Windows, sudo pwsh on Linux or macOS).'
+        ) -join [Environment]::NewLine)
+    }
 }
 
 Describe 'Invoke-NovaModuleSelfUpdateOrStop' {
-    It 'calls Invoke-NovaModuleSelfUpdate with module name and prerelease flag' {
-        Mock Invoke-NovaModuleSelfUpdate {}
-        Invoke-NovaModuleSelfUpdateOrStop -Plan ([pscustomobject]@{ModuleName='Nova'; UsedAllowPrerelease=$true})
-        Assert-MockCalled Invoke-NovaModuleSelfUpdate -Times 1 -ParameterFilter {$ModuleName -eq 'Nova' -and $AllowPrerelease}
+    It 'installs the PSModuleUpdate plan of the workflow' {
+        Mock Install-NovaPSModuleUpdate {}
+        $updatePlan = [pscustomobject]@{ModuleName='Nova'; TargetVersion='2.0.0'}
+        Invoke-NovaModuleSelfUpdateOrStop -Plan ([pscustomobject]@{ModuleName='Nova'; Scope='CurrentUser'}) -UpdatePlan $updatePlan
+        Assert-MockCalled Install-NovaPSModuleUpdate -Times 1 -ParameterFilter {$UpdatePlan.TargetVersion -eq '2.0.0'}
     }
     It 'wraps update failures in a Nova.Dependency.ModuleSelfUpdateFailed error' {
-        Mock Invoke-NovaModuleSelfUpdate {throw 'gallery offline'}
+        Mock Install-NovaPSModuleUpdate {throw 'gallery offline'}
         $thrown = $null
         try {
-            Invoke-NovaModuleSelfUpdateOrStop -Plan ([pscustomobject]@{ModuleName='Nova'; UsedAllowPrerelease=$false})
+            Invoke-NovaModuleSelfUpdateOrStop -Plan ([pscustomobject]@{ModuleName='Nova'; Scope='CurrentUser'}) -UpdatePlan ([pscustomobject]@{})
         } catch {
             $thrown = $_
         }
 
         $thrown | Should -Not -BeNullOrEmpty
         $thrown.FullyQualifiedErrorId | Should -Be 'Nova.Dependency.ModuleSelfUpdateFailed'
-        $thrown.Exception.Message | Should -Be (Get-NovaModuleSelfUpdateFailureMessage -FailureDetail 'gallery offline')
+        $thrown.Exception.Message | Should -Be (Get-NovaModuleSelfUpdateFailureMessage -FailureDetail 'gallery offline' -Scope 'CurrentUser')
     }
 }
 
@@ -80,19 +91,19 @@ Describe 'Invoke-NovaModuleSelfUpdateWorkflow' {
     }
 
     It 'returns plan with null release notes when no update is available' {
-        Mock Invoke-NovaModuleSelfUpdate {}
+        Mock Install-NovaPSModuleUpdate {}
         Mock Get-NovaModuleReleaseNotesUri {throw 'should not run'}
-        $plan = [pscustomobject]@{UpdateAvailable=$false; ModuleName='Nova'; CurrentVersion='1.0.0'; UsedAllowPrerelease=$false; Updated=$false; Cancelled=$false; LookupRepository='PSGallery'; ReleaseNotesUri=$null}
+        $plan = [pscustomobject]@{UpdateAvailable=$false; RestartRequired=$false; ModuleName='Nova'; CurrentVersion='1.0.0'; UsedAllowPrerelease=$false; Updated=$false; Cancelled=$false; LookupRepository='PSGallery'; ReleaseNotesUri=$null}
         $result = Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext ([pscustomobject]@{Plan=$plan; WorkflowParams=@{}}) -ShouldRun:$false
         $result.Updated | Should -BeFalse
         $result.ReleaseNotesUri | Should -BeNull
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'NovaModuleTools is already up to date.' -and $color -eq 'Green'}
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Current version: 1.0.0'}
-        Should -Invoke Invoke-NovaModuleSelfUpdate -Times 0
+        Should -Invoke Install-NovaPSModuleUpdate -Times 0
     }
 
     It 'writes a preview summary in WhatIf mode without updating the module' {
-        Mock Invoke-NovaModuleSelfUpdate {}
+        Mock Install-NovaPSModuleUpdate {}
         Mock Get-NovaModuleReleaseNotesUri {throw 'should not run'}
         $plan = [pscustomobject]@{
             UpdateAvailable = $true
@@ -114,11 +125,11 @@ Describe 'Invoke-NovaModuleSelfUpdateWorkflow' {
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Target version: 1.1.0'}
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Repository: PSGallery'}
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Run Update-NovaModuleTool without -WhatIf when you are ready to install version 1.1.0.'}
-        Should -Invoke Invoke-NovaModuleSelfUpdate -Times 0
+        Should -Invoke Install-NovaPSModuleUpdate -Times 0
     }
 
     It 'writes a cancellation summary when the update is cancelled before execution' {
-        Mock Invoke-NovaModuleSelfUpdate {}
+        Mock Install-NovaPSModuleUpdate {}
         $plan = [pscustomobject]@{
             UpdateAvailable = $true
             IsPrereleaseTarget = $false
@@ -136,11 +147,11 @@ Describe 'Invoke-NovaModuleSelfUpdateWorkflow' {
 
         $result.Cancelled | Should -BeTrue
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Self-update cancelled for NovaModuleTools.' -and $color -eq 'Blue'}
-        Should -Invoke Invoke-NovaModuleSelfUpdate -Times 0
+        Should -Invoke Install-NovaPSModuleUpdate -Times 0
     }
 
     It 'performs update, sets Updated, resolves release notes, and prints the next step when update is available' {
-        Mock Invoke-NovaModuleSelfUpdate {}
+        Mock Install-NovaPSModuleUpdate {}
         Mock Get-NovaModuleReleaseNotesUri {'https://example.com/n'}
         $plan = [pscustomobject]@{
             UpdateAvailable = $true
@@ -155,7 +166,7 @@ Describe 'Invoke-NovaModuleSelfUpdateWorkflow' {
             ReleaseNotesUri = $null
         }
 
-        $result = Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext ([pscustomobject]@{Plan=$plan; WorkflowParams=@{}}) -ShouldRun
+        $result = Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext ([pscustomobject]@{Plan=$plan; UpdatePlan=[pscustomobject]@{TargetVersion='1.1.0'}; WorkflowParams=@{}}) -ShouldRun
 
         $result.Updated | Should -BeTrue
         $result.ReleaseNotesUri | Should -Be 'https://example.com/n'
@@ -169,5 +180,17 @@ Describe 'Invoke-NovaModuleSelfUpdateWorkflow' {
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Updated NovaModuleTools to version 1.1.0.' -and $color -eq 'Green'}
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'Get-NovaProjectInfo -InstalledNovaVersion'}
         Assert-MockCalled Write-Progress -Times 3
+        Assert-MockCalled Install-NovaPSModuleUpdate -Times 1 -ParameterFilter {$UpdatePlan.TargetVersion -eq '1.1.0'}
+    }
+
+    It 'tells the user to restart when the newer version is already installed' {
+        Mock Install-NovaPSModuleUpdate {}
+        Mock Get-NovaModuleReleaseNotesUri {throw 'should not run'}
+        $plan = [pscustomobject]@{UpdateAvailable=$false; RestartRequired=$true; ModuleName='NovaModuleTools'; CurrentVersion='1.0.0'; LookupCandidateVersion='1.1.0'; Updated=$false; Cancelled=$false; LookupRepository='PSGallery'; ReleaseNotesUri=$null}
+
+        $null = Invoke-NovaModuleSelfUpdateWorkflow -WorkflowContext ([pscustomobject]@{Plan=$plan; WorkflowParams=@{}}) -ShouldRun:$false
+
+        Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$Text -eq 'NovaModuleTools version 1.1.0 is already installed. Restart PowerShell to use it.' -and $color -eq 'Green'}
+        Should -Invoke Install-NovaPSModuleUpdate -Times 0
     }
 }

@@ -1,5 +1,6 @@
 function Get-NovaShouldProcessForwardingParameter {param([switch]$WhatIfEnabled) return @{WhatIf = [bool]$WhatIfEnabled}}
-function Get-NovaModuleSelfUpdateWorkflowContext {param([hashtable]$WorkflowParams) $script:workflowParams = $WorkflowParams; return [pscustomobject]@{Plan=$script:plan; Action='Update'; WorkflowParams=$WorkflowParams}}
+function Import-NovaPSModuleUpdateDependency {param($Cmdlet) $script:callOrder += 'import'; $script:importCmdlet = $Cmdlet}
+function Get-NovaModuleSelfUpdateWorkflowContext {param([hashtable]$WorkflowParams) $script:callOrder += 'context'; $script:workflowParams = $WorkflowParams; return [pscustomobject]@{Plan=$script:plan; Action='Update'; WorkflowParams=$WorkflowParams}}
 function Confirm-NovaPrereleaseModuleUpdate {param($Cmdlet, $CurrentVersion, $TargetVersion) $script:confirmCallCount += 1; return $script:confirmResult}
 function Invoke-NovaModuleSelfUpdateWorkflow {param($WorkflowContext, [switch]$ShouldRun)
     $script:invoked = $true

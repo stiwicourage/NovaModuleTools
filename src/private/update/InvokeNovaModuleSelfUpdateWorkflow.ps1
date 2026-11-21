@@ -1,25 +1,30 @@
 function Get-NovaModuleSelfUpdateFailureMessage {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][string]$FailureDetail
+        [Parameter(Mandatory)][string]$FailureDetail,
+        [string]$Scope
     )
 
     return @(
         "NovaModuleTools self-update failed: $FailureDetail"
         'Confirm that the PowerShell Gallery is reachable and that this session can update installed modules, then rerun the self-update command.'
+        if ($Scope -ceq 'AllUsers') {
+            'NovaModuleTools is installed for all users. Rerun Update-NovaModuleTool from an elevated PowerShell session (Run as Administrator on Windows, sudo pwsh on Linux or macOS).'
+        }
     ) -join [Environment]::NewLine
 }
 
 function Invoke-NovaModuleSelfUpdateOrStop {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][pscustomobject]$Plan
+        [Parameter(Mandatory)][pscustomobject]$Plan,
+        [Parameter(Mandatory)][object]$UpdatePlan
     )
 
     try {
-        $null = Invoke-NovaModuleSelfUpdate -ModuleName $Plan.ModuleName -AllowPrerelease:$Plan.UsedAllowPrerelease
+        $null = Install-NovaPSModuleUpdate -UpdatePlan $UpdatePlan
     } catch {
-        $message = Get-NovaModuleSelfUpdateFailureMessage -FailureDetail $_.Exception.Message
+        $message = Get-NovaModuleSelfUpdateFailureMessage -FailureDetail $_.Exception.Message -Scope $Plan.Scope
         Stop-NovaOperation -Message $message -ErrorId 'Nova.Dependency.ModuleSelfUpdateFailed' -Category InvalidOperation -TargetObject $Plan.ModuleName
     }
 }
@@ -58,7 +63,7 @@ function Invoke-NovaModuleSelfUpdateWorkflow {
 
     try {
         Invoke-NovaModuleSelfUpdateWorkflowStep -Activity $progressActivity -Status (Get-NovaModuleSelfUpdateWorkflowUpdateStatus -WorkflowContext $WorkflowContext) -PercentComplete 80 -Action {
-            Invoke-NovaModuleSelfUpdateOrStop -Plan $WorkflowContext.Plan
+            Invoke-NovaModuleSelfUpdateOrStop -Plan $WorkflowContext.Plan -UpdatePlan $WorkflowContext.UpdatePlan
         }
 
         $WorkflowContext.Plan.Updated = $true
@@ -154,7 +159,7 @@ function Get-NovaModuleSelfUpdateWorkflowStatusMessage {
     )
 
     if (-not $Result.UpdateAvailable) {
-        return 'NovaModuleTools is already up to date.'
+        return Get-NovaModuleSelfUpdateWorkflowNoUpdateMessage -Result $Result
     }
 
     if ($WhatIfEnabled) {
@@ -166,6 +171,19 @@ function Get-NovaModuleSelfUpdateWorkflowStatusMessage {
     }
 
     return "Updated NovaModuleTools to version $( $Result.TargetVersion )."
+}
+
+function Get-NovaModuleSelfUpdateWorkflowNoUpdateMessage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][pscustomobject]$Result
+    )
+
+    if ($Result.RestartRequired) {
+        return "NovaModuleTools version $( $Result.LookupCandidateVersion ) is already installed. Restart PowerShell to use it."
+    }
+
+    return 'NovaModuleTools is already up to date.'
 }
 
 function Get-NovaModuleSelfUpdateWorkflowStatusColor {

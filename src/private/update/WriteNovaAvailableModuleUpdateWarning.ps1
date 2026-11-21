@@ -8,12 +8,6 @@ function Write-NovaAvailableModuleUpdateWarning {
 
     $moduleName = 'NovaModuleTools'
     $releaseNotesUri = Get-NovaModuleReleaseNotesUri
-    $updateCommand = if ($Prerelease) {
-        "PS> Update-Module $moduleName -AllowPrerelease"
-    } else {
-        "PS> Update-Module $moduleName"
-    }
-
     $heading = if ($Prerelease) {
         "A newer $moduleName prerelease is available."
     } else {
@@ -33,7 +27,7 @@ function Write-NovaAvailableModuleUpdateWarning {
     $messageLines += @(
         ''
         'Update:'
-        $updateCommand
+        'PS> Update-NovaModuleTool'
         '% nova update'
     )
 

@@ -29,7 +29,11 @@ PS> Update-NovaModuleTool [-WhatIf] [-Confirm] [<CommonParameters>]
 
 The cmdlet is also available through the compatibility alias `Update-NovaModuleTools`.
 
-Before it runs `Update-Module`, it resolves the best available update candidate by using the stored prerelease preference exposed through `Get-NovaUpdateNotificationPreference`, `Set-NovaUpdateNotificationPreference`, and those PowerShell preference commands.
+`Update-NovaModuleTool` uses the `PSModuleUpdate` module to resolve and install the update. `PSModuleUpdate` stages and verifies the new version with `Microsoft.PowerShell.PSResourceGet` before it activates it. Before it installs anything, it resolves the best available update candidate by using the stored prerelease preference exposed through `Get-NovaUpdateNotificationPreference`, `Set-NovaUpdateNotificationPreference`, and those PowerShell preference commands.
+
+`PSModuleUpdate` is loaded only when you run the self-update command. If `PSModuleUpdate` 0.3.0 or later is not installed, `Update-NovaModuleTool` installs it from PowerShell Gallery for the current user first. Build and init update notifications do not need `PSModuleUpdate`.
+
+The update keeps the scope of the installed module. When `NovaModuleTools` is installed for all users, run the command from an elevated PowerShell session.
 
 When prerelease notifications are disabled, `Update-NovaModuleTool` only considers stable releases and never passes
 `-AllowPrerelease` to the update flow.
@@ -78,7 +82,7 @@ Successful updates print the release notes link from the installed module manife
 PS> Update-NovaModuleTool -WhatIf
 ```
 
-Previews the resolved update action without prompting for prerelease confirmation or running `Update-Module`.
+Previews the resolved update action without prompting for prerelease confirmation or installing the update. `-WhatIf` does not install `PSModuleUpdate`; if it is missing, the command stops with install guidance.
 
 ## PARAMETERS
 
@@ -144,12 +148,18 @@ Returns a self-update plan/result object that shows the current version, the res
 
 ## NOTES
 
-If the PowerShell Gallery cannot be reached well enough to resolve an update candidate, the command stops before calling
-`Update-Module`.
+If the PowerShell Gallery cannot be reached well enough to resolve an update candidate, the command stops before it
+installs anything.
+
+If `PSModuleUpdate` cannot be installed automatically, run
+`Install-PSResource -Name PSModuleUpdate -Scope CurrentUser -Repository PSGallery` and rerun the command.
+
+If the newer version is already installed but not loaded, the command tells you to restart PowerShell instead of
+installing it again.
 
 Use `Get-NovaUpdateNotificationPreference` and `Set-NovaUpdateNotificationPreference` to inspect or change the stored prerelease setting.
 
-Use `Ctrl+C` if you need to stop an active self-update before `Update-Module` finishes.
+Use `Ctrl+C` if you need to stop an active self-update before the install finishes.
 
 ## RELATED LINKS
 

@@ -18,6 +18,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - `Tests.yml`, `Publish.yml`, and the new `Security.yml` are thin callers pinned to a released `powershell-ci` version; the local CI scripts, reusable actions, `powershell.yml`, and `dependency-review.yml` were removed.
     - `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` delegates to the shared analyzer and needs a `powershell-ci` checkout next to the repository or `POWERSHELL_CI_PATH`. Its unused `-IncludeTests` switch was removed.
     - The generated agentic Copilot guidance no longer references `scripts/build/ci/` helpers that generated projects never contain.
+- `Update-NovaModuleTool` and `% nova update` now resolve and install updates through `PSModuleUpdate` 0.3.0 or later instead of PowerShellGet `Update-Module`.
+    - The new version is staged and verified with `Microsoft.PowerShell.PSResourceGet` before activation, and the installed module's scope is kept.
+    - `PSModuleUpdate` is imported only by the self-update command. When it is missing, Nova installs it from PowerShell Gallery for the current user after `ShouldProcess`; `-WhatIf` stops with install guidance instead.
+    - All-users installations that fail get guidance to rerun from an elevated session. A newer version that is installed but not loaded now produces a restart hint.
+    - The build/init update warning now suggests `Update-NovaModuleTool` instead of `Update-Module NovaModuleTools`.
 
 ### Deprecated
 
