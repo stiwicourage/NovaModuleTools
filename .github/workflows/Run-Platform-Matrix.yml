@@ -36,7 +36,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install required CI PowerShell modules
         uses: stiwicourage/powershell-ci/actions/install-ps-modules@0.4.0
