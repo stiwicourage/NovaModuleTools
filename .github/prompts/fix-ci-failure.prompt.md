@@ -24,4 +24,4 @@ If any required input is missing, stop and ask the user to supply it before proc
 - `Tests.yml` owns test/coverage artifacts and CodeScene coverage gates.
 - `Publish.yml` is high-risk because it handles publish, release commits, tags, and branch updates.
 - If the failing step is in `Publish.yml`, do not apply any fix without first presenting a detailed description of the change and its blast radius to the user for explicit approval before editing the file.
-- `powershell.yml` is analyzer-focused and should stay narrow.
+- `Security.yml` only calls the shared CodeQL, analyzer, and dependency-review workflows and should stay narrow.

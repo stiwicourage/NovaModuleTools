@@ -17,7 +17,7 @@ Implement the issue in the {{ProjectName}} repository using the repository-local
 1. Read `README.md`, `CONTRIBUTING.md`, `.github/copilot-instructions.md`, and `.github/pull_request_template.md`.
 2. If scope, acceptance criteria, or ownership are still unclear after that initial read, start with `.github/prompts/design-change.prompt.md` and `architect.agent.md` before implementing.
 3. Identify which public command(s) are directly implicated by the issue. Inspect those commands, their private helper files in the matching subdirectory under `src/private/`, their Pester test files, and their help docs. If no single command is implicated, inspect all files referenced in the issue body.
-4. If the issue is release-, workflow-, or coverage-related, also inspect the matching workflow files, when present and `scripts/build/ci/*.ps1` files.
+4. If the issue is release-, workflow-, or coverage-related, also inspect the matching workflow files, when present.
 5. Preserve the Nova build model: use `project.json` and Nova commands for build/test/package/release behavior, and do not create hand-written source `.psm1` or module `.psd1` files.
 6. Inspect `project.json` `Manifest.PowerShellHostVersion` before changing PowerShell code, tests, or examples, and keep the implementation compatible with that target.
 7. Implement the smallest maintainable fix.

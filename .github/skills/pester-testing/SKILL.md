@@ -16,7 +16,6 @@ Use this skill when adding tests, closing coverage gaps, fixing regressions, or 
 - `Invoke-NovaTest`
 - `Test-NovaBuild`
 - `pwsh -NoLogo -NoProfile -File ./run.ps1`
-- `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts`
 
 ## Expected practices
 

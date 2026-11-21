@@ -16,7 +16,6 @@ Use this skill when adding tests, closing coverage gaps, fixing regressions, or 
 - `Invoke-NovaTest`
 - `Test-NovaBuild`
 - the repository quality loop, when present
-- `./scripts/build/ci/Invoke-{{ProjectName}}CI.ps1 -OutputDirectory ./artifacts`
 
 ## Expected practices
 

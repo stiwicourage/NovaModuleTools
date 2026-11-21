@@ -439,20 +439,14 @@ Run ScriptAnalyzer with the repository helper:
 PS> ./scripts/build/Invoke-ScriptAnalyzerCI.ps1
 ```
 
-This writes findings to `artifacts/scriptanalyzer.txt`.
+The helper delegates to the shared [`stiwicourage/powershell-ci`](https://github.com/stiwicourage/powershell-ci) analyzer, so clone that repository next to this one or set `POWERSHELL_CI_PATH` to its checkout. It analyzes `src`, `scripts`, and `run.ps1` with PSScriptAnalyzer `1.25.0`, fails on `Error`, `Warning`, and `ParseError` findings, and writes them to `artifacts/scriptanalyzer.txt`.
 
-For CI-parity coverage and report generation, use:
-
-```powershell
-PS> ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1
-```
-
-That flow builds the module, runs ScriptAnalyzer, executes one coverage-enabled Pester run using the same Nova test workflow configuration, and emits CI-friendly reports such as:
+CI runs through the shared `powershell-ci` reusable workflows. `Tests.yml` runs the same analyzer gate, builds the module, runs `Invoke-NovaTest` and `Test-NovaBuild` in fresh PowerShell processes against the built module, validates `CHANGELOG.md` and `RELEASE_NOTE.md`, and uploads CI-friendly reports such as:
 
 - `artifacts/novamoduletools-nunit.xml`
 - `artifacts/coverage.xml`
 
-The `Tests.yml` workflow reuses that JaCoCo artifact for the pull-request CodeScene coverage-gate check and for the develop/manual CodeScene upload-and-analysis flow. The CodeScene pull-request gate downloads the uploaded artifact and runs `cs-coverage check`, while the develop/manual CodeScene step uploads coverage through `scripts/build/ci/Invoke-CodeSceneAnalysis.ps1` before it triggers a follow-up analysis run. If coverage upload succeeds but the trigger fails with an OAuth/project-owner error, fix the repository authorization in CodeScene for the project owner. That trigger-side repository authorization is separate from `CS_ACCESS_TOKEN`.
+The shared workflow reuses that JaCoCo artifact for the pull-request CodeScene coverage-gate check and for the develop/manual CodeScene upload-and-analysis flow. If coverage upload succeeds but the trigger fails with an OAuth/project-owner error, fix the repository authorization in CodeScene for the project owner. That trigger-side repository authorization is separate from `CS_ACCESS_TOKEN`.
 
 ### Recommended local quality loop
 
@@ -599,11 +593,13 @@ At a minimum, contributor changes are expected to keep these workflows healthy:
 - analyzer / coverage
 - publish / release automation
 
-Repository scripts under `scripts/build/ci/` provide local parity for CI-oriented reporting.
+The workflow implementation lives in the shared [`stiwicourage/powershell-ci`](https://github.com/stiwicourage/powershell-ci) repository. This repository only keeps thin callers pinned to a released `powershell-ci` version:
 
-When CodeScene coverage upload is needed, run
-`scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`. That script auto-discovers `artifacts/coverage.xml` unless you pass `-CoveragePath`
-explicitly. The repository `Tests.yml` workflow also downloads that same JaCoCo artifact during pull requests and runs the CodeScene coverage-gate check before merge. If `-TriggerAnalysis` fails after a successful upload, review the CodeScene response body: repository OAuth problems for the project owner must be fixed in CodeScene itself and are not solved by rotating `CS_ACCESS_TOKEN` alone.
+- `.github/workflows/Tests.yml` - analyzer, build, tests, changelog validation, artifacts, and CodeScene coverage flow
+- `.github/workflows/Security.yml` - CodeQL, PSScriptAnalyzer SARIF, and dependency review
+- `.github/workflows/Publish.yml` - release and prerelease publishing
+
+Change shared CI behavior in `powershell-ci`, release it, and then update the pinned version here. If the CodeScene analysis trigger fails after a successful upload, review the CodeScene response body: repository OAuth problems for the project owner must be fixed in CodeScene itself and are not solved by rotating `CS_ACCESS_TOKEN` alone.
 
 ### Build and test automation
 
@@ -613,13 +609,12 @@ The normal repository workflow is:
 2. `Invoke-NovaTest` when you only need focused unit-test validation
 3. `Test-NovaBuild` when you need focused build-validation integration coverage
 4. `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` when you only need the analyzer pass
-5. Optional CI helper flow via `scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
 
 When you test local publish behavior during development, remember that `Publish-NovaModule -Local` reloads the published module from the local install directory into the current PowerShell session. Re-import `dist/` if your next step depends on the built-but-unpublished output instead.
 
 For isolated publication checks, pass a disposable modules root with `-ModuleDirectoryPath`. Nova appends `<ProjectName>/<ModuleVersion>/`, reading the numeric version from the built manifest, and imports that exact manifest after publishing. Only the same numeric version is replaced; sibling versions and legacy flat files remain untouched. Local release uses the rebuilt manifest after its version bump.
 
-The CI helper flow also produces a JaCoCo coverage artifact that the CodeScene workflow gate and upload steps consume.
+The shared CI test flow also produces a JaCoCo coverage artifact that the CodeScene workflow gate and upload steps consume.
 
 ### Release automation
 
@@ -627,12 +622,8 @@ The current publish pipeline is PowerShell-based and no longer depends on Node.j
 
 Key pieces:
 
-- `.github/workflows/Publish.yml`
-- `.github/actions/create-verified-commit/action.yml`
-- `.github/actions/update-git-ref/action.yml`
-- `.github/actions/create-annotated-tag/action.yml`
-- `.github/actions/ensure-psresource-repository/action.yml`
-- `scripts/build/ci/Install-CiPowerShellModules.ps1`
+- `.github/workflows/Publish.yml`, which calls the shared `powershell-ci` publish workflow with `test-command: Test-NovaBuild`
+- the shared `powershell-ci` actions for verified commits, git ref updates, annotated tags, PSResource repository registration, and module installation
 
 Responsibilities currently covered by the release pipeline include:
 
@@ -644,7 +635,7 @@ Responsibilities currently covered by the release pipeline include:
 - publishing to PowerShell Gallery
 - preparing the next prerelease version on `develop`
 
-The workflow now uses `KeepAChangelog` for changelog release moves, creates annotated git tags named directly from the release version, and bootstraps the local PSResourceGet repository store before calling `Publish-NovaModule`. The shared CI installer also installs `Pester 5.7.1` explicitly before it installs prerelease gallery modules so test workflows stay on Nova's supported `Pester 5.x` range and do not rely on transitive manifest dependency resolution.
+The workflow now uses `KeepAChangelog` for changelog release moves, creates annotated git tags named directly from the release version, and bootstraps the local PSResourceGet repository store before calling `Publish-NovaModule`. The shared CI installer installs the `project.json` `Manifest.RequiredModules`, including the supported `Pester 5.x` range, before it installs prerelease gallery modules so test workflows do not rely on transitive manifest dependency resolution.
 
 ### Where NovaModuleTools cmdlets fit
 
@@ -654,7 +645,7 @@ NovaModuleTools already provides the core release building blocks:
 - `Publish-NovaModule`
 - `Invoke-NovaRelease`
 
-The repository workflow combines these with the `KeepAChangelog` module and local reusable GitHub actions instead of a separate semantic-release toolchain.
+The repository workflow combines these with the `KeepAChangelog` module and the shared `powershell-ci` reusable workflows and actions instead of a separate semantic-release toolchain.
 
 ### Contributor expectations for workflow changes
 

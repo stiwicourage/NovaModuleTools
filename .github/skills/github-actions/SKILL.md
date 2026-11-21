@@ -7,20 +7,21 @@ description: Guidance for changing NovaModuleTools GitHub Actions workflows, CI 
 
 ## When to use
 
-Use this skill when changing CI workflows, artifact handling, CodeScene coverage flow, publish automation, or reusable actions under `.github/actions/`.
+Use this skill when changing CI workflows, artifact handling, CodeScene coverage flow, publish automation, or the pinned shared `stiwicourage/powershell-ci` workflows.
 
 ## Relevant files
 
 - `.github/workflows/Tests.yml`
 - `.github/workflows/Publish.yml`
-- `.github/workflows/powershell.yml`
-- `.github/actions/*/action.yml`
-- `scripts/build/ci/*.ps1`
+- `.github/workflows/Security.yml`
+- `stiwicourage/powershell-ci` shared CI workflows and actions
+- `scripts/build/Invoke-ScriptAnalyzerCI.ps1`
 - `run.ps1`
 
 ## Expected practices
 
 - Read the whole affected workflow before editing a single step.
+- Change shared CI behavior in `powershell-ci`, release it, and then update the pinned version in every caller; do not reintroduce local copies of shared actions or CI scripts.
 - Keep artifact names and paths aligned with the scripts that produce them.
 - Treat `main` and `develop` release behavior in `Publish.yml` as deliberate and branch-specific.
 - If a change must alter release behavior for both `main` and `develop` at once, explicitly justify the change for each branch independently in comments or the PR description before editing `Publish.yml`.
@@ -28,7 +29,7 @@ Use this skill when changing CI workflows, artifact handling, CodeScene coverage
 
 ## Common pitfalls
 
-- Changing release automation without understanding the custom actions
+- Changing release automation without understanding the shared `powershell-ci` actions
 - Breaking the CodeScene coverage artifact handoff
 - Updating docs or scripts without updating the matching workflow text
 - Assuming documentation-only workflow changes are low-risk when they describe branch mutation or publish behavior
