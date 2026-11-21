@@ -62,6 +62,7 @@ CI, coverage, and CodeScene automation live in the shared [`stiwicourage/powersh
 
 - `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` delegates to the shared analyzer; clone `powershell-ci` next to this repository or set `POWERSHELL_CI_PATH`
 - the shared tests workflow writes `artifacts/coverage.xml`, runs the CodeScene coverage-gate check on pull requests, and uploads coverage on `develop`
+- `Run-Platform-Matrix.yml` runs the shared `powershell-ci` test actions (unit tests and `Test-NovaBuild`) on Windows, Linux, and macOS without analyzer, changelog, or CodeScene steps; tests guarded with `-Skip:$IsWindows` or `-Skip:(-not $IsWindows)` only run in their own lane, so keep platform-specific behavior under test there
 - change shared CI behavior in `powershell-ci`, release it, and then update the pinned version here
 - if upload succeeds but `-TriggerAnalysis` fails with a project-owner OAuth error, re-authorize the repository in CodeScene for the project owner; that failure is separate from `CS_ACCESS_TOKEN`
 

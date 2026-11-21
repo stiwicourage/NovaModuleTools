@@ -31,6 +31,30 @@ Describe 'Shared powershell-ci workflows' {
         $text | Should -Match 'secrets: inherit'
     }
 
+    It 'runs the shared test actions on the <Platform> platform lane' -ForEach @(
+        @{ Platform = 'Windows'; Runner = 'windows-2025' }
+        @{ Platform = 'Linux'; Runner = 'ubuntu-24.04' }
+        @{ Platform = 'macOS'; Runner = 'macos-15' }
+    ) {
+        $text = Get-WorkflowText -Name 'Run-Platform-Matrix.yml'
+
+        $text | Should -Match "platform: $Platform\s+runner: $Runner"
+    }
+
+    It 'runs every platform lane through the pinned shared test actions without analyzer, changelog, or coverage-upload jobs' {
+        $text = Get-WorkflowText -Name 'Run-Platform-Matrix.yml'
+
+        $text | Should -Match ([regex]::Escape("uses: stiwicourage/powershell-ci/actions/install-ps-modules@$script:sharedVersion"))
+        $text | Should -Match ([regex]::Escape("uses: stiwicourage/powershell-ci/actions/nova-test@$script:sharedVersion"))
+        $text | Should -Match 'fail-fast: false'
+        $text | Should -Match 'runs-on: \$\{\{ matrix\.runner \}\}'
+        $text | Should -Match 'test-isolation: process'
+        $text | Should -Match 'name: nova-platform-\$\{\{ matrix\.platform \}\}'
+        $text | Should -Not -Match '\.github/workflows/tests\.yml'
+        $text | Should -Not -Match '(?i)codescene'
+        $text | Should -Not -Match 'secrets:'
+    }
+
     It 'publishes through the shared publish workflow with build validation tests' {
         $text = Get-WorkflowText -Name 'Publish.yml'
 

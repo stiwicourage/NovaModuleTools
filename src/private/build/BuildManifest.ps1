@@ -90,7 +90,7 @@ function Get-ManifestResourceFilePath {
             return
         }
 
-        $resourceFilePath += Join-Path -Path 'resources' -ChildPath $_.Name
+        $resourceFilePath += "resources/$( $_.Name )"
     }
 
     return $resourceFilePath

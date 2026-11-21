@@ -242,6 +242,13 @@ function Copy-AgenticScaffoldOwnedPath {
     Copy-Item -LiteralPath $sourcePath -Destination $targetPath -Recurse -Force
 }
 
+function Read-AgenticSourceContent {
+    param([Parameter(Mandatory)][string]$Path)
+
+    # Git may check sources out with CRLF (core.autocrlf on Windows); replacements and output use LF.
+    return (Get-Content -LiteralPath $Path -Raw).Replace("`r`n", "`n")
+}
+
 function Write-AgenticMirroredFile {
     param(
         [Parameter(Mandatory)][object]$SourceFile,
@@ -256,7 +263,7 @@ function Write-AgenticMirroredFile {
         New-Item -ItemType Directory -Path $targetDirectory -Force | Out-Null
     }
 
-    $sourceContent = Get-Content -LiteralPath $SourceFile.SourcePath -Raw
+    $sourceContent = Read-AgenticSourceContent -Path $SourceFile.SourcePath
     $targetContent = ConvertTo-AgenticScaffoldContent -Content $sourceContent -ReplacementList $ReplacementList -IdentifierReplacementList $IdentifierReplacementList
     Set-Content -LiteralPath $targetPath -Value $targetContent -Encoding utf8 -NoNewline
 }
@@ -290,7 +297,7 @@ function Get-AgenticGeneratedMirrorContent {
         throw "Agentic generated mirror source does not exist: $SourceRelativePath"
     }
 
-    $sourceContent = Get-Content -LiteralPath $sourcePath -Raw
+    $sourceContent = Read-AgenticSourceContent -Path $sourcePath
     $banner = "<!-- Generated from $SourceRelativePath by scripts/build/Sync-AgenticCopilotScaffold.ps1. Do not edit by hand. -->`n`n"
     $hasReplacements = $ReplacementList -and $ReplacementList.Count -gt 0
     $hasIdentifiers = $IdentifierReplacementList -and $IdentifierReplacementList.Count -gt 0

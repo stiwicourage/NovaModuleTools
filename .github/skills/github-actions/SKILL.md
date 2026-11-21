@@ -13,6 +13,7 @@ Use this skill when changing CI workflows, artifact handling, CodeScene coverage
 
 - `.github/workflows/Tests.yml`
 - `.github/workflows/Publish.yml`
+- `.github/workflows/Run-Platform-Matrix.yml`
 - `.github/workflows/Security.yml`
 - `stiwicourage/powershell-ci` shared CI workflows and actions
 - `scripts/build/Invoke-ScriptAnalyzerCI.ps1`

@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - `Tests.yml`, `Publish.yml`, and the new `Security.yml` are thin callers pinned to a released `powershell-ci` version; the local CI scripts, reusable actions, `powershell.yml`, and `dependency-review.yml` were removed.
     - `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` delegates to the shared analyzer and needs a `powershell-ci` checkout next to the repository or `POWERSHELL_CI_PATH`. Its unused `-IncludeTests` switch was removed.
     - The generated agentic Copilot guidance no longer references `scripts/build/ci/` helpers that generated projects never contain.
+    - The new `Run-Platform-Matrix.yml` runs the shared `powershell-ci` test actions on Windows, Linux, and macOS, so Windows-only and POSIX-only tests run on their own platform.
+    - `Sync-AgenticCopilotScaffold.ps1` now writes the same LF output when sources are checked out with CRLF line endings.
 - `Update-NovaModuleTool` and `% nova update` now resolve and install updates through `PSModuleUpdate` 0.3.0 or later instead of PowerShellGet `Update-Module`.
     - The new version is staged and verified with `Microsoft.PowerShell.PSResourceGet` before activation, and the installed module's scope is kept.
     - `PSModuleUpdate` is imported only by the self-update command. When it is missing, Nova installs it from PowerShell Gallery for the current user after `ShouldProcess`; `-WhatIf` stops with install guidance instead.
@@ -37,6 +39,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Local publish and local release now install into `<ModulesRoot>/<ProjectName>/<ModuleVersion>/` using the authoritative built manifest's numeric version, including two-, three-, and four-component versions.
     - Prerelease labels remain in `PrivateData.PSData.Prerelease`; only the same numeric version directory is replaced. Other numeric versions and legacy flat files are preserved without automatic cleanup.
     - Local publish resolves activation after build/publication, and local release resolves its destination from the rebuilt manifest after a version bump rather than stale project metadata. Invalid or missing built manifest versions fail before destination mutation.
+- Modules built on Windows now list `resources/` format and type files in the manifest with forward slashes, so the built manifest stays usable on Linux and macOS.
+- `Invoke-NovaTest` now passes native file paths to Pester code coverage on Windows instead of forward-slash paths.
 
 ### Security
 

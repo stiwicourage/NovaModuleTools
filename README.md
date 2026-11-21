@@ -598,6 +598,7 @@ At a minimum, contributor changes are expected to keep these workflows healthy:
 The workflow implementation lives in the shared [`stiwicourage/powershell-ci`](https://github.com/stiwicourage/powershell-ci) repository. This repository only keeps thin callers pinned to a released `powershell-ci` version:
 
 - `.github/workflows/Tests.yml` - analyzer, build, tests, changelog validation, artifacts, and CodeScene coverage flow
+- `.github/workflows/Run-Platform-Matrix.yml` - build, unit tests, and build validation on Windows, Linux, and macOS through the shared `powershell-ci` test actions, so platform-specific tests run on their own platform
 - `.github/workflows/Security.yml` - CodeQL, PSScriptAnalyzer SARIF, and dependency review
 - `.github/workflows/Publish.yml` - release and prerelease publishing
 

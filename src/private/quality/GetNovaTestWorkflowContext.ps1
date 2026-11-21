@@ -473,6 +473,7 @@ function Get-NovaPesterCoverageFile {
     $resolvedProjectRoot = [System.IO.Path]::GetFullPath($ProjectRoot)
     foreach ($file in (Get-ChildItem -LiteralPath $resolvedProjectRoot -Recurse -File | Sort-Object FullName)) {
         [pscustomobject]@{
+            NativePath = $file.FullName
             FullPath = ConvertTo-NovaCoveragePathString -Path $file.FullName
             RelativePath = ConvertTo-NovaCoveragePathString -Path ([System.IO.Path]::GetRelativePath($resolvedProjectRoot, $file.FullName))
         }
@@ -490,8 +491,8 @@ function Add-NovaResolvedCoveragePath {
     $patternVariant = @(Get-NovaCoveragePathPatternVariant -Pattern $Pattern)
 
     foreach ($file in $CoverageFile) {
-        if ((Test-NovaCoveragePathMatch -CoverageFile $file -Pattern $patternVariant) -and -not $ResolvedPath.Contains($file.FullPath)) {
-            $ResolvedPath.Add($file.FullPath)
+        if ((Test-NovaCoveragePathMatch -CoverageFile $file -Pattern $patternVariant) -and -not $ResolvedPath.Contains($file.NativePath)) {
+            $ResolvedPath.Add($file.NativePath)
         }
     }
 }
