@@ -30,3 +30,16 @@ Describe 'Get-NovaModuleInstallScope' {
         Get-NovaModuleInstallScope -ModuleBase $moduleBase | Should -Be 'CurrentUser'
     }
 }
+
+Describe 'Get-NovaAllUsersModuleRoot' {
+    It 'returns the Program Files PowerShell modules root on Windows' {
+        $programFiles = Join-Path $TestDrive 'ProgramFiles'
+        $expected = Join-Path (Join-Path $programFiles 'PowerShell') 'Modules'
+
+        Get-NovaAllUsersModuleRoot -IsWindowsPlatform $true -ProgramFilesPath $programFiles | Should -Be $expected
+    }
+
+    It 'returns the shared POSIX PowerShell modules root on macOS/Linux' {
+        Get-NovaAllUsersModuleRoot -IsWindowsPlatform $false | Should -Be '/usr/local/share/powershell/Modules'
+    }
+}

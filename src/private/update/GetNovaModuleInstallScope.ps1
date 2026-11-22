@@ -18,10 +18,13 @@ function Get-NovaModuleInstallScope {
 function Get-NovaAllUsersModuleRoot {
     [CmdletBinding()]
     [OutputType([string])]
-    param()
+    param(
+        [bool]$IsWindowsPlatform = $IsWindows,
+        [string]$ProgramFilesPath = [Environment]::GetFolderPath('ProgramFiles')
+    )
 
-    if ($IsWindows) {
-        return Join-Path (Join-Path ([Environment]::GetFolderPath('ProgramFiles')) 'PowerShell') 'Modules'
+    if ($IsWindowsPlatform) {
+        return Join-Path (Join-Path $ProgramFilesPath 'PowerShell') 'Modules'
     }
 
     return '/usr/local/share/powershell/Modules'
