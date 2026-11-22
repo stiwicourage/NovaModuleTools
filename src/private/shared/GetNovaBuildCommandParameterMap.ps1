@@ -1,5 +1,6 @@
 function Get-NovaBuildCommandParameterMap {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [hashtable]$WorkflowParams = @{},
         [switch]$OverrideWarningRequested

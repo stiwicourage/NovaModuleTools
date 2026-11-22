@@ -1,5 +1,6 @@
 function Get-NovaCliInstallDirectory {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [string]$DestinationDirectory
     )

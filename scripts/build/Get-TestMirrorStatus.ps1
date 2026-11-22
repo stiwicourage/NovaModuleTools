@@ -13,7 +13,7 @@ function Resolve-MirrorStatusProjectRoot {
         return (Resolve-Path -LiteralPath $ProjectRoot -ErrorAction Stop).Path
     }
 
-    return (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..' '..')).Path
+    return (Resolve-Path -LiteralPath (Join-Path -Path $PSScriptRoot -ChildPath '..' -AdditionalChildPath '..')).Path
 }
 
 function Get-SourceMirrorEntry {

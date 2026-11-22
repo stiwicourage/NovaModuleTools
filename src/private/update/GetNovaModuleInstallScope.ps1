@@ -1,5 +1,6 @@
 function Get-NovaModuleInstallScope {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$ModuleBase
     )
@@ -16,6 +17,7 @@ function Get-NovaModuleInstallScope {
 
 function Get-NovaAllUsersModuleRoot {
     [CmdletBinding()]
+    [OutputType([string])]
     param()
 
     if ($IsWindows) {

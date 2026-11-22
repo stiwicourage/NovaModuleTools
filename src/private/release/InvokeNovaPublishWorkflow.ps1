@@ -1,5 +1,6 @@
 function Test-NovaPublishWorkflowShouldImportLocalModule {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$ShouldRun
@@ -10,6 +11,7 @@ function Test-NovaPublishWorkflowShouldImportLocalModule {
 
 function Test-NovaPublishWorkflowWhatIfEnabled {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -96,6 +98,7 @@ function Invoke-NovaPublishWorkflow {
 
 function Get-NovaPublishWorkflowValidationStatus {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -109,6 +112,7 @@ function Get-NovaPublishWorkflowValidationStatus {
 
 function Get-NovaPublishWorkflowPublishStatus {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$WhatIfEnabled
@@ -179,6 +183,7 @@ function Write-NovaPublishWorkflowResolvedResult {
 
 function Get-NovaPublishWorkflowStatusMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$WhatIfEnabled
@@ -193,6 +198,7 @@ function Get-NovaPublishWorkflowStatusMessage {
 
 function Get-NovaPublishWorkflowNextStepLine {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$WhatIfEnabled

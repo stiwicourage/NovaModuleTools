@@ -1,5 +1,6 @@
 function Get-GitCommitMessageForVersionBump {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot
     )
@@ -32,6 +33,7 @@ function Get-NovaVersionBumpCommitLogResult {
 
 function ConvertFrom-NovaVersionBumpCommitLogResult {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$Result
     )

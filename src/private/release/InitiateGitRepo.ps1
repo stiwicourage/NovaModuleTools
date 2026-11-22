@@ -1,5 +1,6 @@
 function New-InitiateGitRepo {
     [CmdletBinding(SupportsShouldProcess = $true)]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory = $true)]
         [string]$DirectoryPath,
@@ -38,6 +39,7 @@ function New-InitiateGitRepo {
 
 function Get-NovaGitInitializationFailureMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$Result
     )

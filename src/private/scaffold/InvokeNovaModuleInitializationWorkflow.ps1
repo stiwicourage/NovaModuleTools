@@ -66,6 +66,7 @@ function Write-NovaModuleInitializationResult {
 
 function Get-NovaModuleInitializationNextStepLine {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )

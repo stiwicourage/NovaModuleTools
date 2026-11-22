@@ -1,5 +1,6 @@
 function ConvertTo-NovaCliArgumentArray {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][hashtable]$BoundParameters,
         [AllowNull()][string[]]$Arguments

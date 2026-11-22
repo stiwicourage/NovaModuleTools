@@ -1,5 +1,6 @@
 function Get-IndexableFunctionAstFromFile {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][string]$Path
     )

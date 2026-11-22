@@ -9,6 +9,7 @@ function Get-NovaCliHelpText {
 
 function Get-NovaCliHelpOptionLabel {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][hashtable]$Option
     )
@@ -48,6 +49,7 @@ function Format-NovaCliShortOptionLine {
 
 function Format-NovaCliLongOptionBlock {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][hashtable]$Option
     )
@@ -60,6 +62,7 @@ function Format-NovaCliLongOptionBlock {
 
 function Get-NovaCliShortOptionText {
     [CmdletBinding()]
+    [OutputType([object[]], [string])]
     param(
         [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Options
     )
@@ -74,6 +77,7 @@ function Get-NovaCliShortOptionText {
 
 function Get-NovaCliLongOptionText {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Options
     )
@@ -100,6 +104,7 @@ function Get-NovaCliLongOptionText {
 
 function Get-NovaCliExampleText {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Examples
     )

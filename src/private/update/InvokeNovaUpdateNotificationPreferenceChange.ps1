@@ -22,6 +22,7 @@ function Invoke-NovaUpdateNotificationPreferenceChange {
 
 function Test-NovaUpdateNotificationPreferenceChangeWhatIfEnabled {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -48,6 +49,7 @@ function Write-NovaUpdateNotificationPreferenceChangeResult {
 
 function Get-NovaUpdateNotificationPreferenceChangeStatusMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$WhatIfEnabled
@@ -77,6 +79,7 @@ function Get-NovaUpdateNotificationPreferenceChangeSettingsPath {
 
 function Get-NovaUpdateNotificationPreferenceChangeAvailabilityMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [switch]$WhatIfEnabled
     )
@@ -90,6 +93,7 @@ function Get-NovaUpdateNotificationPreferenceChangeAvailabilityMessage {
 
 function Get-NovaUpdateNotificationPreferenceChangeNextStepLine {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$WhatIfEnabled
@@ -110,6 +114,7 @@ function Get-NovaUpdateNotificationPreferenceChangeNextStepLine {
 
 function Get-NovaUpdateNotificationPreferenceChangeCommandLine {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -123,6 +128,7 @@ function Get-NovaUpdateNotificationPreferenceChangeCommandLine {
 
 function Get-NovaUpdateNotificationPreferenceChangeStateText {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][bool]$PrereleaseNotificationsEnabled
     )

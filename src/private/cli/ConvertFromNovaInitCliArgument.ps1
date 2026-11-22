@@ -1,5 +1,6 @@
 function ConvertFrom-NovaInitCliArgument {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [string[]]$Arguments
     )

@@ -19,6 +19,7 @@ function Update-ManifestPrivateData {
 
 function Get-MergedManifestPrivateData {
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [Parameter(Mandatory)]$Manifest,
         [Parameter(Mandatory)][System.Collections.IDictionary]$PrivateData
@@ -57,6 +58,7 @@ function Get-GeneratedManifestPsData {
 
 function Get-ManifestPsDataDictionary {
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [AllowNull()]$PSData
     )
@@ -79,6 +81,7 @@ function Get-ManifestPsDataDictionary {
 
 function Get-ManifestContentWithUpdatedHashtableEntryValue {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$ManifestPath,
         [Parameter(Mandatory)][string]$Name,

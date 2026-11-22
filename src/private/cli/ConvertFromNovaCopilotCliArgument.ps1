@@ -1,5 +1,6 @@
 function ConvertFrom-NovaCopilotCliArgument {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [string[]]$Arguments
     )

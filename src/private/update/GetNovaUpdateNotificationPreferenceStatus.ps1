@@ -34,6 +34,7 @@ function Write-NovaUpdateNotificationPreferenceStatusVerbose {
 
 function Get-NovaUpdateNotificationPreferenceStateText {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][bool]$Enabled
     )

@@ -33,6 +33,7 @@ function Get-NovaResolvedProjectPackageSettings {
 
 function ConvertTo-NovaPackageLatestPolicy {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [AllowNull()]$Value
     )

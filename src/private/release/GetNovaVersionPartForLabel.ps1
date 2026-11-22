@@ -37,6 +37,7 @@ function Get-NovaVersionPartForLabel {
 
 function Test-NovaVersionShouldFinalizePrereleaseTarget {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][semver]$CurrentVersion,
         [Parameter(Mandatory)][string]$Label
@@ -51,6 +52,7 @@ function Test-NovaVersionShouldFinalizePrereleaseTarget {
 
 function Get-NovaVersionTargetLabelForPrerelease {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][semver]$CurrentVersion
     )

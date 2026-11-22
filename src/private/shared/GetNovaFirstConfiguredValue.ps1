@@ -15,6 +15,7 @@ function Get-NovaFirstConfiguredValue {
 
 function Test-NovaConfiguredValue {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [AllowNull()]$Value
     )

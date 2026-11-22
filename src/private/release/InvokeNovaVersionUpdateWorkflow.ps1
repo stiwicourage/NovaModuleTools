@@ -41,6 +41,7 @@ function Invoke-NovaVersionUpdateWorkflowStep {
 
 function Get-NovaVersionUpdateApplyStatus {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )

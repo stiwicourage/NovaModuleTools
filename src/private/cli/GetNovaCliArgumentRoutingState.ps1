@@ -1,5 +1,6 @@
 function Merge-NovaCliParameterSet {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)][hashtable]$BaseParameters,
         [Parameter(Mandatory)][hashtable]$AdditionalParameters
@@ -14,6 +15,7 @@ function Merge-NovaCliParameterSet {
 
 function Get-NovaCliNormalizedRootCommand {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$Command
     )
@@ -125,6 +127,7 @@ function Assert-NovaCliArgumentSyntax {
 
 function Add-NovaCliCommonOption {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][string]$Argument,
         [Parameter(Mandatory)][hashtable]$ForwardedParameters

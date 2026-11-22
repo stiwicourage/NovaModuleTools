@@ -1,5 +1,6 @@
 function Get-NovaPublishWorkflowOperation {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][bool]$IsLocal,
         [switch]$Release,

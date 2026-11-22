@@ -1,5 +1,6 @@
 function Get-TopLevelFunctionAstFromFile {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][string]$Path
     )

@@ -1,6 +1,7 @@
 function New-NovaErrorRecord {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'New-NovaErrorRecord only constructs and returns an ErrorRecord object.')]
     [CmdletBinding()]
+    [OutputType([System.Management.Automation.ErrorRecord])]
     param(
         [Parameter(Mandatory)][string]$Message,
         [Parameter(Mandatory)][string]$ErrorId,

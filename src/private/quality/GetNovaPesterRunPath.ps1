@@ -1,5 +1,6 @@
 function Get-NovaPesterRunPath {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][object]$ProjectInfo,
         [Parameter()][string]$IncludePattern = '*.Tests.ps1',
@@ -22,6 +23,7 @@ function Get-NovaPesterRunPath {
 
 function Test-NovaPesterExcludedTestPath {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][string]$TestPath,
         [Parameter(Mandatory)][string[]]$ExcludePattern

@@ -1,5 +1,6 @@
 function Deploy-NovaPackage {
     [CmdletBinding(SupportsShouldProcess = $true)]
+    [OutputType([object[]])]
     param(
         [string[]]$PackagePath,
         [string[]]$PackageType,

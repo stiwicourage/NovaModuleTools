@@ -12,6 +12,7 @@ function Install-NovaPSModuleUpdate {
 
 function Get-NovaPSModuleUpdateInstallOption {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param()
 
     $command = Get-Command -Name Install-PSModuleUpdate -ErrorAction SilentlyContinue

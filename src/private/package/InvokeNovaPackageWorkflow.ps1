@@ -56,6 +56,7 @@ function Test-NovaPackageWorkflowWhatIfEnabled {
 
 function Get-NovaPackageValidationStatus {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -87,6 +88,7 @@ function Write-NovaPackageWorkflowResult {
 
 function Get-NovaPackageWorkflowStatusMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [Parameter(Mandatory)][int]$ArtifactCount,
@@ -126,6 +128,7 @@ function Get-NovaPackageWorkflowResultTarget {
 
 function Get-NovaPackageWorkflowNextStepLine {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [switch]$WhatIfEnabled
     )

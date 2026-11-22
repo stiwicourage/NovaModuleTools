@@ -1,6 +1,7 @@
 function Get-NovaProjectPackageSettingsTable {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Package settings is the domain term represented by this helper.')]
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [Parameter(Mandatory)][hashtable]$ProjectData
     )

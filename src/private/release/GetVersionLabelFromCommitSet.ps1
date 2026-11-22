@@ -1,5 +1,6 @@
 function Get-VersionLabelFromCommitSet {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string[]]$Messages
     )
@@ -21,6 +22,7 @@ function Get-VersionLabelFromCommitSet {
 
 function Test-NovaBreakingChangeCommitMessage {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][AllowEmptyString()][string]$Message
     )

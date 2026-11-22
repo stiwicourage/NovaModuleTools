@@ -1,5 +1,6 @@
 function Get-OrderedScriptFileForDirectory {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][string]$Directory,
         [Parameter(Mandatory)][string]$ProjectRoot,

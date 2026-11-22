@@ -1,6 +1,7 @@
 function Get-NovaPackageUploadFileList {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Package upload file list is the domain term represented by this helper.')]
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [string[]]$PackagePath,

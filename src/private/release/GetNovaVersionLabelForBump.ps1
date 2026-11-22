@@ -1,5 +1,6 @@
 function Get-NovaVersionLabelForBump {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot,
         [string[]]$CommitMessages = @(),
@@ -51,6 +52,7 @@ function Test-GitRepositoryHasCommittedHead {
 
 function Test-GitRepositoryHasCommitsSinceLatestTag {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot
     )

@@ -100,6 +100,7 @@ function Write-NovaCliCapturedWarning {
 
 function Get-NovaCliReplayWarningMessage {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [object[]]$WarningMessages = @()
     )
@@ -118,6 +119,7 @@ function Get-NovaCliReplayWarningMessage {
 
 function ConvertTo-NovaCliWarningMessageText {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][object]$WarningMessage
     )

@@ -31,7 +31,7 @@ BeforeAll {
 }
 
 Describe 'Invoke-ScriptAnalyzerCI wrapper' {
-    It 'delegates to the shared analyzer with the Nova analysis scope' {
+    It 'delegates to the shared analyzer with the Nova analysis scope and no severity filter' {
         $shared = New-FakeSharedAnalyzer -ExitCode 0
 
         $result = Invoke-AnalyzerWrapper -SharedRoot $shared.Root
@@ -40,7 +40,7 @@ Describe 'Invoke-ScriptAnalyzerCI wrapper' {
         $arguments = Get-Content -LiteralPath $shared.RecordPath -Raw | ConvertFrom-Json
         $arguments.ProjectRoot | Should -Be $script:repoRoot
         $arguments.AnalysisPath | Should -Be @('src', 'scripts', 'run.ps1')
-        $arguments.Severity | Should -Be @('Error', 'Warning', 'ParseError')
+        $arguments.PSObject.Properties.Name | Should -Not -Contain 'Severity' -Because 'every analyzer severity must fail the gate'
         $arguments.RequiredVersion | Should -Be '1.25.0'
     }
 

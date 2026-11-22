@@ -1,5 +1,6 @@
 function Get-NovaModuleReleaseNotesMessage {
     [CmdletBinding(DefaultParameterSetName = 'Module')]
+    [OutputType([string])]
     param(
         [Parameter(ParameterSetName = 'Module')]
         [object]$Module = $ExecutionContext.SessionState.Module,

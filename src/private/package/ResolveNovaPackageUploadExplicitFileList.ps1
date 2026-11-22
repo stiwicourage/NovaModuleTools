@@ -1,6 +1,7 @@
 function Resolve-NovaPackageUploadExplicitFileList {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Package upload explicit file list is the domain term represented by this helper.')]
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [Parameter(Mandatory)][string[]]$PackagePath,

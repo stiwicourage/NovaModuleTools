@@ -1,5 +1,6 @@
 function Get-NovaPackageAuthorList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [AllowNull()]$AuthorValue
     )

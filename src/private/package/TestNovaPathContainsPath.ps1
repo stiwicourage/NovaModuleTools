@@ -1,5 +1,6 @@
 function Test-NovaPathContainsPath {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][string]$ParentPath,
         [Parameter(Mandatory)][string]$ChildPath

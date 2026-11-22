@@ -1,5 +1,6 @@
 function Get-ProjectScriptFile {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo
     )

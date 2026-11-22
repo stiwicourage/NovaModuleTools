@@ -82,6 +82,7 @@ function Invoke-NovaModuleSelfUpdateWorkflow {
 
 function Test-NovaModuleSelfUpdateWorkflowShouldSkipExecution {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$ShouldRun
@@ -131,6 +132,7 @@ function Write-NovaModuleSelfUpdateWorkflowResult {
 
 function Test-NovaModuleSelfUpdateWorkflowWhatIfEnabled {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -140,6 +142,7 @@ function Test-NovaModuleSelfUpdateWorkflowWhatIfEnabled {
 
 function Get-NovaModuleSelfUpdateWorkflowUpdateStatus {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -153,6 +156,7 @@ function Get-NovaModuleSelfUpdateWorkflowUpdateStatus {
 
 function Get-NovaModuleSelfUpdateWorkflowStatusMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$Result,
         [switch]$WhatIfEnabled
@@ -175,6 +179,7 @@ function Get-NovaModuleSelfUpdateWorkflowStatusMessage {
 
 function Get-NovaModuleSelfUpdateWorkflowNoUpdateMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$Result
     )
@@ -188,6 +193,7 @@ function Get-NovaModuleSelfUpdateWorkflowNoUpdateMessage {
 
 function Get-NovaModuleSelfUpdateWorkflowStatusColor {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$Result
     )
@@ -201,6 +207,7 @@ function Get-NovaModuleSelfUpdateWorkflowStatusColor {
 
 function Get-NovaModuleSelfUpdateWorkflowTargetVersionLine {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$Result
     )
@@ -214,6 +221,7 @@ function Get-NovaModuleSelfUpdateWorkflowTargetVersionLine {
 
 function Get-NovaModuleSelfUpdateWorkflowRepositoryLine {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$Result
     )
@@ -227,6 +235,7 @@ function Get-NovaModuleSelfUpdateWorkflowRepositoryLine {
 
 function Get-NovaModuleSelfUpdateWorkflowNextStepLine {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$Result,
         [switch]$WhatIfEnabled

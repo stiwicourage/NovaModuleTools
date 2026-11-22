@@ -1,5 +1,6 @@
 function Test-NovaCliDirectoryOnPath {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][string]$Directory
     )

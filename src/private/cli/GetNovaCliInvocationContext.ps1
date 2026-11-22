@@ -26,6 +26,7 @@ function Get-NovaCliResolvedInvocationContext {
 
 function Get-NovaCliInvocationWhatIfState {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [switch]$WhatIfEnabled,
         [Parameter(Mandatory)][hashtable]$MutatingCommonParameters,
@@ -37,6 +38,7 @@ function Get-NovaCliInvocationWhatIfState {
 
 function Get-NovaCliInvocationConfirmState {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][hashtable]$MutatingCommonParameters
     )

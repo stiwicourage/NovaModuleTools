@@ -24,6 +24,7 @@ function Build-Help {
 
 function Get-NovaHelpMarkdownItem {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$BuildProjectInfo
     )
@@ -90,6 +91,7 @@ function Rename-NovaGeneratedHelpFolder {
 
 function Get-NovaHelpDocsDir {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$BuildProjectInfo
     )

@@ -1,5 +1,6 @@
 function ConvertTo-NovaPackageType {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$Type
     )

@@ -1,5 +1,6 @@
 function Test-NovaPrereleaseUpdateAvailable {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][pscustomobject]$LookupResult,
         [Parameter(Mandatory)][semver]$InstalledVersion,
