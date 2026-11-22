@@ -3,10 +3,13 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
     commit-message:
       prefix: chore
     groups:
       powershell-ci:
         patterns:
           - "stiwicourage/powershell-ci*"
+    cooldown:
+      exclude:
+        - "stiwicourage/powershell-ci*"
