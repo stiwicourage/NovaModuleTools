@@ -1,6 +1,7 @@
 function Resolve-NovaPackageUploadOutputFileSet {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Package upload output file set is the domain term represented by this helper.')]
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][string]$OutputDirectory,
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,

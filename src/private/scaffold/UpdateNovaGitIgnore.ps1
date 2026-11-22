@@ -1,5 +1,6 @@
 function Get-NovaGitIgnoreManagedLineList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param()
 
     return @(
@@ -15,6 +16,7 @@ function Get-NovaGitIgnoreManagedLineList {
 
 function Get-NovaGitIgnoreLineList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [AllowEmptyString()][string]$Content
     )
@@ -37,6 +39,7 @@ function Get-NovaGitIgnoreLineList {
 
 function ConvertTo-NovaGitIgnoreContent {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [AllowEmptyCollection()][string[]]$LineList = @()
     )
@@ -50,6 +53,7 @@ function ConvertTo-NovaGitIgnoreContent {
 
 function Get-NovaGitIgnoreLineListToAppend {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][string[]]$ExistingLineList
     )

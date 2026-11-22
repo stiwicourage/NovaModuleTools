@@ -23,7 +23,6 @@ jobs:
       test-isolation: process
       changelog-files: ./CHANGELOG.md ./RELEASE_NOTE.md
       script-analyzer-paths: src scripts run.ps1
-      script-analyzer-severity: Error Warning ParseError
       script-analyzer-required-version: '1.25.0'
       artifact-name: nova-ci-artifacts
     secrets: inherit

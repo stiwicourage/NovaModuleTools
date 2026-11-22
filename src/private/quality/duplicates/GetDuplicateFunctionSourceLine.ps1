@@ -1,5 +1,6 @@
 function Get-DuplicateFunctionSourceLine {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][string]$Key,
         [hashtable]$SourceIndex

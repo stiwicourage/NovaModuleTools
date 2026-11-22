@@ -1,5 +1,6 @@
 function Resolve-NovaLocalPublishPath {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [string]$ModuleDirectoryPath
     )

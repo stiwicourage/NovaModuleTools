@@ -1,6 +1,7 @@
 function Resolve-NovaPackageUploadInvocation {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Package upload invocation is the domain term represented by this helper.')]
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [Parameter(Mandatory)][pscustomobject]$UploadOption

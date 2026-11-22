@@ -1,6 +1,7 @@
 function Resolve-NovaPackageUploadTypeList {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Package upload type list is the domain term represented by this helper.')]
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [string[]]$PackageType
@@ -24,6 +25,7 @@ function Resolve-NovaPackageUploadTypeList {
 
 function Resolve-NovaRequestedPackageUploadTypeList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][string[]]$RequestedTypeList,
         [Parameter(Mandatory)][pscustomobject]$PatternInfo

@@ -1,5 +1,6 @@
 function Get-NovaPublishRepositoryDefaultApiKeyEnvironmentVariable {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$Repository
     )
@@ -13,6 +14,7 @@ function Get-NovaPublishRepositoryDefaultApiKeyEnvironmentVariable {
 
 function Get-NovaRepositoryPublishParameterMap {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [Parameter(Mandatory)][string]$Repository,

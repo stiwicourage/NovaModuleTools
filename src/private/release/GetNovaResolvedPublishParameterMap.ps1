@@ -1,5 +1,6 @@
 function Get-NovaResolvedPublishParameterMap {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)][pscustomobject]$PublishInvocation,
         [hashtable]$WorkflowParams = @{}

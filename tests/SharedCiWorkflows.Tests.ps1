@@ -2,13 +2,22 @@ BeforeAll {
     $script:repoRoot = Split-Path -Parent $PSScriptRoot
     $script:workflowRoot = Join-Path $script:repoRoot '.github/workflows'
     $script:sharedWorkflowPrefix = 'stiwicourage/powershell-ci/.github/workflows/'
-    $script:sharedVersion = '0.4.0'
 
     function Get-WorkflowText {
         param([Parameter(Mandatory)][string]$Name)
 
         return Get-Content -LiteralPath (Join-Path $script:workflowRoot $Name) -Raw
     }
+
+    function Get-SharedCiReferenceVersion {
+        $workflowText = Get-ChildItem -LiteralPath $script:workflowRoot -Filter '*.yml' | Get-Content -Raw
+        $references = [regex]::Matches(($workflowText -join "`n"), 'uses: stiwicourage/powershell-ci/\S+@(\S+)')
+        return @($references | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+    }
+
+    # Dependabot bumps every powershell-ci reference together, so the tests follow the pinned tag.
+    $script:sharedVersions = Get-SharedCiReferenceVersion
+    $script:sharedVersion = $script:sharedVersions | Select-Object -First 1
 
     function Get-SharedWorkflowReference {
         param([Parameter(Mandatory)][string]$Name)
@@ -18,6 +27,11 @@ BeforeAll {
 }
 
 Describe 'Shared powershell-ci workflows' {
+    It 'pins every powershell-ci reference to the same released tag' {
+        $script:sharedVersions.Count | Should -Be 1
+        $script:sharedVersion | Should -Match '^\d+\.\d+\.\d+$'
+    }
+
     It 'runs tests through the shared tests workflow with Nova settings' {
         $text = Get-WorkflowText -Name 'Tests.yml'
 
@@ -25,7 +39,7 @@ Describe 'Shared powershell-ci workflows' {
         $text | Should -Match 'test-isolation: process'
         $text | Should -Match 'changelog-files: \./CHANGELOG\.md \./RELEASE_NOTE\.md'
         $text | Should -Match 'script-analyzer-paths: src scripts run\.ps1'
-        $text | Should -Match 'script-analyzer-severity: Error Warning ParseError'
+        $text | Should -Not -Match 'script-analyzer-severity' -Because 'every analyzer severity must fail the gate'
         $text | Should -Match "script-analyzer-required-version: '1\.25\.0'"
         $text | Should -Match 'artifact-name: nova-ci-artifacts'
         $text | Should -Match 'secrets: inherit'

@@ -1,5 +1,6 @@
 function Get-ProjectPreamble {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][hashtable]$ProjectData
     )

@@ -1,6 +1,7 @@
 function Get-NovaPackageMetadataList {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Package metadata list is the domain term represented by this helper.')]
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo
     )
@@ -20,6 +21,7 @@ function Get-NovaPackageMetadataList {
 
 function Get-NovaConfiguredPackageTypeList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [AllowNull()]$PackageSettings
     )
@@ -40,6 +42,7 @@ function Get-NovaConfiguredPackageTypeList {
 
 function Test-NovaPackageLatestEnabled {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [AllowNull()]$PackageSettings,
         [Parameter(Mandatory)][string]$Version
@@ -70,6 +73,7 @@ function Get-NovaPackageLatestPolicy {
 
 function Test-NovaPackageVersionIsStable {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][string]$Version
     )

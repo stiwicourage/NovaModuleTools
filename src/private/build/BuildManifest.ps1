@@ -77,6 +77,7 @@ function Get-ManifestExportDefinition {
 
 function Get-ManifestResourceFilePath {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][string]$ResourcesDir,
         [Parameter(Mandatory)][string]$Filter,

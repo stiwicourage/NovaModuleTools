@@ -1,5 +1,6 @@
 function Get-DuplicateFunctionGroup {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][System.Management.Automation.Language.FunctionDefinitionAst[]]$FunctionAst
     )

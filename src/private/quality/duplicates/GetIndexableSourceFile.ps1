@@ -1,5 +1,6 @@
 function Get-IndexableSourceFile {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][object[]]$File
     )

@@ -441,7 +441,7 @@ Run ScriptAnalyzer with the repository helper:
 PS> ./scripts/build/Invoke-ScriptAnalyzerCI.ps1
 ```
 
-The helper delegates to the shared [`stiwicourage/powershell-ci`](https://github.com/stiwicourage/powershell-ci) analyzer, so clone that repository next to this one or set `POWERSHELL_CI_PATH` to its checkout. It analyzes `src`, `scripts`, and `run.ps1` with PSScriptAnalyzer `1.25.0`, fails on `Error`, `Warning`, and `ParseError` findings, and writes them to `artifacts/scriptanalyzer.txt`.
+The helper delegates to the shared [`stiwicourage/powershell-ci`](https://github.com/stiwicourage/powershell-ci) analyzer, so clone that repository next to this one or set `POWERSHELL_CI_PATH` to its checkout. It analyzes `src`, `scripts`, and `run.ps1` with PSScriptAnalyzer `1.25.0`, fails on every finding, including `Information`, and writes them to `artifacts/scriptanalyzer.txt`.
 
 CI runs through the shared `powershell-ci` reusable workflows. `Tests.yml` runs the same analyzer gate, builds the module, runs `Invoke-NovaTest` and `Test-NovaBuild` in fresh PowerShell processes against the built module, validates `CHANGELOG.md` and `RELEASE_NOTE.md`, and uploads CI-friendly reports such as:
 

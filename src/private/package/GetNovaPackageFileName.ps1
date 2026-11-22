@@ -1,5 +1,6 @@
 function Get-NovaPackageFileName {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [Parameter(Mandatory)][string]$PackageId,
@@ -18,6 +19,7 @@ function Get-NovaPackageFileName {
 
 function Get-NovaPackageBaseFileName {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [Parameter(Mandatory)][string]$PackageId
@@ -38,6 +40,7 @@ function Get-NovaPackageBaseFileName {
 
 function Add-NovaPackageVersionSuffix {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$PackageFileName,
         [Parameter(Mandatory)][string]$Version
@@ -53,6 +56,7 @@ function Add-NovaPackageVersionSuffix {
 
 function ConvertTo-NovaLatestPackageFileName {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$PackageFileName,
         [Parameter(Mandatory)][string]$Version

@@ -16,6 +16,7 @@ function Complete-ScaffoldGitRepository {
 
 function Test-ScaffoldGitInitializationAllowed {
     [CmdletBinding()]
+    [OutputType([bool])]
     param([Parameter(Mandatory)][string]$ProjectRoot)
 
     if (-not (Test-NovaGitCommandAvailable)) {
@@ -32,6 +33,7 @@ function Test-ScaffoldGitInitializationAllowed {
 
 function Test-ScaffoldGitDirectory {
     [CmdletBinding()]
+    [OutputType([bool])]
     param([Parameter(Mandatory)][string]$ProjectRoot)
 
     $directory = [System.IO.DirectoryInfo]::new($ProjectRoot)
@@ -75,6 +77,7 @@ function Get-ScaffoldTemplateFileList {
 
 function Test-ScaffoldGitIdentity {
     [CmdletBinding()]
+    [OutputType([bool])]
     param([Parameter(Mandatory)][string]$ProjectRoot)
 
     foreach ($identity in @('GIT_AUTHOR_IDENT', 'GIT_COMMITTER_IDENT')) {
@@ -133,6 +136,7 @@ function Write-ScaffoldInitialCommit {
 
 function Test-ScaffoldGitIndexEmpty {
     [CmdletBinding()]
+    [OutputType([bool])]
     param([Parameter(Mandatory)][string]$ProjectRoot)
 
     $index = Invoke-ScaffoldGitCheckedCommand -ProjectRoot $ProjectRoot -ArgumentList @('ls-files', '--cached', '-z')

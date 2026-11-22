@@ -1,5 +1,6 @@
 function Resolve-NovaModuleScaffoldBasePath {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$Path
     )

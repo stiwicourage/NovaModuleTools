@@ -1,5 +1,6 @@
 function Get-NovaCliHelpCommandNameList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param()
 
     return @(

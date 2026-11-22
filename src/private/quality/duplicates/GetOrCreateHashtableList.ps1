@@ -1,5 +1,6 @@
 function Get-OrCreateHashtableList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][hashtable]$Index,
         [Parameter(Mandatory)][string]$Key

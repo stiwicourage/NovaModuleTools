@@ -1,5 +1,6 @@
 function Test-NovaCliNoUpdateResult {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [string]$Command,
         [object]$Result
@@ -15,6 +16,7 @@ function Test-NovaCliNoUpdateResult {
 
 function Test-NovaCliVersionUpdateResult {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [string]$Command,
         [object]$Result
@@ -36,6 +38,7 @@ function Test-NovaCliVersionUpdateResult {
 
 function Format-NovaCliVersionUpdateResult {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][object]$Result
     )
@@ -51,6 +54,7 @@ function Format-NovaCliVersionUpdateResult {
 
 function Format-NovaCliCommandResult {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [string]$Command,
         [object]$Result

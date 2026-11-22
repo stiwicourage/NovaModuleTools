@@ -1,5 +1,6 @@
 function Get-NovaCliForwardingParameterSet {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)][hashtable]$BoundParameters,
         [switch]$IncludeShouldProcess

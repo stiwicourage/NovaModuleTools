@@ -1,5 +1,6 @@
 function Get-NovaPackageMetadataElement {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$Name,
         [AllowNull()][string]$Value

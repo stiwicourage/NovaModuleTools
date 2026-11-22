@@ -1,5 +1,6 @@
 function Get-NovaTestWorkflowOperation {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$TestMode
     )
@@ -105,6 +106,7 @@ function Assert-NovaPesterModuleRequirementSupported {
 
 function Get-NovaPesterVersionText {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [AllowNull()][object]$InputObject,
         [Parameter(Mandatory)][string]$Name,
@@ -121,6 +123,7 @@ function Get-NovaPesterVersionText {
 
 function Get-NovaPesterVersionRangeText {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ModuleRequirement
     )
@@ -130,6 +133,7 @@ function Get-NovaPesterVersionRangeText {
 
 function Get-AvailableNovaPesterModule {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ModuleRequirement
     )
@@ -143,6 +147,7 @@ function Get-AvailableNovaPesterModule {
 
 function Get-LoadedNovaPesterModule {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ModuleRequirement
     )
@@ -156,6 +161,7 @@ function Get-LoadedNovaPesterModule {
 
 function Test-NovaPesterModuleVersionSupported {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [AllowNull()][object]$Version,
         [Parameter(Mandatory)][pscustomobject]$ModuleRequirement
@@ -171,6 +177,7 @@ function Test-NovaPesterModuleVersionSupported {
 
 function Get-NovaPesterDependencyMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ModuleRequirement
     )
@@ -280,6 +287,7 @@ function Get-NovaDiscoveredTestPathState {
 
 function Get-NovaMissingBuildValidationTestMessageLine {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [Parameter(Mandatory)][pscustomobject]$WorkflowProfile
@@ -341,6 +349,7 @@ function Get-NovaTestWorkflowProfile {
 
 function Get-NovaTestWorkflowMode {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][hashtable]$TestOption
     )
@@ -373,6 +382,7 @@ function Get-NovaTestWorkflowPesterConfiguration {
 
 function Get-NovaConfiguredPesterCoveragePercentTarget {
     [CmdletBinding()]
+    [OutputType([double])]
     param(
         [Parameter(Mandatory)][object]$ProjectPesterSettings
     )
@@ -392,6 +402,7 @@ function Get-NovaConfiguredPesterCoveragePercentTarget {
 
 function Get-NovaConfiguredPesterCoveragePath {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][object]$ProjectPesterSettings
     )
@@ -446,6 +457,7 @@ function Get-NovaDisabledPesterCoverageConfiguration {
 
 function Get-NovaResolvedPesterCoveragePath {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo
     )
@@ -499,6 +511,7 @@ function Add-NovaResolvedCoveragePath {
 
 function Resolve-NovaPesterProjectPath {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot,
         [AllowNull()][string]$Path
@@ -518,6 +531,7 @@ function Resolve-NovaPesterProjectPath {
 
 function Get-NovaPesterPathOptionValue {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [AllowNull()][object]$InputObject
     )
@@ -536,6 +550,7 @@ function Get-NovaPesterPathOptionValue {
 
 function Test-NovaCoveragePathMatch {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][pscustomobject]$CoverageFile,
         [Parameter(Mandatory)][string[]]$Pattern
@@ -553,6 +568,7 @@ function Test-NovaCoveragePathMatch {
 
 function Get-NovaCoveragePathPatternVariant {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][string]$Pattern
     )

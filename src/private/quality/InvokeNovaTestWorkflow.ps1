@@ -130,6 +130,7 @@ function Invoke-NovaTestWorkflowStep {
 
 function Get-NovaTestWorkflowBuildStatus {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [switch]$WhatIfEnabled
     )
@@ -195,6 +196,7 @@ function Write-NovaPesterExecutionOutput {
 
 function Get-NovaPesterExecutionInformationRecordBuffer {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$Execution
     )
@@ -244,6 +246,7 @@ function Invoke-NovaPesterExecutionProgressStateUpdate {
 
 function Get-NovaPesterInformationMessageText {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][object]$Record
     )
@@ -258,6 +261,7 @@ function Get-NovaPesterInformationMessageText {
 
 function Get-NovaPesterDiscoveredTestCount {
     [CmdletBinding()]
+    [OutputType([int])]
     param(
         [AllowNull()][string]$MessageText
     )
@@ -272,6 +276,7 @@ function Get-NovaPesterDiscoveredTestCount {
 
 function Test-NovaPesterTestCompletionMessage {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][object]$Record,
         [AllowNull()][string]$MessageText
@@ -291,6 +296,7 @@ function Test-NovaPesterTestCompletionMessage {
 
 function Test-NovaPesterHostInformationMessage {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [AllowNull()][object]$MessageData
     )
@@ -352,6 +358,7 @@ function Get-NovaPesterExecution {
 
 function Get-NovaPesterExecutionScript {
     [CmdletBinding()]
+    [OutputType([string])]
     param()
 
     return @'
@@ -443,6 +450,7 @@ function Write-NovaTestWorkflowPesterProgress {
 
 function Get-NovaTestWorkflowPesterStatus {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [AllowNull()][object]$TotalTestCount
     )
@@ -456,6 +464,7 @@ function Get-NovaTestWorkflowPesterStatus {
 
 function Get-NovaTestWorkflowPesterPercentComplete {
     [CmdletBinding()]
+    [OutputType([int])]
     param(
         [Parameter(Mandatory)][int]$StartPercentComplete,
         [Parameter(Mandatory)][int]$EndPercentComplete,
@@ -486,6 +495,7 @@ function Get-NovaTestWorkflowPesterPercentComplete {
 
 function Get-NovaTestWorkflowFailureMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -517,6 +527,7 @@ function Write-NovaTestWorkflowResult {
 
 function Get-NovaTestWorkflowStatusMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$WhatIfEnabled
@@ -531,6 +542,7 @@ function Get-NovaTestWorkflowStatusMessage {
 
 function Get-NovaTestWorkflowCoverageMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [AllowNull()][object]$TestResult,
@@ -563,6 +575,7 @@ function Get-NovaTestWorkflowCoverageMessage {
 
 function Get-NovaTestWorkflowNextStepLine {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$WhatIfEnabled
@@ -584,6 +597,7 @@ function Get-NovaTestWorkflowNextStepLine {
 
 function Test-NovaTestWorkflowHasDiscoveredTest {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -597,6 +611,7 @@ function Test-NovaTestWorkflowHasDiscoveredTest {
 
 function Test-NovaTestWorkflowBuildRequested {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -606,6 +621,7 @@ function Test-NovaTestWorkflowBuildRequested {
 
 function Test-NovaTestWorkflowShouldRun {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [Parameter(Mandatory)][hashtable]$BoundParameters,
@@ -621,6 +637,7 @@ function Test-NovaTestWorkflowShouldRun {
 
 function Test-NovaWhatIfWorkflowContext {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -710,6 +727,7 @@ function Get-NovaDefaultCoverageTargetAssertionScriptBlock {
 
 function Get-NovaConfiguredCoveragePercentTarget {
     [CmdletBinding()]
+    [OutputType([double])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -735,6 +753,7 @@ function Get-NovaConfiguredCoveragePercentTarget {
 
 function Get-NovaTestWorkflowCommandName {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -775,6 +794,7 @@ function Get-NovaPropertyValue {
 
 function Format-NovaCoveragePercentValue {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][double]$Value
     )

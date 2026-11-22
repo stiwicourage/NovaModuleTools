@@ -1,5 +1,6 @@
 function Get-NovaPackageContentItemList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [Parameter(Mandatory)][pscustomobject]$PackageMetadata

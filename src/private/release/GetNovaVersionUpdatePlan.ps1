@@ -36,6 +36,7 @@ function Get-NovaVersionUpdateProjectInfo {
 
 function Get-NovaCurrentVersionForUpdatePlan {
     [CmdletBinding()]
+    [OutputType([semver])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo
     )
@@ -74,6 +75,7 @@ function Get-NovaVersionPartForUpdatePlan {
 
 function Test-NovaVersionShouldPreserveInitialStableReleaseTarget {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][semver]$CurrentVersion,
         [switch]$PreviewRelease

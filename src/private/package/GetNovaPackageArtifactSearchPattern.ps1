@@ -1,5 +1,6 @@
 function Get-NovaPackageArtifactSearchPattern {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [Parameter(Mandatory)][string]$PackageType

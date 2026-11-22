@@ -1,5 +1,6 @@
 function Get-NovaShouldProcessForwardingParameter {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [switch]$WhatIfEnabled
     )

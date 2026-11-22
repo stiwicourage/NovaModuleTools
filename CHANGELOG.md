@@ -17,10 +17,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Repository CI now runs through the shared `stiwicourage/powershell-ci` reusable workflows instead of local copies.
     - `Tests.yml`, `Publish.yml`, and the new `Security.yml` are thin callers pinned to a released `powershell-ci` version; the local CI scripts, reusable actions, `powershell.yml`, and `dependency-review.yml` were removed.
     - `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` delegates to the shared analyzer and needs a `powershell-ci` checkout next to the repository or `POWERSHELL_CI_PATH`. Its unused `-IncludeTests` switch was removed.
+    - The ScriptAnalyzer gate, both locally and in CI, now fails on every severity, including `Information`. Functions declare their return types with `[OutputType()]` and commands use named parameters, so only the `PSAvoidUsingWriteHost` exclusion remains.
     - The generated agentic Copilot guidance no longer references `scripts/build/ci/` helpers that generated projects never contain.
     - The new `Run-Platform-Matrix.yml` runs the shared `powershell-ci` test actions on Windows, Linux, and macOS, so Windows-only and POSIX-only tests run on their own platform.
     - `Sync-AgenticCopilotScaffold.ps1` now writes the same LF output when sources are checked out with CRLF line endings.
-    - Dependabot now checks the GitHub Actions references weekly and proposes new `powershell-ci` tags as one grouped `chore` pull request.
+    - Dependabot now checks the GitHub Actions references daily, without the default release cooldown for `powershell-ci`, and proposes new `powershell-ci` tags as one grouped `chore` pull request.
+    - The shared CI contract tests follow the pinned `powershell-ci` tag instead of a hard-coded version, and require every reference to use the same released tag, so grouped Dependabot updates no longer fail them.
 - `Update-NovaModuleTool` and `% nova update` now resolve and install updates through `PSModuleUpdate` 0.3.0 or later instead of PowerShellGet `Update-Module`.
     - The new version is staged and verified with `Microsoft.PowerShell.PSResourceGet` before activation, and the installed module's scope is kept.
     - `PSModuleUpdate` is imported only by the self-update command. When it is missing, Nova installs it from PowerShell Gallery for the current user after `ShouldProcess`; `-WhatIf` stops with install guidance instead.

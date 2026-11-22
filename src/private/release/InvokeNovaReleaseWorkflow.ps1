@@ -1,5 +1,6 @@
 function Get-NovaReleaseNestedWorkflowParameterMap {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [hashtable]$WorkflowParams = @{},
         [switch]$ContinuousIntegrationRequested
@@ -29,6 +30,7 @@ function Get-NovaReleaseBuildWorkflowParameterMap {
 
 function Test-NovaReleaseWorkflowShouldRestoreBuiltModule {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [hashtable]$WorkflowParams = @{},
         [switch]$ContinuousIntegrationRequested
@@ -111,6 +113,7 @@ function Invoke-NovaReleaseWorkflowStep {
 
 function Test-NovaReleaseWorkflowWhatIfEnabled {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [hashtable]$WorkflowParams = @{}
     )
@@ -120,6 +123,7 @@ function Test-NovaReleaseWorkflowWhatIfEnabled {
 
 function Get-NovaReleaseVersionStepStatus {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [switch]$WhatIfEnabled
     )
@@ -133,6 +137,7 @@ function Get-NovaReleaseVersionStepStatus {
 
 function Get-NovaReleasePublishStepStatus {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$WhatIfEnabled
@@ -217,6 +222,7 @@ function Get-NovaReleaseWorkflowResultVersion {
 
 function Get-NovaReleaseWorkflowStatusMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [AllowNull()][string]$Version,
@@ -240,6 +246,7 @@ function Get-NovaReleaseWorkflowStatusMessage {
 
 function Get-NovaReleaseWorkflowNextStepLine {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$WhatIfEnabled

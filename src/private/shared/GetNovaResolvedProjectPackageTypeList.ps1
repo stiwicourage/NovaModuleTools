@@ -1,6 +1,7 @@
 function Get-NovaResolvedProjectPackageTypeList {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Package type list is the domain term represented by this resolver.')]
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][System.Collections.IDictionary]$PackageSettings
     )

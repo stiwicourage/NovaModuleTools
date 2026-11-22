@@ -13,6 +13,7 @@ function Get-NovaModuleAgenticCopilotProjectShortName {
 
 function Get-NovaModuleAgenticCopilotTemplateTokenMap {
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [Parameter(Mandatory)][hashtable]$Answer
     )
@@ -92,6 +93,7 @@ function Expand-NovaModuleAgenticCopilotTemplateContent {
 
 function Test-NovaModuleAgenticCopilotTemplateFileEnabled {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][hashtable]$Answer,
         [Parameter(Mandatory)][string]$RelativePath,
@@ -125,6 +127,7 @@ function Test-NovaModuleAgenticCopilotPathMatchesPolicyEntry {
 
 function Test-NovaModuleAgenticCopilotPathMatchesPolicyList {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][string]$RelativePath,
         [string[]]$EntryList = @()
@@ -141,6 +144,7 @@ function Test-NovaModuleAgenticCopilotPathMatchesPolicyList {
 
 function Get-NovaModuleAgenticCopilotDestinationWriteMode {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$RelativePath,
         [AllowNull()][pscustomobject]$ScaffoldPolicy
@@ -163,6 +167,7 @@ function Get-NovaModuleAgenticCopilotDestinationWriteMode {
 
 function Test-NovaModuleAgenticCopilotShouldWriteDestinationFile {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][string]$DestinationPath,
         [Parameter(Mandatory)][string]$WriteMode
@@ -181,6 +186,7 @@ function Test-NovaModuleAgenticCopilotShouldWriteDestinationFile {
 
 function ConvertTo-NovaModuleAgenticCopilotNormalizedFileContent {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [AllowEmptyString()][string]$Content
     )

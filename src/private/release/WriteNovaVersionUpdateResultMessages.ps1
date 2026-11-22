@@ -55,6 +55,7 @@ function Get-NovaVersionUpdateResultAdvisoryMessage {
 
 function Get-NovaVersionUpdateResultStatusMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][object]$Result
     )
@@ -72,6 +73,7 @@ function Get-NovaVersionUpdateResultStatusMessage {
 
 function Get-NovaVersionUpdateResultStatusColor {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][object]$Result
     )
@@ -109,6 +111,7 @@ function Get-NovaVersionUpdateResultDetailText {
 
 function Get-NovaVersionUpdateResultTargetLine {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][object]$Result
     )
@@ -128,6 +131,7 @@ function Get-NovaVersionUpdateResultTargetLine {
 
 function Get-NovaVersionUpdateResultLabelText {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][object]$Result
     )
@@ -146,6 +150,7 @@ function Get-NovaVersionUpdateResultLabelText {
 
 function Get-NovaVersionUpdateResultNextStepText {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][object]$Result
     )

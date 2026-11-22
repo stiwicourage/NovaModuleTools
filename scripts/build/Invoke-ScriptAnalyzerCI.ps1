@@ -13,7 +13,7 @@ if (-not (Test-Path -LiteralPath $sharedScript -PathType Leaf)) {
 }
 
 & $sharedScript -ProjectRoot $repositoryRoot -OutputDirectory $OutputDirectory -RequiredVersion '1.25.0' `
-    -AnalysisPath 'src', 'scripts', 'run.ps1' -Severity 'Error', 'Warning', 'ParseError'
+    -AnalysisPath 'src', 'scripts', 'run.ps1'
 if ($LASTEXITCODE -ne 0) {
     throw "PSScriptAnalyzer gate failed with exit code $LASTEXITCODE."
 }

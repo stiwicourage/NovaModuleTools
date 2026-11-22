@@ -38,6 +38,7 @@ function Write-NovaCliInstallResult {
 
 function Get-NovaCliInstallNextStepLine {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$Result
     )

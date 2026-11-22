@@ -1,5 +1,6 @@
 function Copy-NovaPublishOption {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [hashtable]$PublishOption = @{}
     )
@@ -35,4 +36,3 @@ function Get-NovaReleasePublishOption {
     $releasePublishOption.OverrideWarning = $ReleaseParameters.OverrideWarningRequested
     return $releasePublishOption
 }
-

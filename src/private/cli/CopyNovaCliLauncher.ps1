@@ -1,5 +1,6 @@
 function Copy-NovaCliLauncher {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$SourcePath,
         [Parameter(Mandatory)][string]$TargetPath,

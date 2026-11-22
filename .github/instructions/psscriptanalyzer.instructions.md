@@ -24,17 +24,17 @@ Use this file when changing PowerShell code, tests, build helpers, or analyzer w
     - the run is justified as focused local investigation or analyzer-tooling work
     - the target is a real `.ps1`, `.psm1`, or `.psd1` path
     - use `-Recurse` when analyzing a directory
-    - use `-Settings` with the repository-approved settings source, which in this repository is the wrapper-owned `$settingsPath` configuration in `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
+    - use `-Settings` with the repository-approved settings source when one exists; in this repository that is the shared `powershell-ci` analyzer default that `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` delegates to, which runs every rule except `PSAvoidUsingWriteHost`, so pass `-ExcludeRule PSAvoidUsingWriteHost` instead
     - if using `-Fix`, run `-WhatIf` first and inspect the diff afterwards
     - do not use `-EnableExit` when the repository wrapper already defines failure semantics
-5. Treat `Error`, `Warning`, and `ParseError` diagnostics as findings to fix before opening a pull request or passing the change to a reviewer. Parser errors are analyzer diagnostics too and are not something to suppress away.
-6. Do not add ad hoc `ExcludeRule`, `ExcludeRules`, `SuppressMessageAttribute`, or custom settings changes just to make the analyzer pass. Only keep analyzer exceptions explicitly present in the wrapper-owned `$settingsPath` configuration in `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` and justified narrowly.
+5. Treat every diagnostic, including `Information`, as a finding to fix before opening a pull request or passing the change to a reviewer. Parser errors are analyzer diagnostics too and are not something to suppress away.
+6. Do not add ad hoc `ExcludeRule`, `ExcludeRules`, `SuppressMessageAttribute`, or custom settings changes just to make the analyzer pass. The only approved exception is the shared analyzer's `PSAvoidUsingWriteHost` exclusion.
 7. `Invoke-ScriptAnalyzer -Fix` is optional and only applies to selected rules. Review every change it would make, prefer `-WhatIf` first, and inspect the diff afterwards.
 8. `Invoke-ScriptAnalyzer -EnableExit` is useful for CI shells, but if the repository already has a wrapper with established failure semantics, do not replace that wrapper with an ad hoc direct invocation.
 
 ## Authoring guidance
 
-- Prefer one focused analyzer run on the changed files while iterating, then rerun `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`, then `./run.ps1` before opening a pull request or passing the change to a reviewer. During iterative focused runs, apply the same severity threshold as the full CI run: fix all `Error`, `Warning`, and `ParseError` diagnostics; `Information` diagnostics may be deferred unless the repository settings elevate them.
+- Prefer one focused analyzer run on the changed files while iterating, then rerun `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`, then `./run.ps1` before opening a pull request or passing the change to a reviewer. During iterative focused runs, apply the same gate as the full CI run: fix every diagnostic, including `Information`. Do not narrow the gate with a severity filter such as the shared `script-analyzer-severity` input.
 - Keep analyzer wrappers focused on source files and helper scripts, not generated output such as `dist/` or `artifacts/`.
 - If the repository has a `PSScriptAnalyzerSettings.psd1` file or a wrapper-owned settings hashtable, treat that configuration as authoritative for direct `Invoke-ScriptAnalyzer` runs.
 - Built-in presets such as `PSGallery` or `CodeFormatting` exist, but do not switch to them unless the repository explicitly adopts them.

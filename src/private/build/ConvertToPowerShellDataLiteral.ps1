@@ -1,5 +1,6 @@
 function ConvertTo-PowerShellDataLiteral {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [AllowNull()]$Value,
         [int]$IndentLevel = 0
@@ -38,6 +39,7 @@ function ConvertTo-PowerShellDataLiteral {
 
 function ConvertTo-PowerShellQuotedStringLiteral {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [AllowEmptyString()]
         [Parameter(Mandatory)][string]$Value
@@ -48,6 +50,7 @@ function ConvertTo-PowerShellQuotedStringLiteral {
 
 function Test-PowerShellDataNumber {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [AllowNull()]$Value
     )
@@ -73,6 +76,7 @@ function Test-PowerShellDataNumber {
 
 function Test-PowerShellDataList {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [AllowNull()]$Value
     )
@@ -110,6 +114,7 @@ function Get-PowerShellDataIndent {
 
 function Format-PowerShellDataBlock {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$OpeningToken,
         [Parameter(Mandatory)][string[]]$ItemList,
@@ -165,6 +170,7 @@ function Get-PowerShellCollectionBlockDescriptorForCount {
 
 function Get-PowerShellCollectionBlockItemList {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)]$Value,
         [int]$IndentLevel = 0
@@ -187,6 +193,7 @@ function Get-PowerShellCollectionBlockItemList {
 
 function Get-PowerShellDataDictionaryKeyList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][System.Collections.IDictionary]$Dictionary
     )

@@ -1,5 +1,6 @@
 function Get-NovaPackageUploadWorkflowOperation {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][object[]]$UploadArtifactList
     )
