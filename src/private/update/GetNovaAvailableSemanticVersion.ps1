@@ -1,5 +1,6 @@
 function Get-NovaAvailableSemanticVersion {
     [CmdletBinding()]
+    [OutputType([semver])]
     param(
         [object]$VersionInfo
     )

@@ -1,5 +1,6 @@
 function Get-NovaCliHelpUsageText {
     [CmdletBinding()]
+    [OutputType([string])]
     param()
 
     return "Use 'nova --help', 'nova -h', 'nova --help <command>', 'nova -h <command>', or 'nova <command> --help'/'nova <command> -h'."

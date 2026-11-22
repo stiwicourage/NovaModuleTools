@@ -1,5 +1,6 @@
 function Get-NovaPackageUploadAuthHeaderValue {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [AllowNull()]$AuthSettings,
         [string]$AuthenticationScheme,

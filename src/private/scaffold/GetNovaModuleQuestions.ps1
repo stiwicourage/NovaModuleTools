@@ -1,5 +1,6 @@
 function Get-NovaModuleSingleWordValidation {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)][string]$Pattern,
         [Parameter(Mandatory)][string]$Message,

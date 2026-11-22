@@ -28,6 +28,7 @@ function Get-NovaReleaseBoundValueOrDefault {
 
 function Test-NovaReleaseBoundSwitch {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][hashtable]$BoundParameters,
         [Parameter(Mandatory)][string]$Name

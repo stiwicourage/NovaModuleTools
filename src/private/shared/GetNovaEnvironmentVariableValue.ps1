@@ -1,5 +1,6 @@
 function Get-NovaEnvironmentVariableValue {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [string]$Name
     )

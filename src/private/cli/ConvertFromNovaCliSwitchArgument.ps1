@@ -15,6 +15,7 @@ function Get-NovaCliSwitchOptionName {
 
 function ConvertFrom-NovaCliSwitchArgument {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [string[]]$Arguments,
         [Parameter(Mandatory)][hashtable]$TokenMap

@@ -85,8 +85,8 @@ function Get-Alpha {
             $_.Exception.Message | Should -Match 'Duplicate top-level function names detected'
             $_.Exception.Message | Should -Match 'dist line'
             $_.Exception.Message | Should -Match 'source files'
-            $_.Exception.Message | Should -Match 'src/public/GetAlpha\.ps1'
-            $_.Exception.Message | Should -Match 'src/private/GetAlphaOverride\.ps1'
+            $_.Exception.Message | Should -Match 'src[\\/]public[\\/]GetAlpha\.ps1'
+            $_.Exception.Message | Should -Match 'src[\\/]private[\\/]GetAlphaOverride\.ps1'
         }
     }
 

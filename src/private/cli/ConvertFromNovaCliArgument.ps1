@@ -16,6 +16,7 @@ function Add-NovaCliDeliveryOption {
 
 function ConvertFrom-NovaCliArgument {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [string[]]$Arguments,
         [string[]]$AllowedOptionNameList

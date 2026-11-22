@@ -1,5 +1,6 @@
 function Get-NovaPackageUploadStatusCode {
     [CmdletBinding()]
+    [OutputType([int])]
     param(
         [AllowNull()]$Response
     )

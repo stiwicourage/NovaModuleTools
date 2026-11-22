@@ -1,5 +1,6 @@
 function Get-NovaCliLauncherPath {
     [CmdletBinding()]
+    [OutputType([string])]
     param()
 
     $command = Get-Command -Name 'Install-NovaCli' -CommandType Function -ErrorAction SilentlyContinue

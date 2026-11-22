@@ -136,6 +136,7 @@ function Get-NovaValidatedPesterOverrideContainerPath {
 
 function Get-NovaResolvedPesterOverridePathSet {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [AllowEmptyCollection()][string[]]$Path,
         [string]$ProjectRoot
@@ -154,6 +155,7 @@ function Get-NovaResolvedPesterOverridePathSet {
 
 function Get-NovaPesterOverridePathInput {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [AllowNull()][object]$Path
     )
@@ -187,6 +189,7 @@ function Resolve-NovaPesterOverridePath {
 
 function Get-NovaPesterOverridePropertyName {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [AllowNull()][object]$InputObject
     )

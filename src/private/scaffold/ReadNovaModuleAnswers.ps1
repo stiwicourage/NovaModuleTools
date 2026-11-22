@@ -1,5 +1,6 @@
 function Test-NovaModuleQuestionShouldBeAsked {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][object]$Question,
         [Parameter(Mandatory)][System.Collections.IDictionary]$Answer
@@ -15,6 +16,7 @@ function Test-NovaModuleQuestionShouldBeAsked {
 
 function Read-NovaModuleAnswerSet {
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [Parameter(Mandatory)][System.Collections.IDictionary]$Questions
     )

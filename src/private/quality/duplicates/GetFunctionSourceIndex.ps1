@@ -1,5 +1,6 @@
 function Get-FunctionSourceIndex {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)][System.IO.FileInfo[]]$File
     )

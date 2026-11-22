@@ -54,11 +54,28 @@ Describe 'Agentic Copilot scaffold sync' {
                 Should -BeNullOrEmpty -Because 'Run ./scripts/build/Sync-AgenticCopilotScaffold.ps1 to refresh src/resources/agentic-copilot.'
 
         foreach ($relativePath in $expectedFiles) {
-            $expectedContent = Get-Content -LiteralPath (Join-Path $expectedRoot $relativePath) -Raw
-            $actualContent = Get-Content -LiteralPath (Join-Path $script:scaffoldRoot $relativePath) -Raw
+            # Line endings depend on the Git checkout (core.autocrlf), not on the scaffold content contract.
+            $expectedContent = (Get-Content -LiteralPath (Join-Path $expectedRoot $relativePath) -Raw).Replace("`r`n", "`n")
+            $actualContent = (Get-Content -LiteralPath (Join-Path $script:scaffoldRoot $relativePath) -Raw).Replace("`r`n", "`n")
 
             $actualContent | Should -BeExactly $expectedContent -Because "$relativePath should match the generated filtered mirror."
         }
+    }
+
+    It 'applies multi-line replacements and writes LF output when sources are checked out with CRLF line endings' {
+        $fixtureRoot = Join-Path $TestDrive 'crlf-repository'
+        $agentDirectory = Join-Path $fixtureRoot '.github/agents'
+        New-Item -ItemType Directory -Path $agentDirectory -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $agentDirectory 'sample.agent.md') -Value "# Sample`r`n`r`n- ``/keep```r`n- ``/drop```r`n" -NoNewline
+        $fixtureManifestPath = Join-Path $fixtureRoot 'sync.psd1'
+        Set-Content -LiteralPath $fixtureManifestPath -Value @'
+@{ OutputPath = 'scaffold'; SourcePaths = @('.github/agents'); ExcludedPaths = @('.github/agents/excluded.md'); ScaffoldOwnedPaths = @(); IdentifierReplacements = @(); TextReplacements = @(@{ Old = "- ``/drop```n"; New = '' }) }
+'@
+        $outputRoot = Join-Path $fixtureRoot 'scaffold'
+
+        $null = & $script:syncScriptPath -RepositoryRoot $fixtureRoot -ManifestPath $fixtureManifestPath -OutputRoot $outputRoot
+
+        Get-Content -LiteralPath (Join-Path $outputRoot '.github/agents/sample.agent.md') -Raw | Should -BeExactly "# Sample`n`n- ``/keep```n"
     }
 
     It 'omits the configured excluded source paths' {

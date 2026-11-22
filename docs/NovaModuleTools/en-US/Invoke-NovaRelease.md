@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: 'https://www.novamoduletools.com/packaging-and-delivery.html#release'
 Locale: en-US
 Module Name: NovaModuleTools
-  ms.date: 05/03/2026
+ms.date: 10/25/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-NovaRelease
 ---
@@ -29,12 +29,14 @@ PS> Invoke-NovaRelease [-Local] [[-ModuleDirectoryPath] <string>] [[-ApiKey] <st
 PS> Invoke-NovaRelease -Repository <string> [[-ModuleDirectoryPath] <string>] [[-ApiKey] <string>] [-SkipTests] [-ContinuousIntegration] [-OverrideWarning] [[-Path] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
+## ALIASES
+
 ## DESCRIPTION
 
 `Invoke-NovaRelease` orchestrates a full release flow:
 
 1. Build module (`Invoke-NovaBuild`)
-2. Run tests (`Test-NovaBuild`)
+2. Run tests (`Invoke-NovaTest` and `Test-NovaBuild`)
 3. Bump version (`Update-NovaModuleVersion`)
 4. Build again to include the updated version
 5. Publish through the resolved local-directory or repository publish action
@@ -42,8 +44,8 @@ PS> Invoke-NovaRelease -Repository <string> [[-ModuleDirectoryPath] <string>] [[
 Use `-Repository` and `-ApiKey` for repository publishing, or `-Local` / `-ModuleDirectoryPath` for local release publishing. This keeps the release command aligned with the direct PowerShell parameter style used by
 `Publish-NovaModule`.
 
-Use `-SkipTests` when tests already ran earlier in your pipeline and you only want to skip the pre-release
-`Test-NovaBuild` step. Both build steps still run.
+Use `-SkipTests` when tests already ran earlier in your pipeline and you want to skip the pre-release
+`Invoke-NovaTest` and `Test-NovaBuild` steps. Both build steps still run.
 
 The command changes location to `-Path` for execution and always restores the previous location.
 
@@ -54,6 +56,8 @@ Use `-OverrideWarning` only when you intentionally want the nested release build
 
 When local release mode is selected, the resolved local publish target is previewed consistently with
 `Publish-NovaModule -Local`. Unlike `Publish-NovaModule -Local`, `Invoke-NovaRelease` does not import the published module into the current session after publishing; it returns the version result for automation-friendly release flows.
+
+Local release installs into `<ModulesRoot>/<ProjectName>/<ModuleVersion>/`. The numeric version comes from the rebuilt manifest after the version bump, even if the workflow still holds earlier project metadata. Prerelease labels stay in the manifest, not the directory name. Only the same numeric version is replaced; other versions and legacy flat files are preserved without automatic cleanup.
 
 This command supports `-WhatIf` and `-Confirm` through PowerShell `SupportsShouldProcess`. Use `-WhatIf` to preview the entire release workflow and resolved publish target without building, testing, versioning, or publishing.
 
@@ -123,7 +127,7 @@ Aliases: [ ]
 ParameterSets:
   - Name: Local
     Position: Named
-    IsRequired: true
+    IsRequired: false
     ValueFromPipeline: false
     ValueFromPipelineByPropertyName: false
     ValueFromRemainingArguments: false
@@ -155,7 +159,7 @@ HelpMessage: ''
 
 ### -ModuleDirectoryPath
 
-Local directory where the built module should be copied when the release publishes to a filesystem target.
+Modules root for local release publishing. Nova appends `<ProjectName>/<ModuleVersion>/` using the rebuilt manifest's numeric version.
 
 ```yaml
 Type: System.String
@@ -231,7 +235,7 @@ HelpMessage: ''
 
 ### -SkipTests
 
-Skip the pre-release `Test-NovaBuild` step. `Invoke-NovaBuild` still runs before the version bump and again after the bump so the published output reflects the updated version.
+Skip the pre-release `Invoke-NovaTest` and `Test-NovaBuild` steps. `Invoke-NovaBuild` still runs before the version bump and again after the bump so the published output reflects the updated version.
 
 This option is mainly intended for CI/CD flows where tests already passed earlier in the pipeline.
 
@@ -316,7 +320,7 @@ Returns the version update result from `Update-NovaModuleVersion`, including the
 
 If build or tests fail, version bump and publish are not completed.
 
-When `-SkipTests` is used, only the pre-release `Test-NovaBuild` step is skipped. Both build steps still run.
+When `-SkipTests` is used, the pre-release `Invoke-NovaTest` and `Test-NovaBuild` steps are skipped. Both build steps still run.
 
 Use `Publish-NovaModule -Local` when you want a successful local publish to reload the published module into the active PowerShell session.
 

@@ -47,7 +47,7 @@ Describe 'Get-NovaTestWorkflowContext' {
         $result.BuildRequested | Should -BeFalse
         $result.CommandName | Should -Be 'Invoke-NovaTest'
         $result.PesterConfig.CodeCoverage.CoveragePercentTarget | Should -Be 99
-        $result.PesterConfig.CodeCoverage.OutputPath | Should -Be ([System.IO.Path]::Join($projectInfo.ProjectRoot, 'artifacts/coverage.xml'))
+        $result.PesterConfig.CodeCoverage.OutputPath | Should -Be (Join-Path $projectInfo.ProjectRoot 'artifacts/coverage.xml')
         $result.PesterConfig.PesterModuleSpecification.SelectedVersion | Should -Be ([version]'5.10.0')
         $result.PesterModuleSpecification.SelectedVersion | Should -Be ([version]'5.10.0')
         $result.PesterSettings.CodeCoverage.Enabled | Should -BeTrue
@@ -185,7 +185,7 @@ Describe 'Get-NovaTestWorkflowContext' {
             (Join-Path $projectRoot 'src/private/quality/GetGamma.ps1')
             (Join-Path $projectRoot 'src/classes/NovaThing.ps1')
         )
-        $result.PesterConfig.CodeCoverage.OutputPath | Should -Be ([System.IO.Path]::Join($projectRoot, 'artifacts/coverage.xml'))
+        $result.PesterConfig.CodeCoverage.OutputPath | Should -Be (Join-Path $projectRoot 'artifacts/coverage.xml')
     }
 
     It 'forwards the guarded Pester configuration override to the execution configuration initializer' {
@@ -273,7 +273,8 @@ Describe 'Get-NovaDiscoveredTestPathState' {
 
         $result.HasDiscoveredTests | Should -BeFalse
         $result.MessageLines[0] | Should -Be "No build-validation integration tests matching '*.Integration.Tests.ps1' were discovered for NovaProject."
-        $result.MessageLines[1] | Should -Be 'Test-NovaBuild expects build-validation tests under the tests folder, for example /tmp/project/tests/public/Get-CommandName.Integration.Tests.ps1.'
+        $expectedExamplePath = Join-Path '/tmp/project/tests' 'public/Get-CommandName.Integration.Tests.ps1'
+        $result.MessageLines[1] | Should -Be "Test-NovaBuild expects build-validation tests under the tests folder, for example $expectedExamplePath."
     }
 }
 

@@ -1,5 +1,6 @@
 function Get-GitCommitMessageForVersionBump {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot
     )
@@ -9,7 +10,7 @@ function Get-GitCommitMessageForVersionBump {
     }
 
     $format = '%s%n%b%n--END-COMMIT--'
-    $lastTagResult = Invoke-NovaGitCommand -ProjectRoot $ProjectRoot -Arguments @('describe', '--tags', '--abbrev=0')
+    $lastTagResult = Get-NovaLatestVersionTagResult -ProjectRoot $ProjectRoot
     $logResult = Get-NovaVersionBumpCommitLogResult -ProjectRoot $ProjectRoot -Format $format -LastTagResult $lastTagResult
     return @(ConvertFrom-NovaVersionBumpCommitLogResult -Result $logResult)
 }
@@ -32,6 +33,7 @@ function Get-NovaVersionBumpCommitLogResult {
 
 function ConvertFrom-NovaVersionBumpCommitLogResult {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$Result
     )

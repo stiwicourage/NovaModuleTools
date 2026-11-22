@@ -32,7 +32,7 @@ Use `-Preview` when you want an explicit prerelease-continuation bump instead of
 
 The release label is inferred from the commit set:
 
-- `Major` for breaking changes
+- `Major` for breaking changes: a `!` after the commit type, such as `feat!:` or `fix(api)!:`, or an uppercase `BREAKING CHANGE:` / `BREAKING-CHANGE:` footer at the start of a line. Prose such as `not a breaking change` does not count.
 - `Minor` for `feat:` commits
 - `Patch` for `fix:` commits and all other cases
 
@@ -40,7 +40,7 @@ When the current stable version is still on `0.y.z` and the inferred label is `M
 
 When the current stable version is exactly `1.0.0`, Nova treats that as the manually selected initial stable release target. Fix, feature, and breaking-change histories still report their detected labels, but the planned stable release stays `1.0.0` instead of auto-advancing to `1.0.1`, `1.1.0`, or `2.0.0`. With `-Preview`, stable versions still enter the next patch preview track instead of applying semantic history inference to the semantic core.
 
-When Git tags exist, only commits since the latest tag are considered. If Git-based inference is unavailable because the project path is not inside a Git repository, the command stops with a clear warning/error instead of silently presenting an inferred-looking patch result. Use `-OverrideWarning` only when you intentionally want that Patch fallback, for example in example/template flows outside Git.
+When version tags exist, only commits since the latest version tag are considered. Only tags that look like semantic versions, such as `1.2.3` or `v1.2.3`, count; other tags such as `deploy-marker` are ignored. If Git-based inference is unavailable because the project path is not inside a Git repository, the command stops with a clear warning/error instead of silently presenting an inferred-looking patch result. Use `-OverrideWarning` only when you intentionally want that Patch fallback, for example in example/template flows outside Git.
 
 If the repository exists but has no commits yet, the command stops with: `Cannot bump version because the repository
 has no commits yet. Create an initial commit first.`

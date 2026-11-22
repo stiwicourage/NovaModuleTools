@@ -1,5 +1,6 @@
 function Get-NovaVersionLabelForBump {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot,
         [string[]]$CommitMessages = @(),
@@ -51,11 +52,12 @@ function Test-GitRepositoryHasCommittedHead {
 
 function Test-GitRepositoryHasCommitsSinceLatestTag {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot
     )
 
-    $lastTagResult = Invoke-NovaGitCommand -ProjectRoot $ProjectRoot -Arguments @('describe', '--tags', '--abbrev=0')
+    $lastTagResult = Get-NovaLatestVersionTagResult -ProjectRoot $ProjectRoot
     $lastTag = Get-NovaGitCommandOutputText -Result $lastTagResult
     if ($lastTagResult.ExitCode -ne 0 -or [string]::IsNullOrWhiteSpace($lastTag)) {
         return $true

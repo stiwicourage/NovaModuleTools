@@ -53,7 +53,7 @@ Use this skill when changing public commands, private helpers, CLI routing suppo
 
 - Adding more than one top-level function to a public file
 - Mixing CLI flag spellings into PowerShell command output
-- Calling `git`, `Invoke-WebRequest`, `Update-Module`, or `$env:` from the wrong layer
+- Calling `git`, `Invoke-WebRequest`, `Install-PSModuleUpdate`, or `$env:` from the wrong layer
 - Replacing explicit warning opt-ins with generic force semantics
 - Creating a root module `.psm1` or module manifest `.psd1` by hand instead of letting Nova generate them from `project.json`
 - Grouping two private helpers in one file when both are referenced from outside that file instead of splitting them into separate same-named files

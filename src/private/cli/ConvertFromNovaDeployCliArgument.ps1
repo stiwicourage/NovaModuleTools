@@ -1,5 +1,6 @@
 function ConvertFrom-NovaDeployCliArgument {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [string[]]$Arguments
     )

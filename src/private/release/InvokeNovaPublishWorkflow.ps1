@@ -1,5 +1,6 @@
 function Test-NovaPublishWorkflowShouldImportLocalModule {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$ShouldRun
@@ -10,6 +11,7 @@ function Test-NovaPublishWorkflowShouldImportLocalModule {
 
 function Test-NovaPublishWorkflowWhatIfEnabled {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -73,6 +75,8 @@ function Invoke-NovaPublishWorkflow {
 
         if ($shouldImportPublishedLocalModule) {
             Invoke-NovaPublishWorkflowStep -Activity $progressActivity -Status 'Importing the published local module' -PercentComplete 90 -Action {
+                $WorkflowContext.LocalPublishActivation.ManifestPath = Get-NovaPublishedLocalManifestPath -PublishInvocation $WorkflowContext.PublishInvocation
+                $resolvedResult.LocalManifestPath = $WorkflowContext.LocalPublishActivation.ManifestPath
                 $null = & $WorkflowContext.LocalPublishActivation.ImportAction -ProjectName $WorkflowContext.PublishInvocation.Parameters.ProjectInfo.ProjectName -ManifestPath $WorkflowContext.LocalPublishActivation.ManifestPath
             }
             $importedLocalModule = $true
@@ -94,6 +98,7 @@ function Invoke-NovaPublishWorkflow {
 
 function Get-NovaPublishWorkflowValidationStatus {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )
@@ -107,6 +112,7 @@ function Get-NovaPublishWorkflowValidationStatus {
 
 function Get-NovaPublishWorkflowPublishStatus {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$WhatIfEnabled
@@ -177,6 +183,7 @@ function Write-NovaPublishWorkflowResolvedResult {
 
 function Get-NovaPublishWorkflowStatusMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$WhatIfEnabled
@@ -191,6 +198,7 @@ function Get-NovaPublishWorkflowStatusMessage {
 
 function Get-NovaPublishWorkflowNextStepLine {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [switch]$WhatIfEnabled

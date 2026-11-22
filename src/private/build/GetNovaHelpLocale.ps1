@@ -1,5 +1,6 @@
 function Get-NovaHelpLocale {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][System.IO.FileInfo[]]$HelpMarkdownFiles
     )

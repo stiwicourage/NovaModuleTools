@@ -7,39 +7,26 @@ BeforeAll {
 
 Describe 'Get-NovaModuleSelfUpdatePlan' {
     BeforeAll {
-        $script:installed = [pscustomobject]@{ModuleName = 'NovaModuleTools'; Version = '1.0.0'; SemanticVersion = [semver]'1.0.0'}
-        $script:lookup = [pscustomobject]@{
-            Prerelease = [pscustomobject]@{Version = '2.0.0-beta1'}
-            Stable = [pscustomobject]@{Version = '2.0.0'}
-        }
+        $script:installed = [pscustomobject]@{ModuleName = 'NovaModuleTools'; Version = '1.0.0'}
     }
 
-    It 'targets the prerelease version when a prerelease update is available' {
-        Mock Test-NovaPrereleaseUpdateAvailable {return $true}
-        Mock Test-NovaStableUpdateAvailable {return $false}
+    It 'converts the PSModuleUpdate plan for the supported <Disposition> disposition' -ForEach @(
+        @{Disposition = 'UpdateAvailable'}
+        @{Disposition = 'UpToDate'}
+        @{Disposition = 'AlreadyInstalledRestartRequired'}
+    ) {
+        Mock ConvertTo-NovaModuleSelfUpdatePlan {[pscustomobject]@{Disposition = $UpdatePlan.Disposition}}
 
-        $plan = Get-NovaModuleSelfUpdatePlan -InstalledModule $script:installed -LookupResult $script:lookup -PrereleaseNotificationsEnabled $true
+        $plan = Get-NovaModuleSelfUpdatePlan -InstalledModule $script:installed -UpdatePlan ([pscustomobject]@{Disposition = $Disposition}) -PrereleaseNotificationsEnabled $true
 
-        $plan.TargetVersion | Should -Be '2.0.0-beta1'
-        $plan.IsPrereleaseTarget | Should -BeTrue
+        $plan.Disposition | Should -Be $Disposition
+        Should -Invoke ConvertTo-NovaModuleSelfUpdatePlan -Times 1 -ParameterFilter {$InstalledModule.Version -eq '1.0.0' -and $PrereleaseNotificationsEnabled}
     }
 
-    It 'targets the stable version when no prerelease update applies but a stable update is available' {
-        Mock Test-NovaPrereleaseUpdateAvailable {return $false}
-        Mock Test-NovaStableUpdateAvailable {return $true}
+    It 'stops instead of guessing when PSModuleUpdate returns an unsupported disposition' {
+        $updatePlan = [pscustomobject]@{Disposition = 'Downgrade'}
 
-        $plan = Get-NovaModuleSelfUpdatePlan -InstalledModule $script:installed -LookupResult $script:lookup -PrereleaseNotificationsEnabled $false
-
-        $plan.TargetVersion | Should -Be '2.0.0'
-        $plan.IsPrereleaseTarget | Should -BeFalse
-    }
-
-    It 'returns a no-update plan when no update is available' {
-        Mock Test-NovaPrereleaseUpdateAvailable {return $false}
-        Mock Test-NovaStableUpdateAvailable {return $false}
-
-        $plan = Get-NovaModuleSelfUpdatePlan -InstalledModule $script:installed -LookupResult $script:lookup -PrereleaseNotificationsEnabled $true
-
-        $plan.UpdateAvailable | Should -BeFalse
+        {Get-NovaModuleSelfUpdatePlan -InstalledModule $script:installed -UpdatePlan $updatePlan -PrereleaseNotificationsEnabled $false} |
+                Should -Throw -ErrorId 'Nova.Dependency.ModuleSelfUpdateCandidateUnavailable' -ExpectedMessage "*unsupported update disposition 'Downgrade'*"
     }
 }

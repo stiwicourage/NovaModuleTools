@@ -1,5 +1,6 @@
 function Get-NovaPublicFunctionFileList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo
     )
@@ -9,6 +10,7 @@ function Get-NovaPublicFunctionFileList {
 
 function Get-NovaInvalidPublicFunctionFileList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo
     )

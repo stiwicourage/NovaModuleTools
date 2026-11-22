@@ -1,5 +1,6 @@
 function Get-NovaPesterTestResultPath {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$ProjectRoot,
         [Parameter()][string]$FileName = 'TestResults.xml'

@@ -1,5 +1,6 @@
 function Get-TopLevelFunctionAst {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][System.Management.Automation.Language.Ast]$Ast
     )

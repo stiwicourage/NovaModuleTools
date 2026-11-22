@@ -1,5 +1,6 @@
 function Get-NovaCliInstalledVersion {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [object]$Module = $ExecutionContext.SessionState.Module
     )

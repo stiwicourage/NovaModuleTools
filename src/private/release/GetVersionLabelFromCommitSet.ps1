@@ -1,10 +1,11 @@
 function Get-VersionLabelFromCommitSet {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string[]]$Messages
     )
 
-    if ($Messages | Where-Object {$_ -match '(?im)BREAKING CHANGE|^[a-z]+(\(.+\))?!:'}) {
+    if ($Messages | Where-Object {Test-NovaBreakingChangeCommitMessage -Message $_}) {
         return 'Major'
     }
 
@@ -17,4 +18,14 @@ function Get-VersionLabelFromCommitSet {
     }
 
     return 'Patch'
+}
+
+function Test-NovaBreakingChangeCommitMessage {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Message
+    )
+
+    return ($Message -cmatch '(?m)^BREAKING[ -]CHANGE:') -or ($Message -match '(?im)^\s*[a-z]+(\(.+\))?!:')
 }

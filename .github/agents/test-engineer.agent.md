@@ -25,7 +25,7 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 
 - `tests/*.Tests.ps1`
 - `tests/*TestSupport.ps1`
-- `scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
+- `stiwicourage/powershell-ci` shared CI workflows and actions
 - `.github/workflows/Tests.yml`
 - CodeScene findings when available
 - If CodeScene findings are unavailable, proceed with all other Definition of Done criteria and add a PR comment: `CodeScene findings were not available at review time; re-run after merge if the pipeline provides them.`

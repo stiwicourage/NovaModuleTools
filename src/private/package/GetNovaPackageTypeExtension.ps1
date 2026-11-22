@@ -1,5 +1,6 @@
 function Get-NovaPackageTypeExtension {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$PackageType
     )

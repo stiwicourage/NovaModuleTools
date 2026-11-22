@@ -1,5 +1,6 @@
 function Test-NovaStableUpdateAvailable {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [semver]$StableVersion,
         [Parameter(Mandatory)][semver]$InstalledVersion

@@ -20,7 +20,7 @@ Describe 'Initialize-NovaModuleScaffold' {
         } | Should -Throw '*Project folder already exists:*Choose a different project name or remove or move the existing folder before running Initialize-NovaModule again.*'
     }
 
-    It 'creates the default .gitignore for the standard scaffold when Git is enabled' {
+    It 'creates the default .gitignore and defers Git initialization until all files are generated' {
         $paths = Get-NovaModuleScaffoldLayout -Path $TestDrive -ProjectName 'StandardWithGit'
         Mock Write-Message {}
         Mock New-InitiateGitRepo {}
@@ -32,7 +32,7 @@ Describe 'Initialize-NovaModuleScaffold' {
         } -Paths $paths
 
         (Test-Path -LiteralPath (Join-Path $paths.Project '.gitignore')) | Should -BeTrue
-        Assert-MockCalled New-InitiateGitRepo -Times 1 -ParameterFilter {$DirectoryPath -eq $paths.Project}
+        Assert-MockCalled New-InitiateGitRepo -Times 0
     }
 
     It 'creates the default .gitignore for the example scaffold when Git is enabled' {
@@ -51,7 +51,7 @@ Describe 'Initialize-NovaModuleScaffold' {
 
         (Test-Path -LiteralPath (Join-Path $paths.Project '.gitignore')) | Should -BeTrue
         (Test-Path -LiteralPath (Join-Path $paths.Project 'README.md')) | Should -BeTrue
-        Assert-MockCalled New-InitiateGitRepo -Times 1 -ParameterFilter {$DirectoryPath -eq $paths.Project}
+        Assert-MockCalled New-InitiateGitRepo -Times 0
     }
 
     It 'does not create a .gitignore when Git is disabled' {

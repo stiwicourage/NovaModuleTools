@@ -5,7 +5,7 @@ BeforeAll {
 }
 
 Describe 'Install-NovaCli integration' {
-    It 'supports WhatIf for a destination directory from the built module' {
+    It 'supports WhatIf for a destination directory from the built module' -Skip:$IsWindows {
         $destinationDirectory = Join-Path $TestDrive 'bin'
 
         {
@@ -13,5 +13,15 @@ Describe 'Install-NovaCli integration' {
         } | Should -Not -Throw
 
         (Test-Path -LiteralPath (Join-Path $destinationDirectory 'nova')) | Should -BeFalse
+    }
+
+    It 'rejects Windows with the unsupported-platform error from the built module' -Skip:(-not $IsWindows) {
+        $destinationDirectory = Join-Path $TestDrive 'bin'
+
+        {
+            Install-NovaCli -DestinationDirectory $destinationDirectory -WhatIf
+        } | Should -Throw -ErrorId 'Nova.Environment.UnsupportedCliInstallPlatform'
+
+        (Test-Path -LiteralPath $destinationDirectory) | Should -BeFalse
     }
 }

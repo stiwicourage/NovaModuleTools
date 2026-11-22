@@ -9,6 +9,7 @@ function Get-NovaInstalledModuleVersionInfo {
 
     return [pscustomobject]@{
         ModuleName = $Module.Name
+        Module = $Module
         Version = $versionText
         SemanticVersion = $semanticVersion
         IsPrerelease = -not [string]::IsNullOrWhiteSpace($semanticVersion.PreReleaseLabel)

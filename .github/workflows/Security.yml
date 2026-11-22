@@ -1,0 +1,35 @@
+name: Security
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+  schedule:
+    - cron: '22 19 * * 2'
+
+permissions:
+  contents: read
+
+jobs:
+  codeql:
+    uses: stiwicourage/powershell-ci/.github/workflows/codeql.yml@0.5.0
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+  analyzer:
+    uses: stiwicourage/powershell-ci/.github/workflows/powershell-analyzer.yml@0.5.0
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+  dependency-review:
+    if: ${{ github.event_name == 'pull_request' }}
+    uses: stiwicourage/powershell-ci/.github/workflows/dependency-review.yml@0.5.0
+    permissions:
+      contents: read
+      pull-requests: write

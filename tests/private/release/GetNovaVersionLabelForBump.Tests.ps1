@@ -75,4 +75,15 @@ Describe 'Test-GitRepositoryHasCommitsSinceLatestTag' {
         }
         Test-GitRepositoryHasCommitsSinceLatestTag -ProjectRoot '/p' | Should -BeFalse
     }
+
+    It 'counts commits since the latest version tag' {
+        Mock Get-NovaLatestVersionTagResult {return [pscustomobject]@{ExitCode=0; Output=@('v1.0.0')}}
+        Mock Invoke-NovaGitCommand {return [pscustomobject]@{ExitCode=0; Output=@('0')}}
+
+        Test-GitRepositoryHasCommitsSinceLatestTag -ProjectRoot '/p' | Should -BeFalse
+
+        Should -Invoke Get-NovaLatestVersionTagResult -ParameterFilter {$ProjectRoot -eq '/p'} -Times 1 -Exactly
+        Should -Invoke Invoke-NovaGitCommand -ParameterFilter {$Arguments -contains 'v1.0.0..HEAD'} -Times 1 -Exactly
+        Should -Invoke Invoke-NovaGitCommand -ParameterFilter {$Arguments -contains 'describe'} -Times 0 -Exactly
+    }
 }

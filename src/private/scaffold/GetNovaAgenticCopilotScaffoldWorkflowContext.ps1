@@ -24,6 +24,7 @@ function Test-NovaAgenticCopilotProjectUsesPester {
 
 function Get-NovaAgenticCopilotManagedOverwritePathList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param()
 
     return @(
@@ -40,6 +41,7 @@ function Get-NovaAgenticCopilotManagedOverwritePathList {
 
 function Get-NovaAgenticCopilotAddOnlyPathList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param()
 
     return @(
@@ -61,6 +63,7 @@ function Get-NovaAgenticCopilotScaffoldPolicy {
 
 function Get-NovaAgenticCopilotScaffoldAnswerSet {
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo,
         [Parameter(Mandatory)][string]$ShortName

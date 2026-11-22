@@ -3,6 +3,7 @@ BeforeAll {
     . (Join-Path $projectRoot 'src/private/scaffold/InvokeNovaModuleInitializationWorkflow.ps1')
 
     . (Join-Path $PSScriptRoot 'InvokeNovaModuleInitializationWorkflow.TestSupport.ps1')
+    function Complete-ScaffoldGitRepository { param($WorkflowContext) }
 }
 
 Describe 'Invoke-NovaModuleInitializationWorkflow' {
@@ -90,5 +91,25 @@ Describe 'Invoke-NovaModuleInitializationWorkflow' {
         Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$InputObject -eq 'Invoke-NovaTest'}
         Assert-MockCalled Write-Message -Times 1 -ParameterFilter {$InputObject -eq 'Test-NovaBuild'}
+    }
+
+    It 'finishes project and Agentic Copilot files before starting Git' {
+        $script:steps = [System.Collections.Generic.List[string]]::new()
+        Mock Initialize-NovaModuleScaffold { $script:steps.Add('files') }
+        Mock Write-NovaModuleProjectJson { $script:steps.Add('project') }
+        Mock Write-NovaVsCodeSettings { $script:steps.Add('editor') }
+        Mock Initialize-NovaModuleAgenticCopilotScaffold { $script:steps.Add('agentic') }
+        Mock Complete-ScaffoldGitRepository { $script:steps.Add('git') }
+        Mock Write-Message {}
+        Mock Write-Progress {}
+        $contextWithGit = [pscustomobject]@{
+            AnswerSet = @{ ProjectName = 'DemoModule'; EnableGit = 'Yes'; EnableAgenticCopilot = 'Yes' }
+            Layout = $script:context.Layout
+            Example = $false
+        }
+
+        Invoke-NovaModuleInitializationWorkflow -WorkflowContext $contextWithGit
+
+        @($script:steps) | Should -Be @('files', 'project', 'editor', 'agentic', 'git')
     }
 }

@@ -6,13 +6,20 @@ This file summarizes the release notes for NovaModuleTools. **UNRELEASED** chang
 
 ### Added
 
+- Git-enabled `% nova init` projects now start with `chore: Initial commit`, bypassing verification hooks once so hooks that require `HEAD` can work afterward. Existing repositories are not automatically committed; missing Git identity leaves the project intact with recovery guidance.
+
 ### Changed
+
+- `Update-NovaModuleTool` and `% nova update` now install updates through `PSModuleUpdate`, which verifies the new version before activating it and keeps the installed scope. The first run installs `PSModuleUpdate` for the current user when missing; all-users installs need an elevated session. Update warnings now suggest `Update-NovaModuleTool`.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- `% nova bump`, `Update-NovaModuleVersion`, and `Invoke-NovaRelease` only treat a `!` after the commit type or an uppercase `BREAKING CHANGE:` / `BREAKING-CHANGE:` footer as a breaking change, and only semantic-version tags such as `1.2.3` or `v1.2.3` start the commit range.
+- `% nova publish -l -s` and local release now use numeric version directories, for example `Modules/Gerber/0.1.1/` for `0.1.1-preview`. Republishing replaces only that numeric version, preserves other versions and legacy flat files, and local publish loads the exact newly published manifest. Custom paths still mean the modules root; existing flat installations are not automatically removed.
 
 ### Security
 
@@ -302,3 +309,30 @@ This release was yanked because it removed the implicit `Pester` dependency befo
 ### Added
 - First PowerShell Gallery release of NovaModuleTools with the initial module workflow support.
 
+[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.2...HEAD
+[3.4.2]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.1...3.4.2
+[3.4.1]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.0...3.4.1
+[3.4.0]: https://github.com/stiwicourage/NovaModuleTools/compare/3.3.1...3.4.0
+[3.3.1]: https://github.com/stiwicourage/NovaModuleTools/compare/3.3.0...3.3.1
+[3.3.0]: https://github.com/stiwicourage/NovaModuleTools/compare/3.2.0...3.3.0
+[3.2.0]: https://github.com/stiwicourage/NovaModuleTools/compare/3.1.0...3.2.0
+[3.1.0]: https://github.com/stiwicourage/NovaModuleTools/compare/3.0.1...3.1.0
+[3.0.1]: https://github.com/stiwicourage/NovaModuleTools/compare/3.0.0...3.0.1
+[3.0.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.4.0...3.0.0
+[2.4.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.1...2.4.0
+[2.3.1]: https://github.com/stiwicourage/NovaModuleTools/compare/2.3.0...2.3.1
+[2.3.0]: https://github.com/stiwicourage/NovaModuleTools/compare/2.2.0...2.3.0
+[2.2.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_2.1.0...2.2.0
+[2.1.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_2.0.0...Version_2.1.0
+[1.9.1]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.8.0...Version_1.9.1
+[1.8.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.7.0...Version_1.8.0
+[1.3.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.2.5-preview...Version_1.3.0
+[1.2.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.1.4-preview...Version_1.2.0
+[1.1.3]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.1.0...Version_1.1.3
+[1.1.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_1.0.0...Version_1.1.0
+[1.0.0]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.9...Version_1.0.0
+[0.0.9]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.8...Version_0.0.9
+[0.0.7]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.6...Version_0.0.7
+[0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
+[0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
+[0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4

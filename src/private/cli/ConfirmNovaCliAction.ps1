@@ -1,5 +1,6 @@
 function Get-NovaCliConfirmDecision {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][char]$KeyChar
     )
@@ -54,6 +55,7 @@ function Invoke-NovaCliNativeConsoleReadKey {
 
 function Get-NovaCliNativeConsoleReadKeyReader {
     [CmdletBinding()]
+    [OutputType([scriptblock])]
     param()
 
     return [scriptblock]::Create('[Console]::ReadKey($true)')
@@ -61,6 +63,7 @@ function Get-NovaCliNativeConsoleReadKeyReader {
 
 function Get-NovaCliConsoleReadKeyReader {
     [CmdletBinding()]
+    [OutputType([scriptblock])]
     param()
 
     return [scriptblock]::Create('Invoke-NovaCliNativeConsoleReadKey')
@@ -68,6 +71,7 @@ function Get-NovaCliConsoleReadKeyReader {
 
 function Read-NovaCliPromptKey {
     [CmdletBinding()]
+    [OutputType([char])]
     param()
 
     try {
@@ -79,6 +83,7 @@ function Read-NovaCliPromptKey {
 
 function Get-NovaCliConfirmResponseKey {
     [CmdletBinding()]
+    [OutputType([char])]
     param()
 
     $response = Get-NovaEnvironmentVariableValue -Name 'NOVA_CLI_CONFIRM_RESPONSE'

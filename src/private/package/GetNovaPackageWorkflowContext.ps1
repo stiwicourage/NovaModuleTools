@@ -56,6 +56,7 @@ function Get-NovaPackageWorkflowTarget {
 
 function Get-NovaPackageWorkflowOperation {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][object[]]$PackageMetadataList,
         [switch]$SkipTestsRequested

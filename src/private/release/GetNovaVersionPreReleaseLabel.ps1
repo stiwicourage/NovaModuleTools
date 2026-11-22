@@ -19,6 +19,7 @@ function Get-NovaVersionPreReleaseLabel {
 
 function Get-NovaPreviewReleaseLabel {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [AllowNull()][semver]$CurrentVersion
     )
@@ -32,6 +33,7 @@ function Get-NovaPreviewReleaseLabel {
 
 function Get-NovaNextPreReleaseLabel {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]$PreReleaseLabel
     )
@@ -49,6 +51,7 @@ function Get-NovaNextPreReleaseLabel {
 
 function Get-NovaInitialPreReleaseNumber {
     [CmdletBinding()]
+    [OutputType([string])]
     param()
 
     return '01'

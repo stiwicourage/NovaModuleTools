@@ -7,13 +7,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Git-enabled Nova Init projects now receive `chore: Initial commit` after all scaffold files are generated.
+    - Only generated, non-ignored files are staged, and verification hooks are bypassed for that commit only so hooks requiring an existing `HEAD` do not block the first commit.
+    - Existing repositories, including enclosing and unborn repositories, are never automatically staged or committed. Git configuration and hooks are preserved; nothing is pushed.
+    - Missing Git identity or fully ignored generated files produce actionable warnings instead of fabricated identity or an empty commit.
+
 ### Changed
+
+- Repository CI now runs through the shared `stiwicourage/powershell-ci` reusable workflows instead of local copies.
+    - `Tests.yml`, `Publish.yml`, and the new `Security.yml` are thin callers pinned to a released `powershell-ci` version; the local CI scripts, reusable actions, `powershell.yml`, and `dependency-review.yml` were removed.
+    - `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` delegates to the shared analyzer and needs a `powershell-ci` checkout next to the repository or `POWERSHELL_CI_PATH`. Its unused `-IncludeTests` switch was removed.
+    - The ScriptAnalyzer gate, both locally and in CI, now fails on every severity, including `Information`. Functions declare their return types with `[OutputType()]` and commands use named parameters, so only the `PSAvoidUsingWriteHost` exclusion remains.
+    - The generated agentic Copilot guidance no longer references `scripts/build/ci/` helpers that generated projects never contain.
+    - The new `Run-Platform-Matrix.yml` runs the shared `powershell-ci` test actions on Windows, Linux, and macOS, so Windows-only and POSIX-only tests run on their own platform.
+    - `Sync-AgenticCopilotScaffold.ps1` now writes the same LF output when sources are checked out with CRLF line endings.
+    - Dependabot now checks the GitHub Actions references daily, without the default release cooldown for `powershell-ci`, and proposes new `powershell-ci` tags as one grouped `chore` pull request.
+    - The shared CI contract tests follow the pinned `powershell-ci` tag instead of a hard-coded version, and require every reference to use the same released tag, so grouped Dependabot updates no longer fail them.
+- `Update-NovaModuleTool` and `% nova update` now resolve and install updates through `PSModuleUpdate` 0.3.0 or later instead of PowerShellGet `Update-Module`.
+    - The new version is staged and verified with `Microsoft.PowerShell.PSResourceGet` before activation, and the installed module's scope is kept.
+    - `PSModuleUpdate` is imported only by the self-update command. When it is missing, Nova installs it from PowerShell Gallery for the current user after `ShouldProcess`; `-WhatIf` stops with install guidance instead.
+    - All-users installations that fail get guidance to rerun from an elevated session. A newer version that is installed but not loaded now produces a restart hint.
+    - The build/init update warning now suggests `Update-NovaModuleTool` instead of `Update-Module NovaModuleTools`.
+- The repository and generated agentic Copilot release guidance now keeps the compare-link footer in `RELEASE_NOTE.md` consistent with `CHANGELOG.md` instead of forbidding it. The release flow already maintains those links, and the documentation site does not show them.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- Version bump label inference now follows the Conventional Commits specification for breaking changes.
+    - `BREAKING CHANGE:` and `BREAKING-CHANGE:` footers must be uppercase and start a line, so prose such as `docs: explain why this is not a breaking change` no longer triggers a major bump.
+    - `BREAKING-CHANGE:` footers are now recognized as breaking changes.
+- `Update-NovaModuleVersion`, `% nova bump`, and `Invoke-NovaRelease` now only use tags that look like semantic versions, such as `1.2.3` or `v1.2.3`, as the start of the commit range. Other tags, such as `deploy-marker`, no longer hide earlier commits from label inference or the no-commits-since-tag check.
+- Local publish and local release now install into `<ModulesRoot>/<ProjectName>/<ModuleVersion>/` using the authoritative built manifest's numeric version, including two-, three-, and four-component versions.
+    - Prerelease labels remain in `PrivateData.PSData.Prerelease`; only the same numeric version directory is replaced. Other numeric versions and legacy flat files are preserved without automatic cleanup.
+    - Local publish resolves activation after build/publication, and local release resolves its destination from the rebuilt manifest after a version bump rather than stale project metadata. Invalid or missing built manifest versions fail before destination mutation.
+- Modules built on Windows now list `resources/` format and type files in the manifest with forward slashes, so the built manifest stays usable on Linux and macOS.
+- `Invoke-NovaTest` now passes native file paths to Pester code coverage on Windows instead of forward-slash paths.
 
 ### Security
 
@@ -565,4 +596,3 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 [0.0.6]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.5...Version_0.0.6
 [0.0.5]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.4...Version_0.0.5
 [0.0.4]: https://github.com/stiwicourage/NovaModuleTools/compare/Version_0.0.3...Version_0.0.4
-

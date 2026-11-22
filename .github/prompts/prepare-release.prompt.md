@@ -17,7 +17,7 @@ Prepare release-related changes in NovaModuleTools without publishing or tagging
 7. Check whether `RELEASE_NOTE.md` needs the placeholder rule under `## [Unreleased]`. This placeholder is already formatted under the official `### Added` heading and is exempt from step 6 content-type guidance — do not reclassify it.
     - 7a. If there are no real public API or workflow changes, ensure `### Added` contains exactly `No public API or workflow changes in this release. Internal maintenance only.`
     - 7b. If there are real release-note entries, remove that placeholder.
-8. Keep `RELEASE_NOTE.md` free of compare-link footer URLs.
+8. Keep the compare-link footer in `RELEASE_NOTE.md` consistent with `CHANGELOG.md` for the versions it lists.
 9. Verify that the version string in `project.json` matches the latest versioned heading in `CHANGELOG.md`, and confirm that `.github/workflows/Publish.yml` references the correct version source.
 10. Summarize the result using the exact structure from `.github/pull_request_template.md`. For sections in the pull request template that are not applicable to this release preparation, write `N/A` rather than omitting the section or leaving it blank. Make the summary concise, reviewer-focused, directly reusable, and compliant with the `markdown-authoring` skill (`.github/skills/markdown-authoring/SKILL.md`) when the output is returned as Markdown.
 

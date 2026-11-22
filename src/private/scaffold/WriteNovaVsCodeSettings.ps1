@@ -43,6 +43,7 @@ function Add-NovaVsCodeJsonSchemaEntry {
 
 function Resolve-NovaFileMatchArray {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param($Entry)
 
     $raw = if ($Entry -is [hashtable]) { $Entry['fileMatch'] } else { $Entry.fileMatch }

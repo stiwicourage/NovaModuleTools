@@ -29,7 +29,6 @@ For any change that adds, removes, or modifies public commands, helper functions
 - `src/private/` — domain-grouped helpers (`build/`, `cli/`, `package/`, `quality/`, `release/`, `scaffold/`, `shared/`, `update/`); one externally called helper per file
 - `tests/` — Pester tests and shared test-support scripts; public command unit tests live under `tests/public/<Command>.Tests.ps1` and per-command build-validation integration tests live under `tests/public/<Command>.Integration.Tests.ps1`
 - `scripts/build/` — local analyzer and build helpers
-- `scripts/build/ci/` — CI coverage, quality tooling, and artifact helpers
 - workflow files, when present — GitHub Actions CI, analyzer, dependency review, publish automation
 - reusable workflow actions, when present — reusable workflow actions used by release and coverage flows
 - `docs/{{ProjectName}}/en-US/` — PlatyPS command help source

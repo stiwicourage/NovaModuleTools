@@ -157,7 +157,9 @@ PS&gt; Get-NovaProjectInfo -InstalledNovaVersion</code></pre>
                     next semantic version based on Git history.</p>
                 <h3>How Nova chooses the bump label</h3>
                 <ul class="plain-list">
-                    <li><strong>Major</strong> for breaking changes</li>
+                    <li><strong>Major</strong> for breaking changes: a <code>!</code> after the commit type, such as
+                        <code>feat!:</code>, or an uppercase <code>BREAKING CHANGE:</code> /
+                        <code>BREAKING-CHANGE:</code> footer at the start of a line</li>
                     <li><strong>Minor</strong> for <code>feat:</code> commits</li>
                     <li><strong>Patch</strong> for <code>fix:</code> commits and all other cases</li>
                 </ul>
@@ -181,7 +183,8 @@ PS&gt; Get-NovaProjectInfo -InstalledNovaVersion</code></pre>
 1.0.0 + Minor -> 1.0.0
 1.0.0 + Major -> 1.0.0
 1.0.0 + Major + -Preview -> 1.0.1-preview</code></pre>
-                <p>When Git tags exist, Nova uses commits since the latest tag. When Git-based inference is unavailable
+                <p>When version tags exist, Nova uses commits since the latest version tag. Only tags that look like
+                    semantic versions, such as <code>1.2.3</code> or <code>v1.2.3</code>, count; other tags are ignored. When Git-based inference is unavailable
                     because the project path is not inside a Git repository, Nova stops instead of silently presenting a
                     normal-looking patch result. Use <code>-OverrideWarning</code> or the CLI form <code>% nova bump
                         --override-warning</code> / <code>% nova bump -o</code> only when you intentionally want that
@@ -254,8 +257,11 @@ PS&gt; Update-NovaModuleVersion -ContinuousIntegration</code></pre>
                 <h3>What self-update does</h3>
                 <ol class="plain-list plain-list--ordered">
                     <li>Read the stored prerelease preference.</li>
+                    <li>Load <code>PSModuleUpdate</code>, and install it for the current user the first time if it is
+                        missing.</li>
                     <li>Resolve the best eligible update candidate from PowerShell Gallery.</li>
-                    <li>Apply the update if one is available.</li>
+                    <li>Stage, verify, and activate the update with <code>PSModuleUpdate</code> if one is available,
+                        keeping the scope of the installed module.</li>
                     <li>Print the release notes link after a successful update.</li>
                 </ol>
                 <div class="surface-example" data-command-example>
@@ -273,7 +279,10 @@ PS&gt; Update-NovaModuleTools</code></pre>
                     </div>
                 </div>
                 <p>If no newer version is available, <code>% nova update</code> prints a friendly “You're up to date!”
-                    message together with the installed NovaModuleTools version.</p>
+                    message together with the installed NovaModuleTools version. If the newer version is already
+                    installed but not loaded, Nova tells you to restart PowerShell.</p>
+                <p>When NovaModuleTools is installed for all users, run the update from an elevated PowerShell session.
+                    Build and init update notifications never load <code>PSModuleUpdate</code>.</p>
                 <div class="table-scroll">
                     <table>
                         <thead>

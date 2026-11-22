@@ -16,6 +16,7 @@ function Write-NovaPackageUploadWorkflowContext {
 
 function Get-NovaPackageUploadWorkflowContextMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext
     )

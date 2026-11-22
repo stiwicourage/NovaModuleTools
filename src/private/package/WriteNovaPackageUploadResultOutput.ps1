@@ -19,6 +19,7 @@ function Write-NovaPackageUploadResultOutput {
 
 function Get-NovaPackageUploadResultSummaryMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][object[]]$Result
     )
@@ -33,6 +34,7 @@ function Get-NovaPackageUploadResultSummaryMessage {
 
 function Get-NovaPackageUploadResultNextStepMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Result
     )

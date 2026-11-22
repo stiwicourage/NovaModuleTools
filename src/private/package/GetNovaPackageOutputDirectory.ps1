@@ -1,5 +1,6 @@
 function Get-NovaPackageOutputDirectory {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][pscustomobject]$ProjectInfo
     )

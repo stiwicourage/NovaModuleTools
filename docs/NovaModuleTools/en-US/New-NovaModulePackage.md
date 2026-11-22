@@ -4,7 +4,7 @@ external help file: NovaModuleTools-Help.xml
 HelpUri: 'https://www.novamoduletools.com/packaging-and-delivery.html#pack'
 Locale: en-US
 Module Name: NovaModuleTools
-  ms.date: 04/26/2026
+ms.date: 04/26/2026
 PlatyPS schema version: 2024-05-01
 title: New-NovaModulePackage
 ---

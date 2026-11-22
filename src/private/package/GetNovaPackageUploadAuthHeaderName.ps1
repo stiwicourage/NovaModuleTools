@@ -1,5 +1,6 @@
 function Get-NovaPackageUploadAuthHeaderName {
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [AllowNull()]$AuthSettings
     )

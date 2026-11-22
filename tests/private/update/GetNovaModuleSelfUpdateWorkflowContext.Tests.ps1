@@ -5,44 +5,36 @@ BeforeAll {
 }
 
 Describe 'Get-NovaModuleSelfUpdateWorkflowContext' {
-    It 'resolves preference, installed module, and lookup result from collaborators' {
-        Mock Read-NovaUpdateNotificationPreference {[pscustomobject]@{PrereleaseNotificationsEnabled=$false}}
-        Mock Get-NovaInstalledModuleVersionInfo {[pscustomobject]@{Version='1.0.0'}}
-        Mock Invoke-NovaModuleUpdateLookup {[pscustomobject]@{Version='2.0.0'}}
+    It 'plans the update for the loaded module through PSModuleUpdate using the prerelease preference' {
+        Mock Read-NovaUpdateNotificationPreference {[pscustomobject]@{PrereleaseNotificationsEnabled=$true}}
+        Mock Get-NovaInstalledModuleVersionInfo {[pscustomobject]@{Version='1.0.0'; Module=[pscustomobject]@{Name='NovaModuleTools'}}}
+        Mock Get-NovaPSModuleUpdatePlan {[pscustomobject]@{Disposition='UpdateAvailable'; TargetVersion='2.0.0'}}
         Mock Get-NovaModuleSelfUpdatePlan {[pscustomobject]@{TargetVersion='2.0.0'; IsPrereleaseTarget=$false}}
+
         $ctx = Get-NovaModuleSelfUpdateWorkflowContext
-        $ctx.LookupResult.Version | Should -Be '2.0.0'
+
+        $ctx.UpdatePlan.TargetVersion | Should -Be '2.0.0'
         $ctx.Plan.TargetVersion | Should -Be '2.0.0'
         $ctx.Action | Should -Be 'Update NovaModuleTools to version 2.0.0'
+        Should -Invoke Get-NovaPSModuleUpdatePlan -Times 1 -ParameterFilter {$Module.Name -eq 'NovaModuleTools' -and $PrereleaseNotificationsEnabled}
+        Should -Invoke Get-NovaModuleSelfUpdatePlan -Times 1 -ParameterFilter {$UpdatePlan.TargetVersion -eq '2.0.0' -and $PrereleaseNotificationsEnabled}
     }
 
-    It 'uses supplied preference / installed module / lookup result without calling collaborators' {
+    It 'uses supplied preference / installed module / update plan without calling collaborators' {
         Mock Read-NovaUpdateNotificationPreference {throw 'should not be called'}
         Mock Get-NovaInstalledModuleVersionInfo {throw 'should not be called'}
-        Mock Invoke-NovaModuleUpdateLookup {throw 'should not be called'}
+        Mock Get-NovaPSModuleUpdatePlan {throw 'should not be called'}
         Mock Get-NovaModuleSelfUpdatePlan {[pscustomobject]@{TargetVersion='3.0.0-rc1'; IsPrereleaseTarget=$true}}
         $ctx = Get-NovaModuleSelfUpdateWorkflowContext `
             -Preference ([pscustomobject]@{PrereleaseNotificationsEnabled=$true}) `
             -InstalledModule ([pscustomobject]@{Version='2.5.0'}) `
-            -LookupResult ([pscustomobject]@{Version='3.0.0-rc1'})
+            -UpdatePlan ([pscustomobject]@{TargetVersion='3.0.0-rc1'})
         $ctx.Action | Should -Be 'Update NovaModuleTools to prerelease version 3.0.0-rc1'
     }
 
     It 'carries forwarded workflow parameters into the context' {
-        Mock Read-NovaUpdateNotificationPreference {[pscustomobject]@{PrereleaseNotificationsEnabled=$false}}
-        Mock Get-NovaInstalledModuleVersionInfo {[pscustomobject]@{Version='1.0.0'}}
-        Mock Invoke-NovaModuleUpdateLookup {[pscustomobject]@{Version='2.0.0'}}
-        Mock Get-NovaModuleSelfUpdatePlan {[pscustomobject]@{TargetVersion='2.0.0'; IsPrereleaseTarget=$false}}
-
         $ctx = Get-NovaModuleSelfUpdateWorkflowContext -WorkflowParams @{WhatIf = $true}
 
         $ctx.WorkflowParams.WhatIf | Should -BeTrue
-    }
-
-    It 'throws when no lookup result is available' {
-        Mock Read-NovaUpdateNotificationPreference {[pscustomobject]@{PrereleaseNotificationsEnabled=$false}}
-        Mock Get-NovaInstalledModuleVersionInfo {[pscustomobject]@{Version='1.0.0'}}
-        Mock Invoke-NovaModuleUpdateLookup {$null}
-        { Get-NovaModuleSelfUpdateWorkflowContext } | Should -Throw -ErrorId 'Nova.Dependency.ModuleSelfUpdateCandidateUnavailable'
     }
 }

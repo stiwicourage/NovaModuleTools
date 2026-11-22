@@ -1,6 +1,7 @@
 function Get-NovaProjectPackageOutputDirectorySettingsTable {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Output directory settings is the domain term represented by this helper.')]
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [Parameter(Mandatory)][System.Collections.IDictionary]$PackageSettings
     )

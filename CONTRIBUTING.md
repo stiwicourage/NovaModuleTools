@@ -58,12 +58,12 @@ pwsh -NoLogo -NoProfile -File ./run.ps1
 `Invoke-NovaTest` followed by `Test-NovaBuild`. `Invoke-NovaTest` is the unit-test entrypoint, while
 `Test-NovaBuild` is the build-validation integration-test entrypoint.
 
-If you are working on the CodeScene integration, the CI coverage helper writes the JaCoCo artifact that the CodeScene upload step consumes:
+CI, coverage, and CodeScene automation live in the shared [`stiwicourage/powershell-ci`](https://github.com/stiwicourage/powershell-ci) repository. This repository's `.github/workflows/*.yml` files are thin callers pinned to a released `powershell-ci` version:
 
-- generate coverage with `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
-- pull requests then download that uploaded artifact and run the CodeScene coverage-gate check through `.github/actions/check-coverage`
-- then upload/trigger with `./scripts/build/ci/Invoke-CodeSceneAnalysis.ps1 -UploadCoverage -TriggerAnalysis`
-- the upload helper auto-discovers `artifacts/coverage.xml` unless you pass `-CoveragePath`
+- `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` delegates to the shared analyzer; clone `powershell-ci` next to this repository or set `POWERSHELL_CI_PATH`
+- the shared tests workflow writes `artifacts/coverage.xml`, runs the CodeScene coverage-gate check on pull requests, and uploads coverage on `develop`
+- `Run-Platform-Matrix.yml` runs the shared `powershell-ci` test actions (unit tests and `Test-NovaBuild`) on Windows, Linux, and macOS without analyzer, changelog, or CodeScene steps; tests guarded with `-Skip:$IsWindows` or `-Skip:(-not $IsWindows)` only run in their own lane, so keep platform-specific behavior under test there
+- change shared CI behavior in `powershell-ci`, release it, and then update the pinned version here
 - if upload succeeds but `-TriggerAnalysis` fails with a project-owner OAuth error, re-authorize the repository in CodeScene for the project owner; that failure is separate from `CS_ACCESS_TOKEN`
 
 Please also make sure your contribution includes the right kind of follow-up work:

@@ -27,9 +27,7 @@ For any change that adds, removes, or modifies public commands, helper functions
 - `src/private/` — domain-grouped helpers (`build/`, `cli/`, `package/`, `quality/`, `release/`, `scaffold/`, `shared/`, `update/`); one externally called helper per file
 - `tests/` — Pester tests and shared test-support scripts; public command unit tests live under `tests/public/<Command>.Tests.ps1` and per-command build-validation integration tests live under `tests/public/<Command>.Integration.Tests.ps1`
 - `scripts/build/` — local analyzer and build helpers
-- `scripts/build/ci/` — CI coverage, CodeScene, and artifact helpers
-- `.github/workflows/` — GitHub Actions CI, analyzer, dependency review, publish automation
-- `.github/actions/` — reusable workflow actions used by release and coverage flows
+- `.github/workflows/` — thin callers of the shared `stiwicourage/powershell-ci` workflows for tests, security scans, and publish automation
 - `docs/NovaModuleTools/en-US/` — PlatyPS command help source
 - `docs/*.html` — end-user GitHub Pages content
 - `.github/instructions/` — canonical rules, path-scoped via `applyTo:`

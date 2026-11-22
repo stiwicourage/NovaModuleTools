@@ -77,6 +77,7 @@ function Get-ManifestExportDefinition {
 
 function Get-ManifestResourceFilePath {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][string]$ResourcesDir,
         [Parameter(Mandatory)][string]$Filter,
@@ -90,7 +91,7 @@ function Get-ManifestResourceFilePath {
             return
         }
 
-        $resourceFilePath += Join-Path -Path 'resources' -ChildPath $_.Name
+        $resourceFilePath += "resources/$( $_.Name )"
     }
 
     return $resourceFilePath

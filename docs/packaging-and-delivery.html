@@ -364,6 +364,11 @@ MyModule.latest.zip</code></pre>
                 <p>Local publish is useful when you want to validate a realistic install/import cycle without pushing to
                     a shared repository. After a successful local publish, Nova reloads the published module from the
                     local install path into the current PowerShell session.</p>
+                <p>The destination is a modules root. Nova installs to
+                    <code>&lt;ModulesRoot&gt;/&lt;ProjectName&gt;/&lt;ModuleVersion&gt;/</code>, using the built manifest's
+                    numeric version. A preview such as <code>1.2.3-preview</code> uses <code>1.2.3/</code>, with its
+                    prerelease label kept in the manifest. Only that numeric version is replaced; other versions and
+                    legacy flat files are preserved. There is no automatic flat-install cleanup.</p>
                 <h3>Repository publish</h3>
                 <div class="surface-example" data-command-example>
                     <div class="surface-example__meta">
@@ -401,7 +406,8 @@ PS&gt; Publish-NovaModule -Repository PSGallery -ApiKey $env:PSGALLERY_API -Cont
                     <p><strong>Command-line note:</strong> the launcher uses <code>--path</code> / <code>-p</code> for
                         the custom module directory target in this flow.</p>
                 </div>
-                <p>Use this when you want local publishing to target a custom module directory.</p>
+                <p>Use this when you want local publishing to target a custom modules root, not an individual module
+                    or version directory.</p>
                 <div class="notice">
                     <strong>CI/CD shortcut:</strong>
                     <p>Use <code>-SkipTests</code>, <code>--skip-tests</code>, or <code>-s</code> when tests already ran
@@ -463,6 +469,8 @@ PS&gt; Invoke-NovaRelease -Repository PSGallery -ApiKey $env:PSGALLERY_API -Cont
                         <code>@{ Local = $true }</code>.</p>
                 </div>
                 <h3>Important difference from local publish</h3>
+                <p>Local release uses the same versioned layout, selecting the numeric version from the rebuilt
+                    manifest after the version bump rather than earlier project metadata.</p>
                 <p>Local release does <strong>not</strong> import the published module into your current session
                     afterward. That behavior is specific to <code>Publish-NovaModule -Local</code>.</p>
                 <p>When you use the continuous-integration form, Nova still restores the built <code>dist/</code> module

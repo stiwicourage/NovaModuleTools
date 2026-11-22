@@ -31,7 +31,7 @@ Use the smallest validation set that proves the change, then run the repository 
 - local quality loop: `pwsh -NoLogo -NoProfile -File ./run.ps1`
 - test validation: `Invoke-NovaTest` for unit-test validation, then `Test-NovaBuild` for build-validation integration coverage
 - analyzer only: `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
-- CI-parity coverage flow: `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts`
+- CI-parity coverage flow: the shared `stiwicourage/powershell-ci` tests workflow called from `.github/workflows/Tests.yml`
 
 If `run.ps1` or `./scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports findings, fix them before review, handoff, or commit. Do not treat a failing local quality loop as an acceptable stopping point.
 

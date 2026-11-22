@@ -72,12 +72,21 @@ Describe 'Architecture guardrails' {
         (Compare-Object -ReferenceObject $expected -DifferenceObject $actual) | Should -BeNullOrEmpty -Because (($actual -join ', '), (& $script:formatMatches -MatchList $matches) -join [Environment]::NewLine)
     }
 
-    It 'self-update execution stays behind the update command adapter' {
-        $matches = & $script:findMatches -RootPath $script:srcRoot -Pattern '^\s*(?:return\s+)?Update-Module\b'
+    It 'self-update planning and installation stay behind the PSModuleUpdate adapters' -ForEach @(
+        @{Pattern = '\bGet-PSModuleUpdate\b'; Expected = 'src/private/update/GetNovaPSModuleUpdatePlan.ps1'}
+        @{Pattern = '\bInstall-PSModuleUpdate\b'; Expected = 'src/private/update/InstallNovaPSModuleUpdate.ps1'}
+        @{Pattern = '\bInstall-PSResource\b'; Expected = 'src/private/update/ImportNovaPSModuleUpdateDependency.ps1'}
+    ) {
+        $matches = & $script:findMatches -RootPath $script:srcRoot -Pattern $Pattern
         $actual = & $script:getMatchedPaths -MatchList $matches
-        $expected = @('src/private/update/InvokeNovaModuleUpdateCommand.ps1')
 
-        (Compare-Object -ReferenceObject $expected -DifferenceObject $actual) | Should -BeNullOrEmpty -Because (($actual -join ', '), (& $script:formatMatches -MatchList $matches) -join [Environment]::NewLine)
+        (Compare-Object -ReferenceObject @($Expected) -DifferenceObject $actual) | Should -BeNullOrEmpty -Because (($actual -join ', '), (& $script:formatMatches -MatchList $matches) -join [Environment]::NewLine)
+    }
+
+    It 'self-update no longer uses PowerShellGet Update-Module' {
+        $matches = & $script:findMatches -RootPath $script:srcRoot -Pattern '^\s*(?:return\s+)?Update-Module\b'
+
+        $matches | Should -BeNullOrEmpty -Because (& $script:formatMatches -MatchList $matches)
     }
 
     It 'public command files use only their approved Nova helper surface' {
@@ -96,7 +105,7 @@ Describe 'Architecture guardrails' {
             [pscustomobject]@{Path = 'src/public/PublishNovaModule.ps1'; ExpectedHelpers = @('Get-NovaDynamicDeliveryParameterDictionary', 'Get-NovaProjectInfo', 'Get-NovaPublishWorkflowContext', 'Get-NovaShouldProcessForwardingParameter', 'Invoke-NovaPublishWorkflow', 'Write-NovaPublishWorkflowContext')}
             [pscustomobject]@{Path = 'src/public/SetNovaUpdateNotificationPreference.ps1'; ExpectedHelpers = @('Get-NovaUpdateNotificationPreferenceChangeContext', 'Invoke-NovaUpdateNotificationPreferenceChange')}
             [pscustomobject]@{Path = 'src/public/TestNovaBuild.ps1'; ExpectedHelpers = @('Get-NovaDynamicOverrideWarningParameterDictionary', 'Get-NovaTestWorkflowContext', 'Invoke-NovaTestWorkflow')}
-            [pscustomobject]@{Path = 'src/public/UpdateNovaModuleTools.ps1'; ExpectedHelpers = @('Confirm-NovaPrereleaseModuleUpdate', 'Get-NovaModuleSelfUpdateWorkflowContext', 'Invoke-NovaModuleSelfUpdateWorkflow', 'Write-NovaModuleReleaseNotesLink')}
+            [pscustomobject]@{Path = 'src/public/UpdateNovaModuleTools.ps1'; ExpectedHelpers = @('Confirm-NovaPrereleaseModuleUpdate', 'Get-NovaModuleSelfUpdateWorkflowContext', 'Import-NovaPSModuleUpdateDependency', 'Invoke-NovaModuleSelfUpdateWorkflow', 'Write-NovaModuleReleaseNotesLink')}
             [pscustomobject]@{Path = 'src/public/UpdateNovaModuleVersion.ps1'; ExpectedHelpers = @('Get-NovaVersionUpdateWorkflowContext', 'Invoke-NovaVersionUpdateCiActivation', 'Invoke-NovaVersionUpdateWorkflow', 'Write-NovaVersionUpdateResultOutput')}
         )
         $expectedPaths = @($testCases | ForEach-Object Path | Sort-Object)

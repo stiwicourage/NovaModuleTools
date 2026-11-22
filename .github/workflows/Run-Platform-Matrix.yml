@@ -1,0 +1,59 @@
+name: Run platform matrix
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+      - develop
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: platform-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  platform:
+    name: platform (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Windows
+            runner: windows-2025
+          - platform: Linux
+            runner: ubuntu-24.04
+          - platform: macOS
+            runner: macos-15
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install required CI PowerShell modules
+        uses: stiwicourage/powershell-ci/actions/install-ps-modules@0.5.0
+        with:
+          modules: NovaModuleTools KeepAChangelog PSScriptAnalyzer
+
+      - name: Run Nova tests and build validation
+        uses: stiwicourage/powershell-ci/actions/nova-test@0.5.0
+        with:
+          test-isolation: process
+
+      - name: Upload platform artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: nova-platform-${{ matrix.platform }}
+          if-no-files-found: warn
+          path: |
+            artifacts/
+            dist/

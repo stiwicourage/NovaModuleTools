@@ -1,5 +1,6 @@
 function Get-NovaPackageUploadRequestParameterMap {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)][pscustomobject]$UploadArtifact
     )
@@ -18,6 +19,7 @@ function Get-NovaPackageUploadRequestParameterMap {
 
 function Add-NovaLegacyWebRequestOption {
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)][hashtable]$Parameters
     )

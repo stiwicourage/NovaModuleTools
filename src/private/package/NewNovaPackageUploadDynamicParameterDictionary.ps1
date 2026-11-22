@@ -1,6 +1,7 @@
 function New-NovaPackageUploadDynamicParameterDictionary {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This helper only returns runtime parameter metadata and does not mutate state.')]
     [CmdletBinding()]
+    [OutputType([System.Management.Automation.RuntimeDefinedParameterDictionary])]
     param()
 
     $dictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()

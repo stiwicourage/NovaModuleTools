@@ -1,6 +1,7 @@
 function Get-VersionLabelFromCommitSet {param($Messages) return 'Major'}
 function Invoke-NovaGitCommand {param($ProjectRoot, $Arguments) return [pscustomobject]@{ExitCode=0; Output=@()}}
 function Get-NovaGitCommandOutputText {param($Result) return ($Result.Output -join "`n")}
+function Get-NovaLatestVersionTagResult {param($ProjectRoot) return Invoke-NovaGitCommand -ProjectRoot $ProjectRoot -Arguments @('describe')}
 function Stop-NovaOperation {param($Message, $ErrorId, $Category, $TargetObject) throw $Message}
 function Set-NovaVersionLabelGitSequenceMock {
     param([string]$CommitCount)

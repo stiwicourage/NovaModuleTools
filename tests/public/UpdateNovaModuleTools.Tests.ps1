@@ -23,6 +23,15 @@ Describe 'Update-NovaModuleTool' {
         $script:shouldRun = $null
         $script:workflowContext = $null
         $script:workflowParams = $null
+        $script:callOrder = @()
+        $script:importCmdlet = $null
+    }
+
+    It 'loads the PSModuleUpdate dependency with the command context before planning the update' {
+        $null = Update-NovaModuleTool
+
+        $script:callOrder[0..1] | Should -Be @('import', 'context')
+        $script:importCmdlet | Should -Not -BeNullOrEmpty
     }
 
     It 'invokes the workflow with ShouldRun=$false when no update is available' {

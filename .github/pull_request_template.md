@@ -26,7 +26,7 @@
 ## Review guidance
 
 - Highlight the main code path or workflow reviewers should start with.
-- Call out the primary files or folders changed (for example `src/public/`, `src/private/cli/`, `scripts/build/ci/`, `.github/workflows/`, `docs/`, or `src/resources/example/`).
+- Call out the primary files or folders changed (for example `src/public/`, `src/private/cli/`, `.github/workflows/`, `docs/`, or `src/resources/example/`).
 - Call out any trade-offs, follow-up work, or known limitations.
 
 ## Validation
@@ -35,7 +35,6 @@
 - [ ] `Invoke-NovaTest`
 - [ ] `Test-NovaBuild`
 - [ ] `./scripts/build/Invoke-ScriptAnalyzerCI.ps1`
-- [ ] `./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1`
 - [ ] Targeted Nova workflow validated (`% nova build`, `% nova test`, `% nova merge`, `% nova deploy`, `% nova publish`, `% nova release`, `% nova update`, `% nova notification`, or `% nova init` as relevant)
 - [ ] Docs/example only; executable validation not needed
 

@@ -218,6 +218,12 @@ PS&gt; Import-Module NovaModuleTools</code></pre>
                     <code>Test-MarkdownCommandHelp</code>, with a matching help file required for every new public
                     entry point, and a strict file-ending rule for changed or generated text files.</p>
                 <p>Nova then creates a project folder under the path you selected.</p>
+                <p>Git-enabled projects also receive an initial <code>chore: Initial commit</code> after all files
+                    have been generated. Nova stages only generated, non-ignored files and bypasses verification
+                    hooks for this first commit only, leaving hooks enabled for later work. Existing repositories
+                    are never automatically staged or committed, and nothing is pushed. If Git identity is missing,
+                    Nova preserves the project and warns you to configure <code>user.name</code> and
+                    <code>user.email</code> before committing manually.</p>
                 <p>The generated <code>project.json</code> also starts with Nova's standard <code>Pester</code>
                     defaults, including explicit source coverage paths for <code>src/public/</code>, nested
                     <code>src/private/</code> helper folders, and <code>src/classes/</code>, JaCoCo output in

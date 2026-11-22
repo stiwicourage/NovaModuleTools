@@ -1,5 +1,6 @@
 function Merge-NovaPackageSettingTable {
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [AllowNull()]$BaseSettings,
         [AllowNull()]$OverrideSettings
@@ -17,6 +18,7 @@ function Merge-NovaPackageSettingTable {
 
 function Get-NovaPackageSettingEntryList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [AllowNull()]$Settings
     )
@@ -41,6 +43,7 @@ function Get-NovaPackageSettingEntryList {
 
 function Get-NovaDictionaryEntryList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][System.Collections.IDictionary]$Dictionary
     )

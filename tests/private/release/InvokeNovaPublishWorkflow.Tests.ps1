@@ -1,6 +1,7 @@
 BeforeAll {
     $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . (Join-Path $projectRoot 'src/private/release/InvokeNovaPublishWorkflow.ps1')
+    . (Join-Path $projectRoot 'src/private/release/GetNovaPublishedLocalManifestPath.ps1')
     . (Join-Path $PSScriptRoot 'InvokeNovaPublishWorkflow.TestSupport.ps1')
 }
 
@@ -34,19 +35,20 @@ Describe 'Test-NovaPublishWorkflowWhatIfEnabled' {
 Describe 'Invoke-NovaPublishWorkflowCiRestore' {
     It 'invokes the importer when ShouldRun and CI requested' {
         $script:calls = 0
-        $action = {param($ProjectInfo) $script:calls += 1}
+        $action = {param($ProjectInfo) $script:calls += 1; $script:restoredProject = $ProjectInfo}
         Invoke-NovaPublishWorkflowCiRestore -WorkflowContext ([pscustomobject]@{ProjectInfo='x'}) -ShouldRun -ContinuousIntegrationRequested -ImportBuiltModuleForCiAction $action
         $script:calls | Should -Be 1
+        $script:restoredProject | Should -Be 'x'
     }
     It 'does not invoke the importer when CI is off' {
         $script:calls = 0
-        $action = {param($ProjectInfo) $script:calls += 1}
+        $action = {param($ProjectInfo) $script:calls += 1; $script:restoredProject = $ProjectInfo}
         Invoke-NovaPublishWorkflowCiRestore -WorkflowContext ([pscustomobject]@{ProjectInfo='x'}) -ShouldRun -ImportBuiltModuleForCiAction $action
         $script:calls | Should -Be 0
     }
 }
 
-Describe 'Invoke-NovaPublishWorkflow' {
+Describe 'Invoke-NovaPublishWorkflow' -Tag 'LocalPublication' {
     BeforeEach {
         . (Join-Path $projectRoot 'src/private/release/InvokeNovaPublishWorkflow.ps1')
         $script:validationCalls = 0
@@ -62,6 +64,10 @@ Describe 'Invoke-NovaPublishWorkflow' {
             }
         }
         Mock Write-Progress {}
+        Mock Get-NovaPublishedLocalManifestPath {
+            if ($script:publishCalls -eq 0) { throw 'Manifest resolved before build and publish' }
+            return "/m/$( $PublishInvocation.Parameters.ProjectInfo.ProjectName ).psd1"
+        }
     }
 
     It 'runs validation and publish, reports progress, and suggests how to verify repository publish' {
@@ -92,8 +98,12 @@ Describe 'Invoke-NovaPublishWorkflow' {
         ($script:messages | Where-Object {$_.Text -eq 'Find-Module NovaModuleTools -Repository PSGallery'}).Count | Should -Be 1
     }
 
-    It 'imports the local published module, restores the built module in CI, and reports the result' {
+    It 'resolves the exact new manifest after build and publish, imports it, restores CI, and reports the result' {
         Mock Invoke-NovaBuildValidation {$script:validationCalls += 1}
+        Mock Get-NovaPublishedLocalManifestPath {
+            if ($script:publishCalls -eq 0) { throw 'Manifest resolved before build and publish' }
+            return '/m/Mod/1.2.4/Mod.psd1'
+        }
         $ctx = [pscustomobject]@{
             PublishParams = @{}
             PublishInvocation = [pscustomobject]@{
@@ -104,7 +114,12 @@ Describe 'Invoke-NovaPublishWorkflow' {
             }
             LocalPublishActivation = [pscustomobject]@{
                 ManifestPath='/m/Mod.psd1'
-                ImportAction = {param($ProjectName,$ManifestPath) $script:localImportCalls += 1}
+                ImportAction = {
+                    param($ProjectName,$ManifestPath)
+                    $script:localImportCalls += 1
+                    $script:importedManifest = $ManifestPath
+                    $script:importedProject = $ProjectName
+                }
             }
             ProjectInfo = [pscustomobject]@{ProjectName = 'Mod'}
             WorkflowParams = @{}
@@ -113,6 +128,9 @@ Describe 'Invoke-NovaPublishWorkflow' {
         }
         Invoke-NovaPublishWorkflow -WorkflowContext $ctx -ShouldRun
         $script:localImportCalls | Should -Be 1
+        $script:importedManifest | Should -Be '/m/Mod/1.2.4/Mod.psd1'
+        $script:importedProject | Should -Be 'Mod'
+        Should -Invoke Get-NovaPublishedLocalManifestPath -Times 1
         $script:ciImportCalls | Should -Be 1
         Assert-MockCalled Write-Progress -Times 5
         Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {
@@ -124,7 +142,7 @@ Describe 'Invoke-NovaPublishWorkflow' {
         Assert-MockCalled Write-Progress -Times 1 -ParameterFilter {$Completed}
         $script:messages.Count | Should -Be 7
         ($script:messages | Where-Object {$_.Text -eq 'Pre-publish tests were skipped for this run.'}).Count | Should -Be 1
-        ($script:messages | Where-Object {$_.Text -eq 'The published local module is loaded from /m/Mod.psd1.'}).Count | Should -Be 1
+        ($script:messages | Where-Object {$_.Text -eq 'The published local module is loaded from /m/Mod/1.2.4/Mod.psd1.'}).Count | Should -Be 1
         ($script:messages | Where-Object {$_.Text -eq 'The freshly built dist module is loaded again for later commands in this session.'}).Count | Should -Be 1
         ($script:messages | Where-Object {$_.Text -eq 'Get-NovaProjectInfo -Installed'}).Count | Should -Be 1
     }
@@ -136,7 +154,10 @@ Describe 'Invoke-NovaPublishWorkflow' {
             PublishInvocation = [pscustomobject]@{Action = {param() $script:publishCalls += 1}; Target = 'PSGallery'; IsLocal = $false}
             LocalPublishActivation = [pscustomobject]@{
                 ManifestPath='/m/Mod.psd1'
-                ImportAction = {param($ProjectName,$ManifestPath) $script:localImportCalls += 1}
+                ImportAction = {
+                    param($ProjectName,$ManifestPath)
+                    throw "Unexpected import of $ProjectName from $ManifestPath under WhatIf"
+                }
             }
             ProjectInfo = [pscustomobject]@{ProjectName = 'NovaModuleTools'}
             WorkflowParams = @{WhatIf = $true}
@@ -175,6 +196,8 @@ Describe 'Invoke-NovaPublishWorkflow' {
                 ImportAction = {
                     param($ProjectName,$ManifestPath)
                     $script:localImportCalls += 1
+                    $script:importedProject = $ProjectName
+                    $script:importedManifest = $ManifestPath
                     Remove-Item Function:\Get-NovaPublishWorkflowStatusMessage -ErrorAction SilentlyContinue
                     Remove-Item Function:\Get-NovaPublishWorkflowNextStepLine -ErrorAction SilentlyContinue
                 }
@@ -189,6 +212,8 @@ Describe 'Invoke-NovaPublishWorkflow' {
             { Invoke-NovaPublishWorkflow -WorkflowContext $ctx -ShouldRun } | Should -Not -Throw
 
             $script:localImportCalls | Should -Be 1
+            $script:importedProject | Should -Be 'NovaModuleTools'
+            $script:importedManifest | Should -Be '/m/NovaModuleTools.psd1'
             ($script:messages | Where-Object {$_.Text -eq 'Published Nova module: NovaModuleTools' -and $_.Color -eq 'Green'}).Count | Should -Be 1
             ($script:messages | Where-Object {$_.Text -eq 'The published local module is loaded from /m/NovaModuleTools.psd1.'}).Count | Should -Be 1
         } finally {

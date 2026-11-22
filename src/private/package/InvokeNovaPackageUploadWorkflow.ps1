@@ -1,5 +1,6 @@
 function Invoke-NovaPackageUploadWorkflow {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [object[]]$UploadArtifactList = @()
@@ -27,6 +28,7 @@ function Invoke-NovaPackageUploadWorkflow {
 
 function Get-NovaResolvedPackageUploadArtifactList {
     [CmdletBinding()]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory)][pscustomobject]$WorkflowContext,
         [object[]]$UploadArtifactList = @()

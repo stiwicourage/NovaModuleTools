@@ -3,7 +3,7 @@ function Get-NovaModuleSelfUpdateWorkflowContext {
     param(
         [pscustomobject]$Preference,
         [pscustomobject]$InstalledModule,
-        [pscustomobject]$LookupResult,
+        [object]$UpdatePlan,
         [hashtable]$WorkflowParams = @{}
     )
 
@@ -17,17 +17,13 @@ function Get-NovaModuleSelfUpdateWorkflowContext {
     } else {
         Get-NovaInstalledModuleVersionInfo
     }
-    $resolvedLookupResult = if ($null -ne $LookupResult) {
-        $LookupResult
+    $resolvedUpdatePlan = if ($null -ne $UpdatePlan) {
+        $UpdatePlan
     } else {
-        Invoke-NovaModuleUpdateLookup -AllowPrereleaseNotifications:$resolvedPreference.PrereleaseNotificationsEnabled -TimeoutMilliseconds 10000
+        Get-NovaPSModuleUpdatePlan -Module $resolvedInstalledModule.Module -PrereleaseNotificationsEnabled $resolvedPreference.PrereleaseNotificationsEnabled
     }
 
-    if ($null -eq $resolvedLookupResult) {
-        Stop-NovaOperation -Message 'Unable to determine a NovaModuleTools update candidate. Try again when the PowerShell Gallery is reachable.' -ErrorId 'Nova.Dependency.ModuleSelfUpdateCandidateUnavailable' -Category ResourceUnavailable -TargetObject 'NovaModuleTools'
-    }
-
-    $plan = Get-NovaModuleSelfUpdatePlan -InstalledModule $resolvedInstalledModule -LookupResult $resolvedLookupResult -PrereleaseNotificationsEnabled $resolvedPreference.PrereleaseNotificationsEnabled
+    $plan = Get-NovaModuleSelfUpdatePlan -InstalledModule $resolvedInstalledModule -UpdatePlan $resolvedUpdatePlan -PrereleaseNotificationsEnabled $resolvedPreference.PrereleaseNotificationsEnabled
     $action = if ($plan.IsPrereleaseTarget) {
         "Update NovaModuleTools to prerelease version $( $plan.TargetVersion )"
     } else {
@@ -37,7 +33,7 @@ function Get-NovaModuleSelfUpdateWorkflowContext {
     return [pscustomobject]@{
         Preference = $resolvedPreference
         InstalledModule = $resolvedInstalledModule
-        LookupResult = $resolvedLookupResult
+        UpdatePlan = $resolvedUpdatePlan
         WorkflowParams = $WorkflowParams
         Plan = $plan
         Action = $action

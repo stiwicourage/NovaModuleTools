@@ -226,7 +226,7 @@ Describe 'Invoke-NovaTestWorkflow' {
             $thrown | Should -Not -BeNullOrEmpty
             $thrown.FullyQualifiedErrorId | Should -Be $ExpectedErrorId
             if ($ExpectedErrorId -eq 'Nova.Workflow.TestRunFailed') {
-                $thrown.Exception.Message | Should -Be 'Pester reported one or more failing tests. Review the output above and the test result file at /tmp/nova-project/artifacts/UnitTestResults.xml, then rerun Invoke-NovaTest.'
+                $thrown.Exception.Message | Should -Be "Pester reported one or more failing tests. Review the output above and the test result file at $( $workflowContext.TestResultPath ), then rerun Invoke-NovaTest."
             }
         }
         else {

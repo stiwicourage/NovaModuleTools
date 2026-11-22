@@ -9,7 +9,7 @@ function Get-NovaLocalPublishActivation {
     }
 
     return [pscustomobject]@{
-        ManifestPath = Get-NovaPublishedLocalManifestPath -PublishInvocation $PublishInvocation
+        ManifestPath = $null
         ImportAction = (Get-Command -Name Import-NovaPublishedLocalModule -CommandType Function).ScriptBlock
     }
 }

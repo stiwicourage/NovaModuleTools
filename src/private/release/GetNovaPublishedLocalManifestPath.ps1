@@ -9,6 +9,6 @@ function Get-NovaPublishedLocalManifestPath {
     }
 
     $projectInfo = $PublishInvocation.Parameters.ProjectInfo
-    $moduleDirectory = Join-Path -Path $PublishInvocation.Target -ChildPath $projectInfo.ProjectName
-    return Join-Path -Path $moduleDirectory -ChildPath "$( $projectInfo.ProjectName ).psd1"
+    $versionDirectory = Get-NovaLocalPublishVersionDirectory -ProjectInfo $projectInfo -ModuleDirectoryPath $PublishInvocation.Target
+    return Join-Path -Path $versionDirectory -ChildPath "$( $projectInfo.ProjectName ).psd1"
 }

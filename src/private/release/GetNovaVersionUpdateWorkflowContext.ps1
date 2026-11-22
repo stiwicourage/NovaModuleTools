@@ -46,6 +46,7 @@ function Assert-NovaVersionBumpInferenceAvailability {
 
 function Get-NovaVersionBumpInferenceUnavailableMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param()
 
     return 'Cannot infer the version bump label from Git history because no Git repository was found for this project path. Use -OverrideWarning / --override-warning / -o to continue intentionally with a Patch fallback, for example in example or template flows.'
@@ -82,6 +83,7 @@ function Get-NovaVersionUpdateLabelResolution {
 
 function Test-NovaVersionUpdateUsesPreviewPatchFallback {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][semver]$CurrentVersion,
         [switch]$PreviewRelease
@@ -96,6 +98,7 @@ function Test-NovaVersionUpdateUsesPreviewPatchFallback {
 
 function Test-NovaVersionUpdateUsesInitialDevelopmentAdvisory {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][semver]$CurrentVersion,
         [switch]$PreviewRelease
@@ -110,6 +113,7 @@ function Test-NovaVersionUpdateUsesInitialDevelopmentAdvisory {
 
 function Test-NovaVersionUpdateUsesMajorZeroFallback {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)][semver]$CurrentVersion,
         [Parameter(Mandatory)][string]$Label,
@@ -129,6 +133,7 @@ function Test-NovaVersionUpdateUsesMajorZeroFallback {
 
 function Get-NovaInitialDevelopmentVersioningMessage {
     [CmdletBinding()]
+    [OutputType([string])]
     param()
 
     return 'Major version zero (0.y.z) is for initial development, so Nova keeps stable bumps on the 0.y.z line and plans breaking-change bumps as the next minor version instead of 1.0.0. Set 1.0.0 manually once the software is stable; after that, automatic major-version bumps work normally.'

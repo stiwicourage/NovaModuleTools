@@ -1,5 +1,6 @@
 function Get-NovaDynamicParameterAttributeCollection {
     [CmdletBinding()]
+    [OutputType([System.Collections.ObjectModel.Collection[System.Attribute]])]
     param(
         [string[]]$ParameterSetNameList = @(),
         [switch]$Mandatory
@@ -40,6 +41,7 @@ function Add-NovaDynamicTypedParameter {
 
 function Get-NovaDynamicDeliveryParameterDictionary {
     [CmdletBinding()]
+    [OutputType([System.Management.Automation.RuntimeDefinedParameterDictionary])]
     param()
 
     $parameterDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -51,6 +53,7 @@ function Get-NovaDynamicDeliveryParameterDictionary {
 
 function Get-NovaDynamicOverrideWarningParameterDictionary {
     [CmdletBinding()]
+    [OutputType([System.Management.Automation.RuntimeDefinedParameterDictionary])]
     param()
 
     $parameterDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
