@@ -19,7 +19,7 @@ Use this file when changing versioning, changelog handling, package metadata, pu
   `Fixed`, and `Security`. Under `## [Unreleased]`, `Changed` is valid for changes relative to the last released version, but not for internal iteration history of an unreleased feature that is already listed under `Added`.
 - Do not add custom section headings such as `Documentation`; place documentation-related release notes under the official type that best matches the real change.
 - Under `## [Unreleased]` > `### Added` in `RELEASE_NOTE.md`: if there are no public API or workflow changes, the section must contain exactly the line `No public API or workflow changes in this release. Internal maintenance only.` and nothing else. If there is at least one real entry, remove that placeholder line entirely before adding entries.
-- Do not add compare-link footer URLs to `RELEASE_NOTE.md`.
+- Keep the compare-link footer in `RELEASE_NOTE.md` consistent with `CHANGELOG.md` for the versions it lists; the release flow updates both.
 - For unreleased feature iterations, update the existing `Added` entry instead of adding an internal-history `Changed`
   entry.
 

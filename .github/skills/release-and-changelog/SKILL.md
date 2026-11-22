@@ -33,7 +33,7 @@ Use this skill when working on semantic versioning, release automation, package 
 	1. Check whether `## [Unreleased]` contains any entries describing public API or workflow changes.
 	2. If no such entries exist, ensure the `### Added` section contains exactly this line: `No public API or workflow changes in this release. Internal maintenance only.`
 	3. If real release-note entries exist, remove that placeholder line entirely.
-- Keep `RELEASE_NOTE.md` free of compare-link footer URLs.
+- Keep the compare-link footer in `RELEASE_NOTE.md` consistent with `CHANGELOG.md` for the versions it lists.
 - If a feature is still evolving before release, update its existing `Added` entry in `[Unreleased]` rather than adding a new entry. If no entry exists yet for that feature, create one and update it as the feature evolves.
 - If stable and preview behavior differ, document both behaviors explicitly in `CHANGELOG.md` under separate notes or a clearly labeled sub-description so readers can distinguish them.
 - Branch versioning roles: `main` is the stable release branch, so version bumps and changelog entries there reflect published stable releases. `develop` is the prerelease branch, so version bumps there use prerelease suffixes and changelog entries remain under `[Unreleased]` until merged to `main`. Never apply stable versioning actions to `develop` or prerelease actions to `main`.

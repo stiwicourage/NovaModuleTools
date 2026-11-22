@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - `PSModuleUpdate` is imported only by the self-update command. When it is missing, Nova installs it from PowerShell Gallery for the current user after `ShouldProcess`; `-WhatIf` stops with install guidance instead.
     - All-users installations that fail get guidance to rerun from an elevated session. A newer version that is installed but not loaded now produces a restart hint.
     - The build/init update warning now suggests `Update-NovaModuleTool` instead of `Update-Module NovaModuleTools`.
+- The repository and generated agentic Copilot release guidance now keeps the compare-link footer in `RELEASE_NOTE.md` consistent with `CHANGELOG.md` instead of forbidding it. The release flow already maintains those links, and the documentation site does not show them.
 
 ### Deprecated
 
