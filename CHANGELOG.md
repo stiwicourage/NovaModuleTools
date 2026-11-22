@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [3.5.0] - 2026-11-22
+
+### Added
+
 - Git-enabled Nova Init projects now receive `chore: Initial commit` after all scaffold files are generated.
     - Only generated, non-ignored files are staged, and verification hooks are bypassed for that commit only so hooks requiring an existing `HEAD` do not block the first commit.
     - Existing repositories, including enclosing and unborn repositories, are never automatically staged or committed. Git configuration and hooks are preserved; nothing is pushed.
@@ -30,10 +44,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - The build/init update warning now suggests `Update-NovaModuleTool` instead of `Update-Module NovaModuleTools`.
 - The repository and generated agentic Copilot release guidance now keeps the compare-link footer in `RELEASE_NOTE.md` consistent with `CHANGELOG.md` instead of forbidding it. The release flow already maintains those links, and the documentation site does not show them.
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 
 - Version bump label inference now follows the Conventional Commits specification for breaking changes.
@@ -45,8 +55,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
     - Local publish resolves activation after build/publication, and local release resolves its destination from the rebuilt manifest after a version bump rather than stale project metadata. Invalid or missing built manifest versions fail before destination mutation.
 - Modules built on Windows now list `resources/` format and type files in the manifest with forward slashes, so the built manifest stays usable on Linux and macOS.
 - `Invoke-NovaTest` now passes native file paths to Pester code coverage on Windows instead of forward-slash paths.
-
-### Security
 
 ## [3.4.2] - 2026-10-12
 
@@ -568,7 +576,8 @@ This release was yanked because it removed the implicit `Pester` dependency, bef
 - First release to `psgallery`
 - All basic functionality of Module is ready
 
-[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.2...HEAD
+[Unreleased]: https://github.com/stiwicourage/NovaModuleTools/compare/3.5.0...HEAD
+[3.5.0]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.2...3.5.0
 [3.4.2]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.1...3.4.2
 [3.4.1]: https://github.com/stiwicourage/NovaModuleTools/compare/3.4.0...3.4.1
 [3.4.0]: https://github.com/stiwicourage/NovaModuleTools/compare/3.3.1...3.4.0
