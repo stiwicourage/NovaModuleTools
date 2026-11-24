@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   publish:
-    uses: stiwicourage/powershell-ci/.github/workflows/publish.yml@0.6.1
+    uses: stiwicourage/powershell-ci/.github/workflows/publish.yml@0.8.2
     with:
       test-command: Test-NovaBuild
     secrets: inherit
